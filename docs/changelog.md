@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.15 (web version) · 24 Oct 2026
+
+- **Ink per ring, and per hand, in show mode's Colours** (#521; "Yes, as drawn"): each ring's line is its eye · name · colour · its ink height in a number box; each hand's is its eye · name · colour · a Bevel toggle · its height (the dial side's shadow heights). The cap's colour is a square on the line of the hand it sits on ("A swatch on its hand's line"). Colours there are squares, so the names keep their room. The Ink pane's row is *All inks at once*: it moves every ring by the same amount, each keeping its step from it ("adding to or subbing from each same amount"). A ring's step (`ink_d`) is kept in the file and the session, not in a link.
+- **Shenanigans on two lines, no bar** (19:57: "Remove vertical white bar"): Shadows · Blurs · Gradients, then Flare · Bevels · All.
+
 ## beta 4.92.14 (web version) · 24 Oct 2026
 
 - **Shenanigans' toggles, his marks of 19:40**: off, all black — the outline, the dot, the name ("Off; colors all black"); on, the name white, the dot at the right on the black-filled track ("On text white switch to the right and pill filled 'black'"); every line one height with the same room over the first and under the last, All centred on the block's middle in its third, its toggle on the same right edge ("Greens show equal paddings and alignment").

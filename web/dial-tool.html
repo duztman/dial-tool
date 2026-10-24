@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.14 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.15 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -470,7 +470,8 @@
   .shenticks > .row.seg { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--u2); min-height: 0; padding: 0 var(--u4) 0 0; box-shadow: none; background: none; }
   .shenticks > .row.seg > label { grid-column: 1; text-align: right; font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; }
   .shenticks > .row.seg > .toggle { grid-column: 2; }
-  .shenticks > .row:last-child { grid-column: 3; grid-row: 1 / span 3; align-self: stretch; padding-left: var(--u4); border-left: var(--hair) solid var(--ink); }      /* All: its third, the whole height, its name and toggle in line with the others' right edge, on the block's middle */      /* All in the third column, the whole height; the others flow two to a line beside it */
+  .shenticks > .row:nth-last-child(2) { grid-column: 3; grid-row: 1; }      /* two lines: Shadows · Blurs · Gradients, Flare · Bevels · All — no bar (Okay, 24 Oct 2026, 19:57: "Remove vertical white bar", Gradients drawn up beside Blurs, the third line cropped) */
+  .shenticks > .row:last-child { grid-column: 3; grid-row: 2; }      /* All: under Gradients, in line with the others */
   .panelcopy { position: fixed; z-index: 7; pointer-events: none; }      /* the panel's still copy sliding away while the modes change (panel_copy() in app.js) */      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
   .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }
@@ -877,6 +878,19 @@
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
   .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
   .swatches .swatch { width: var(--control); height: var(--control); border-radius: var(--round-small); }
+  /* show mode's Colours (#521): a line is eye · name · colour · toggle · number, in the same columns on every line;
+     an empty place keeps its column. The cap's square stands after its hand's pill */
+  .colourlist > .row.showline { grid-template-columns: var(--eye) minmax(0, 1fr) calc(2 * var(--pill) + var(--chip-gap)) var(--toggle-w) var(--side-num); column-gap: var(--u2); }      /* the colour's place holds two squares: a hand's and its cap's */
+  .colourlist > .row.showline > .eye { margin-right: calc(var(--gap) - var(--u2)); }      /* the eye keeps the panel's gap before the names; the rest stand closer */
+  .colourlist > .row.showline > :first-child { grid-column: auto; }
+  .colourlist > .row.showline > :is(.single, .swatches) { grid-column: auto; display: flex; align-items: center; gap: var(--chip-gap); padding: 0; }
+  .colourlist > .row.showline .swatch { width: var(--pill); height: var(--pill); border-radius: var(--round-small); }
+  .colourlist > .row.showline > .eye { display: grid; place-items: center start; color: var(--grey); }
+  .colourlist > .row.showline > .eye[aria-pressed="true"], .colourlist > .row.showline > .eye:hover { color: var(--ink); }
+  .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .colourlist > .row.showline > .place { display: flex; justify-content: end; }
+  .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
+  .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }
 
   /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Near black, round corners. Inside it the usual colour names are set to their night values, so
@@ -7202,7 +7216,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.14";
+var VERSION = "beta 4.92.15";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7291,8 +7305,10 @@ var RING_BASE = {
   // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
   from: 0,
   // ticks, markers, bands: what the radius measures to, a place in FROM — the mark's or band's outer end, its middle, or its inner end (Okay's notes, p. 9, #257: "resize from"). Starting at outer, every link draws as before (R31)
-  cs: {}
+  cs: {},
   // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
+  ink_d: 0
+  // show mode: how much higher (+) or lower (−) this ring's printed ink stands than All inks (w_ink), in its steps (#521); the file and the session, not the link (R7)
 };
 var TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
 var HAND_BASE = {
@@ -8270,8 +8286,10 @@ var LINK_KEYS = [
   "own_names",
   "da_own_names",
   "ampm_form",
-  "da_ampm_form"
+  "da_ampm_form",
   // 4.92.11 (#515, #516): appended; none and the disc to start, as every older link
+  "ink_d"
+  // 4.92.15 (#521): appended for the table's sake; lean() leaves it out of a link (R7)
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -8372,7 +8390,11 @@ function lean(S) {
   const out = {};
   for (const k in S) {
     if (k.startsWith("ui_") || k === "version" || NOT_IN_LINK(k) || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
-    if (k === "rings") out.rings = S.rings.map((r) => differing(r, RING_BASE));
+    if (k === "rings") out.rings = S.rings.map((r) => {
+      const d = differing(r, RING_BASE);
+      delete d.ink_d;
+      return d;
+    });
     else if (k === "windows") out.windows = S.windows.map((w) => differing(w, WINDOW_BASE));
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
     else out[k] = S[k];
@@ -11090,7 +11112,7 @@ function options(S, items, effects) {
     view: VIEW_NAMES[S.w_view] || "detail",
     items: items.map((x2) => {
       const hand = (x2.role === "hand" || x2.role === "mark") && HANDS2.includes(x2.name) ? x2.name : null;
-      return { role: x2.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) ? S.w_ink : 0 };
+      return { role: x2.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) ? Math.max(0, Math.min(10, S.w_ink + (x2.role === "ring" && x2.ring?.ring?.ink_d || 0))) : 0 };
     }),
     A: Object.fromEntries(HANDS2.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 3 ? "nato" : "leather",
@@ -16040,8 +16062,9 @@ ROWS["Show dial"] = [
   // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026); not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
   hdr("Ink", { folded: false }),
-  num2("w_ink", "Ink height", 0, 10, 1, { whole: true }),
-  info("How far the printed ink stands proud of the plate; 0 is flat ink.", {})
+  num2("w_ink", "All inks at once", 0, 10, 1, { whole: true }),
+  // every ring's ink together; each ring's own box in Colours keeps its step from it (#521)
+  info("How far the printed ink stands proud of the plate, every ring together; a ring's own box in Colours sets it higher or lower. 0 is flat ink.", {})
 ];
 ROWS.Watch = [
   hdr("Watch"),
@@ -18578,7 +18601,7 @@ var DialTool = class _DialTool {
       const shown = (v) => (row.trim ? String(parseFloat((v * per()).toFixed(places()))) : (v * per()).toFixed(places())) + (row.suffix || "");
       const now = () => {
         const T = this.target(row.scope);
-        return T[row.key] ?? (row.or ? row.or(T) : 0);
+        return (row.get ? row.get(T) : T[row.key]) ?? (row.or ? row.or(T) : 0);
       };
       let typing = false;
       slider.oninput = () => {
@@ -18660,7 +18683,7 @@ var DialTool = class _DialTool {
         if (row.tip) label.dataset.tip = row.tip;
       } else wrap.append(lead, slider, numbox());
       out.refresh = (T) => {
-        const v = T[row.key] ?? (row.or ? row.or(T) : 0);
+        const v = (row.get ? row.get(T) : T[row.key]) ?? (row.or ? row.or(T) : 0);
         if (out.link) {
           const on = Boolean(T[out.link.dataset.link]);
           out.link.classList.toggle("on", on);
@@ -19105,19 +19128,38 @@ var DialTool = class _DialTool {
   /** lines of swatches inside a holder: lines() → [{text, colours: [{id, title, read, write}]}]. Built again only
    *  when the list itself changes (a ring added, renamed, a sector more), so an open pop-out keeps its swatch. */
   swatch_lines(holder, lines) {
-    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id)]));
+    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id), Boolean(l.eye), (l.tail || []).map((t) => t.key)]));
+    const showing = list.some((l) => l.eye);
     if (holder.dataset.list !== signature) {
       holder.dataset.list = signature;
+      holder.extras = [];
       holder.replaceChildren(...list.map((line) => {
-        const group = el("span", { className: line.colours.length === 1 ? "single" : "swatches" });
+        const pills = showing ? 0 : line.colours.filter((c) => !c.square).length;
+        const group = el("span", { className: pills === 1 ? "single" : "swatches" });
         for (const c of line.colours) {
-          const swatch = line.colours.length === 1 ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          const swatch = pills === 1 && !c.square ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          if (c.square || showing) swatch.dataset.tip = c.title;
           swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
-        return el("div", { className: "row" }, el("label", { textContent: line.text }), group);
+        const name = el("label", { textContent: line.text });
+        if (!showing) return el("div", { className: "row" }, name, group);
+        const eye_place = line.eye ? el("button", { type: "button", className: "eye", title: line.eye.title, ariaLabel: line.eye.title, onclick: () => line.eye.write(!line.eye.read()) }) : el("i");
+        if (line.eye) holder.extras.push({ refresh: () => {
+          const on = Boolean(line.eye.read());
+          eye_place.innerHTML = eye(on);
+          eye_place.setAttribute("aria-pressed", String(on));
+        } });
+        const places = { toggle: el("span", { className: "place" }), number: el("span", { className: "place" }) };
+        for (const t of line.tail || []) {
+          const made = t.make();
+          places[t.place].append(made.el);
+          holder.extras.push(made);
+        }
+        return el("div", { className: "row showline" }, eye_place, name, group, places.toggle, places.number);
       }));
     }
+    for (const x2 of holder.extras || []) x2.refresh(this.S);
     const all = list.flatMap((l) => l.colours);
     [...holder.querySelectorAll("button.colour, button.swatch")].forEach((swatch, k) => {
       const c = all[k].read();
@@ -19137,22 +19179,57 @@ var DialTool = class _DialTool {
       }) });
       S.rings.forEach((ring, i2) => {
         const text = ring.name || kind_of(ring), sectors = kind_of(ring) === "band" && positions_of(ring).length > 1;
-        lines.push({ text, colours: sectors ? this.sector_colours(i2) : one(`ring-${i2}`, text, () => (this.S.rings[i2] || {}).c, (v) => {
+        const line = { text, colours: sectors ? this.sector_colours(i2) : one(`ring-${i2}`, text, () => (this.S.rings[i2] || {}).c, (v) => {
           this.S.rings[i2].c = v;
           this.changed();
-        }, true) });
+        }, true) };
+        if (S.ui_show) {
+          line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i2] || {}).on, write: (on) => this.show_ring(i2, on) };
+          line.tail = [{ key: "ink", place: "number", make: () => this.line_number(num2("ink_d", "Ink height", 0, 10, 1, {
+            whole: true,
+            block: true,
+            id: `ring-${i2}-ink`,
+            get: () => {
+              const R = this.S.rings[i2];
+              return R ? clamp(this.S.w_ink + (R.ink_d || 0), 0, 10) : 0;
+            },
+            // the height it stands at: All inks and its own step
+            put: (app, v) => {
+              const R = this.S.rings[i2];
+              if (!R) return;
+              R.ink_d = clamp(v, 0, 10) - this.S.w_ink;
+              this.changed();
+            }
+          })) }];
+        }
+        lines.push(line);
       });
-      HANDS.forEach((h, k) => {
-        const text = ["Hour hand", "Minute hand", "Seconds hand"][k];
-        lines.push({ text, colours: one("hand-" + h, text, () => this.S["ha_" + h].c, (v) => {
-          this.S["ha_" + h].c = v;
-          this.changed();
-        }) });
-      });
-      lines.push({ text: "Cap", colours: one("cap", "Cap", () => this.S.c_cap, (v) => {
+      const cap = one("cap", "Cap", () => this.S.c_cap, (v) => {
         this.S.c_cap = v;
         this.changed();
-      }) });
+      });
+      HANDS.forEach((h, k) => {
+        const text = ["Hour hand", "Minute hand", "Seconds hand"][k], line = { text, colours: one("hand-" + h, text, () => this.S["ha_" + h].c, (v) => {
+          this.S["ha_" + h].c = v;
+          this.changed();
+        }) };
+        if (S.ui_show) {
+          line.eye = { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => {
+            this.S["ha_" + h].on = on;
+            this.changed();
+          } };
+          if (cap_shows(S) && k === top_hand(S)) line.colours = [...line.colours, { ...cap[0], square: true }];
+          line.tail = [
+            { key: "bevel", place: "toggle", make: () => this.line_toggle(`hand-${h}-bevel`, "Bevel", () => this.S["ha_" + h].bevel, (on) => {
+              this.S["ha_" + h].bevel = on;
+              this.changed();
+            }) },
+            { key: "height", place: "number", make: () => this.line_number(num2("sh_" + h, "Height", 0, 3, 0.05, { scope: "global", block: true, id: `hand-${h}-height` })) }
+          ];
+        }
+        lines.push(line);
+      });
+      if (!S.ui_show || !cap_shows(S) || top_hand(S) < 0) lines.push({ text: "Cap", colours: cap });
       windows_of(S).forEach((w, k) => {
         if (!w.on) return;
         lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => windows_of(this.S)[k].ink, (v) => {
@@ -19166,6 +19243,18 @@ var DialTool = class _DialTool {
       });
       return lines;
     });
+  }
+  /** a number box alone, for a line of show mode's Colours (#521): the row's own box and − +, its name the line's */
+  line_number(row) {
+    const r = this.build_row(row), box3 = r.el.querySelector(".numbox");
+    box3.querySelector("input").ariaLabel = row.text;
+    return { el: box3, refresh: (S) => r.refresh(S) };
+  }
+  /** a toggle alone, for a line of show mode's Colours (#521): as Shenanigans' (#525), named in a tag */
+  line_toggle(id, text, read, write) {
+    const toggle = el("button", { type: "button", id, className: "toggle", role: "switch", ariaLabel: text, onclick: () => write(!read()) }, el("span", { className: "knob" }));
+    toggle.dataset.tip = text;
+    return { el: toggle, refresh: () => toggle.setAttribute("aria-checked", String(Boolean(read()))) };
   }
   /** Rings → Sector colours (a band with more than one sector): a swatch per sector, and all back to the ring's colour. */
   row_sectors(wrap, out) {
@@ -19858,7 +19947,7 @@ var DialTool = class _DialTool {
     let press = null;
     const now = () => {
       const T = this.target(row.scope);
-      return T[row.key] ?? (row.or ? row.or(T) : 0);
+      return (row.get ? row.get(T) : T[row.key]) ?? (row.or ? row.or(T) : 0);
     };
     label.onclick = (e) => e.preventDefault();
     label.onpointerdown = (e) => {

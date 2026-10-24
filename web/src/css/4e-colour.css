@@ -14,6 +14,19 @@
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
   .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
   .swatches .swatch { width: var(--control); height: var(--control); border-radius: var(--round-small); }
+  /* show mode's Colours (#521): a line is eye · name · colour · toggle · number, in the same columns on every line;
+     an empty place keeps its column. The cap's square stands after its hand's pill */
+  .colourlist > .row.showline { grid-template-columns: var(--eye) minmax(0, 1fr) calc(2 * var(--pill) + var(--chip-gap)) var(--toggle-w) var(--side-num); column-gap: var(--u2); }      /* the colour's place holds two squares: a hand's and its cap's */
+  .colourlist > .row.showline > .eye { margin-right: calc(var(--gap) - var(--u2)); }      /* the eye keeps the panel's gap before the names; the rest stand closer */
+  .colourlist > .row.showline > :first-child { grid-column: auto; }
+  .colourlist > .row.showline > :is(.single, .swatches) { grid-column: auto; display: flex; align-items: center; gap: var(--chip-gap); padding: 0; }
+  .colourlist > .row.showline .swatch { width: var(--pill); height: var(--pill); border-radius: var(--round-small); }
+  .colourlist > .row.showline > .eye { display: grid; place-items: center start; color: var(--grey); }
+  .colourlist > .row.showline > .eye[aria-pressed="true"], .colourlist > .row.showline > .eye:hover { color: var(--ink); }
+  .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .colourlist > .row.showline > .place { display: flex; justify-content: end; }
+  .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
+  .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }
 
   /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Near black, round corners. Inside it the usual colour names are set to their night values, so

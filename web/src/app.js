@@ -965,8 +965,8 @@ ROWS["Show dial"] = [
   hdr("Colours", { summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026); not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
   hdr("Ink", { folded: false }),
-  num("w_ink", "Ink height", 0, 10, 1, { whole: true }),
-  info("How far the printed ink stands proud of the plate; 0 is flat ink.", {}),
+  num("w_ink", "All inks at once", 0, 10, 1, { whole: true }),      // every ring's ink together; each ring's own box in Colours keeps its step from it (#521)
+  info("How far the printed ink stands proud of the plate, every ring together; a ring's own box in Colours sets it higher or lower. 0 is flat ink.", {}),
 ];
 ROWS.Watch = [
   hdr("Watch"),
@@ -2998,7 +2998,7 @@ class DialTool {
       const unit_step = () => (length && per() !== 1 ? round_step(row.step * per()) : row.step);
       const stepped = (v, n) => { if (!length || per() === 1) return v + n * row.step; const u = unit_step(); return Math.round((v * per() + n * u) / u) * u / per(); };
       const shown = (v) => (row.trim ? String(parseFloat((v * per()).toFixed(places()))) : (v * per()).toFixed(places())) + (row.suffix || "");      // trim: no trailing zeros, so −142.5° fits a small box (Positions)      // suffix: a degree sign in the field (Positions, #357); parse_number reads past it
-      const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
+      const now = () => { const T = this.target(row.scope); return (row.get ? row.get(T) : T[row.key]) ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
       let typing = false;                          // the field follows every change, except while you type in it
       slider.oninput = () => { if (row.inpop || row.scope === "nudge") this.guides_live(row.scope !== "nudge"); commit(+slider.value); };
       field.oninput = () => { typing = true; };
@@ -3061,7 +3061,7 @@ class DialTool {
         if (row.tip) label.dataset.tip = row.tip;      // what it does, in a tag over the name (#357: "Offset and skip need tooltip details")
       } else wrap.append(lead, slider, numbox());
       out.refresh = (T) => {
-        const v = T[row.key] ?? (row.or ? row.or(T) : 0);
+        const v = (row.get ? row.get(T) : T[row.key]) ?? (row.or ? row.or(T) : 0);
         if (out.link) { const on = Boolean(T[out.link.dataset.link]); out.link.classList.toggle("on", on); out.link.textContent = on ? (row.inpop ? "LINK\n+ED" : "LINKED") : "LINK"; out.link.setAttribute("aria-pressed", String(on)); out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height"; }      // in the controller's disc, linked: two lines (4.86, Okay: "LINK / +ED")
         if (row.top) { const top = Math.max(row.top(this.S), v); if (+slider.max !== top) slider.max = top; }      // top: the slider's end follows the dial (a numeral's Size runs to the dial's diameter, #535)
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
@@ -3410,20 +3410,34 @@ class DialTool {
   /** lines of swatches inside a holder: lines() → [{text, colours: [{id, title, read, write}]}]. Built again only
    *  when the list itself changes (a ring added, renamed, a sector more), so an open pop-out keeps its swatch. */
   swatch_lines(holder, lines) {
-    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id)]));
+    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id), Boolean(l.eye), (l.tail || []).map((t) => t.key)]));
+    const showing = list.some((l) => l.eye);      // show mode: each line eye · name · colour · its own extras (#521)
     if (holder.dataset.list !== signature) {
       holder.dataset.list = signature;
+      holder.extras = [];
       holder.replaceChildren(...list.map((line) => {
-        const group = el("span", { className: line.colours.length === 1 ? "single" : "swatches" });
+        const pills = showing ? 0 : line.colours.filter((c) => !c.square).length;      // show mode: every colour a square, so the names keep their room beside the line's eye, toggle and number
+        const group = el("span", { className: pills === 1 ? "single" : "swatches" });
         for (const c of line.colours) {
-          // one colour: a pill with its hex, like a colour row. Many (a band's sectors): squares.
-          const swatch = line.colours.length === 1 ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          // one colour: a pill with its hex, like a colour row. Many (a band's sectors), or one beside a pill (the cap
+          // on its hand's line): squares.
+          const swatch = pills === 1 && !c.square ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          if (c.square || showing) swatch.dataset.tip = c.title;
           swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
-        return el("div", { className: "row" }, el("label", { textContent: line.text }), group);
+        const name = el("label", { textContent: line.text });
+        if (!showing) return el("div", { className: "row" }, name, group);
+        // show mode's line: the eye (or its empty place), the name, the colour(s), then a toggle's place and a number's
+        // place, so every line's parts stand in the same columns
+        const eye_place = line.eye ? el("button", { type: "button", className: "eye", title: line.eye.title, ariaLabel: line.eye.title, onclick: () => line.eye.write(!line.eye.read()) }) : el("i");      // an <i>: an empty first span would be hidden (4c-rows)
+        if (line.eye) holder.extras.push({ refresh: () => { const on = Boolean(line.eye.read()); eye_place.innerHTML = eye(on); eye_place.setAttribute("aria-pressed", String(on)); } });
+        const places = { toggle: el("span", { className: "place" }), number: el("span", { className: "place" }) };
+        for (const t of line.tail || []) { const made = t.make(); places[t.place].append(made.el); holder.extras.push(made); }
+        return el("div", { className: "row showline" }, eye_place, name, group, places.toggle, places.number);
       }));
     }
+    for (const x of holder.extras || []) x.refresh(this.S);
     const all = list.flatMap((l) => l.colours);
     [...holder.querySelectorAll("button.colour, button.swatch")].forEach((swatch, k) => {
       const c = all[k].read();
@@ -3440,10 +3454,29 @@ class DialTool {
       if (S.ui_show) lines.push({ text: "Dial", colours: one("plate", "Dial", () => this.S.c_plate, (v) => { this.S.c_plate = v; this.changed(); }) });      // show mode only: the plate's colour heads the list, and each window's disc follows it (Okay, 23 Oct 2026: "Disk behind each window and plate color")
       S.rings.forEach((ring, i) => {
         const text = ring.name || G.kind_of(ring), sectors = G.kind_of(ring) === "band" && G.positions_of(ring).length > 1;
-        lines.push({ text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => { this.S.rings[i].c = v; this.changed(); }, true) });
+        const line = { text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => { this.S.rings[i].c = v; this.changed(); }, true) };
+        if (S.ui_show) {      // show mode (#521; Okay, 24 Oct 2026: "Yes, as drawn"): its eye, and its own ink height in a quiet number box
+          line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i] || {}).on, write: (on) => this.show_ring(i, on) };
+          line.tail = [{ key: "ink", place: "number", make: () => this.line_number(num("ink_d", "Ink height", 0, 10, 1, { whole: true, block: true, id: `ring-${i}-ink`,
+            get: () => { const R = this.S.rings[i]; return R ? clamp(this.S.w_ink + (R.ink_d || 0), 0, 10) : 0; },      // the height it stands at: All inks and its own step
+            put: (app, v) => { const R = this.S.rings[i]; if (!R) return; R.ink_d = clamp(v, 0, 10) - this.S.w_ink; this.changed(); } })) }];
+        }
+        lines.push(line);
       });
-      G.HANDS.forEach((h, k) => { const text = ["Hour hand", "Minute hand", "Seconds hand"][k]; lines.push({ text, colours: one("hand-" + h, text, () => this.S["ha_" + h].c, (v) => { this.S["ha_" + h].c = v; this.changed(); }) }); });
-      lines.push({ text: "Cap", colours: one("cap", "Cap", () => this.S.c_cap, (v) => { this.S.c_cap = v; this.changed(); }) });
+      const cap = one("cap", "Cap", () => this.S.c_cap, (v) => { this.S.c_cap = v; this.changed(); });
+      G.HANDS.forEach((h, k) => {
+        const text = ["Hour hand", "Minute hand", "Seconds hand"][k], line = { text, colours: one("hand-" + h, text, () => this.S["ha_" + h].c, (v) => { this.S["ha_" + h].c = v; this.changed(); }) };
+        if (S.ui_show) {      // show mode: its eye, its colour (the cap's as a square on the hand it sits on), its bevel, its height (#521)
+          line.eye = { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => { this.S["ha_" + h].on = on; this.changed(); } };
+          if (G.cap_shows(S) && k === G.top_hand(S)) line.colours = [...line.colours, { ...cap[0], square: true }];
+          line.tail = [
+            { key: "bevel", place: "toggle", make: () => this.line_toggle(`hand-${h}-bevel`, "Bevel", () => this.S["ha_" + h].bevel, (on) => { this.S["ha_" + h].bevel = on; this.changed(); }) },
+            { key: "height", place: "number", make: () => this.line_number(num("sh_" + h, "Height", 0, 3, 0.05, { scope: "global", block: true, id: `hand-${h}-height` })) },
+          ];
+        }
+        lines.push(line);
+      });
+      if (!S.ui_show || !G.cap_shows(S) || G.top_hand(S) < 0) lines.push({ text: "Cap", colours: cap });      // in show mode the cap is a square on its hand's line (Okay: "A swatch on its hand's line")
       G.windows_of(S).forEach((w, k) => {
         if (!w.on) return;
         lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => G.windows_of(this.S)[k].ink, (v) => { G.windows_of(this.S)[k].ink = v; this.changed(); }) });
@@ -3451,6 +3484,20 @@ class DialTool {
       });
       return lines;
     });
+  }
+
+  /** a number box alone, for a line of show mode's Colours (#521): the row's own box and − +, its name the line's */
+  line_number(row) {
+    const r = this.build_row(row), box = r.el.querySelector(".numbox");
+    box.querySelector("input").ariaLabel = row.text;
+    return { el: box, refresh: (S) => r.refresh(S) };
+  }
+
+  /** a toggle alone, for a line of show mode's Colours (#521): as Shenanigans' (#525), named in a tag */
+  line_toggle(id, text, read, write) {
+    const toggle = el("button", { type: "button", id, className: "toggle", role: "switch", ariaLabel: text, onclick: () => write(!read()) }, el("span", { className: "knob" }));
+    toggle.dataset.tip = text;
+    return { el: toggle, refresh: () => toggle.setAttribute("aria-checked", String(Boolean(read()))) };
   }
 
   /** Rings → Sector colours (a band with more than one sector): a swatch per sector, and all back to the ring's colour. */
@@ -4001,7 +4048,7 @@ class DialTool {
     label.classList.add("popname");
     label.title = `${row.text} — press for its slider, drag sideways to change it`;
     let press = null;
-    const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };
+    const now = () => { const T = this.target(row.scope); return (row.get ? row.get(T) : T[row.key]) ?? (row.or ? row.or(T) : 0); };
     label.onclick = (e) => e.preventDefault();
     label.onpointerdown = (e) => {
       if (e.pointerType === "touch" || e.pointerType === "pen") {      // a finger: the controller at once, tapped or slid (22:35), and the slide goes on in it (4.85)

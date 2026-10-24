@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.92.14";
+export const VERSION = "beta 4.92.15";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -86,6 +86,7 @@ export const RING_BASE = {
   anchor: 0,                                       // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
   from: 0,                                         // ticks, markers, bands: what the radius measures to, a place in FROM — the mark's or band's outer end, its middle, or its inner end (Okay's notes, p. 9, #257: "resize from"). Starting at outer, every link draws as before (R31)
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
+  ink_d: 0,                                        // show mode: how much higher (+) or lower (−) this ring's printed ink stands than All inks (w_ink), in its steps (#521); the file and the session, not the link (R7)
 };
 export const TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
 
@@ -519,6 +520,7 @@ export const LINK_KEYS = [
   "jump", "da_jump",        // 4.90 (#401): appended; off to start, the disc sweeps as before
   "day_form", "da_day_form",      // 4.92.3 (#515): appended; short to start, as every older link
   "own_names", "da_own_names", "ampm_form", "da_ampm_form",      // 4.92.11 (#515, #516): appended; none and the disc to start, as every older link
+  "ink_d",                  // 4.92.15 (#521): appended for the table's sake; lean() leaves it out of a link (R7)
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -616,7 +618,7 @@ export function lean(S) {
   const out = {};
   for (const k in S) {
     if (k.startsWith("ui_") || k === "version" || NOT_IN_LINK(k) || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
-    if (k === "rings") out.rings = S.rings.map((r) => differing(r, RING_BASE));
+    if (k === "rings") out.rings = S.rings.map((r) => { const d = differing(r, RING_BASE); delete d.ink_d; return d; });      // a ring's own ink height is show mode's: not in the link (R7)
     else if (k === "windows") out.windows = S.windows.map((w) => differing(w, WINDOW_BASE));
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
     else out[k] = S[k];

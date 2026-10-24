@@ -41,7 +41,7 @@ export function options(S, items, effects) {
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
     items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark") && HANDS.includes(x.name) ? x.name : null;
-      return { role: x.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? S.w_ink : 0 }; }),
+      return { role: x.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? Math.max(0, Math.min(10, S.w_ink + ((x.role === "ring" && x.ring?.ring?.ink_d) || 0))) : 0 }; }),
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,

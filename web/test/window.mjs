@@ -2279,6 +2279,19 @@ await shot("10-bar");
     return { first: lines[0], disc: lines.some((l) => /^Window \d disc$/.test(l)), plate: Boolean(r("#colour-plate")?.checkVisibility()), disc_pill: Boolean(r("#colour-disc-0")) }; });
   check(plates.first === "Dial" && plates.plate && plates.disc && plates.disc_pill,
     `show mode's colours start with the Dial's (the plate) and give each window's disc a line (${plates.first}; disc ${plates.disc}) (Okay, 23 Oct 2026: "Disk behind each window and plate color")`);
+  { // #521: each ring's line eye · name · colour · its own ink; each hand's eye · colour (the cap's square on its line) · bevel · height
+    const lines = await page.evaluate(() => { const t = window.dial_tool, r = (q) => document.querySelector(q), rows = [...document.querySelectorAll("#app .colourlist .row.showline")].filter((l) => l.checkVisibility());
+      const was = [t.S.w_ink, t.S.rings[0].ink_d], field = r("#ring-0-ink");
+      field.value = String(t.S.w_ink + 2); field.dispatchEvent(new Event("change")); const step = t.S.rings[0].ink_d;
+      const lefts = [...document.querySelectorAll("#app .colourlist .row.showline .numbox")].map((b) => Math.round(b.getBoundingClientRect().left));
+      const eyes = rows.filter((l) => l.querySelector(":scope > .eye")).length;
+      const hand = r("#hand-hour-bevel"), before = t.S.ha_hour.bevel; hand.click(); const flipped = t.S.ha_hour.bevel !== before; hand.click();
+      t.S.rings[0].ink_d = was[1]; t.changed();
+      return { n: rows.length, eyes, ink: Boolean(field), step, lefts: new Set(lefts).size, height: Boolean(r("#hand-hour-height")), flipped, cap_line: rows.some((l) => l.querySelector("label").textContent === "Cap"), cap_square: Boolean(r(".row.showline .swatch#colour-cap")) }; });
+    await shot("12b-show-colours");
+    check(lines.eyes >= 4 && lines.ink && lines.step === 2 && lines.lefts === 1 && lines.height && lines.flipped && (lines.cap_square ? !lines.cap_line : true),
+      `show mode's Colours (#521; Okay, 24 Oct 2026: "Yes, as drawn"): ${lines.eyes} lines with an eye; a ring's own ink box sets its step from All inks (+2 → ${lines.step}); every number box in one column (${lines.lefts}); a hand's Bevel toggle and Height; the cap a square on its hand's line (${lines.cap_square})`);
+  }
   const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length, n.isConnected]; });
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "t", t.S.t - 600); t.set_value("global", "bezel", 1); t.set_value("global", "strap", 2); t.frame(); });
   const diver = await page.evaluate(() => [window.dial_tool.S.bezel, document.querySelectorAll("g.watch path").length]);
@@ -2299,9 +2312,10 @@ await shot("10-bar");
     const press = (name) => rows.find((r) => r.querySelector("label").textContent === name).querySelector(".toggle").click();
     K.forEach((k) => t.set_value("global", k, true)); press("All"); const off = K.map((k) => t.S[k]).join(" "), dark = rows.every((r) => r.classList.contains("off")); press("All"); const on = K.map((k) => t.S[k]).join(" "); press("Blurs"); const blur = t.S.sh_blur;
     K.forEach((k, i) => t.set_value("global", k, was[i]));
-    return { names: rows.map((r) => r.querySelector("label").textContent).join(" · "), pills: rows.every((r) => r.querySelector(".toggle") && !/On|Off/.test(r.textContent)), lines: rows.slice(0, 5).every((r) => getComputedStyle(r).boxShadow === "none") && getComputedStyle(rows[5]).borderLeftStyle === "solid", off, on, blur, dark }; });
-  check(shen.names === "Shadows · Blurs · Flare · Bevels · Gradients · All" && shen.pills && shen.lines && shen.dark && shen.off === "false false false false false" && shen.on === "true true true true true" && shen.blur === false,
-    `Shenanigans (#525; Okay, 24 Oct 2026, 19:04: "On off does not need to be written down. A dot travels"): ${shen.names}, each a toggle with no words, All behind a white line; off, the names go dark; All turns the five off (${shen.off}) and on (${shen.on})`);
+    return { names: rows.map((r) => r.querySelector("label").textContent).join(" · "), pills: rows.every((r) => r.querySelector(".toggle") && !/On|Off/.test(r.textContent)), lines: rows.slice(0, 5).every((r) => getComputedStyle(r).boxShadow === "none") && getComputedStyle(rows[5]).borderLeftStyle === "none", spots: rows.map((r) => { const b = r.getBoundingClientRect(); return `${Math.round(b.left)},${Math.round(b.top)}`; }), off, on, blur, dark }; });
+  const at = (n) => shen.spots[n].split(",").map(Number), two = new Set(shen.spots.map((p) => p.split(",")[1])).size === 2 && at(4)[1] === at(0)[1] && at(5)[1] === at(2)[1] && at(5)[0] === at(4)[0];
+  check(shen.names === "Shadows · Blurs · Flare · Bevels · Gradients · All" && shen.pills && shen.lines && two && shen.dark && shen.off === "false false false false false" && shen.on === "true true true true true" && shen.blur === false,
+    `Shenanigans (#525; Okay, 24 Oct 2026, 19:04: "On off does not need to be written down. A dot travels"): ${shen.names}, each a toggle with no words, on two lines — Shadows · Blurs · Gradients, Flare · Bevels · All — no bar (19:57: "Remove vertical white bar"); off, the names go dark; All turns the five off (${shen.off}) and on (${shen.on})`);
   const nato = await page.evaluate(async () => { const t = window.dial_tool, was = [t.S.strap, t.S.w_nato, t.S.c_nato], w = (ms) => new Promise((r) => setTimeout(r, ms));
     document.querySelector('button[data-tab="Watch"]').click(); await w(100); t.set_value("global", "strap", 3); t.set_value("global", "w_nato", 0); await w(100);
     const seen = () => [...document.querySelectorAll(".panel .row.col")].filter((r) => r.offsetParent).map((r) => r.querySelector("label").textContent).filter((n) => /Stripe|^Colour$/.test(n)).join(" ");
