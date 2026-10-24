@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.22 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.23 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -655,9 +655,9 @@
   /* the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider */
   .tab::after { --in-l: max(calc(var(--cut-l) + 0.414 * var(--hair)), var(--hair)); --in-r: max(calc(var(--cut-r) + 0.414 * var(--hair)), var(--hair));
     background: var(--tab-fill); clip-path: polygon(var(--in-l) var(--hair), calc(100% - var(--in-r)) var(--hair), calc(100% - var(--hair)) var(--in-r), calc(100% - var(--hair)) 100%, var(--hair) 100%, var(--hair) var(--in-l)); }
-  :is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab) { --cut-l: 0px; }
+  :is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab, .sheettabs .segs > .tab:first-child) { --cut-l: 0px; }
   :is(.tabsbar .segs > .tab:last-child, .windowcards .card:last-child > .tab) { --cut-r: 0px; }
-  :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
+  :is(.tabsbar .segs > .tab, .windowcards .card, .sheettabs .segs > .tab) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
   /* a hanging tab (the font box's styles, #275): the same tab turned over, hanging from the line over it — its cuts at
      the bottom corners, no line of its own at the top (the line it hangs from is the box's). Neighbours share one line:
      every tab but the last leaves its right side open (--line-r: 0), so the next one's left line is the line between */
@@ -1256,7 +1256,12 @@
   /* the list scrolls, and says so: a slim scrollbar of two pills, a light one the whole height, a darker one for how much is under (Okay, 13 Oct 2026) */
   /* the list scrolls, and says so with a scrollbar the tool draws (an iPad shows its own only while it moves): two slim
      pills in the rows' right margin, a light one the whole height, a darker one for the share in view (Okay, 13 Oct 2026) */
+  .listbox { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }      /* the tabs standing on the list's top line, then the list */
   .listwrap { position: relative; display: grid; min-height: 0; }
+  /* the sheet's two tabs (R35): Dial Tool's fonts · Installed, as the hands' tabs, standing on the list's top line */
+  .sheettabs[hidden] { display: none; }
+  .sheettabs .segs { display: grid; grid-auto-flow: column; grid-auto-columns: max-content; }
+  .sheettabs .tab { height: var(--tab-high); padding: 0 var(--u4); font-weight: 600; }
   .fontlist { height: 100%; border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; scrollbar-width: none; }
   .fontlist::-webkit-scrollbar { display: none; }
   .rail { position: absolute; top: var(--unit); bottom: var(--unit); right: calc((var(--btn-pad) - var(--scrollbar)) / 2 + var(--hair)); width: var(--scrollbar); border-radius: var(--round-pill); background: var(--ground); cursor: pointer; touch-action: none; }
@@ -1340,6 +1345,7 @@
   .findtray { display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: var(--u1); padding: var(--u1); border: var(--hair) solid var(--rule); border-top: 0; background: var(--field); }
   .filterpill { height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u1); border: var(--hair) solid var(--rule); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
   .filterpill:hover { color: var(--ink); }
+  .findtray.away { visibility: hidden; }      /* on the Installed tab: fonts found by name, no filters (R35) */
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: var(--u4); }      /* straight under the list: its edge is the line between them */
   .picker .squares { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); }      /* on the list's three columns */
@@ -1347,8 +1353,6 @@
      sheet's foot. The legend's button is the last of them, at the right. */
   /* the ways to add a font share the first two columns equally (two: each a column; three: each a third of the two) */
   .picker .squares > .adds { grid-column: 1 / 3; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
-  .picker .squares .adds.three > .pickt small, .picker .squares .adds.three > .pickt br { display: none; }      /* three in the room of two: no second lines */
-  .picker .squares .adds.three > .pickt span { white-space: normal; }
   .picker .squares .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
   .picker .squares .pickt span { white-space: nowrap; text-align: left; }
   .picker .squares .pickt { overflow: hidden; }      /* a word longer than its box is cut at the box's edge (Okay, 15 Oct 2026, 07:12: "cutoff the text and leave it") */
@@ -1930,9 +1934,6 @@
        keep their second lines */
     .picker header > .findbox { width: auto; flex: 1; }      /* Fonts · the Light/Dark pill · Find share the line (#276) */
     .findtray { grid-template-columns: repeat(2, 1fr); }      /* the filters on three lines of two: three to a line don't fit a phone's field */
-    .picker .squares .adds > #local-fonts { display: none; }
-    .picker .squares .adds.three > .pickt :is(small, br) { display: revert; }
-    .picker .squares .adds.three > .pickt span { white-space: nowrap; }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen. Every sheet (fonts, colour, the Guides
        and Shadows lists) stands --sheet-edge in from the screen's sides and foot, not its top, its corners all round
        (Okay, 19 Oct 2026, 21:18: "This popup and others needs … padding from all sides except top on mobile"; 21:26: 7) */
@@ -7231,7 +7232,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.22";
+var VERSION = "beta 4.92.23";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15640,6 +15641,14 @@ var STICKER_LEGEND = [
 var FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 var FONT_FILTERS = [["sans", "Sans"], ["serif", "Serif"], ["variable", "Variable"], ["condensed", "Condensed"], ["mono", "Mono"], ["nonlatin", "Non-Latin"]];
 var font_is = (fonts2, kind) => fonts2.some((f2) => kind === "variable" ? Object.keys(f2.axes || {}).length > 0 : kind === "mono" ? (f2.kinds || []).includes("mono") || (f2.features || []).includes("tnum") : (f2.kinds || []).includes(kind));
+var FONT_SHEET_KEY = KEY("font-sheet");
+var font_sheet_read = () => {
+  try {
+    return JSON.parse(localStorage.getItem(FONT_SHEET_KEY) || "{}") || {};
+  } catch (e) {
+    return {};
+  }
+};
 var NAME_LEAST = 0.7;
 var AXIS_WORDS = { wdth: "wd", opsz: "opt", GRAD: "grad", XHGT: "xh", SOFT: "soft", MONO: "mono", CASL: "cas" };
 var kind_in = (...names) => (R) => names.includes(kind_of(R));
@@ -21126,23 +21135,36 @@ var DialTool = class _DialTool {
    *  this computer's — and the ways to add more. It lies over the panel, so the dial stays in view. */
   build_picker() {
     const find = el("input", { type: "search", id: "font-find", ariaLabel: "Find a font", title: "Find a font" });
-    find.oninput = () => this.fill_picker(true);
+    find.oninput = () => {
+      this.font_sheet_keep();
+      this.fill_picker(true);
+    };
     const field = el("span", { className: "find" }, find);
     field.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
-    this.font_filters = /* @__PURE__ */ new Set();
+    const kept = font_sheet_read();
+    this.font_filters = new Set(kept.filters || []);
+    this.font_tab = kept.tab === 1 && "queryLocalFonts" in window ? 1 : 0;
+    find.value = kept.q || "";
     const tray = el("span", { className: "findtray", role: "group", ariaLabel: "Show only" }, ...FONT_FILTERS.map(([kind, word]) => {
       const pill = el("button", { type: "button", className: "filterpill", id: "font-filter-" + kind, textContent: word });
-      pill.setAttribute("aria-pressed", "false");
+      pill.setAttribute("aria-pressed", String(this.font_filters.has(kind)));
       pill.onclick = () => {
         const on = !this.font_filters.has(kind);
         if (on) this.font_filters.add(kind);
         else this.font_filters.delete(kind);
         pill.setAttribute("aria-pressed", String(on));
+        this.font_sheet_keep();
         this.fill_picker(true);
       };
       return pill;
     }));
     const finder = el("span", { className: "findbox" }, field, tray);
+    this.font_tray = tray;
+    const sheet_tab = (i2, word) => {
+      const b = el("button", { type: "button", className: "tab", id: "font-tab-" + i2, textContent: word, role: "tab", onclick: () => this.font_tab_go(i2) });
+      return b;
+    };
+    this.font_tabs = el("div", { className: "sheettabs", hidden: !("queryLocalFonts" in window) }, el("span", { className: "segs", role: "tablist", ariaLabel: "Which fonts" }, sheet_tab(0, "Dial Tool\u2019s fonts"), sheet_tab(1, "Installed")));
     const list = el("div", { className: "fontlist", id: "font-list" });
     const rail = el("span", { className: "rail", ariaHidden: "true" }, el("i"));
     this.rail = rail;
@@ -21226,7 +21248,7 @@ var DialTool = class _DialTool {
       { className: "picker", id: "font-picker" },
       el("header", {}, el("h2", { textContent: "Fonts" }), ground, finder),
       // the search stands at the sheet's top right
-      el("div", { className: "listwrap" }, list, rail),
+      el("div", { className: "listbox" }, this.font_tabs, el("div", { className: "listwrap" }, list, rail)),
       el(
         "div",
         { className: "adding" },
@@ -21240,8 +21262,7 @@ var DialTool = class _DialTool {
           // the browser can read this computer's fonts (Chrome, Edge), then a link, then a file (Okay, 14 Oct 2026)
           el(
             "div",
-            { className: "adds" + ("queryLocalFonts" in window ? " three" : "") },
-            square("local-fonts", "Installed", "The fonts installed on this computer", TOOL_ICONS.screen, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }),
+            { className: "adds" },
             square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", SIGNS.plus, () => {
               if (paste.hidden) {
                 paste.hidden = false;
@@ -21278,8 +21299,25 @@ var DialTool = class _DialTool {
     });
     return this.picker;
   }
+  /** the sheet's tabs: 0 the tool's own fonts (and yours), 1 this computer's. */
+  async font_tab_go(i2) {
+    this.font_tab = i2;
+    this.font_sheet_keep();
+    this.fill_picker(true);
+    if (i2 === 1 && ![...this.catalog.values()].some((f2) => f2.group === "computer")) {
+      await this.local_fonts(true);
+      this.fill_picker(true);
+    }
+  }
+  /** the sheet keeps its tab, search and filters between openings, in this browser (R35; Okay, 24 Oct 2026: it opens on
+   *  the ring's font, "The ring's font", so where the list was scrolled is not kept). */
+  font_sheet_keep() {
+    try {
+      localStorage.setItem(FONT_SHEET_KEY, JSON.stringify({ tab: this.font_tab, q: $("#font-find").value, filters: [...this.font_filters] }));
+    } catch (e) {
+    }
+  }
   open_picker() {
-    $("#font-find").value = "";
     if (!this.picker.open) {
       this.picker.showModal();
       this.picker.focus();
@@ -21290,18 +21328,26 @@ var DialTool = class _DialTool {
   fill_picker(again = false) {
     const list = $("#font-list"), R = this.font_shown(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
     const regular = (fonts2) => fonts2.find((f2) => /^(regular|roman|book|normal)$/i.test(f2.style)) || fonts2[0];
-    const key = [...by.keys()].join("|") + "/" + q + "/" + [...this.font_filters].join(",") + "/" + font_list().length;
+    const key = [...by.keys()].join("|") + "/" + q + "/" + [...this.font_filters].join(",") + "/" + this.font_tab + "/" + font_list().length;
+    const installed = this.font_tab === 1;
+    this.font_tray.classList.toggle("away", installed);
+    this.font_tabs.querySelectorAll(".tab").forEach((b, i2) => {
+      b.classList.toggle("on", i2 === this.font_tab);
+      b.setAttribute("aria-selected", String(i2 === this.font_tab));
+    });
     if (again || list.dataset.shown !== key) {
       list.dataset.shown = key;
       list.replaceChildren();
       let group = null;
-      for (const [family, fonts2] of by) {
+      for (const [family, every] of by) {
         if (q && !family.toLowerCase().includes(q)) continue;
-        if (this.font_filters.size && ![...this.font_filters].some((kind) => font_is(fonts2, kind))) continue;
+        const fonts2 = every.filter((f3) => f3.group === "computer" === installed);
+        if (!fonts2.length) continue;
+        if (!installed && this.font_filters.size && ![...this.font_filters].some((kind) => font_is(fonts2, kind))) continue;
         const f2 = regular(fonts2);
         if (f2.group !== group) {
           group = f2.group;
-          const title = { added: "Added by you", computer: "On this computer" }[group];
+          const title = { added: "Added by you" }[group];
           if (title) list.append(el("div", { className: "group quiet", textContent: title }));
         }
         const named = this.sample(fonts2.find((x2) => x2.name) || f2, "name");
@@ -22124,7 +22170,7 @@ var DialTool = class _DialTool {
       for (const f2 of list) {
         if (!this.catalog.has(f2.postscriptName)) this.catalog.set(f2.postscriptName, { family: f2.family, style: f2.style, ps: f2.postscriptName, data: f2, group: "computer" });
       }
-      if (list.length) say(`${list.length} installed fonts are now listed under Family.`);
+      if (list.length) say(`${list.length} installed fonts, under Installed.`);
       else say("The browser gave no fonts: it isn\u2019t allowed to for this page. Click the icon at the left of the address bar \u2192 Site settings \u2192 Fonts \u2192 Allow, reload, and press Installed fonts again. Or use Add font file\u2026 (Helvetica Neue is /System/Library/Fonts/HelveticaNeue.ttc).");
       await this.load_fonts_in_use();
     } catch (e) {
