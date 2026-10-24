@@ -42,7 +42,7 @@ WHERE = {      # what each section fills
 def small_map(name):
     # Okay, 24 Oct 2026, 19:35: "too tiny. Apply a background and a dummy watch to increase reality, 3x size all"
     # the window at 1440 × 900 drawn on 160 × 100: the panel, the brown backdrop with a dial in it, the dark bar;
-    # the part the section is about outlined black · white · black with room round it; the panel under a tab a shade darker
+    # the part the section is about outlined white · red · black (black inside) with room round it; the panel under a tab a shade darker
     w, h = 160, 100
     X = lambda v: round(v * w / 100, 2)
     Y = lambda v: round(v * h / 100, 2)
@@ -57,7 +57,9 @@ def small_map(name):
         p = 2.5
         x, y, a, b = max(x - p, 1.5), max(y - p, 1.5), a + 2 * p, b + 2 * p
         a, b = min(a, w - 1.5 - x), min(b, h - 1.5 - y)
-        return f'<rect x="{x}" y="{y}" width="{a}" height="{b}" rx="4" class="on"/><rect x="{x}" y="{y}" width="{a}" height="{b}" rx="4" class="on2"/>'
+        # Okay, 20:39: "white red black. black inside": three rings a stroke apart, black innermost (1 unit ≈ 1.3 px at this size)
+        ring = lambda d, c: f'<rect x="{x - d:.2f}" y="{y - d:.2f}" width="{a + 2 * d:.2f}" height="{b + 2 * d:.2f}" rx="{4 + d:.2f}" class="{c}"/>'
+        return ring(0, "b1") + ring(1, "b2") + ring(2, "b3")
     parts = "".join(part(r_) for r_ in WHERE[name])
     return (f'<svg viewBox="0 0 {w} {h}" aria-hidden="true">'
             f'<rect width="{w}" height="{h}" class="backdrop"/>'

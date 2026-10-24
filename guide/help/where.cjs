@@ -1,7 +1,7 @@
 // where.cjs — the real screen behind each small map: the window at the first dial, the part the section is about boxed.
 //   cd web && node ../guide/help/where.cjs   → guide/help/img/where-<section>.png (webp.py makes them WebP)
 // Okay, 24 Oct 2026, 20:30: "Clicking thumbs open … big lightboxes with captions. Real screen goodly red boxed. Offset the
-// selected objects and center box equally." The box: black · red · black, 1 px each, the same room on every side of what it holds.
+// selected objects and center box equally." The box: black inside, red, white outside, the same room on every side of what it holds.
 const { chromium } = require("playwright");
 const path = require("path");
 const OUT = path.join(__dirname, "img");
@@ -45,7 +45,7 @@ const TAB = { dial: "Dial", rings: "Rings", hands: "Hands", date: "Date", export
         const room = Math.max(1, Math.min(ROOM, L - 6, T - 6, innerWidth - R - 6, innerHeight - B - 6));      // one room for all four sides: less only where the window's edge is nearer
         const b = document.createElement("div"); b.className = "help-box";
         Object.assign(b.style, { position: "fixed", zIndex: 99999, pointerEvents: "none", left: L - room + "px", top: T - room + "px", width: R - L + 2 * room + "px", height: B - T + 2 * room + "px",
-          border: "1.5px solid #111", borderRadius: "12px", boxShadow: "0 0 0 3px #d0341c, 0 0 0 4.5px #111" });      // black · red · black, the red the widest
+          border: "1.5px solid #111", borderRadius: "12px", boxShadow: "0 0 0 3.5px #d0341c, 0 0 0 5.5px #fff" });      // black inside, red, white outside (Okay, 20:39), the red the widest
         document.body.append(b);
       }
       requestAnimationFrame(() => requestAnimationFrame(done));
