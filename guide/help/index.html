@@ -95,6 +95,11 @@ h2:has(.map) + .lead + *{clear:both}
 .box figure{margin:0;max-width:min(1400px,100%);max-height:100%;display:flex;flex-direction:column}
 .box img{display:block;max-width:100%;max-height:calc(100vh - 110px);width:auto;height:auto;border:0;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
 .box figcaption{margin-top:12px;color:var(--ink);font-size:17px}.box figcaption b{font-weight:600}.box figcaption span{color:var(--mute)}
+table.two{width:100%;border-collapse:collapse;margin-top:10px;table-layout:fixed}
+table.two th,table.two td{text-align:left;vertical-align:top;padding:11px 12px 11px 0;border-bottom:1px solid var(--line)}
+table.two thead th{font-size:15px;color:var(--mute);font-weight:500;padding-top:0}
+table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{width:9em}
+@media (max-width:760px){table.two thead{display:none}table.two,table.two tbody,table.two tr,table.two th,table.two td{display:block;width:auto}table.two tbody th{padding-bottom:2px;border:0}table.two td{padding:2px 0 8px;border:0}table.two td:not([colspan])::before{display:block;font-size:14px;color:var(--mute)}table.two td:nth-of-type(1):not([colspan])::before{content:"Mouse"}table.two td:nth-of-type(2)::before{content:"Finger"}table.two tr{border-bottom:1px solid var(--line);padding:9px 0}}
 </style>
 </head>
 <body>
@@ -107,7 +112,7 @@ h2:has(.map) + .lead + *{clear:both}
   <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>Start</b><a href="#idea">The idea</a><a href="#screen">The screen</a><a href="#first">A first dial</a></div>
   <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>Tabs</b><a href="#dial">Dial</a><a href="#rings">Rings</a><a href="#hands">Hands</a><a href="#date">Windows</a><a href="#export">Export</a></div>
   <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>Around the preview</b><a href="#canvas">Corners and bar</a><a href="#show">Show mode</a></div>
-  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>More</b><a href="#keys">Keys and pointer</a><a href="#signs">Signs</a><a href="#how">How do I…</a><a href="#words">Words</a><a href="#report">Report a bug</a></div>
+  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>More</b><a href="#keys">Keys and pointer</a><a href="#touch">iPad and desktop</a><a href="#signs">Signs</a><a href="#how">How do I…</a><a href="#words">Words</a><a href="#report">Report a bug</a></div>
 </nav>
 <main>
 <header class="intro">
@@ -292,6 +297,23 @@ h2:has(.map) + .lead + *{clear:both}
   <dt>Typing a number</dt><dd><code>+0.5</code> adds, <code>x2</code> multiplies, <code>/2</code> divides; a length takes a unit: <code>12pt</code>, <code>0.5in</code>, <code>3cm</code>, <code>20lig</code>, <code>40thou</code>. A comma works as a point.</dd>
   <dt>Text ring Start</dt><dd>Snaps to a position when it comes within 2°.</dd>
 </dl>
+
+<h2 id="touch">iPad and desktop</h2>
+<p class="lead">The same tool under a finger and under a mouse; where they differ.</p>
+<table class="two">
+  <thead><tr><th></th><th>Mouse or trackpad</th><th>Finger</th></tr></thead>
+  <tbody>
+  <tr><th>A slider</th><td>Drag it. Hold it and move away from the track, up or down, to go finer, down to a twentieth.</td><td>A touch opens the controller over the row; keep sliding and the value follows.</td></tr>
+  <tr><th>A row's name</th><td>A press opens the controller; a drag sideways changes the value, <kbd>⇧</kbd> ten times finer.</td><td>Opens the controller.</td></tr>
+  <tr><th>The controller</th><td colspan="2">The same on both: the value over the knob, the slider, − and + with the name between. <kbd>Esc</kbd>, <kbd>Enter</kbd> or a press elsewhere closes it; it fades 1.2 s after you stop.</td></tr>
+  <tr><th>A number box</th><td>Type, or <kbd>↑</kbd> <kbd>↓</kbd>; − and + step.</td><td>Type with the keyboard that comes up; − and + step.</td></tr>
+  <tr><th>Move the dial</th><td>Drag, or right-drag.</td><td>Two fingers. One finger never moves it, so a tap stays a tap.</td></tr>
+  <tr><th>Zoom</th><td>Scroll, or pinch on a trackpad.</td><td>Pinch.</td></tr>
+  <tr><th>Labels on hover</th><td>A button's name shows under the pointer; a hand's part lights while its row is under the pointer.</td><td>None: names are on the buttons, or in this page.</td></tr>
+  <tr><th>Keys</th><td colspan="2">With a keyboard, on either: see <a href="#keys">Keys and pointer</a>.</td></tr>
+  <tr><th>Narrower than 860 px</th><td colspan="2">An iPad upright, a phone, a narrow window: the panel becomes a drawer to drag up and down, and zoom's − + are in a pop-up from the magnifier.</td></tr>
+  </tbody>
+</table>
 
 <h2 id="signs">Signs</h2>
 <p class="lead">Every picture the tool uses, by where it lives.</p>
