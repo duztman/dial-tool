@@ -35,7 +35,7 @@ const filled = (slider) => { const p = clamp((slider.value - slider.min) / ((sli
 
 const PNG_MOST = 16384;                            // a browser's canvas is at most this many pixels a side
 const PNG_SAFE = 4096 * 4096;                      // Safari on a phone or tablet draws nothing past this many pixels in all
-const GUIDE = "https://duztman.github.io/dial-tool/guide/";      // the guide (#230): "Help" beside the version, in its type, underlined (Okay, 15 Oct 2026, 12:50)
+const HELP = "https://duztman.github.io/dial-tool/help/";      // the help page (#536, #538; Okay, 24 Oct 2026, 21:52: "new help is in, link it there"): "Help" beside the version, in its type, underlined (Okay, 15 Oct 2026, 12:50); the guide is linked from the help page's top
 // Where this page keeps things in the browser. The released page (duztman.github.io/dial-tool/) and the /dev/ page
 // (#500) share one origin, so they would share one browser storage: the dev page's tries would land in the released
 // page's last session, saved dials, palette and kept fonts. One prefix keeps them apart, read from the page's own
@@ -1476,7 +1476,7 @@ class DialTool {
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${G.VERSION} · dev` : G.VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${G.VERSION} · dev` : G.VERSION }), el("a", { className: "quiet help", href: HELP, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.unit_box()),
       this.tabs, this.pinned, this.form, this.shenanigans_box());
     this.finger_anchor(panel);
 

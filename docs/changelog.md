@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.92.20 (web version) · 24 Oct 2026
+
+- **Help opens the help page** (#538; Okay, 21:52: "new help is in, link it there"): the Help link beside the version opens https://duztman.github.io/dial-tool/help/ in a new tab; the guide is linked from the help page's top.
+
 ## beta 4.92.19 (web version) · 24 Oct 2026
 
 - **A set of saved dials as one link** (#523; his answers in question mode: the Share pane · Compare · ask first · saved dials only): *Copy set link*, under Copy link in *Share dial as link*, shown with two saved dials or more (R16), copies every dial under Versions in one link (`#V5…`: the dials' names and link texts deflated together; three dials ≈ 780 characters). Opened elsewhere, the address goes short (#537) and the set stands in Compare, its pictures drawn there once their fonts are in; a note asks *Add to my Versions* · *Just look*, and says how many of the receiver's oldest an Add replaces. Nothing is kept until Add. A press on one of the set's dials edits it (the receiver's own saved dials stay unpickable in Compare). A set of an older scheme says so on the preview (R17).

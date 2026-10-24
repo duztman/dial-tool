@@ -2212,7 +2212,7 @@ await tab("Export");
   { // Help (#230; Okay, 15 Oct 2026, 12:50: "next to beta number same font but underlined"): the guide, in a new tab
     const h = await page.evaluate(() => { const a = [...document.querySelectorAll(".panel .title a")].find((e) => e.textContent === "Help"), v = document.querySelector(".panel .title .quiet"), sa = a && getComputedStyle(a), sv = getComputedStyle(v);
       return a && { href: a.href, blank: a.target === "_blank", after: v.nextElementSibling === a, same: sa.fontFamily === sv.fontFamily && sa.fontSize === sv.fontSize && sa.color === sv.color, under: sa.textDecorationLine.includes("underline") }; });
-    check(h && h.href === "https://duztman.github.io/dial-tool/guide/" && h.blank && h.after && h.same && h.under, `Help beside the version, in its type and colour, underlined, opens the guide in a new tab (${JSON.stringify(h)})`);
+    check(h && h.href === "https://duztman.github.io/dial-tool/help/" && h.blank && h.after && h.same && h.under, `Help beside the version, in its type and colour, underlined, opens the help page in a new tab (#538) (${JSON.stringify(h)})`);
   }
   { // the way to the Gallery from the panel's top line: right after Help, as far from it as Help is from the version, as high as the unit box, darker than it and lighter than Help (Okay, 16 Oct 2026, #285; centred between Help and the unit box from 15 Oct, 07:45); pressed, Export with the Gallery in view
     await tab("Dial");
