@@ -190,6 +190,7 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    --guide-add-top: 12px; --guide-add-bottom: 5px;      /* the Guides list's Add line: this much over it, this much under it (Okay, 24 Oct 2026, 23:21, his marks: "Top = 12px", "Bottom = 5px") */
     /* the bar's date popup, as measured from Okay's final drawing (20 Oct 2026, 01:05: "all else is pixel perfect. gaps, placements within blocks, block sizes") */
     --datepop-ground: #BFBFBF;                     /* its light ground */
     --datepop-pad: 8px; --datepop-lead: 10px;      /* inside its frame round the boxes · before the weekday */

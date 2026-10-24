@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.27 (web version) · 25 Oct 2026
+
+- **The Guides list's spacing, Okay's marks of 23:21** ("Lines need spacing, close repeating lines need more space"): the white line two units off the last row's rule; the last added line has no rule of its own where it meets the foot; Added's minus a square; the Add line 12 px under the foot's top and 5 px over Thickness ("Top = 12px", "Bottom = 5px", specials); Add and Thickness share one grid, Line · Crosshair · Circle three equal boxes from the Thickness box's left edge to the right edge, the Thickness box from there to the rule, 1 · 2 · 3 spread in it.
+- Checked: links, labels, complications, the window test; the list on a screenshot.
+
 ## beta 4.92.26 (web version) · 25 Oct 2026
 
 - **The Guides list, as drawn — round two** (#527; Okay, 23:07: "pills chevrons you misinterpreted"; his companion picture with the menus open): a guide's line is its name, its colour dot and a **chevron**; the chevron (or the dot) opens a small rounded box under the line, None and seven colours in two lines of four, the chosen one ringed in its own colour — black is left out ("Drop the black"; still in the list, R9). None hides a guide: its dot an empty ring, its name grey. No tick.
