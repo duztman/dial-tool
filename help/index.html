@@ -8,9 +8,9 @@
 <title>Dial Tool · Help</title>
 <meta name="description" content="Every pane and control of Dial Tool, in one sentence each.">
 <style>
-@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2?v=92030bf) format("woff2")}
-@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2?v=92030bf) format("woff2")}
-@font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2?v=92030bf) format("woff2")}
+@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2?v=e9423d7) format("woff2")}
+@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2?v=e9423d7) format("woff2")}
+@font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2?v=e9423d7) format("woff2")}
 :root{--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
 *{box-sizing:border-box}html{scroll-padding-top:96px}
 .topbar{position:sticky;top:0;z-index:2;background:var(--paper);border-bottom:1px solid var(--line)}
@@ -20,7 +20,7 @@
 .page{display:flex;align-items:baseline;line-height:1;justify-content:space-between;gap:16px}
 .page .title{font-size:26px;font-weight:600;letter-spacing:-.01em}
 .page .ver{font-size:15px;color:var(--mute)}
-body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.4 Inter,ui-sans-serif,system-ui,sans-serif}
+body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.321 Inter,ui-sans-serif,system-ui,sans-serif}
 .wrap{max-width:1200px;margin:0 auto;padding:28px var(--gut) 80px;display:grid;grid-template-columns:190px 1fr;gap:48px}
 nav{position:sticky;top:104px;align-self:start;font-size:15px;line-height:1.9}
 nav a{display:block;color:var(--mute);text-decoration:none}nav a:hover{color:var(--ink)}
@@ -28,13 +28,13 @@ nav b{display:block;margin:14px 0 2px;color:var(--ink);font-weight:600}
 .intro p{margin:0;color:var(--mute);max-width:60ch}
 h2{display:flex;align-items:flex-end;gap:10px;margin:56px 0 4px;font-size:26px;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--ink)}
 h3{margin:28px 0 6px;font-size:19px;font-weight:600}
-p.lead{margin:8px 0 0;color:var(--mute);max-width:64ch}
+p.lead{margin:12px 0 4px;color:var(--mute);max-width:64ch}
 dl{display:grid;grid-template-columns:minmax(160px,260px) 1fr;margin:0;border-top:1px solid var(--line)}
-dt,dd{margin:0;padding:7px 0;border-bottom:1px solid var(--line)}
+dt,dd{margin:0;padding:9px 0;border-bottom:1px solid var(--line)}
 dt{font-weight:500;padding-right:16px}dd{color:var(--ink)}
 .watch{margin:10px 0 0 24px;font-size:17px;color:var(--mute);max-width:60ch}
 .watch::before{content:"Watch · ";color:var(--ink);font-weight:600}
-ol,ul{padding-left:20px;max-width:66ch}li{margin:3px 0}
+ol,ul{padding-left:20px;max-width:66ch}li{margin:7px 0}
 a{color:inherit}
 code{font:17px ui-monospace,Menlo,monospace}
 footer{margin-top:64px;font-size:14px;color:var(--mute)}
@@ -93,7 +93,7 @@ dt .ic{margin-right:8px}h2 .ic svg{width:1.3em;height:1.3em}
 
 <h2 id="screen">The screen<span class="map" data-map="screen" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></h2>
 <figure class="shot">
-  <img src="img/screen.webp?v=92030bf" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
+  <img src="img/screen.webp?v=e9423d7" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
   <i style="left:23.5%;top:2.4%">1</i><i style="left:30.5%;top:9.5%">2</i><i style="left:80%;top:20%">3</i><i style="left:47.5%;top:3.1%">4</i>
   <i style="left:89.5%;top:3.1%">5</i><i style="left:41.5%;top:86%">6</i><i style="left:95%;top:89%">7</i><i style="left:33.5%;top:96.5%">8</i>
 </figure>
@@ -173,7 +173,7 @@ dt .ic{margin-right:8px}h2 .ic svg{width:1.3em;height:1.3em}
   <dt>Shape rows</dt><dd>Round ends, Tip length, Head width, Circle Ø, Widest at %, Barrel from %, Circle at %, Hub Ø: those the shape uses; Counterweight Ø and Hollow wall for every shape.</dd>
   <dt>Disc hand</dt><dd>Disc Ø; Marker as Hole or Mark, its length and width, Mark ink; Inside the disc.</dd>
   <dt>Cap</dt><dd>Cap Ø, the disc over the pivot; Cap on this hand when there is no seconds hand.</dd>
-  <dt>Shape</dt><dd>Baton, pencil, sword, dauphine, leaf, arrow, syringe, breguet, lollipop, disc; the dashed tile, a shape of your own, is not built yet.<img src="img/hands.webp?v=92030bf" width="392" height="83" alt="The ten hand shapes as the Hands tab shows them, baton chosen, and the dashed tile."></dd>
+  <dt>Shape</dt><dd>Baton, pencil, sword, dauphine, leaf, arrow, syringe, breguet, lollipop, disc; the dashed tile, a shape of your own, is not built yet.<img src="img/hands.webp?v=e9423d7" width="392" height="83" alt="The ten hand shapes as the Hands tab shows them, baton chosen, and the dashed tile."></dd>
 </dl>
 
 <h2 id="date"><i class="ic" data-ic="windows"><svg viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><rect x="19" y="14" width="8" height="6.5" rx="1.5" fill="currentColor" stroke="none"></rect></g></svg></i>Windows<span class="map" data-map="date" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" rx="1.5" class="soft"/><rect x="30.18" y="4.8" width="9.15" height="9.6" rx="1.5" class="on"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></h2>
@@ -181,7 +181,7 @@ dt .ic{margin-right:8px}h2 .ic svg{width:1.3em;height:1.3em}
 <h3>Window</h3>
 <dl>
   <dt>Window at</dt><dd>3 · 6 · 9 · 12 on the heading line, or ··· for any place or time, such as 2:15.</dd>
-  <dt>Complication</dt><dd>Date, day, am · pm, moon; Big date for two discs, the tens and the units.<img src="img/windows.webp?v=92030bf" width="300" height="300" alt="A dial with four windows: the date at 12, the moon at 3, the day at 6, am · pm at 9."></dd>
+  <dt>Complication</dt><dd>Date, day, am · pm, moon; Big date for two discs, the tens and the units.<img src="img/windows.webp?v=e9423d7" width="300" height="300" alt="A dial with four windows: the date at 12, the moon at 3, the day at 6, am · pm at 9."></dd>
   <dt>Moon</dt><dd>Picture: Arch, Phase or Line; Moon age, days, when it doesn't follow the date (0 new, 14.8 full).</dd>
 </dl>
 <h3>Shape</h3>
