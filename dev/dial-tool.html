@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.16 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.17 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7217,7 +7217,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.16";
+var VERSION = "beta 4.92.17";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15634,6 +15634,7 @@ var numerals_only = kind_in("numerals");
 var with_text = kind_in("numerals", "text");
 var nudgeable = kind_in("ticks", "markers", "numerals", "text");
 var W = { scope: "window" };
+var SVG_LATER = "Your own picture, from an SVG file, comes after v1.";
 var win_on = (T) => T.on;
 var win_is = (...kinds) => (T) => T.on && kinds.includes(WINDOW_KINDS[T.kind]);
 var shape_is = (...shapes) => (T) => T.on && shapes.includes(window_shape(T));
@@ -15887,6 +15888,8 @@ var ROWS = {
     // its picture (4.73, #346; the disc sketches B: "All are good"): Arch as before · Phase, the moon lit as it is, in
     // the disc's colour, its dark side in the shade's, the sky in the picture's · Line, its outline and dark side in one ink
     seg("look", "Picture", PICTURES["moon phase"], { ...W, id: "window-look-moon", show: win_is("moon phase") }),
+    info(SVG_LATER, { ...W, show: win_is("moon phase") }),
+    // a place made ready for an SVG (#530)
     num2("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     info("0 new moon \xB7 14.8 full.", { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     // the hole: its shape (buttons on the heading's line, #265), where and how big, its colours (one line, #266), what
@@ -15939,6 +15942,8 @@ var ROWS = {
     // an am · pm window (#516; Okay, 24 Oct 2026: "Am/pm gets two sub options, one is this disc, other is a typed out am pm
     // default jump mechanism, allows custom text, opens up inputs like the week"): its disc, or its two words, jumping
     seg("ampm_form", "Shows", ["Disc", "Words"], { ...W, show: win_is("am \xB7 pm") }),
+    info(SVG_LATER, { ...W, show: win_is("am \xB7 pm") }),
+    // a place made ready for an SVG (#530)
     custom("own_names", { ...W, text: "Words", nest: true, count: 2, hint: () => ["AM", "PM"], show: (T) => win_is("am \xB7 pm")(T) && T.ampm_form === 1 }),
     // MON or MONDAY (#515; Okay, 24 Oct 2026: "Days of the week option to be written in full"); Custom comes third (R9)
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
@@ -19525,14 +19530,13 @@ var DialTool = class _DialTool {
     wrap.classList.add("resetblank");
     wrap.append(go, el("span", { className: "quiet", textContent: "White plate and hands, nothing else." }));
   }
-  /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
+  /** the plate's background: a place made ready for an SVG, with a note and no button (#530, #218; Okay, 24 Oct 2026:
+   *  "Svg imports postponed to consideration after v01. However make their places ready and display a message … in
+   *  relevant places"). A button that only says "not built" is a dead end (R17). */
   row_background(wrap) {
-    const note2 = el("span", { className: "quiet", hidden: true, textContent: "Not built yet." });
     wrap.append(
       el("label", { textContent: "Background" }),
-      el("span", { className: "tools" }, el("button", { type: "button", className: "btn", id: "background-add", textContent: "Add image\u2026", onclick: () => {
-        note2.hidden = false;
-      } }), note2)
+      el("span", { className: "tools" }, el("span", { className: "quiet", id: "background-note", textContent: SVG_LATER }))
     );
   }
   /** the ring list: order = stacking order, top ring first. Its tools are on the pane's heading line (head_ring_tools). */
@@ -22953,7 +22957,7 @@ var DialTool = class _DialTool {
     this.sync_undo();
     this.log(way < 0 ? `undone: ${step_name(HISTORY.now, HISTORY.future.at(-1))} \xB7 ${HISTORY.past.length} more` : `redone: ${step_name(HISTORY.past.at(-1), HISTORY.now)} \xB7 ${HISTORY.future.length} more`);
   }
-  /** shortly after the last change: keep the session, take a step for undo, and make the address bar say this dial.
+  /** shortly after the last change: keep the session, take a step for undo, and bring the link box up to date.
    *  Every frame asks; a change to the dial starts the wait again (one drag of a slider is one step), but frames that
    *  only move the time leave a waiting save alone and keep the session every 2 s — so while time plays, changes are
    *  kept and the address follows (#234: they waited for time to stop). */
@@ -22966,14 +22970,8 @@ var DialTool = class _DialTool {
       this.saving = null;
       if (this.closed) return;
       this.take_step();
-      try {
-        localStorage.setItem(LAST, JSON.stringify(this.S));
-      } catch (e) {
-      }
-      try {
-        history.replaceState(null, "", await this.show_link());
-      } catch (e) {
-      }
+      keep_and_shorten(this.S);
+      this.show_link();
     }, changed ? 400 : 2e3);
   }
   /** the whole dial as one address: open it anywhere and the dial is back. Fonts travel by name only. */
@@ -23001,7 +22999,7 @@ var DialTool = class _DialTool {
       }
     }
     if (copied) this.log(`link copied \xB7 ${link.length} characters`);
-    else this.log(`couldn\u2019t copy by itself; the link is in the address bar, and here:
+    else this.log(`couldn\u2019t copy by itself; the link is in the Link box, and here:
 ${link}`);
     if (button) {
       const word = button.querySelector("span");
@@ -23015,10 +23013,6 @@ ${link}`);
         this.link_box.select();
       }
     }
-    try {
-      history.replaceState(null, "", link);
-    } catch (e) {
-    }
   }
   log(message) {
     const stamp = (/* @__PURE__ */ new Date()).toTimeString().slice(0, 8);
@@ -23029,6 +23023,18 @@ ${link}`);
     console.log(message);
   }
 };
+function keep_and_shorten(S) {
+  try {
+    localStorage.setItem(LAST, JSON.stringify(S));
+  } catch (e) {
+    return;
+  }
+  if (!location.hash) return;
+  try {
+    history.replaceState(null, "", location.href.split("#")[0]);
+  } catch (e) {
+  }
+}
 var tool = null;
 async function open_window(pathkit2, harfbuzz, font_bytes) {
   start(pathkit2, harfbuzz);
@@ -23053,12 +23059,16 @@ async function open_window(pathkit2, harfbuzz, font_bytes) {
     tool.log(`${OLD_LINK_NOTE} (link scheme ${link.old}; this Dial Tool reads scheme ${LINK_SCHEME})`);
     tool.say(OLD_LINK_NOTE);
   };
-  if (linked) opened(linked);
+  if (linked) {
+    opened(linked);
+    keep_and_shorten(tool.S);
+  }
   window.addEventListener("hashchange", async () => {
     const next = await unpack(location.hash);
     if (!next) return;
     tool.reopen({ ...next.settings ?? structuredClone(OPENER), ui_section: tool.S.ui_section });
     opened(next);
+    keep_and_shorten(tool.S);
   });
   tool.sync_time();
   start_ink();
