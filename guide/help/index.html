@@ -6,31 +6,34 @@
 <title>Dial Tool · Help</title>
 <meta name="description" content="Every pane and control of Dial Tool, in one sentence each.">
 <style>
+@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2) format("woff2")}
 :root{--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#1b1a18;--ink:#ece9e2;--mute:#9a958b;--line:#3a3833}}
 *{box-sizing:border-box}html{scroll-padding-top:16px}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,sans-serif}
-.wrap{max-width:1080px;margin:0 auto;padding:32px var(--gut) 80px;display:grid;grid-template-columns:200px 1fr;gap:48px}
-nav{position:sticky;top:24px;align-self:start;font:12px/1.9 ui-monospace,Menlo,monospace}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.45 Inter,ui-sans-serif,system-ui,sans-serif}
+.wrap{max-width:1140px;margin:0 auto;padding:32px var(--gut) 80px;display:grid;grid-template-columns:190px 1fr;gap:48px}
+nav{position:sticky;top:24px;align-self:start;font-size:14px;line-height:1.9}
 nav a{display:block;color:var(--mute);text-decoration:none}nav a:hover{color:var(--ink)}
 nav b{display:block;margin:14px 0 2px;color:var(--ink);font-weight:600}
-header h1{margin:0;font-size:28px;font-weight:600;letter-spacing:-.01em}
+header h1{margin:0;font-size:32px;font-weight:600;letter-spacing:-.01em}
 header p{margin:6px 0 0;color:var(--mute);max-width:60ch}
-h2{margin:56px 0 4px;font-size:20px;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--ink)}
-h3{margin:28px 0 6px;font-size:15px;font-weight:600}
+h2{display:flex;align-items:center;gap:10px;margin:56px 0 4px;font-size:23px;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--ink)}
+h3{margin:28px 0 6px;font-size:17px;font-weight:600}
 p.lead{margin:8px 0 0;color:var(--mute);max-width:64ch}
-dl{display:grid;grid-template-columns:minmax(140px,220px) 1fr;margin:0;border-top:1px solid var(--line)}
+dl{display:grid;grid-template-columns:minmax(150px,240px) 1fr;margin:0;border-top:1px solid var(--line)}
 dt,dd{margin:0;padding:7px 0;border-bottom:1px solid var(--line)}
 dt{font-weight:500;padding-right:16px}dd{color:var(--ink)}
-.watch{margin:10px 0 0 24px;font-size:13px;color:var(--mute);max-width:60ch}
+.watch{margin:10px 0 0 24px;font-size:15px;color:var(--mute);max-width:60ch}
 .watch::before{content:"Watch · ";color:var(--ink);font-weight:600}
 ol,ul{padding-left:20px;max-width:66ch}li{margin:3px 0}
 a{color:inherit}
-code{font:13px ui-monospace,Menlo,monospace}
-footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
+code{font:15px ui-monospace,Menlo,monospace}
+footer{margin-top:64px;font-size:13px;color:var(--mute)}
 @media (max-width:760px){.shot i{width:15px;height:15px;font-size:9px;line-height:15px}.wrap{grid-template-columns:1fr;gap:16px}nav{position:static;display:flex;flex-wrap:wrap;gap:4px 14px}nav b{width:100%;margin:6px 0 0}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}}
 form.report{display:grid;gap:12px;max-width:560px;margin-top:12px}
-form.report label{display:grid;gap:4px;font-size:13px;color:var(--mute)}
+form.report label{display:grid;gap:4px;font-size:15px;color:var(--mute)}
 form.report label b{color:var(--ink);font-weight:500}
 form.report input,form.report textarea{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%}
 form.report textarea{min-height:88px;resize:vertical}
@@ -38,14 +41,20 @@ form.report input:focus,form.report textarea:focus{outline:none;border-color:var
 form.report .gotcha{position:absolute;left:-9999px}
 form.report button{justify-self:start;font:inherit;font-weight:500;color:var(--paper);background:var(--ink);border:0;border-radius:6px;padding:8px 18px;cursor:pointer}
 form.report button:disabled{opacity:.4;cursor:default}
-kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;font:12px/1.5 ui-monospace,Menlo,monospace;text-align:center;color:var(--ink);background:color-mix(in srgb,var(--paper) 80%,var(--ink) 4%)}
+kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;font:500 14px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;text-align:center;color:var(--ink);background:color-mix(in srgb,var(--paper) 80%,var(--ink) 4%)}
 figure{margin:16px 0 0}figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
-figcaption{margin-top:6px;font-size:12px;color:var(--mute)}
+figcaption{margin-top:6px;font-size:14px;color:var(--mute)}
 .shot{position:relative}
-.shot i{position:absolute;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--paper);font:600 11px/20px ui-monospace,Menlo,monospace;text-align:center;font-style:normal;box-shadow:0 0 0 2px var(--paper)}
-.n{display:inline-block;width:18px;height:18px;margin-right:6px;border-radius:50%;background:var(--ink);color:var(--paper);font:600 10px/18px ui-monospace,Menlo,monospace;text-align:center;vertical-align:1px}
+.shot i{position:absolute;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--paper);font:600 12px/20px Inter,ui-sans-serif,system-ui,sans-serif;text-align:center;font-style:normal;box-shadow:0 0 0 2px var(--paper)}
+.n{display:inline-block;width:18px;height:18px;margin-right:6px;border-radius:50%;background:var(--ink);color:var(--paper);font:600 11px/18px Inter,ui-sans-serif,system-ui,sans-serif;text-align:center;vertical-align:2px}
 dd img{display:block;max-width:100%;height:auto;margin-top:8px}
-#report-note{font-size:13px;color:var(--mute);min-height:1.5em;margin:0}
+.ic{display:inline-flex;vertical-align:-.2em;margin-right:4px}.ic svg{width:1.15em;height:1.15em}
+dt .ic{margin-right:8px}h2 .ic svg{width:1.3em;height:1.3em}
+.ic svg .hub{fill:currentColor}
+.map{margin-left:auto;display:inline-flex}.map svg{width:64px;height:40px;overflow:visible}
+.map .frame{fill:none;stroke:var(--mute);stroke-width:1.2}.map .line{fill:none;stroke:var(--line);stroke-width:1}
+.map .on{fill:var(--ink)}.map .soft{fill:var(--ink);opacity:.18}
+#report-note{font-size:15px;color:var(--mute);min-height:1.5em;margin:0}
 </style>
 </head>
 <body>
@@ -62,7 +71,7 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
   <p>Every pane and control, one sentence each. For the illustrated walk-through and the maker sheet, see the <a href="../guide/" target="_blank" rel="noopener">guide</a>. Written for beta 4.92.</p>
 </header>
 
-<h2 id="idea">The idea</h2>
+<h2 id="idea">The idea<span class="map" data-map="idea" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="20.479999999999997" y="0.0" width="43.52" height="37.2" rx=".6" class="on"/></svg></span></h2>
 <ul>
   <li><b>A dial is layers.</b> Date disc, plate with its print, hands, cap: the print is rings drawn on the plate.</li>
   <li><b>The ring list is the stack.</b> The top ring wins where rings meet; a ring can give way to the rings above it.</li>
@@ -70,7 +79,7 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
   <li><b>Everything is true size in mm.</b> The page margin lies outside the dial. Your dial is saved in this browser only; keep it as a settings file or share it as a link.</li>
 </ul>
 
-<h2 id="screen">The screen</h2>
+<h2 id="screen">The screen<span class="map" data-map="screen" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/></svg></span></h2>
 <figure class="shot">
   <img src="img/screen.webp" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
   <i style="left:23.5%;top:2.4%">1</i><i style="left:30.5%;top:9.5%">2</i><i style="left:80%;top:20%">3</i><i style="left:47.5%;top:3.1%">4</i>
@@ -80,15 +89,15 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
   <dt><span class="n">1</span>Title line</dt><dd>Version, Help, the Gallery and the unit box: mm, pt, in, lignes, thou.</dd>
   <dt><span class="n">2</span>Tabs</dt><dd>Dial · Rings · Hands · Windows · Export. Each opens its panes; pinned panes stay in view while the rest scrolls.</dd>
   <dt><span class="n">3</span>Preview</dt><dd>The dial at true proportions. Scroll zooms, right-drag moves, two fingers pinch and move.</dd>
-  <dt><span class="n">4</span>Top left</dt><dd>Undo · redo, the list of steps under its chevron, and Versions: your saved dials.</dd>
-  <dt><span class="n">5</span>Top right</dt><dd>Guides, Case, X-ray: preview helpers, never in a file.</dd>
-  <dt><span class="n">6</span>Bottom left</dt><dd>Backdrop, the colour behind the dial; Shadows.</dd>
-  <dt><span class="n">7</span>Bottom right</dt><dd>The Tiny preview, the dial alone (eye) and show mode (iris).</dd>
+  <dt><span class="n">4</span>Top left</dt><dd><i class="ic" data-ic="undo"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.25 6.75H9.75A3.25 3.25 0 0 1 9.75 13.25H6.25M6.25 3.75L3.25 6.75L6.25 9.75" stroke-width="1.5625"></path></svg></i><i class="ic" data-ic="redo"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" stroke-width="1.5625"></path></svg></i> Undo · redo, <i class="ic" data-ic="history"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.25 6.25L8.25 10.25L12.25 6.25" stroke-width="1.5625"></path></svg></i> the list of steps, and <i class="ic" data-ic="versions"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.25" cy="8.25" r="5.5" stroke-width="1.625"></circle><path d="M8.25 8.25V5.25"></path><path d="M8.25 8.25L10.5 9.75" stroke-width="1.5625"></path></svg></i> Versions: your saved dials.</dd>
+  <dt><span class="n">5</span>Top right</dt><dd><i class="ic" data-ic="guides"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-guides-guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"></rect><circle cx="8.625" cy="3.157" r="0.45" fill="black" stroke="none"></circle><circle cx="8.625" cy="15.343" r="0.45" fill="black" stroke="none"></circle><circle cx="3.157" cy="8.625" r="0.45" fill="black" stroke="none"></circle><circle cx="15.343" cy="8.625" r="0.45" fill="black" stroke="none"></circle><circle cx="9.875" cy="3.157" r="0.45" fill="black" stroke="none"></circle><circle cx="9.875" cy="15.343" r="0.45" fill="black" stroke="none"></circle><circle cx="3.157" cy="9.875" r="0.45" fill="black" stroke="none"></circle><circle cx="15.343" cy="9.875" r="0.45" fill="black" stroke="none"></circle><circle cx="8.625" cy="4.415" r="0.45" fill="black" stroke="none"></circle><circle cx="8.625" cy="14.085" r="0.45" fill="black" stroke="none"></circle><circle cx="4.415" cy="8.625" r="0.45" fill="black" stroke="none"></circle><circle cx="14.085" cy="8.625" r="0.45" fill="black" stroke="none"></circle><circle cx="9.875" cy="4.415" r="0.45" fill="black" stroke="none"></circle><circle cx="9.875" cy="14.085" r="0.45" fill="black" stroke="none"></circle><circle cx="4.415" cy="9.875" r="0.45" fill="black" stroke="none"></circle><circle cx="14.085" cy="9.875" r="0.45" fill="black" stroke="none"></circle></mask><g stroke-width="1.25"><g mask="url(#h-guides-guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"></circle><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"></path></g><circle cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"></circle></g></svg></i> Guides, <i class="ic" data-ic="case"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-case-case-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"></rect><circle cx="6.875" cy="3.604" r="0.45" fill="black" stroke="none"></circle><circle cx="6.875" cy="14.896" r="0.45" fill="black" stroke="none"></circle><circle cx="11.625" cy="3.604" r="0.45" fill="black" stroke="none"></circle><circle cx="11.625" cy="14.896" r="0.45" fill="black" stroke="none"></circle><circle cx="5.625" cy="4.313" r="0.45" fill="black" stroke="none"></circle><circle cx="5.625" cy="14.187" r="0.45" fill="black" stroke="none"></circle><circle cx="12.875" cy="4.313" r="0.45" fill="black" stroke="none"></circle><circle cx="12.875" cy="14.187" r="0.45" fill="black" stroke="none"></circle><circle cx="6.875" cy="4.993" r="0.45" fill="black" stroke="none"></circle><circle cx="6.875" cy="13.507" r="0.45" fill="black" stroke="none"></circle><circle cx="11.625" cy="4.993" r="0.45" fill="black" stroke="none"></circle><circle cx="11.625" cy="13.507" r="0.45" fill="black" stroke="none"></circle><circle cx="5.625" cy="5.990" r="0.45" fill="black" stroke="none"></circle><circle cx="5.625" cy="12.510" r="0.45" fill="black" stroke="none"></circle><circle cx="12.875" cy="5.990" r="0.45" fill="black" stroke="none"></circle><circle cx="12.875" cy="12.510" r="0.45" fill="black" stroke="none"></circle></mask><g stroke-width="1.25"><g mask="url(#h-case-case-cut)"><circle cx="9.25" cy="9.25" r="5.5"></circle><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"></path></g><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"></path></g></svg></i> Case, <i class="ic" data-ic="xray"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.25"><circle cx="9.25" cy="9.25" r="6.5"></circle><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"></circle></g></svg></i> X-ray: preview helpers, never in a file.</dd>
+  <dt><span class="n">6</span>Bottom left</dt><dd>Backdrop, the colour behind the dial; <i class="ic" data-ic="shadows"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.25" cy="7.75" r="5.5" stroke-width="1.25"></circle><path d="M12 4C14 6 14 9.5 12 11.5C10 14 6.5 14 4.5 11.5C8 12 11.5 9.5 12 5.5C12 5 12 4.5 12 4Z" fill="currentColor" stroke="none"></path><ellipse cx="11.5" cy="14.75" rx="5" ry="1.5" fill="currentColor" stroke="none"></ellipse><path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"></path></svg></i> Shadows.</dd>
+  <dt><span class="n">7</span>Bottom right</dt><dd><i class="ic" data-ic="tiny"><svg viewBox="0 0 30 30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-tiny-iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#h-tiny-iris-cut)"></path></svg></i> The Tiny preview, <i class="ic" data-ic="eye"><svg viewBox="0 0 30 30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-eye-show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" stroke-width="1.625"></path><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#h-eye-show-cut)"></path></svg></i> the dial alone and <i class="ic" data-ic="iris"><svg viewBox="0 0 30 30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><radialGradient id="h-iris-rays-fade" gradientUnits="userSpaceOnUse" cx="15.25" cy="15" r="240"><stop offset="0.063" stop-color="white"></stop><stop offset="0.125" stop-color="#555"></stop><stop offset="1" stop-color="black"></stop></radialGradient><mask id="h-iris-eye-cut" maskUnits="userSpaceOnUse" x="-224.75" y="-225" width="480" height="480"><rect x="-224.75" y="-225" width="480" height="480" fill="url(#h-iris-rays-fade)" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><g mask="url(#h-iris-eye-cut)"><path class="rays" d="M15.25 15L15.25 -225.00M15.25 15L107.09 -206.73M15.25 15L184.96 -154.71M15.25 15L236.98 -76.84M15.25 15L255.25 15.00M15.25 15L236.98 106.84M15.25 15L184.96 184.71M15.25 15L107.09 236.73M15.25 15L15.25 255.00M15.25 15L-76.59 236.73M15.25 15L-154.46 184.71M15.25 15L-206.48 106.84M15.25 15L-224.75 15.00M15.25 15L-206.48 -76.84M15.25 15L-154.46 -154.71M15.25 15L-76.59 -206.73" stroke-width="0.75" stroke-linecap="butt"></path></g><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i> show mode.</dd>
   <dt><span class="n">8</span>Bottom bar</dt><dd>Time and speed, the date, the timeline, zoom and Fit.</dd>
 </dl>
 <p class="watch">On a phone the panel is a drawer: drag its grip to make it taller or shorter.</p>
 
-<h2 id="first">A first dial</h2>
+<h2 id="first">A first dial<span class="map" data-map="first" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="0.0" y="0.0" width="20.48" height="37.2" rx=".6" class="on"/></svg></span></h2>
 <ol>
   <li>Dial › Reset › Blank face.</li>
   <li>Dial: set the Diameter.</li>
@@ -98,7 +107,7 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
   <li>Export: a PDF or SVG at true size; for print, tick Mono print mask under Print.</li>
 </ol>
 
-<h2 id="dial">Dial</h2>
+<h2 id="dial"><i class="ic" data-ic="dial"><svg viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><circle class="hub" cx="17" cy="17" r="2" stroke-width="1.625"></circle></g></svg></i>Dial<span class="map" data-map="dial" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="0.0" y="5.76" width="20.48" height="31.44" rx=".6" class="soft"/><rect x="1.09" y="1.92" width="3.66" height="3.84" rx=".6" class="on"/></svg></span></h2>
 <p class="lead">The plate: its size, colour and what is on it.</p>
 <h3>Dial</h3>
 <dl>
@@ -116,7 +125,7 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
   <dt>Reset</dt><dd>Reset to the First dial, or Blank face: a white plate with hands and nothing else. Undo brings yours back.</dd>
 </dl>
 
-<h2 id="rings">Rings</h2>
+<h2 id="rings"><i class="ic" data-ic="rings"><svg viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><g stroke-width="1.625"><circle cx="17" cy="17" r="9.5"></circle><circle cx="17" cy="17" r="4.375"></circle></g></g></svg></i>Rings<span class="map" data-map="rings" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="0.0" y="5.76" width="20.48" height="31.44" rx=".6" class="soft"/><rect x="4.75" y="1.92" width="3.66" height="3.84" rx=".6" class="on"/></svg></span></h2>
 <p class="lead">The print. Five kinds: ticks, markers, numerals, band, text. The list's top row is the top layer.</p>
 <h3>Rings, top first</h3>
 <dl>
@@ -137,7 +146,7 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
 </dl>
 <p class="watch">Markers and numerals leave a window's position empty; other marks are cut back from the window's clear zone.</p>
 
-<h2 id="hands">Hands</h2>
+<h2 id="hands"><i class="ic" data-ic="hands"><svg viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><path d="M17.25 17.25V8.75M17.25 17.25L22.75 20.75"></path><circle cx="17.25" cy="17.25" r="1.5" fill="currentColor" stroke="none"></circle></g></svg></i>Hands<span class="map" data-map="hands" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="0.0" y="5.76" width="20.48" height="31.44" rx=".6" class="soft"/><rect x="8.41" y="1.92" width="3.66" height="3.84" rx=".6" class="on"/></svg></span></h2>
 <p class="lead">Hour · Minute · Seconds, as tabs; the panes below edit the chosen hand.</p>
 <dl>
   <dt>Show</dt><dd>Whether the hand is drawn.</dd>
@@ -147,7 +156,7 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
   <dt>Cap</dt><dd>The disc over the pivot: Cap Ø; Cap on this hand when there is no seconds hand.</dd>
 </dl>
 
-<h2 id="date">Windows</h2>
+<h2 id="date"><i class="ic" data-ic="windows"><svg viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><rect x="19" y="14" width="8" height="6.5" rx="1.5" fill="currentColor" stroke="none"></rect></g></svg></i>Windows<span class="map" data-map="date" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="0.0" y="5.76" width="20.48" height="31.44" rx=".6" class="soft"/><rect x="12.07" y="1.92" width="3.66" height="3.84" rx=".6" class="on"/></svg></span></h2>
 <p class="lead">Four windows, at 12 · 3 · 6 · 9, as cards. Tick a window's heading to show it.</p>
 <dl>
   <dt>Complication</dt><dd>Date, day, am · pm, moon phase; Big date for two discs.<img src="img/windows.webp" width="300" height="300" alt="A dial with four windows: the date at 12, the moon phase at 3, the day at 6, am · pm at 9."></dd>
@@ -158,7 +167,7 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
   <dt>Font</dt><dd>The window's own font.</dd>
 </dl>
 
-<h2 id="export">Export</h2>
+<h2 id="export"><i class="ic" data-ic="export"><svg viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><path d="M17.25 9.25V20.25M13.25 16.25L17.25 20.25L21.25 16.25M10.75 24.25H23.75"></path></g></svg></i>Export<span class="map" data-map="export" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="0.0" y="5.76" width="20.48" height="31.44" rx=".6" class="soft"/><rect x="15.73" y="1.92" width="3.66" height="3.84" rx=".6" class="on"/></svg></span></h2>
 <dl>
   <dt>Export a file</dt><dd>PDF, SVG and PNG at true size; dpi for PNG; a Wear OS watch face.</dd>
   <dt>Print</dt><dd>Mono print mask, Inverted, Cut lines, Outline and registration marks, Hidden rings still cut, What the windows show, Mirrored for toner transfer; ink films, a print sheet, a spec sheet.</dd>
@@ -170,18 +179,18 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
 </dl>
 <p class="watch">Mirror only for toner transfer. Never send a mirrored file to a pad or screen printer.</p>
 
-<h2 id="canvas">Corners and bar</h2>
+<h2 id="canvas">Corners and bar<span class="map" data-map="canvas" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="20.99" y="0.52" width="8.7" height="3" rx=".6" class="on"/><rect x="58.24" y="0.52" width="5.25" height="4.76" rx=".6" class="on"/><rect x="20.99" y="33.64" width="4.42" height="3.04" rx=".6" class="on"/><rect x="61" y="33.64" width="3" height="3.08" rx=".6" class="on"/><rect x="0.0" y="37" width="64.0" height="3" rx=".6" class="on"/></svg></span></h2>
 <dl>
-  <dt>Guides</dt><dd>Circles and lines for the chosen ring or window; the chevron picks which, and their colours.</dd>
-  <dt>Case</dt><dd>Dress, Field, Diver or Emre round the dial, as a flat silhouette, preview only; No case to start. Straps are in show mode.</dd>
-  <dt>X-ray</dt><dd>The windows' discs under the plate, preview only.</dd>
-  <dt>Shadows</dt><dd>Shadows from one sun; the chevron sets the light and how high each part stands.</dd>
+  <dt><i class="ic" data-ic="guides"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-guides-guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"></rect><circle cx="8.625" cy="3.157" r="0.45" fill="black" stroke="none"></circle><circle cx="8.625" cy="15.343" r="0.45" fill="black" stroke="none"></circle><circle cx="3.157" cy="8.625" r="0.45" fill="black" stroke="none"></circle><circle cx="15.343" cy="8.625" r="0.45" fill="black" stroke="none"></circle><circle cx="9.875" cy="3.157" r="0.45" fill="black" stroke="none"></circle><circle cx="9.875" cy="15.343" r="0.45" fill="black" stroke="none"></circle><circle cx="3.157" cy="9.875" r="0.45" fill="black" stroke="none"></circle><circle cx="15.343" cy="9.875" r="0.45" fill="black" stroke="none"></circle><circle cx="8.625" cy="4.415" r="0.45" fill="black" stroke="none"></circle><circle cx="8.625" cy="14.085" r="0.45" fill="black" stroke="none"></circle><circle cx="4.415" cy="8.625" r="0.45" fill="black" stroke="none"></circle><circle cx="14.085" cy="8.625" r="0.45" fill="black" stroke="none"></circle><circle cx="9.875" cy="4.415" r="0.45" fill="black" stroke="none"></circle><circle cx="9.875" cy="14.085" r="0.45" fill="black" stroke="none"></circle><circle cx="4.415" cy="9.875" r="0.45" fill="black" stroke="none"></circle><circle cx="14.085" cy="9.875" r="0.45" fill="black" stroke="none"></circle></mask><g stroke-width="1.25"><g mask="url(#h-guides-guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"></circle><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"></path></g><circle cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"></circle></g></svg></i>Guides</dt><dd>Circles and lines for the chosen ring or window; the chevron picks which, and their colours.</dd>
+  <dt><i class="ic" data-ic="case"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-case-case-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"></rect><circle cx="6.875" cy="3.604" r="0.45" fill="black" stroke="none"></circle><circle cx="6.875" cy="14.896" r="0.45" fill="black" stroke="none"></circle><circle cx="11.625" cy="3.604" r="0.45" fill="black" stroke="none"></circle><circle cx="11.625" cy="14.896" r="0.45" fill="black" stroke="none"></circle><circle cx="5.625" cy="4.313" r="0.45" fill="black" stroke="none"></circle><circle cx="5.625" cy="14.187" r="0.45" fill="black" stroke="none"></circle><circle cx="12.875" cy="4.313" r="0.45" fill="black" stroke="none"></circle><circle cx="12.875" cy="14.187" r="0.45" fill="black" stroke="none"></circle><circle cx="6.875" cy="4.993" r="0.45" fill="black" stroke="none"></circle><circle cx="6.875" cy="13.507" r="0.45" fill="black" stroke="none"></circle><circle cx="11.625" cy="4.993" r="0.45" fill="black" stroke="none"></circle><circle cx="11.625" cy="13.507" r="0.45" fill="black" stroke="none"></circle><circle cx="5.625" cy="5.990" r="0.45" fill="black" stroke="none"></circle><circle cx="5.625" cy="12.510" r="0.45" fill="black" stroke="none"></circle><circle cx="12.875" cy="5.990" r="0.45" fill="black" stroke="none"></circle><circle cx="12.875" cy="12.510" r="0.45" fill="black" stroke="none"></circle></mask><g stroke-width="1.25"><g mask="url(#h-case-case-cut)"><circle cx="9.25" cy="9.25" r="5.5"></circle><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"></path></g><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"></path></g></svg></i>Case</dt><dd>Dress, Field, Diver or Emre round the dial, as a flat silhouette, preview only; No case to start. Straps are in show mode.</dd>
+  <dt><i class="ic" data-ic="xray"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.25"><circle cx="9.25" cy="9.25" r="6.5"></circle><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"></circle></g></svg></i>X-ray</dt><dd>The windows' discs under the plate, preview only.</dd>
+  <dt><i class="ic" data-ic="shadows"><svg viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.25" cy="7.75" r="5.5" stroke-width="1.25"></circle><path d="M12 4C14 6 14 9.5 12 11.5C10 14 6.5 14 4.5 11.5C8 12 11.5 9.5 12 5.5C12 5 12 4.5 12 4Z" fill="currentColor" stroke="none"></path><ellipse cx="11.5" cy="14.75" rx="5" ry="1.5" fill="currentColor" stroke="none"></ellipse><path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"></path></svg></i>Shadows</dt><dd>Shadows from one sun; the chevron sets the light and how high each part stands.</dd>
   <dt>Backdrop</dt><dd>The colour behind the dial.</dd>
   <dt>Time</dt><dd>Play, the time, am · pm, the date, Now; the speed slider runs time from 0.1× to 720×.</dd>
-  <dt>Zoom</dt><dd>− · + · Fit; the lens explains scroll, right-drag and pinch.</dd>
+  <dt><i class="ic" data-ic="zoom"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.75" cy="6.75" r="5.5" stroke-width="1.625"></circle><path d="M10.75 10.75L14.25 14.25" stroke-width="1.5625"></path><path d="M6.75 6.25V9.75"></path><circle cx="6.75" cy="4.25" r="0.75" fill="currentColor" stroke="none"></circle></svg></i>Zoom</dt><dd>− · + · Fit; the lens explains scroll, right-drag and pinch.</dd>
 </dl>
 
-<h2 id="show">Show mode</h2>
+<h2 id="show"><i class="ic" data-ic="iris"><svg viewBox="0 0 30 30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><radialGradient id="h-iris-rays-fade" gradientUnits="userSpaceOnUse" cx="15.25" cy="15" r="240"><stop offset="0.063" stop-color="white"></stop><stop offset="0.125" stop-color="#555"></stop><stop offset="1" stop-color="black"></stop></radialGradient><mask id="h-iris-eye-cut" maskUnits="userSpaceOnUse" x="-224.75" y="-225" width="480" height="480"><rect x="-224.75" y="-225" width="480" height="480" fill="url(#h-iris-rays-fade)" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><g mask="url(#h-iris-eye-cut)"><path class="rays" d="M15.25 15L15.25 -225.00M15.25 15L107.09 -206.73M15.25 15L184.96 -154.71M15.25 15L236.98 -76.84M15.25 15L255.25 15.00M15.25 15L236.98 106.84M15.25 15L184.96 184.71M15.25 15L107.09 236.73M15.25 15L15.25 255.00M15.25 15L-76.59 236.73M15.25 15L-154.46 184.71M15.25 15L-206.48 106.84M15.25 15L-224.75 15.00M15.25 15L-206.48 -76.84M15.25 15L-154.46 -154.71M15.25 15L-76.59 -206.73" stroke-width="0.75" stroke-linecap="butt"></path></g><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i>Show mode<span class="map" data-map="show" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="61" y="35.32" width="3" height="3" rx=".6" class="on"/></svg></span></h2>
 <p class="lead">The iris turns the tool into a showcase: the whole watch, lit. Its tabs: Dial · Watch · Light · Export. Its Colours are your dial's; the round swatch on the title line puts the panel in greys.</p>
 <dl>
   <dt>Dial</dt><dd>The dial's colours and Ink height: how far printed ink stands proud of the plate.</dd>
@@ -208,7 +217,7 @@ dd img{display:block;max-width:100%;height:auto;margin-top:8px}
 <h2 id="how">How do I…</h2>
 <dl>
   <dt>start fresh</dt><dd>Dial › Reset › Blank face, or Reset to the First dial.</dd>
-  <dt>find my dial again</dt><dd>Versions, top left; or open your settings file or link.</dd>
+  <dt>find my dial again</dt><dd><i class="ic" data-ic="versions"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.25" cy="8.25" r="5.5" stroke-width="1.625"></circle><path d="M8.25 8.25V5.25"></path><path d="M8.25 8.25L10.5 9.75" stroke-width="1.5625"></path></svg></i> Versions, top left; or open your settings file or link.</dd>
   <dt>change every colour</dt><dd>Dial › Colours.</dd>
   <dt>lose the 3 beside a date window</dt><dd>It's already gone: markers and numerals leave a window's position empty.</dd>
   <dt>keep marks off a band</dt><dd>On the marks' ring, Give way to rings above.</dd>
