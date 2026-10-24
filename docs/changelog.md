@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.92.6 (web version) · 24 Oct 2026
+
+Okay's notes of 17:54, settled in question mode:
+- **The controller's top pill holds the name at the left and the value at the right**; − and + at the two ends of the foot, nothing between. The discs and the top pill are 70 % of before (35 px), the slider's pill stays 50 ("Keep slider big"); the signs redrawn at their new size (4.2 thick on 23.1, R33).
+- **Its corners are concentric** with the discs: their round plus the padding, 29.7 (37.1 before) — the law of his `controller 2.svg`.
+- **Its ground multiplies with what is under it, or screens on a dark ground** — dark as the canvas counts it (the test that turns the switches white) or show mode's column. Drawn as a twin under the box (`.numground`): a blend inside the box would blend with nothing, the box being a layer of its own. The 85 % opacity token is gone.
+- **Show mode's switch wears the rays, the dial alone the eye** ("switch activate showcase to rays and regular eye to regular preview"); the rays turn once as ACTIVATE SHOWCASE unfolds and once back as it folds (0.25 s, the words' own time). **Tags** on the three: Tiny Preview · Show mode · The dial alone.
+- Checked: the window test (the controller's two checks hold the new measures: 188 × 156, discs 35, corners 29.7, the ground's multiply), the icon check, the rays' turn measured (0 → 146° → 360° open, and back).
+
 ## beta 4.92.5 (web version) · 24 Oct 2026
 
 - **The controller is as wide as the row's controls** (#514; Okay, 24 Oct 2026: "as wide as two columns"; "On very wide coluns, controller takes over and spans exactly as wide as the slider below … slider overlapping slider"): everything right of the row's name, slider and number box — about 250 px in the panel (it was the drawing's 188), the whole slider in show mode's two-line rows, where it now lies exactly over the row's slider. Opened from a row it stands over that row, its slider on the row's; from a value button (outside a row) as before, where pressed. Never narrower than the drawing.

@@ -261,7 +261,11 @@
   .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }
   .iriskey { display: block; width: calc(var(--control-large) - 2 * var(--hair)); height: 100%; padding: 0; }
   .iriskey svg { display: block; margin: 0 auto; }
-  .irisbox .x { display: none; }
+  :is(.irisbox, .eyebox) .x { display: none; }      /* the eye's old way-out X: the dial alone wears the eye now (24 Oct 2026) */
+  /* the rays turn one whole turn while ACTIVATE SHOWCASE unfolds, and back as it folds (Okay, 24 Oct 2026: "One rotation of 360 deg. Of the rays around iris for the activate showcase button first label reveal"; "Label out and back") */
+  .irisbox .rays { transform-box: view-box; transform-origin: 15.25px 15px; transition: rotate var(--iris-time) var(--view-ease); }
+  .irisbox[aria-expanded="true"] .rays { rotate: 360deg; }
+  @media (prefers-reduced-motion: reduce) { .irisbox .rays { transition: none; } }
   .irisgo { max-width: 0; height: 100%; padding: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: var(--t-s); text-transform: uppercase; letter-spacing: var(--track-100);
     transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
   .irisbox[aria-expanded="true"] .irisgo { max-width: var(--iris-words); padding: 0 var(--u2) 0 var(--u4); }

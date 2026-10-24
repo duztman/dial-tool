@@ -125,8 +125,9 @@ const SIGNS = {
 // the sign 20 across, its line 3 — twice LINE, a pictured width (icons/check.mjs) — centred on whole points, so a 3
 // line covers whole screen dots
 const BIG = {                                      // the controller's − and + (Okay's second drawing, 18 Oct 2026, controller 2.svg): square ends, white on the discs; at the controller's three quarters, 6 thick and 30 long on 33, drawn at the size shown (R33)
-  plus: icon(`<path d="M16.5 1.5V31.5M1.5 16.5H31.5" ${sw(6)} stroke-linecap="butt"/>`, 33),
-  minus: icon(`<path d="M1.5 16.5H31.5" ${sw(6)} stroke-linecap="butt"/>`, 33),
+  // at 70 % of that since 24 Oct 2026 (Okay: "plus minus and number line 70% of now"): 4.2 thick, 21 long, on 23.1
+  plus: icon(`<path d="M11.55 1.05V22.05M1.05 11.55H22.05" ${sw(4.2)} stroke-linecap="butt"/>`, 23.1),
+  minus: icon(`<path d="M1.05 11.55H22.05" ${sw(4.2)} stroke-linecap="butt"/>`, 23.1),
 };
 // the − and + of every number box (4.64; Okay, 18 Oct 2026, 21:20: "Signs grow inside the box as much as these new thick
 // bordered ones"): 12 across on 16, LINE, round ends — half the box's cell.
@@ -405,7 +406,7 @@ const TOOL_ICONS = {
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
     const rays = Array.from({ length: n }, (_, k) => { const a = 2 * Math.PI * k / n; return `M${cx} ${cy}L${(cx + 25 * Math.sin(a)).toFixed(2)} ${(cy - 25 * Math.cos(a)).toFixed(2)}`; }).join("");
     return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
-      + `<path d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt" mask="url(#eye-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
+      + `<g mask="url(#eye-cut)"><path class="rays" d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt"/></g><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;      // the mask stays still while the rays turn (.rays, 6-preview.css)
   })(),
   // the show-mode switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
   // alone, where it stands in the eye. In show mode it is the way out: two of the eye's rays cross on it, an X run
@@ -2007,7 +2008,8 @@ class DialTool {
     // the eye switch (Okay, 15 Oct 2026, 02:42; at the preview's bottom right since 03:41, .eyes): on, the dial alone —
     // the panel slides away and the dial grows to fit (dial_alone(), 04:02). Not part of a dial
     const eye = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "The dial alone: the panel slides away", ariaLabel: "The dial alone" });
-    eye.innerHTML = icon(TOOL_ICONS.eyebox, 30);
+    eye.innerHTML = icon(TOOL_ICONS.show_eye, 30);      // the eye, lids and iris (Okay, 24 Oct 2026: "switch activate showcase to rays and regular eye to regular preview")
+    eye.dataset.tip = "The dial alone";
     eye.setAttribute("aria-pressed", "false");
     eye.onclick = () => { if (this.comparing) return this.compare(false); this.dial_alone(eye.getAttribute("aria-pressed") !== "true"); };      // in Compare (#435) the eye is the way back
     this.eye_button = eye;
@@ -2015,7 +2017,8 @@ class DialTool {
     // only those words take you there (Okay, 04:59: "we need affordance"); pressed again, it shuts. In the showcase
     // it is an X, the way out
     const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
-    iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);      // the eye (Okay, 19 Oct 2026: "showcase gets the eye")
+    iris.innerHTML = icon(TOOL_ICONS.eyebox, 30);      // the rays round the iris (Okay, 24 Oct 2026: "Eye with rays is … for activate showcase"); they turn once as its words unfold and fold
+    iris.dataset.tip = "Show mode";
     iris.setAttribute("aria-pressed", "false");
     iris.onclick = () => { if (this.S.ui_show) this.show_mode(false); else this.iris_open(this.iris_box.getAttribute("aria-expanded") !== "true"); };
     this.iris_go = el("button", { type: "button", className: "irisgo", id: "iris-go", textContent: "Activate showcase", onclick: () => this.show_mode(true) });
@@ -2095,7 +2098,7 @@ class DialTool {
    *  its margins round it on the backdrop — redrawn at most five times a second while the dial changes. */
   tiny_box() {
     const button = el("button", { type: "button", className: "onview tinyopen", id: "tiny-open", ariaLabel: "Tiny preview" });
-    button.dataset.tip = "Tiny preview: the dial at its own size";
+    button.dataset.tip = "Tiny Preview";      // its name, as the other two (Okay, 24 Oct 2026: "Their names")
     button.innerHTML = icon(TOOL_ICONS.iris, 30);      // the iris alone (Okay, 19 Oct 2026: "Tiny gets the dot, showcase gets the eye")
     const shut = el("button", { type: "button", className: "tinyshut", id: "tiny-shut", ariaLabel: "Put the tiny preview away" });
     shut.innerHTML = eye(true);
@@ -4028,9 +4031,8 @@ class DialTool {
     if (name) name.hidden = true;
     // its name, untouchable, in the gap between − and + (Okay, 24 Oct 2026, #514: "The gap between plus and minus becomes
     // a good place to just untouchably write the name of the thing being edited"); a linked pair's LINK disc stands there instead
-    const steps = r.el.querySelector(".steps");
-    if (steps && row.text && !r.el.querySelector(".linkpill")) steps.lastElementChild.before(el("span", { className: "popword", ariaHidden: "true", textContent: row.text }));
-    const head = el("div", { className: "pophead" }, ...(field ? [el("div", { className: "popvalue" }, field)] : []));
+    // its name in the top pill, at the left, the value at the right (Okay, 24 Oct 2026: "On top pill, left the name right the value")
+    const head = el("div", { className: "pophead" }, ...(field ? [el("div", { className: "popvalue" }, el("span", { className: "popword", ariaHidden: "true", textContent: row.text || "" }), field)] : []));
     head.hidden = !field;                          // a window's places: no value, so no pill
     const box = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
     // as wide as the row's controls — everything right of its name, the slider and the number box — so on a wide
@@ -4063,6 +4065,17 @@ class DialTool {
     }
     box.style.left = `${clamp(left, 4, innerWidth - w - 4)}px`;
     box.style.top = `${clamp(top, 4, innerHeight - h - 4)}px`;
+    // its ground: a twin just under it that multiplies with what is below on a light ground and screens on a dark one,
+    // so what is under it shows through as through tinted glass (Okay, 24 Oct 2026: "Can we make the box bg multiply with
+    // the bg at all times instead of opacity"; "Multiply / screen"). Dark is what the canvas calls dark (main.dark, the
+    // switches turn white) or show mode's column; the dial side's panel is light. A twin, not a layer inside the box: the
+    // box is a layer of its own, and a blend inside it would blend with nothing
+    const dark = button.closest(".panel") ? Boolean(this.S.ui_show) : this.main.classList.contains("dark");
+    const ground = el("div", { className: "numground" + (dark ? " screen" : "") });
+    for (const k of ["left", "top"]) ground.style[k] = box.style[k];
+    ground.style.width = `${box.offsetWidth}px`; ground.style.height = `${box.offsetHeight}px`;
+    box.before(ground);
+    this.value_pop.ground = ground;
     // after its last use it fades away: a press or a slide inside starts the clock again; a press held, or typing, holds it
     const later = () => { clearTimeout(this.value_pop?.timer); if (this.value_pop) this.value_pop.timer = setTimeout(() => this.value_pop_close(true), POP_LINGER_MS); };
     const hold = () => clearTimeout(this.value_pop?.timer);
@@ -4092,14 +4105,15 @@ class DialTool {
   /** fade: it goes in a short fade (its last use is over); otherwise at once (a press elsewhere, Escape, another opening) */
   value_pop_close(fade = false) {
     if (!this.value_pop) return;
-    const { button, box, timer } = this.value_pop;
+    const { button, box, timer, ground } = this.value_pop;
     clearTimeout(timer);
     if (this.value_pop.row?.scope === "hand" && (!matchMedia("(hover: hover)").matches || !button.closest(".row")?.matches(":hover"))) this.hand_light(null);      // its part stays lit only while a mouse still points at its row (a finger's :hover sticks after a tap: 4.79)
     this.value_pop = null;
     const field = box.querySelector('input[type="text"]');
     if (document.activeElement === field) field.blur();      // what was typed is taken before the field goes
-    if (fade && !matchMedia("(prefers-reduced-motion: reduce)").matches) { box.classList.add("fading"); setTimeout(() => box.remove(), POP_FADE_MS); }
-    else box.remove();
+    const gone = [box, ground].filter(Boolean);
+    if (fade && !matchMedia("(prefers-reduced-motion: reduce)").matches) { for (const g of gone) g.classList.add("fading"); setTimeout(() => gone.forEach((g) => g.remove()), POP_FADE_MS); }
+    else gone.forEach((g) => g.remove());
     button.setAttribute("aria-expanded", "false");
   }
 

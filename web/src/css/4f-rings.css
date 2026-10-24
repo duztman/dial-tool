@@ -133,11 +133,15 @@
      changing anyway". It stands where the finger is, the knob under it (value_pop_open), over everything; it comes at
      once and, after its last use, fades away (.fading). (4.49.2 to 4.51.1: a light head with the name over a hairline,
      the value riding over the knob, his first drawing of 17 Oct.) */
-  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: max(var(--num-pop), var(--num-pop-w, 0px)); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); background: color-mix(in srgb, var(--num-pop-ground) var(--num-pop-see), transparent); color: var(--ink); }
+  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: max(var(--num-pop), var(--num-pop-w, 0px)); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); color: var(--ink); }      /* its ground is its twin under it (.numground) */
+  .numground { position: fixed; z-index: 30; border-radius: var(--num-pop-round); background: var(--num-pop-ground); mix-blend-mode: multiply; pointer-events: none; }
+  .numground.screen { mix-blend-mode: screen; }
+  .numground.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   .numpop.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   /* the value: its figures centred in the grey pill, bold, in the square's grey */
-  .numpop .popvalue { display: grid; align-items: center; height: var(--num-pop-pill); border-radius: calc(var(--num-pop-pill) / 2); background: var(--num-pop-value); }
-  .numpop .popvalue input[type="text"] { width: 100%; height: auto; padding: 0; border: 0; background: none; font: 700 var(--t-num-pop)/1 var(--sans); letter-spacing: 0.02em; text-align: center; color: var(--num-pop-ground); }
+  .numpop .popvalue { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--num-pop-gap); height: var(--num-pop-small); padding: 0 calc(var(--num-pop-small) / 2); border-radius: calc(var(--num-pop-small) / 2); background: var(--num-pop-value); }
+  .numpop .popword { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--num-pop-ground); font: 400 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); user-select: none; }      /* the name, left in the top pill, the value's size, regular */
+  .numpop .popvalue input[type="text"] { width: 7ch; height: auto; padding: 0; border: 0; background: none; font: 700 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); letter-spacing: 0.02em; text-align: right; color: var(--num-pop-ground); }
   .numpop .popvalue input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .popvalue input[type="text"]::selection { background: var(--white); color: var(--num-pop-ground); }      /* chosen to be typed over: white behind the figures */
   .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0;
@@ -152,17 +156,16 @@
   .numpop .places > button.on { background: var(--black); color: var(--white); }
   .numpop .numbox { display: contents; }      /* the row's number box: its value went to the head, its − + are the discs */
   .numpop .row .steps { display: flex; justify-content: space-between; align-items: center; gap: var(--num-pop-gap); width: 100%; }
-  .numpop .popword { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; color: var(--white); font: 600 var(--t-l)/1 var(--sans); pointer-events: none; user-select: none; }      /* the name between − and +, not pressable (#514) */
   /* a pair's link (width and height, #358) between − and +, at the middle of their line (Okay, 19 Oct 2026: "Linking
      stuff get a lower middle button between minus and plus on controller"): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
   .numpop .row > input[type="range"] { grid-row: 1; }
   .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
-  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
+  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-small); height: var(--num-pop-small); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
   .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); }
   .numpop .row.haslink > .linkpill.on { background: var(--white); color: var(--num-pop-disc); }
-  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
+  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-small); height: var(--num-pop-small); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
-  .numpop .row .steps > .step > svg { width: var(--num-pop-sign); height: var(--num-pop-sign); }      /* the − and +, as the controller is scaled */
+  .numpop .row .steps > .step > svg { width: calc(var(--num-pop-sign) * var(--num-pop-s)); height: calc(var(--num-pop-sign) * var(--num-pop-s)); }      /* the − and +, as the controller is scaled */
   /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
   .detail.round { border: 0; }
