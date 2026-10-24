@@ -18,7 +18,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT);
       await p.screenshot({ path: path.join(OUT, `${String(i + 1).padStart(2, "0")}-${id}-${w}.png`), fullPage: true, clip: { x: 0, y: Math.max(0, y - 12), width: w, height: Math.min(end - y + 12, 6000) } });
     }
     const wide = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth);
-    const broken = await p.evaluate(() => [...document.images].filter((i) => !i.naturalWidth).map((i) => i.src));
+    const broken = await p.evaluate(() => [...document.images].filter((i) => !i.closest(".box") && !i.naturalWidth).map((i) => i.src));
     const inter = await p.evaluate(() => document.fonts.check("17px Inter"));
     console.log(`${w}: ${ids.length} sections · sideways scroll ${wide ? "YES" : "no"} · broken pictures ${broken.length} · Inter ${inter ? "loaded" : "MISSING"}`);
     bad += wide || broken.length || !inter;

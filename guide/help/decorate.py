@@ -15,7 +15,9 @@ def icon(name):
     # ids inside an icon (its masks, gradients) made its own, so two icons on the page never share one
     for old in set(re.findall(r'id="([^"]+)"', svg)):
         svg = svg.replace(f'id="{old}"', f'id="h-{name}-{old}"').replace(f"url(#{old})", f"url(#h-{name}-{old})")
-    svg = re.sub(r' width="[\d.]+" height="[\d.]+"', "", svg, count=1)      # the page sets its size
+    vb = re.search(r'viewBox="([-\d. ]+)"', svg)[1].split()
+    svg = re.sub(r' width="[\d.]+" height="[\d.]+"', "", svg, count=1)      # the page sets its height
+    svg = svg.replace("<svg ", f'<svg style="aspect-ratio:{vb[2]}/{vb[3]}" ', 1)      # and the width follows (Safari needs the ratio said)
     return svg
 
 # the window, in % of its width and height, as measured on the app at 1440 × 900 (shoot.cjs prints them)
@@ -55,7 +57,7 @@ def small_map(name):
         p = 2.5
         x, y, a, b = max(x - p, 1.5), max(y - p, 1.5), a + 2 * p, b + 2 * p
         a, b = min(a, w - 1.5 - x), min(b, h - 1.5 - y)
-        return f'<rect x="{x}" y="{y}" width="{a}" height="{b}" rx="2" class="on"/><rect x="{x}" y="{y}" width="{a}" height="{b}" rx="2" class="on2"/>'
+        return f'<rect x="{x}" y="{y}" width="{a}" height="{b}" rx="4" class="on"/><rect x="{x}" y="{y}" width="{a}" height="{b}" rx="4" class="on2"/>'
     parts = "".join(part(r_) for r_ in WHERE[name])
     return (f'<svg viewBox="0 0 {w} {h}" aria-hidden="true">'
             f'<rect width="{w}" height="{h}" class="backdrop"/>'
