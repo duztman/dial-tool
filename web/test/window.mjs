@@ -1429,6 +1429,15 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 43 -1
 }
 { const fam = [await page.$$eval('#font-picker .fontrow[data-group="list"]', (rows) => rows.length), await page.$$eval('#font-picker .fontrow[data-group="list"] .sample svg path', (p) => p.length), await page.$$eval('#font-picker .fontrow[data-group="list"]', (rows) => rows.filter((r) => r.querySelectorAll(".sample svg path").length !== 1).map((r) => r.dataset.family + ":" + r.querySelectorAll(".sample svg path").length).join(" "))];
   const n = new Set((await import("../src/font_list.js")).FONT_LIST.map((f) => f.family)).size;
+  { // the filters (R35; Okay, 24 Oct 2026: "A tray under the field", "Any of them"): six pills under the search field; each pressed adds its fonts
+    const rows = () => page.$$eval('#font-picker .fontrow[data-group="list"]', (r) => r.map((x) => x.dataset.family));
+    const all = (await rows()).length, tray = await page.evaluate(() => { const f = document.querySelector("#font-find").getBoundingClientRect(), t = document.querySelector(".findtray").getBoundingClientRect(); return [Math.abs(t.top - f.bottom) < 1.5, Math.abs(t.left - f.left) < 1 && Math.abs(t.right - f.right) < 1, [...document.querySelectorAll(".filterpill")].map((p) => p.textContent).join(" · ")]; });
+    await page.click("#font-filter-nonlatin"); const nl = await rows();
+    await page.click("#font-filter-serif"); const both = await rows();
+    await page.click("#font-filter-nonlatin"); await page.click("#font-filter-serif"); const back = (await rows()).length;
+    check(tray[0] && tray[1] && tray[2] === "Sans · Serif · Variable · Condensed · Mono · Non-Latin" && nl.length === 10 && nl.includes("Noto Serif SC") && both.length > nl.length && both.includes("Bodoni Moda") && back === all,
+      `the font filters grow out of the search bar, as wide (${tray.join(" ")}); Non-Latin shows its ten, Serif added shows both (${both.length}); none pressed, every font again (${back})`);
+  }
   check(fam[0] === n + 1 && fam[1] === n + 1 && n >= 69, `the sheet lists every one of the tool's ${n} families and Inter, the page's own (R35; #501: the middle tier and the non-Latin numeral fonts), each showing numerals in its own outlines (${fam[0]} · ${fam[1]} ${fam[2]})`); }
 await page.click('.fontrow[data-family="Jost"]');
 await page.waitForFunction(() => window.dial_tool.ring().ps === "Jost-Regular" && document.querySelector("#axis-wght"), null, { timeout: 8000 }).catch(() => {});
@@ -1947,7 +1956,7 @@ await page.evaluate(() => window.dial_tool.reopen({ ui_section: window.dial_tool
 await page.waitForFunction(() => window.dial_tool.statik);
 check(await S("S.ha_hour.round === 0"), "Plain dial clears them");
 await page.setInputFiles("#load-file", saved);
-await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2);
+await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2, null, { timeout: 15000 }).catch(async () => console.log("FAIL  loading the settings file: the dial did not come back in 15 s — the app's log:", JSON.stringify(await page.evaluate(() => window.dial_tool.log_lines.slice(0, 8))), JSON.stringify(errors.slice(0, 3))));      // seen twice on 24 Oct 2026, not reproduced: say what the app said instead of a bare timeout
 const after_load = await S("JSON.stringify({ ...S, ui_section: 0 })");
 check(after_load === JSON.stringify({ ...JSON.parse(before_save), ui_section: 0 }), "Load… brings every setting back");
 { // after Load the pane names the file and Save… offers that name again; a sentence says what a settings file is (Okay, 16 Oct 2026, #279)

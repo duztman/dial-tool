@@ -136,13 +136,18 @@
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: var(--u4); padding: var(--u6) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
   .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
-  .picker header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+  .picker header { display: flex; align-items: start; justify-content: space-between; gap: var(--gap); }      /* on the search field's line: the title and Light · Dark; the filters' tray hangs under the field */
   /* Find: at the sheet's top right, as wide as the stickers' column under it; a magnifier in it, no words */
-  .picker header > .find { position: relative; width: var(--find); }
-  .picker header > .find > input { width: 100%; padding-right: var(--control-large); }
-  .picker header > .find > input::-webkit-search-cancel-button { -webkit-appearance: none; }
-  .picker header > .find > svg { position: absolute; right: var(--u3); top: 50%; translate: 0 -50%; color: var(--grey); pointer-events: none; }
+  .picker header > .findbox { display: grid; width: var(--find); }
+  .findbox > .find { position: relative; }
+  .findbox > .find > input { width: 100%; padding-right: var(--control-large); }
+  .findbox > .find > input::-webkit-search-cancel-button { -webkit-appearance: none; }
+  .findbox > .find > svg { position: absolute; right: var(--u3); top: 50%; translate: 0 -50%; color: var(--grey); pointer-events: none; }
   .picker header h2 { font-size: var(--t-l); }
+  /* the filters (R35): out of the search bar, in its outline continued down, two lines of three pills */
+  .findtray { display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: var(--u1); padding: var(--u1); border: var(--hair) solid var(--rule); border-top: 0; background: var(--field); }
+  .filterpill { height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u1); border: var(--hair) solid var(--rule); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
+  .filterpill:hover { color: var(--ink); }
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: var(--u4); }      /* straight under the list: its edge is the line between them */
   .picker .squares { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); }      /* on the list's three columns */

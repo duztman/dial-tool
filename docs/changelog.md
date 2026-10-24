@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.92.22 (web version) · 24 Oct 2026
+
+- **The font sheet's filters** (R35, #501; Okay, 22:20, question mode: "A tray under the field"; "Any of them"): six pills in a tray hanging under the search field, in its outline — Sans · Serif · Variable / Condensed · Mono · Non-Latin (three lines of two on a phone). Each pressed adds its fonts; none pressed shows every font. Variable is a file with axes; Mono is drawn monospaced or has tabular figures; the rest the font list says (`kinds`). Fonts you added or that are on this computer show only with no filter pressed.
+- A font from the list that has been loaded keeps what the list says of it (kinds, axes, features); Inter, the page's own, counts as a sans.
+- The sheet's header lines the title and Light · Dark up with the search field.
+- Checked: links, labels, complications, the window test (new: the filters, the tray as wide as the field and under it); desktop and phone on screenshots. A settings file's load stalled twice in the window test tonight and passed on reruns; the check now prints the app's log if it stalls.
+
 ## beta 4.92.21 (web version) · 24 Oct 2026
 
 - **Twenty-eight more fonts** (#501; Okay, 21:50: "501 is on, priority"): the middle tier's eighteen on google/fonts (Aboreto, Anta, Audiowide, Big Shoulders Display, Black Ops One, Courier Prime, Gilda Display, Julius Sans One, Krona One, Libre Caslon Display, Limelight, Major Mono Display, Pathway Extreme, Sirin Stencil, Stardos Stencil, Syncopate — Apache 2.0, Tenor Sans, Zen Dots) and the ten non-Latin numeral fonts (Reem Kufi, Noto Sans Bengali, Noto Sans Devanagari, Vazirmatn, Noto Sans Indic Siyaq Numbers, Noto Sans Mayan Numerals, Noto Serif Ottoman Siyaq, Noto Sans Tamil, Kanit, Noto Serif SC). 69 families and Inter; the list's outlines 0.87 MB in the page (4.79 MB in all).

@@ -586,6 +586,12 @@ const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight in the range.", "
 // the OpenType switches that change numerals, in a short word each, for the stickers
 const FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 // a variable font's axes, in words, for the font sheet's stickers
+// the font sheet's filters (R35): what each pill shows. Sans, serif, condensed and non-Latin are said by the font list
+// (`kinds`, web/fonts.mjs); variable is a file with axes; mono / tabular a font drawn monospaced or with tabular figures
+const FONT_FILTERS = [["sans", "Sans"], ["serif", "Serif"], ["variable", "Variable"], ["condensed", "Condensed"], ["mono", "Mono"], ["nonlatin", "Non-Latin"]];
+const font_is = (fonts, kind) => fonts.some((f) => kind === "variable" ? Object.keys(f.axes || {}).length > 0
+  : kind === "mono" ? (f.kinds || []).includes("mono") || (f.features || []).includes("tnum")
+  : (f.kinds || []).includes(kind));
 const NAME_LEAST = 0.7;                            // in the font sheet a family's name may shrink to this share of its size to fit its column
 const AXIS_WORDS = { wdth: "wd", opsz: "opt", GRAD: "grad", XHGT: "xh", SOFT: "soft", MONO: "mono", CASL: "cas" };
 
@@ -5072,8 +5078,18 @@ class DialTool {
     // Find: a field with a magnifier, no words in it (Okay, 13 Oct 2026)
     const find = el("input", { type: "search", id: "font-find", ariaLabel: "Find a font", title: "Find a font" });
     find.oninput = () => this.fill_picker(true);
-    const finder = el("span", { className: "find" }, find);
-    finder.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
+    const field = el("span", { className: "find" }, find);
+    field.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
+    // the filters grow out of the search bar (R35; Okay, 24 Oct 2026: "A tray under the field", "Any of them"): six
+    // pills under the field, in its outline; each pressed adds its fonts, none pressed shows every font
+    this.font_filters = new Set();
+    const tray = el("span", { className: "findtray", role: "group", ariaLabel: "Show only" }, ...FONT_FILTERS.map(([kind, word]) => {
+      const pill = el("button", { type: "button", className: "filterpill", id: "font-filter-" + kind, textContent: word });
+      pill.setAttribute("aria-pressed", "false");
+      pill.onclick = () => { const on = !this.font_filters.has(kind); if (on) this.font_filters.add(kind); else this.font_filters.delete(kind); pill.setAttribute("aria-pressed", String(on)); this.fill_picker(true); };
+      return pill;
+    }));
+    const finder = el("span", { className: "findbox" }, field, tray);
     const list = el("div", { className: "fontlist", id: "font-list" });
     // the list's own scrollbar, drawn by the tool (an iPad shows its own only while the list moves): a light pill the
     // whole height, a darker one as long as the share of the list in view, where that share is (Okay, 13 Oct 2026)
@@ -5167,13 +5183,14 @@ class DialTool {
   fill_picker(again = false) {
     const list = $("#font-list"), R = this.font_shown(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
     const regular = (fonts) => fonts.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || fonts[0];
-    const key = [...by.keys()].join("|") + "/" + q + "/" + G.font_list().length;
+    const key = [...by.keys()].join("|") + "/" + q + "/" + [...this.font_filters].join(",") + "/" + G.font_list().length;
     if (again || list.dataset.shown !== key) {     // the list itself changes only when fonts arrive or the search does
       list.dataset.shown = key;
       list.replaceChildren();
       let group = null;
       for (const [family, fonts] of by) {
         if (q && !family.toLowerCase().includes(q)) continue;
+        if (this.font_filters.size && ![...this.font_filters].some((kind) => font_is(fonts, kind))) continue;      // any of the pressed filters
         const f = regular(fonts);
         if (f.group !== group) {
           group = f.group;
@@ -5825,7 +5842,7 @@ class DialTool {
     // Inter, inside the page, and any font already loaded (a dial opened before this one used it) — a font of the tool's
     // list keeps the list's family and style: its file may call itself otherwise ("Routed Gothic Wide" is the list's
     // Routed Gothic, Wide), and the sheet would show it as a family of its own (found 15 Oct 2026, with the opener)
-    for (const f of G.font_list()) { const listed = FONT_LIST.find((x) => x.ps === f.ps); this.catalog.set(f.ps, { family: listed ? listed.family : f.family, style: listed ? listed.style : f.style, ps: f.ps, group: "list" }); }
+    for (const f of G.font_list()) { const listed = FONT_LIST.find((x) => x.ps === f.ps); this.catalog.set(f.ps, { ...(listed || { kinds: f.family === "Inter" ? ["sans"] : [] }), family: listed ? listed.family : f.family, style: listed ? listed.style : f.style, ps: f.ps, group: "list" }); }      // a loaded font keeps what the list says of it (its kinds, axes, features: the filters read them); Inter, the page's own, is a sans
     for (const f of FONT_LIST) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "list" });               // the tool's own list
     for (const f of this.remembered()) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "added" });      // added from a link, earlier
     try {                                          // added from a file, earlier (#56): into the text engine and the list, as when they were added
