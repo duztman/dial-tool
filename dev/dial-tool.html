@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.29 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.30 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -188,8 +188,9 @@
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: var(--canvas-inset);      /* undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) */
-    --shade-slider: 96px;                          /* the Shadows list's sliders */
-    --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
+    --sun-h: 150px; --sun-ray: 1.5px;              /* the Shadows pane's sun picture: its height; a ray's width (the icons' LINE) */
+    --shade-slider: 78px;                          /* the Shadows pane's sliders: short on the row, the controller gives the big one (#526) */
+    --shade-name: 110px;                           /* the Shadows pane's names: a part's drawing (28), a unit, then its name ("Minute ticks", "Date discs") */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
     --guide-list: 240px; --guide-circle: 20px; --guide-inset: var(--u4);      /* the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading */
@@ -1695,6 +1696,38 @@
   .shadelist { width: calc(2 * var(--pop-pad) + var(--shade-name) + var(--shade-slider) + var(--box-value) + var(--box-steps) + 2 * var(--gap)); }      /* wide enough for a slider between the names and the boxes (Okay, 23 Oct 2026: "Bring back old shadows pane, wide one") */
   .shadelist .row { grid-template-columns: var(--shade-name) minmax(0, 1fr) calc(var(--box-value) + var(--box-steps)); column-gap: var(--gap); }      /* its own names' column (4.45.3), the slider, the number box */
   .shadelist .row > .numbox { grid-column: 3; }
+  /* the Shadows pane (#526; Okay's drawing, 24 Oct 2026, built 25 Oct 2026): the sun's picture on top, three named
+     sliders under it, then the parts top to bottom as they stand, each with its drawing; one foot */
+  .shadelist { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+  .shadescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--u2) var(--pop-pad) 0; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
+  .shadescroll > * { margin-inline: 0; }
+  .sunpic { position: relative; height: var(--sun-h); margin: var(--u2) 0 var(--u4); border: var(--hair) solid var(--rule); border-radius: var(--round); background: var(--field); overflow: hidden; touch-action: none; cursor: grab; user-select: none; }
+  .sunpic.held { cursor: grabbing; }
+  .sunpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .sunpic .dial, .sunpic .hole { fill: none; stroke: var(--grey); stroke-width: var(--hair); }
+  .sunpic .fall { fill: none; stroke: var(--grey); stroke-width: var(--hair); stroke-dasharray: 2 2; }      /* where the shadows fall: the far side of the dial */
+  .sunpic .sun > circle { fill: var(--ink); }
+  .sunpic .rays line { stroke: var(--ink); stroke-width: var(--sun-ray); stroke-linecap: round; }
+  .sunpic .word { position: absolute; left: var(--u4); top: var(--u3); font-size: var(--t-s); color: var(--grey); pointer-events: none; }
+  .sunpic .figs { position: absolute; left: 0; right: 0; bottom: var(--u2); display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; font-size: var(--t-s); font-variant-numeric: tabular-nums; color: var(--grey); pointer-events: none; }
+  .sunpic .figs > span:first-child { text-align: left; padding-left: var(--u4); }
+  .sunpic .figs > span:last-child { text-align: right; padding-right: var(--u4); }
+  .shadelist .three { display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: var(--u4); margin-bottom: var(--u2); }
+  .shadelist .row.named { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--u1); min-height: 0; box-shadow: none; }      /* form D: the slider over its name, each under its figure in the picture */
+  .shadelist .row.named > input[type="range"] { grid-column: 1; }
+  .shadelist .row.named > label { justify-self: center; font-size: var(--t-s); color: var(--grey); }
+  .shadelist .row.named > label:hover { color: var(--ink); }
+  .shadelist label.haspic { display: flex; align-items: center; gap: var(--u2); }
+  .shadelist label.haspic > .pic { flex: none; color: var(--grey); }      /* a part's drawing: grey, white while the part is sized — pointed at, held, or its controller open ("as one is being resized it stays white others turn gray") */
+  .shadelist .row:is(:hover, :focus-within):not(.ref) label.haspic > .pic, .shadelist .row:has([aria-expanded="true"]) label.haspic > .pic { color: var(--ink); }
+  .shadelist .row.ref { grid-template-columns: 1fr; }      /* the dial: the reference, nothing to size */
+  .shadelist .row.ref > label { color: var(--grey); }
+  .shadelist .shadefoot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; column-gap: var(--u4); align-items: center; min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--pop-pad); background: var(--field); }      /* Soft edge · Bevels % · Reset on one line */
+  .shadelist .shadefoot > .row { display: contents; }
+  .shadelist .shadefoot > .row > label.check { grid-column: 1; color: var(--ink); }
+  .shadelist .shadefoot > .row.block > label { grid-column: 2; justify-self: end; color: var(--grey); }
+  .shadelist .shadefoot > .row.block > .numbox { grid-column: 3; }
+  .shadelist .shadefoot > .gword { grid-column: 4; }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
@@ -7295,7 +7328,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.29";
+var VERSION = "beta 4.92.30";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15485,6 +15518,18 @@ var POP_LINGER_MS = 1200;
 var POP_FADE_MS = 120;
 var SNAP_DEG = 2;
 var RING_ROWS = 5;
+var PART_PICS = (() => {
+  const pic2 = (inside, fill = "currentColor", stroke2 = "none") => `<svg class="pic" viewBox="0 0 28 18" width="28" height="18" aria-hidden="true" fill="${fill}" stroke="${stroke2}" stroke-width="${DENSE}" stroke-linecap="round">${inside}</svg>`;
+  return {
+    cap: pic2(`<circle cx="14" cy="9" r="3"/>`),
+    second: pic2(`<circle cx="5" cy="9" r="2"/><rect x="5" y="8" width="20" height="2" rx="1"/>`),
+    minute: pic2(`<circle cx="5" cy="9" r="2.5"/><rect x="5" y="7.5" width="16" height="3" rx="1.5"/>`),
+    hour: pic2(`<circle cx="5" cy="9" r="3"/><rect x="5" y="7" width="12" height="4" rx="2"/>`),
+    ring: pic2(`<ellipse cx="14" cy="9" rx="12" ry="4.5"/><ellipse cx="14" cy="9" rx="7" ry="2.5"/>`, "none", "currentColor"),
+    dial: pic2(`<ellipse cx="14" cy="9" rx="13" ry="5"/><ellipse cx="14" cy="9" rx="1.5" ry="0.8"/><rect x="19" y="8" width="3" height="2"/>`, "none", "currentColor"),
+    disc: pic2(`<ellipse cx="14" cy="9" rx="10" ry="3.5" stroke-dasharray="2 2"/>`, "none", "currentColor")
+  };
+})();
 var TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -18296,31 +18341,35 @@ var DialTool = class _DialTool {
     this.shadows_open = open;
     const row = (r) => this.build_row({ ...r, scope: "global" });
     const head = (text) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: text }));
+    const sun = this.sun_picture("shadows");
     const light = [
-      row(num2("sh_from", "From", 0, 359, 1, { whole: true })),
-      row(num2("sh_rise", "Height", 5, 85, 1, { whole: true })),
-      row(num2("sh_dark", "Darkness", 0, 100, 1, { whole: true })),
-      row(chk("sh_blur", "Soft edge")),
-      row(num2("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }))
+      row(num2("sh_from", "Angle", 0, 359, 1, { whole: true, named: true })),
+      row(num2("sh_rise", "Height", 5, 85, 1, { whole: true, named: true })),
+      row(num2("sh_dark", "Strength", 0, 100, 1, { whole: true, named: true }))
     ];
-    const heights = [row(num2("sh_hour", "Hour hand", 0, 3, 0.05)), row(num2("sh_minute", "Minute hand", 0, 3, 0.05)), row(num2("sh_second", "Seconds hand", 0, 3, 0.05)), row(num2("sh_cap", "Cap\u2019s top", 0, 4, 0.05))];
-    const under = [row(num2("sh_disc", "Date discs", 0, 2, 0.05))];
-    this.shadow_rows = [...light, ...heights, ...under];
-    light[3].el.querySelector("label.check").append(el("span", { className: "quiet", textContent: "\xA0\xB7 may stutter while time runs" }));
-    const reset = el("button", { type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
+    const three = el("div", { className: "three" }, ...light.map((r) => r.el));
+    const heights = [
+      row(num2("sh_cap", "Cap", 0, 4, 0.05, { pic: PART_PICS.cap })),
+      row(num2("sh_second", "Seconds", 0, 3, 0.05, { pic: PART_PICS.second })),
+      row(num2("sh_minute", "Minutes", 0, 3, 0.05, { pic: PART_PICS.minute })),
+      row(num2("sh_hour", "Hours", 0, 3, 0.05, { pic: PART_PICS.hour }))
+    ];
+    this.shadow_rings = el("div", { className: "shadowrings" });
+    this.shadow_rings_head = head("Inks \xB7 0 to 10");
+    const dial = el("div", { className: "row ref" }, el("label", { className: "haspic", textContent: "Dial" }));
+    dial.querySelector("label").insertAdjacentHTML("afterbegin", PART_PICS.dial);
+    const under = [row(num2("sh_disc", "Date discs", 0, 2, 0.05, { pic: PART_PICS.disc }))];
+    const soft = row(chk("sh_blur", "Soft edge")), bevel = row(num2("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, block: true }));
+    this.shadow_rows = [...light, ...heights, ...under, soft, bevel];
+    this.shadow_ring_rows = [];
+    const reset = el("button", { type: "button", className: "gword", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
       for (const key of Object.keys(DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(DEFAULTS[key]);
       this.sync_rows();
       this.render();
     } });
-    list.append(
-      head("Light \xB7 degrees"),
-      ...light.map((r) => r.el),
-      head("Over the plate \xB7 mm"),
-      ...heights.map((r) => r.el),
-      head("Under the plate \xB7 mm"),
-      ...under.map((r) => r.el),
-      el("div", { className: "guidefoot popfoot" }, reset)
-    );
+    const scroll = el("div", { className: "shadescroll" }, sun.el, three, head("Over the plate \xB7 mm"), ...heights.map((r) => r.el), this.shadow_rings_head, this.shadow_rings, dial, head("Under the plate \xB7 mm"), ...under.map((r) => r.el));
+    list.append(scroll, el("div", { className: "guidefoot shadefoot" }, soft.el, bevel.el, reset));
+    this.shadow_sun = sun;
     const box3 = el("div", { className: "shadows" }, this.shadows_tick, more, list);
     box3.onkeydown = (e) => {
       if (e.key === "Escape" && !list.hidden) {
@@ -18617,7 +18666,81 @@ var DialTool = class _DialTool {
     const on = Boolean(this.S.sh_on);
     this.shadows_tick.setAttribute("aria-pressed", String(on));
     this.shadows_tick.title = on ? "Shadows are on: press to hide them" : "Shadows are off: press to show them";
-    if (!$("#shadow-list").hidden) for (const r of this.shadow_rows) r.refresh(this.S);
+    if ($("#shadow-list").hidden) return;
+    const rings = JSON.stringify(this.S.rings.map((r) => [r.name, r.show !== false]));
+    if (this.shadow_rings.dataset.rings !== rings) {
+      this.shadow_rings.dataset.rings = rings;
+      this.shadow_ring_rows = this.S.rings.map((ring, i2) => this.build_row({ ...num2("ink", ring.name || kind_of(ring), 0, 10, 1, {
+        whole: true,
+        pic: PART_PICS.ring,
+        id: `shadow-ring-${i2}`,
+        get: () => {
+          const R = this.S.rings[i2];
+          return R ? clamp(this.S.w_ink + (R.ink_d || 0), 0, 10) : 0;
+        },
+        put: (app, v) => {
+          const R = this.S.rings[i2];
+          if (!R) return;
+          R.ink_d = clamp(v, 0, 10) - this.S.w_ink;
+          this.changed();
+        }
+      }), scope: "global" }));
+      this.shadow_rings.replaceChildren(...this.shadow_ring_rows.map((r) => r.el));
+      this.shadow_rings_head.hidden = !this.shadow_ring_rows.length;
+    }
+    for (const r of [...this.shadow_rows, ...this.shadow_ring_rows]) r.refresh(this.S);
+    this.shadow_sun.refresh();
+  }
+  /** the sun's picture (#526; Okay's drawing, 24 Oct 2026): the dial as a ring, the sun outside it with rays, a faint
+   *  disc on the far side where the shadows fall, its three figures along the foot (angle · height · strength). One
+   *  finger or the pointer moves the sun: round the dial for the angle, toward the middle for higher (Okay, 24 Oct
+   *  2026: "Drag it"); the sliders under it follow. The rays point away from the dial, symmetrical about that line,
+   *  and grow with the sun's distance (Okay: "Rays can grow on distant suns, shorter when they are close"); a sun
+   *  near a corner has its rays cut by the frame ("the rays pop in and out"). Drawn once, moved by attributes. */
+  sun_picture(id) {
+    const W2 = 280, H2 = 150, cx = W2 / 2, cy = H2 / 2, R = 46, NEAR = 14, FAR = 118;
+    const box3 = el("div", { className: "sunpic", id: id + "-sun" });
+    box3.innerHTML = `<svg viewBox="0 0 ${W2} ${H2}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="3"/><circle class="fall" r="7"/><g class="sun"><circle r="8"/><g class="rays"></g></g></svg><span class="word">Sun</span><span class="figs"><span></span><span></span><span></span></span>`;
+    const sun = box3.querySelector(".sun"), rays = box3.querySelector(".rays"), fall = box3.querySelector(".fall"), figs = [...box3.querySelectorAll(".figs > span")];
+    for (let i2 = 0; i2 < 8; i2++) rays.append(svg_el("line"));
+    const where = () => {
+      const a = this.S.sh_from * Math.PI / 180, d = FAR - (clamp(this.S.sh_rise, 5, 85) - 5) / 80 * (FAR - NEAR);
+      return { a, d, x: cx + Math.sin(a) * d, y: cy - Math.cos(a) * d };
+    };
+    const refresh = () => {
+      const { a, d, x: x2, y } = where();
+      sun.setAttribute("transform", `translate(${x2.toFixed(1)} ${y.toFixed(1)})`);
+      const len = 5 + 9 * (d - NEAR) / (FAR - NEAR);
+      [...rays.children].forEach((line, i2) => {
+        const t = a + Math.PI + (i2 - 3.5) * Math.PI / 4 + Math.PI / 8;
+        for (const [k, v] of [["x1", 13 * Math.sin(t)], ["y1", -13 * Math.cos(t)], ["x2", (13 + len) * Math.sin(t)], ["y2", -(13 + len) * Math.cos(t)]]) line.setAttribute(k, v.toFixed(1));
+      });
+      fall.setAttribute("cx", (cx - Math.sin(a) * (R - 2)).toFixed(1));
+      fall.setAttribute("cy", (cy + Math.cos(a) * (R - 2)).toFixed(1));
+      figs[0].textContent = `${Math.round(this.S.sh_from)}\xB0`;
+      figs[1].textContent = String(Math.round(this.S.sh_rise));
+      figs[2].textContent = `${Math.round(this.S.sh_dark)} %`;
+    };
+    const move = (e) => {
+      const r = box3.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W2, py = (e.clientY - r.top) / r.height * H2;
+      const dx = px - cx, dy = py - cy, dist = Math.hypot(dx, dy), from = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+      this.S.sh_from = Math.round(from);
+      this.S.sh_rise = Math.round(clamp(5 + 80 * (FAR - clamp(dist, NEAR, FAR)) / (FAR - NEAR), 5, 85));
+      this.sync_rows();
+      this.render();
+    };
+    box3.onpointerdown = (e) => {
+      if (e.button !== 0 && e.pointerType === "mouse") return;
+      e.preventDefault();
+      box3.setPointerCapture(e.pointerId);
+      box3.classList.add("held");
+      move(e);
+    };
+    box3.onpointermove = (e) => {
+      if (box3.classList.contains("held")) move(e);
+    };
+    box3.onpointerup = box3.onpointercancel = () => box3.classList.remove("held");
+    return { el: box3, refresh };
   }
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
    *  when it is folded, and everything in it when its heading doesn't apply. */
@@ -18853,7 +18976,11 @@ var DialTool = class _DialTool {
         field.title = row.text + " \xB7 " + field.title;
       }
       if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;
-      if (!row.inpop && !row.side && !row.bare && !row.button && !row.block) this.name_opens(label, row);
+      if (!row.inpop && !row.side && !row.bare && !row.button && !row.block && !row.named) this.name_opens(label, row);
+      if (row.pic) {
+        label.insertAdjacentHTML("afterbegin", row.pic);
+        label.classList.add("haspic");
+      }
       const numbox = () => el("span", { className: "numbox" }, field, el("span", { className: "steps" }, step(-1), step(1)));
       if (row.side) {
         wrap.append(lead, slider, numbox());
@@ -18868,6 +18995,10 @@ var DialTool = class _DialTool {
         wrap.classList.add("haslink");
         wrap.append(pill);
         out.link = pill;
+      } else if (row.named) {
+        wrap.classList.add("named");
+        wrap.append(slider, lead);
+        this.name_opens(label, row);
       } else if (row.block) {
         wrap.classList.add("block");
         wrap.append(lead, numbox());
