@@ -2680,8 +2680,9 @@ class DialTool {
       if (!on) return;
       // where it stands: from the panel's margin to the switch's right edge, standing on the switch (Okay, 25 Oct 2026,
       // 02:09: "similar to fonts left margin and organically one side full touching connection kept with button. Above button")
-      const b = box.getBoundingClientRect();
+      const b = box.getBoundingClientRect(), tab = $('.tabs button[data-tab="Rings"]')?.getBoundingClientRect();
       list.style.setProperty("--shade-right", `${Math.round(b.right)}px`);
+      if (tab) list.style.setProperty("--shade-left", `${Math.round(tab.left)}px`);      // its left edge on the Rings tab's (Okay, 02:20: "aligned with rings tab above")
       list.style.setProperty("--shade-bottom", `${Math.round(innerHeight - b.top)}px`);
       this.sync_shadows();
     };

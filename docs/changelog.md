@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.32 (web version) · 25 Oct 2026
+
+- **The Shadows pane squeezed** (#526; Okay, 02:20, his marks: "SQUEEZE sliders"; "In aligned with rings tab above. Right side stays still"): its left edge on the Rings tab's left edge, its right edge still the switch's; every slider shorter — 100 on a part's row, 160 beside the sun (`--shade-slide`, `--shade-slide-top`) — the rows as wide as they need, the exploded view takes the rest.
+- Checked: labels, links, the moment, the icons, the window test whole, the screenshots.
+
 ## beta 4.92.31 (web version) · 25 Oct 2026
 
 - **The Shadows pane laid out as Okay marked it** (#526; 25 Oct, 01:27–01:47): the panel's width (424); the sun's picture at the left (224 × 204, the figures gone from it) with **Angle · Height · Strength stacked at its right**, each name over its slider and **the value riding in the knob** (form D: "numbers on the buttons since we have nowhere else to write"); an ink hairline across, with the inner box's room over and under it; then **the rows at the left** (the Hands tab's side rows: name · slider · number box, names as long as "Minute ticks") and **the exploded view at the right edge**, outline only: one axis, every part centred on it, the cap a small disc, a hand its pipe on the axis with the hand out to the right and a tail left, each ring a thin ellipse, the plate wider with its hole and a window, the discs dashed under it; y follows the heights and no two parts come closer than a gap; the stack is centred in its frame by its extent; the part pointed at, focused or with its controller open is white (`stack_picture()`, `shade_light()`). "Dial" is "Plate" here (the glossary's word).
