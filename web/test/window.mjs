@@ -125,6 +125,10 @@ check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] ==
   check(picked[0] === "5" && picked[1].includes("5:00") && picked[2] && picked[3] && after[1] === '{"shape":2,"s":1.8}' && wide(after[0]) > wide(before) * 1.4 && await S("t.ring().nudge['5'] === undefined"),
     `a second press picks the marker at 5 (${picked[1]}); Edit one mark opens on it, outlined on the dial; a wedge 1.8 × as big (${after[1]}); Reset this mark undoes it`);
 }
+{ // the list says only what is drawn (#513; Okay, 24 Oct 2026: "write out only what is seen"): the markers ring every 3rd, and only the kept marks are listed, by their times, no running number
+  const list = await page.evaluate(() => { const t = window.dial_tool, was = t.ring().every; t.set_value("ring", "every", 3); t.frame(); const out = [...document.querySelectorAll("#nudge-pick option")].map((o) => o.textContent); t.set_value("ring", "every", was); t.frame(); return [out, [...document.querySelectorAll("#nudge-pick option")].length]; });
+  check(list[0].length === 4 && list[0][0] === "12:00" && list[0][1] === "3:00" && list[1] > 4, `Edit one mark lists only the drawn marks: every 3rd → ${list[0].join(" · ")}; all again after (${list[1]})`);
+}
 await click_mm(...clock(13.9, 94));                                 // beside a thin tick (in its zone); 93° until the bar grew (#190): with the preview 10 shorter it fell to the marker at 3
 check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'ticks'"), "click in the ticks' zone → the ticks ring");
 const hands = await S("(() => { const a = [S.t / 43200 * 360, (S.t % 3600) / 3600 * 360]; return a; })()");

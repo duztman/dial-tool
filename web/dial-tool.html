@@ -20261,14 +20261,21 @@ var DialTool = class _DialTool {
         return `${h}:${String(m % 60).padStart(2, "0")}`;
       };
       const labels = text ? ring_labels(R) : ring_angles(R).map(at);
-      if (+this.nudge_at >= labels.length) this.nudge_at = "0";
-      const want = labels.map((l, i2) => `${i2 + 1} \xB7 ${l || "\u2014"}${R.nudge[String(i2)] ? "  \u2022" : ""}`).join("|");
+      const built = this.statik && this.statik.rings.find((x2) => x2.ring === R);
+      const drawn2 = built ? built.at.filter((i2) => i2 < labels.length) : labels.map((_, i2) => i2);
+      if (drawn2.length && !drawn2.includes(+this.nudge_at)) this.nudge_at = String(drawn2[0]);
+      const name = (i2) => `${labels[i2] || "\u2014"}${R.nudge[String(i2)] ? "  \u2022" : ""}`;
+      const want = drawn2.map((i2) => `${i2}:${name(i2)}`).join("|");
       if (pick2.dataset.items !== want) {
-        pick2.replaceChildren(...labels.map((l, i2) => el("option", { value: String(i2), textContent: `${i2 + 1} \xB7 ${l || "\u2014"}${R.nudge[String(i2)] ? "  \u2022" : ""}` })));
+        pick2.replaceChildren(...drawn2.map((i2) => el("option", { value: String(i2), textContent: name(i2) })));
         pick2.dataset.items = want;
       }
       pick2.value = this.nudge_at;
       pick_box.sync();
+    };
+    this.nudge_sync = () => {
+      const R = this.ring();
+      if (R && !wrap.hidden) out.refresh(R);
     };
   }
   // ── fonts: the Type group shows the ring's font; the list of all fonts is a sheet of its own ──
@@ -21898,6 +21905,7 @@ var DialTool = class _DialTool {
       const t0 = performance.now();
       this.statik = build_static(S);
       this.static_dirty = false;
+      if (this.nudge_sync) this.nudge_sync();
       this.build_ms = performance.now() - t0;
       if (S.out_production) merges_of(this);
     }

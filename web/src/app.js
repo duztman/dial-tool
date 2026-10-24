@@ -4431,18 +4431,24 @@ class DialTool {
     out.refresh = (R) => {
       const text = G.has_text(R);
       word.textContent = text ? "Numeral" : "Mark"; reset.textContent = text ? "Reset this numeral" : "Reset this mark";
-      // a numeral by its words; a mark by the time it stands at (1:00, 1:12 …)
+      // only what is drawn is listed (Okay, 24 Oct 2026: "If there is a skip in the numerals, humans see emptiness on the
+      // skipped stops … write out only what is seen"): the positions the ring keeps, not every stop; a numeral by its own
+      // word, a mark by the time it stands at (1:00, 1:12 …), with no running number before it ("horrible number confusion")
       const at = (a) => { const m = Math.round((((a % 360) + 360) % 360) * 2), h = Math.floor(m / 60) % 12 || 12; return `${h}:${String(m % 60).padStart(2, "0")}`; };
       const labels = text ? G.ring_labels(R) : G.ring_angles(R).map(at);
-      if (+this.nudge_at >= labels.length) this.nudge_at = "0";
-      const want = labels.map((l, i) => `${i + 1} · ${l || "—"}${R.nudge[String(i)] ? "  •" : ""}`).join("|");
+      const built = this.statik && this.statik.rings.find((x) => x.ring === R);
+      const drawn = built ? built.at.filter((i) => i < labels.length) : labels.map((_, i) => i);
+      if (drawn.length && !drawn.includes(+this.nudge_at)) this.nudge_at = String(drawn[0]);
+      const name = (i) => `${labels[i] || "—"}${R.nudge[String(i)] ? "  •" : ""}`;
+      const want = drawn.map((i) => `${i}:${name(i)}`).join("|");
       if (pick.dataset.items !== want) {
-        pick.replaceChildren(...labels.map((l, i) => el("option", { value: String(i), textContent: `${i + 1} · ${l || "—"}${R.nudge[String(i)] ? "  •" : ""}` })));
+        pick.replaceChildren(...drawn.map((i) => el("option", { value: String(i), textContent: name(i) })));
         pick.dataset.items = want;
       }
       pick.value = this.nudge_at;
       pick_box.sync();
     };
+    this.nudge_sync = () => { const R = this.ring(); if (R && !wrap.hidden) out.refresh(R); };      // the list follows a change of what is drawn, once the dial is rebuilt
   }
 
   // ── fonts: the Type group shows the ring's font; the list of all fonts is a sheet of its own ──
@@ -5812,6 +5818,7 @@ class DialTool {
       const t0 = performance.now();
       this.statik = G.build_static(S);
       this.static_dirty = false;
+      if (this.nudge_sync) this.nudge_sync();      // Edit one numeral's list: what the rebuilt ring draws
       this.build_ms = performance.now() - t0;
       if (S.out_production) merges_of(this);      // the mask's note (#220): what the new build loses, once the dial is still
     }
