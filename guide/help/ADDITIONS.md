@@ -2,53 +2,18 @@
 
 *Started 24 Oct 2026. Okay: "Keep them inside a text doc, we'll check when full." Nothing here is on the page yet. Each line names where in the code it was read (`web/src/app.js` unless said), so it can be checked before it moves to `index.html`. Written against beta 4.92.7.*
 
-## Keyboard
+## Sorted, 24 Oct 2026
 
-Not while typing in a field, on a slider or in a menu, nor with ⌘, Ctrl or ⌥ held, nor with a dialog open (keydown handler, ~line 1272).
+**On the page now** (`#keys`, Keys and pointer): the keys, typing a number (all units, the comma), the fine slider, a text ring's 2° snap; the link-vs-settings-file line under Export › Share dial as link.
 
-| Keys | Does |
-|---|---|
-| ← · → | Time back or on by a minute |
-| ⇧ ← · ⇧ → | By an hour |
-| Space | Play or pause time |
-| G | Guides on or off |
-| H | Hands on or off |
-| S | Shadows on or off |
-| X | X-ray on or off (when the switch is there) |
-| E | The dial alone; closes Compare if it is open |
-| ⌘Z | Undo (Ctrl on Windows) |
-| ⇧⌘Z · ⌘Y | Redo |
-| In a number field: ↑ · ↓ | One step; with ⇧, ten |
-| In a field: Enter · Esc | Take the value · cancel |
-| Esc | Closes any open menu or pop-up |
-| On a menu: Space · Enter · ↑ · ↓ | Opens the tool's own list; the arrows walk it |
+**Already on the page, dropped here:** the preview's scroll · right-drag · pinch (The screen, Zoom); the drawer's grip (The screen); the Guides and Shadows chevrons (Corners and bar); the export log (Export › Log); Versions (The screen, How do I…).
 
-Sources: `KEYS` (~line 333), the time handler (~1272), undo (~1291), number fields (~2969), menus (~1236, ~1936).
+**Still waiting:**
+- The finger's controller (R15): changing in 4.92.5–4.92.7; one line once it settles.
+- The ring list's pill (five rows, taller or shorter, #256); Now's spin; the Tiny preview's close; Compare's place; show mode reopening in show mode: small, check each in the app before a line.
+- The menus' own list (Space · Enter · ↑ ↓ on a menu): check on an iPad first.
 
-## Typing values
-
-- `1.2` sets · `+0.5` adds · `x0.5` multiplies · `/2` divides (`parse_number`, ~line 1017).
-- A length field takes a unit after the number: `12pt`, `0.5in`, `+1mm`, `3cm`, `20lig`, `40thou`; it is turned into the unit the field shows. Storage stays mm.
-- A comma works as a decimal point; `×` works as `x`.
-
-## Intricacies
-
-- **Fine sliders.** Hold a slider with a mouse or pen and move away from its track, up or down: the farther, the finer, down to a twentieth (`FINE`, ~line 337; #406).
-- **A finger opens the controller** instead of dragging a slider (R15; changed in 4.92.5–4.92.7 — describe it once it settles).
-- **The preview:** scroll zooms, right-drag moves, two fingers pinch and move; the lens beside − + FIT says so.
-- **The drawer on a phone:** drag its grip to make it taller or shorter ("Drawer height").
-- **The ring list** shows five rows before it scrolls; its pill makes it taller or shorter (`RING_ROWS`, #256).
-- **A text ring's angle snaps** to a position within 2° (`SNAP_DEG`, #297).
-- **Now** turns the big hands once, opposite ways, and lands them (`SPIN_MS`).
-- **Tiny preview:** the dial at its own size, bottom right; put it away with its close button.
-- **Versions** keeps nine dials in this browser; Compare lays them side by side, packed.
-- **Guides' chevron:** which rings and windows show guides, and their colours.
-- **Shadows' chevron:** the light, and how high each part stands.
-- **Export log** says what each export wrote, including the thinnest line.
-- **Show mode remembers** itself: a session closed in show mode opens there.
-- **Settings file vs link:** a link carries only what differs from the start and may stop working when the tool changes (R31); a settings file keeps every value and keeps opening.
-
-To check before moving: the Tiny preview's wording, the Versions count (nine, 4.90 changelog), Compare's place.
+**Shown better than said** (screenshots, PLAN.md's table): the screen with its seven parts (#1) is the one that saves the most words; then the corners and bar (#8), the hand shapes (#5), the window kinds (#6). The keys are drawn as keycaps on the page, no picture needed.
 
 ## Simple examples (from the Gallery, so each is a link that opens it)
 

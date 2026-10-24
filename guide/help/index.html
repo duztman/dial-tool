@@ -38,6 +38,7 @@ form.report input:focus,form.report textarea:focus{outline:none;border-color:var
 form.report .gotcha{position:absolute;left:-9999px}
 form.report button{justify-self:start;font:inherit;font-weight:500;color:var(--paper);background:var(--ink);border:0;border-radius:6px;padding:8px 18px;cursor:pointer}
 form.report button:disabled{opacity:.4;cursor:default}
+kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;font:12px/1.5 ui-monospace,Menlo,monospace;text-align:center;color:var(--ink);background:color-mix(in srgb,var(--paper) 80%,var(--ink) 4%)}
 #report-note{font-size:13px;color:var(--mute);min-height:1.5em;margin:0}
 </style>
 </head>
@@ -47,7 +48,7 @@ form.report button:disabled{opacity:.4;cursor:default}
   <b>Start</b><a href="#idea">The idea</a><a href="#screen">The screen</a><a href="#first">A first dial</a>
   <b>Tabs</b><a href="#dial">Dial</a><a href="#rings">Rings</a><a href="#hands">Hands</a><a href="#date">Windows</a><a href="#export">Export</a>
   <b>Around the preview</b><a href="#canvas">Corners and bar</a><a href="#show">Show mode</a>
-  <b>More</b><a href="#how">How do I…</a><a href="#words">Words</a><a href="#report">Report a bug</a>
+  <b>More</b><a href="#keys">Keys and pointer</a><a href="#how">How do I…</a><a href="#words">Words</a><a href="#report">Report a bug</a>
 </nav>
 <main>
 <header>
@@ -150,7 +151,7 @@ form.report button:disabled{opacity:.4;cursor:default}
   <dt>Print</dt><dd>Mono print mask, Inverted, Cut lines, Outline and registration marks, Hidden rings still cut, What the windows show, Mirrored for toner transfer; ink films, a print sheet, a spec sheet.</dd>
   <dt>A set of files</dt><dd>Tick the files you want; Export ticked writes them all.</dd>
   <dt>Moving picture</dt><dd>The dial running: seconds, fps, size.</dd>
-  <dt>Share dial as link</dt><dd>A link that opens this dial anywhere.</dd>
+  <dt>Share dial as link</dt><dd>A link that opens this dial anywhere. It holds only what you changed, and may stop opening after the tool changes: to keep a dial, save a settings file.</dd>
   <dt>Settings file</dt><dd>Save… · Load…: every value, to keep a dial for good.</dd>
   <dt>Log · Gallery</dt><dd>What each export did; dials to open and take apart.</dd>
 </dl>
@@ -176,6 +177,21 @@ form.report button:disabled{opacity:.4;cursor:default}
   <dt>Export</dt><dd>The watch as PNG or PDF.</dd>
 </dl>
 
+<h2 id="keys">Keys and pointer</h2>
+<p class="lead">Keys work when you aren't typing in a field, and not with <kbd>⌘</kbd> <kbd>Ctrl</kbd> <kbd>⌥</kbd> held. Ctrl for ⌘ on Windows.</p>
+<dl>
+  <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Time back or on a minute; with <kbd>⇧</kbd>, an hour.</dd>
+  <dt><kbd>Space</kbd></dt><dd>Play or pause time.</dd>
+  <dt><kbd>G</kbd> <kbd>H</kbd> <kbd>S</kbd> <kbd>X</kbd></dt><dd>Guides, hands, shadows, X-ray: on or off.</dd>
+  <dt><kbd>E</kbd></dt><dd>The dial alone; closes Compare.</dd>
+  <dt><kbd>⌘</kbd><kbd>Z</kbd> · <kbd>⇧</kbd><kbd>⌘</kbd><kbd>Z</kbd></dt><dd>Undo · redo (<kbd>⌘</kbd><kbd>Y</kbd> redoes too).</dd>
+  <dt><kbd>↑</kbd> <kbd>↓</kbd> in a number</dt><dd>One step; with <kbd>⇧</kbd>, ten. <kbd>Enter</kbd> takes the value, <kbd>Esc</kbd> cancels it.</dd>
+  <dt><kbd>Esc</kbd></dt><dd>Closes an open menu or pop-up.</dd>
+  <dt>Fine slider</dt><dd>Hold a slider and move away from its track, up or down: the farther, the finer, down to a twentieth of its speed. A finger opens the controller instead.</dd>
+  <dt>Typing a number</dt><dd><code>+0.5</code> adds, <code>x2</code> multiplies, <code>/2</code> divides; a length takes a unit: <code>12pt</code>, <code>0.5in</code>, <code>3cm</code>, <code>20lig</code>, <code>40thou</code>. A comma works as a point.</dd>
+  <dt>Text ring angle</dt><dd>Snaps to a position when it comes within 2°.</dd>
+</dl>
+
 <h2 id="how">How do I…</h2>
 <dl>
   <dt>start fresh</dt><dd>Dial › Reset › Blank face, or Reset to the First dial.</dd>
@@ -185,7 +201,7 @@ form.report button:disabled{opacity:.4;cursor:default}
   <dt>keep marks off a band</dt><dd>On the marks' ring, Give way to rings above.</dd>
   <dt>move one numeral</dt><dd>Rings › Edit one numeral.</dd>
   <dt>print a mask</dt><dd>Export › Print › Mono print mask, then PDF or SVG.</dd>
-  <dt>type a value</dt><dd><code>+0.5</code> adds, <code>x2</code> multiplies, <code>/2</code> divides; a length takes a unit: <code>12pt</code>, <code>0.5in</code>.</dd>
+  <dt>type a value</dt><dd>See <a href="#keys">Keys and pointer</a>.</dd>
 </dl>
 
 <h2 id="words">Words</h2>
@@ -201,7 +217,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 </dl>
 
 <h2 id="report">Report a bug</h2>
-<p class="lead">For beta testers. Your name and the tester code are needed to send. Your browser and screen size go with the report.</p>
+<p class="lead">Something wrong or odd? Your name and the tester code are needed to send. Your browser, screen and whether you use touch or a mouse go with the report; nothing else.</p>
 <form class="report" id="report-form" novalidate>
   <label><b>Name</b><input name="name" required autocomplete="name"></label>
   <label><b>Tester code</b><input name="code" required autocomplete="off" spellcheck="false"></label>
@@ -246,6 +262,7 @@ form.addEventListener("submit", async (event) => {
   data.delete("code");
   data.set("browser", navigator.userAgent);
   data.set("screen", `${screen.width}×${screen.height} @${devicePixelRatio}x, window ${innerWidth}×${innerHeight}`);
+  data.set("pointer", matchMedia("(pointer: coarse)").matches ? "touch" : "mouse or pen");
   data.set("_subject", `Dial Tool bug · ${data.get("name").trim()}`);
   const button = form.querySelector("button");
   button.disabled = true; say("Sending…");
