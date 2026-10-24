@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.23 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.24 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -192,6 +192,7 @@
     --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
+    --guide-col: calc(var(--guide-name) + 2 * var(--guide-gap) + 2 * var(--guide-none));      /* a column of the guides' list (#527): a name, its colour dot, its tick */
     --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches") */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
@@ -415,10 +416,11 @@
   /* reach: under a finger, a small control is pressed from a little outside its edge too — up to half-way to its
      neighbour, so two never overlap. What you see doesn't change: the reach is an unseen frame round the control
      (--reach-x to the sides, --reach-y above and under; nothing for a mouse). Every small control is listed here. */
-  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip) { position: relative; }
-  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-right, var(--reach-x, 0px))) calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
+  :is(.dots button, .gdot, .gtick, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip) { position: relative; }
+  :is(.dots button, .gdot, .gtick, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-right, var(--reach-x, 0px))) calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
   @media (pointer: coarse) {
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
+    :is(.gdot, .gtick) { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-none)) / 2); }      /* a guide's dot and tick (#527): the whole height of its line, half the room between them */
     .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
     .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
     .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
@@ -1576,6 +1578,27 @@
     --list-gap: var(--canvas-inset); max-height: min(var(--list-room, 100dvh), calc(100dvh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit))); }      /* --list-room: measured when it opens, from the preview's top to its switch, less a gap each side */
   .guidesheet > * { margin-inline: 0; }
   .guidescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-top: var(--unit); touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
+  /* the Guides list in two columns (#527; Okay's drawing, 24 Oct 2026): Rings at the left; the centre hole, the centre
+     lines and Windows at the right; Added under both after a white line. A line: name · colour dot · tick */
+  .guidelist.guidesheet { width: calc(2 * var(--guide-col) + var(--gap) + 2 * var(--pop-pad) + 2 * var(--hair)); }
+  .guidescroll.guidecols { position: relative; display: grid; grid-template-columns: repeat(2, var(--guide-col)); column-gap: var(--gap); align-content: start; padding-inline: var(--pop-pad); }
+  .guidescroll.guidecols > * { margin-inline: 0; }
+  .guidecol { display: grid; align-content: start; min-width: 0; }
+  .guideadded { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin-top: var(--unit); border-top: var(--hair) solid var(--white); }
+  .guideadded[hidden] { display: none; }
+  .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-none) var(--guide-none); column-gap: var(--guide-gap); }
+  .guidesheet .guidehead { grid-template-columns: minmax(0, 1fr) auto; }
+  .guidehead .menubox { height: var(--control-s); font-size: var(--t-s); }
+  .gdot { width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
+  .guidekind.off .gdot { opacity: var(--guide-dim); }
+  .gtick { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); color: var(--grey); }
+  .gtick[aria-pressed="true"] { color: var(--ink); }
+  .gtick:hover { color: var(--ink); }
+  .guidehead .minus { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
+  .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); }
+  /* a colour dot pressed: None and the eight colours by it, on a pill of the lines' colour */
+  .guidepop { position: absolute; z-index: 2; gap: var(--guide-gap); padding: var(--u2) var(--u3); border-radius: var(--round-pill); background: var(--row-rule); }
+  .guidepop[hidden] { display: none; }
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
   .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
   .guidescroll > * { margin-inline: var(--pop-pad); }
@@ -1614,7 +1637,7 @@
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
   .guidelast > .numcell { grid-column: 2; display: flex; justify-content: flex-end; height: var(--control); pointer-events: none; }
-  .guidelast .numbox { pointer-events: auto; }
+  .guidelast :is(.numbox, .pillswitch) { pointer-events: auto; }
   .guidelast > .resetall { grid-column: 3; align-self: stretch; display: flex; align-items: center; padding-left: var(--gap); border-left: var(--hair) solid var(--paper); }      /* its rule: the ground's, from the section's top to the box's bottom (#305) */
   /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
   .guidelast.asking > :not(.ask) { visibility: hidden; }
@@ -7232,7 +7255,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.23";
+var VERSION = "beta 4.92.24";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15649,6 +15672,7 @@ var font_sheet_read = () => {
     return {};
   }
 };
+var GUIDE_STEP = 0.75;
 var NAME_LEAST = 0.7;
 var AXIS_WORDS = { wdth: "wd", opsz: "opt", GRAD: "grad", XHGT: "xh", SOFT: "soft", MONO: "mono", CASL: "cas" };
 var kind_in = (...names) => (R) => names.includes(kind_of(R));
@@ -17981,79 +18005,117 @@ var DialTool = class _DialTool {
     };
     more.onclick = () => open(list.hidden);
     this.guides_open = open;
-    const dots_line = (name, get, set, none_id = "") => {
-      const dots = el("span", { className: "dots", role: "radiogroup", ariaLabel: name });
-      const none = el("button", { type: "button", className: "none", id: none_id, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => {
-        set(null);
-        this.sync_rows();
-        this.render();
-      } });
-      none.innerHTML = none_dot;
-      none.dataset.k = "none";
-      dots.append(none);
-      GUIDE_COLOURS.forEach((hex3, i2) => {
-        const b = el("button", { type: "button", className: "tone", title: hex3, ariaLabel: hex3, onclick: () => {
-          set(i2);
+    const pop2 = el("div", { className: "guidepop dots", id: "guide-pop", role: "radiogroup", hidden: true });
+    const none = el("button", { type: "button", className: "none", id: "guide-pop-none", title: "None: hide it", ariaLabel: "None" });
+    none.innerHTML = none_dot;
+    none.dataset.k = "none";
+    pop2.append(none, ...GUIDE_COLOURS.map((hex3, i2) => {
+      const b = el("button", { type: "button", className: "tone", title: hex3, ariaLabel: hex3 });
+      b.style.setProperty("--c", hex3);
+      b.dataset.k = i2;
+      return b;
+    }));
+    for (const b of pop2.children) b.setAttribute("role", "radio");
+    let pop_for = null;
+    const pop_shut = () => {
+      pop2.hidden = true;
+      pop_for = null;
+    };
+    this.guide_pop_shut = pop_shut;
+    pop2.onclick = (e) => {
+      const b = e.target.closest("[data-k]");
+      if (!b || !pop_for) return;
+      pop_for.choose(b.dataset.k === "none" ? null : +b.dataset.k);
+      pop_shut();
+    };
+    const guide_line = (name, get, set, id = "") => {
+      const label = el("span", { className: "name", textContent: name, title: name });
+      const dot = el("button", { type: "button", className: "gdot", id: id ? id + "-colour" : "", title: "Its colour", ariaLabel: name + ": its colour" });
+      const tick = el("button", { type: "button", className: "gtick", id, title: "Show or hide it", ariaLabel: name });
+      tick.innerHTML = icon(`<path d="M2.5 6.25L5 8.75L9.5 3.5" ${sw(SLANT)}/>`, 12);
+      const line = el("div", { className: "guidekind" }, label, dot, tick);
+      let was = get() ?? 0;
+      const d = {
+        line,
+        label,
+        dot,
+        tick,
+        choose: (k) => {
+          if (k !== null) was = k;
+          set(k);
           this.sync_rows();
           this.render();
-        } });
-        b.style.setProperty("--c", hex3);
-        b.dataset.k = i2;
-        dots.append(b);
-      });
-      for (const b of dots.children) b.setAttribute("role", "radio");
-      const label = el("span", { className: "name", textContent: name, title: name });
-      const line = el("div", { className: "guidekind" }, label, dots);
-      const refresh = () => {
-        const k = get();
-        line.classList.toggle("off", k === null);
-        for (const b of dots.querySelectorAll("[data-k]")) {
-          const on = b.dataset.k === "none" ? k === null : +b.dataset.k === k;
-          b.classList.toggle("on", on);
-          b.setAttribute("aria-checked", String(on));
+        },
+        refresh: () => {
+          const k = get();
+          if (k !== null) was = k;
+          dot.style.setProperty("--c", GUIDE_COLOURS[k ?? was] || GUIDE_COLOURS[0]);
+          line.classList.toggle("off", k === null);
+          tick.setAttribute("aria-pressed", String(k !== null));
+          if (pop_for === d) for (const b of pop2.children) {
+            const on = b.dataset.k === "none" ? k === null : +b.dataset.k === k;
+            b.classList.toggle("on", on);
+            b.setAttribute("aria-checked", String(on));
+          }
         }
       };
-      return { line, label, refresh };
-    };
-    this.guide_dots = dots_line;
-    this.guide_kinds = [GUIDE_KINDS[5], GUIDE_KINDS[1]].map(([show, colour, name]) => {
-      const d = dots_line(name, () => this.S[show] ? this.S[colour] : null, (k) => {
-        if (k === null) this.S[show] = false;
-        else {
-          this.S[show] = true;
-          this.S[colour] = k;
-        }
-      }, "guide-" + show);
-      list.append(d.line);
+      tick.onclick = () => d.choose(get() === null ? was : null);
+      dot.onclick = () => {
+        if (pop_for === d) return pop_shut();
+        pop_for = d;
+        pop2.hidden = false;
+        d.refresh();
+        const l = list.getBoundingClientRect(), r = dot.getBoundingClientRect(), under = line.getBoundingClientRect().bottom;
+        pop2.style.top = `${under - l.top + list.querySelector(".guidescroll").scrollTop}px`;
+        pop2.style.left = `${Math.max(0, Math.min(r.left + r.width / 2 - l.left - pop2.offsetWidth / 2, l.width - pop2.offsetWidth))}px`;
+      };
       return d;
-    });
-    const which = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which rings show their guides" });
-    [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word2, rings, sel]) => {
-      const b = el("button", { type: "button", id: "guide-rings-" + word2.toLowerCase(), textContent: word2, title: { All: "Every ring\u2019s; the selected one\u2019s stronger while the Rings tab is open", Selected: "The selected ring\u2019s, while the Rings tab is open (#301)", None: "No ring\u2019s" }[word2], onclick: () => {
-        this.S.gd_rings = rings;
-        this.S.gd_sel = sel;
+    };
+    this.guide_dots = guide_line;
+    this.guide_kinds = [GUIDE_KINDS[5], GUIDE_KINDS[1]].map(([show, colour, name]) => guide_line(name, () => this.S[show] ? this.S[colour] : null, (k) => {
+      if (k === null) this.S[show] = false;
+      else {
+        this.S[show] = true;
+        this.S[colour] = k;
+      }
+    }, "guide-" + show));
+    const which_menu = (id, title, get, set) => {
+      const select = el("select", { id, ariaLabel: title });
+      ["Selected", "All", "None"].forEach((word2, i2) => select.append(el("option", { value: i2, textContent: word2 })));
+      select.onchange = () => {
+        set(+select.value);
         this.sync_rows();
         this.render();
-      } });
-      b.setAttribute("role", "radio");
-      which.append(b);
+      };
+      const menu = chevron_box(select);
+      return { box: menu.box, refresh: () => {
+        select.value = get();
+        menu.sync();
+      } };
+    };
+    const which_of = (all, sel) => all ? 1 : sel ? 0 : 2, which_to = (n) => [n === 1, n !== 2];
+    this.guide_which = which_menu("guide-rings", "Which rings show their guides", () => which_of(this.S.gd_rings, this.S.gd_sel), (n) => {
+      [this.S.gd_rings, this.S.gd_sel] = which_to(n);
     });
-    this.guide_which = which;
+    this.guide_which_w = which_menu("guide-windows", "Which windows show their guides", () => which_of(this.S.gd_wins, this.S.gd_wsel), (n) => {
+      [this.S.gd_wins, this.S.gd_wsel] = which_to(n);
+    });
     this.guide_rings = el("div", { className: "guiderings" });
-    const which_w = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which windows show their guides" });
-    [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word2, wins, sel]) => {
-      const b = el("button", { type: "button", id: "guide-windows-" + word2.toLowerCase(), textContent: word2, title: { All: "Every window\u2019s; the selected one\u2019s stronger while the Windows tab is open", Selected: "The selected window\u2019s, while the Windows tab is open (#301)", None: "No window\u2019s" }[word2], onclick: () => {
-        this.S.gd_wins = wins;
-        this.S.gd_wsel = sel;
-        this.sync_rows();
-        this.render();
-      } });
-      b.setAttribute("role", "radio");
-      which_w.append(b);
-    });
-    this.guide_which_w = which_w;
     this.guide_windows = el("div", { className: "guiderings" });
-    this.guide_more = el("div", { className: "guidemore" });
+    this.guide_more = el("div", { className: "guiderings guidemore" });
+    const head = (word2, ...rest) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: word2 }), ...rest);
+    this.guide_windows_head = head("Windows", this.guide_which_w.box);
+    const last_gone = el("button", { type: "button", className: "minus", id: "guide-more-last", title: "Take the last added guide away", ariaLabel: "Take the last added guide away", onclick: () => {
+      this.S.gd_more = (this.S.gd_more || []).slice(0, -1);
+      this.sync_rows();
+      this.render();
+    } });
+    last_gone.innerHTML = icon(`<path d="M3 6H9" ${sw(LINE)}/>`, 12);
+    this.guide_more_head = head("Added", last_gone);
+    const left = el("div", { className: "guidecol" }, head("Rings", this.guide_which.box), this.guide_rings);
+    const right = el("div", { className: "guidecol" }, ...this.guide_kinds.map((d) => d.line), this.guide_windows_head, this.guide_windows);
+    this.guide_added = el("div", { className: "guideadded" }, el("div", { className: "guidecol" }, this.guide_more_head), el("div", { className: "guidecol" }, this.guide_more));
+    const scroll = el("div", { className: "guidescroll guidecols" }, left, right, this.guide_added, pop2);
     const adds = el("span", { className: "segs" });
     GUIDE_MORE.forEach((kind, i2) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
       const used = new Set((this.S.gd_more || []).map((g) => g.k));
@@ -18061,32 +18123,27 @@ var DialTool = class _DialTool {
       this.sync_rows();
       this.render();
     } })));
-    this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }));
-    this.guide_more_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Added" }));
-    this.guide_windows_which = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
-    const scroll = el(
-      "div",
-      { className: "guidescroll" },
-      ...list.children,
-      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" })),
-      this.guide_rings,
-      this.guide_windows_head,
-      this.guide_windows,
-      this.guide_more_head,
-      this.guide_more
-    );
-    const settings = el(
-      "div",
-      { className: "guidesettings" },
-      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which),
-      this.guide_windows_which,
-      el("div", { className: "guidehead add" }, el("span", { className: "name", textContent: "Add" }), adds)
-    );
+    const settings = el("div", { className: "guidesettings" }, head("Add", adds));
     list.append(scroll, settings);
     list.classList.add("guidesheet");
+    list.addEventListener("pointerdown", (e) => {
+      if (!pop2.hidden && !e.target.closest("#guide-pop, .gdot")) pop_shut();
+    });
     this.guides_more_below = () => scroll.classList.toggle("more", scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2);
-    scroll.addEventListener("scroll", this.guides_more_below, { passive: true });
-    this.guide_rows = [this.build_row({ ...num2("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global", side: true })];
+    scroll.addEventListener("scroll", () => {
+      pop_shut();
+      this.guides_more_below();
+    }, { passive: true });
+    const thick = el("span", { className: "pillswitch", role: "radiogroup", ariaLabel: "Thickness" });
+    [1, 2, 3].forEach((n) => {
+      const b = el("button", { type: "button", id: "guide-w-" + n, textContent: String(n), role: "radio", onclick: () => {
+        this.S.gd_w = GUIDE_STEP * n;
+        this.sync_rows();
+        this.render();
+      } });
+      thick.append(b);
+    });
+    this.guide_thick = thick;
     const ask = (on) => {
       last2.classList.toggle("asking", on);
       question.hidden = !on;
@@ -18119,13 +18176,7 @@ var DialTool = class _DialTool {
         reset.focus();
       }
     };
-    const last2 = this.guide_rows[0].el, box_ = last2.querySelector(".numbox");
-    this.name_opens(last2.querySelector("label"), this.guide_rows[0].row);
-    const cell = el("span", { className: "numcell" });
-    box_.replaceWith(cell);
-    cell.append(box_);
-    last2.classList.add("guidelast", "popfoot");
-    last2.append(el("span", { className: "resetall" }, reset), question);
+    const last2 = el("div", { className: "row guidelast popfoot" }, el("label", { textContent: "Thickness" }), el("span", { className: "numcell" }, thick), el("span", { className: "resetall" }, reset), question);
     settings.append(last2);
     const box3 = el("div", { className: "guides" }, this.guides_tick, more, list);
     box3.onkeydown = (e) => {
@@ -18308,18 +18359,15 @@ var DialTool = class _DialTool {
     this.guides_tick.title = S.guides ? "Guides are on: press to hide them" : "Guides are off: press to show them";
     if ($("#guide-list").hidden) return;
     for (const k of this.guide_kinds) k.refresh();
-    const which = S.gd_rings ? 0 : S.gd_sel ? 1 : 2;
-    [...this.guide_which.children].forEach((b, n) => {
-      b.classList.toggle("on", n === which);
-      b.setAttribute("aria-checked", String(n === which));
-    });
+    this.guide_which.refresh();
+    this.guide_which_w.refresh();
     const rings = JSON.stringify(S.rings.map((r) => r.name));
     if (this.guide_rings.dataset.rings !== rings) {
       this.guide_rings.dataset.rings = rings;
       this.guide_ring_lines = S.rings.map((ring, i2) => {
         const d = this.guide_dots(ring.name || kind_of(ring), () => ring_guide(this.S, i2), (k) => {
           this.S.rings[i2].guide = k === null ? -2 : k;
-        });
+        }, "guide-ring-" + i2);
         d.line.classList.add("ring");
         return d;
       });
@@ -18329,25 +18377,20 @@ var DialTool = class _DialTool {
       d.refresh();
       d.line.classList.toggle("selected", i2 === S.ui_ring);
     });
-    const which_w = S.gd_wins ? 0 : S.gd_wsel ? 1 : 2;
-    [...this.guide_which_w.children].forEach((b, n) => {
-      b.classList.toggle("on", n === which_w);
-      b.setAttribute("aria-checked", String(n === which_w));
-    });
     const shown = windows_of(S).map((w, i2) => w.on ? i2 : -1).filter((i2) => i2 >= 0), wins = JSON.stringify(shown.map((i2) => [i2, window_place(windows_of(S)[i2])]));
     if (this.guide_windows.dataset.wins !== wins) {
       this.guide_windows.dataset.wins = wins;
       this.guide_window_lines = shown.map((i2) => {
         const d = this.guide_dots(`Window at ${window_place(windows_of(this.S)[i2])}`, () => window_guide(this.S, i2), (k) => {
           windows_of(this.S)[i2].guide = k === null ? -2 : k;
-        });
+        }, "guide-window-" + i2);
         d.line.classList.add("ring");
         d.index = i2;
         return d;
       });
       this.guide_windows.replaceChildren(...this.guide_window_lines.map((d) => d.line));
     }
-    this.guide_windows_head.hidden = this.guide_windows.hidden = this.guide_windows_which.hidden = !shown.length;
+    this.guide_windows_head.hidden = this.guide_windows.hidden = !shown.length;
     this.guide_window_lines.forEach((d) => {
       d.refresh();
       d.line.classList.toggle("selected", d.index === S.ui_window);
@@ -18358,7 +18401,7 @@ var DialTool = class _DialTool {
       this.guide_more_lines = (S.gd_more || []).map((g, i2) => {
         const kind = GUIDE_MORE[g.kind], d = this.guide_dots(kind[0].toUpperCase() + kind.slice(1), () => this.S.gd_more[i2].k >= 0 ? this.S.gd_more[i2].k : null, (k) => {
           this.S.gd_more[i2].k = k === null ? -2 : k;
-        });
+        }, `guide-more-${i2}`);
         const field = (key, word, length) => {
           const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i2}-${key}`, title: key === "a" ? "Angle, degrees" : "Radius", ariaLabel: key === "a" ? "Angle" : "Radius" });
           input.onchange = () => {
@@ -18374,28 +18417,25 @@ var DialTool = class _DialTool {
           return { key, length, input, el: el("label", { className: "guidefield" }, ...words) };
         };
         const fields = [...kind !== "circle" ? [field("a", "\xB0", false)] : [], ...kind !== "line" ? [field("r", "r", true)] : []];
-        const gone = el("button", { type: "button", className: "remove", id: `guide-more-${i2}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => {
-          this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i2);
-          this.sync_rows();
-          this.render();
-        } });
-        gone.innerHTML = cross_dot;
         d.label.replaceChildren(el("span", { className: "word", textContent: d.label.textContent }), ...fields.map((f2) => f2.el));
         d.line.classList.add("added");
-        d.line.querySelector(".dots .none").replaceWith(gone);
         return { ...d, fields };
       });
       this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
     }
-    this.guide_more_head.hidden = !(S.gd_more || []).length;
+    this.guide_added.hidden = !(S.gd_more || []).length;
     this.guide_more_lines.forEach((d, i2) => {
       d.refresh();
       for (const f2 of d.fields) if (document.activeElement !== f2.input) {
         f2.input.value = f2.length ? String(parseFloat(this.in_unit(S.gd_more[i2][f2.key], 2))) : String(+(+S.gd_more[i2][f2.key]).toFixed(1));
-        f2.input.oninput();
+        f2.input.style.width = `${Math.max(1, f2.input.value.length)}ch`;
       }
     });
-    for (const r of this.guide_rows) r.refresh(S);
+    [...this.guide_thick.children].forEach((b, n) => {
+      const on = Math.abs(S.gd_w - GUIDE_STEP * (n + 1)) < 1e-6;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-checked", String(on));
+    });
   }
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
    *  which can be folded. Each section remembers how far it was scrolled. */
