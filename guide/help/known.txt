@@ -1,0 +1,11 @@
+# Labels in the app the help page doesn't name, on purpose. One per line: label — why.
+One hand — the heading over the chosen hand's rows; the page calls them the hand's panes
+Hole length — "its length and width" under Disc hand
+Hole width — "its length and width" under Disc hand
+Size % — Flare's rows: "each with its sizes"
+Case colour % — Flare's rows: "each with its sizes"
+Brightness % — Flare's rows: "each with its sizes"
+Width % — Glass reflection's rows: "each with its sizes"
+Length % — Glass reflection's rows: "each with its sizes"
+Shine % — Glass reflection's rows: "each with its sizes"
+Blurs, flare, shine, outline — Effects' tick, said in words under Light

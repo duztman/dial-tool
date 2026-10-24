@@ -13,6 +13,6 @@ rm -rf "$W/help" && mkdir -p "$W/help"
 cp guide/help/index.html "$W/help/" && cp -r guide/help/img guide/help/fonts "$W/help/"
 cd "$W" && git add -A help
 if git diff --cached --quiet; then echo "already live: nothing changed"; else
-  git commit -qm "Help page from dev $(git -C "$OLDPWD" rev-parse --short HEAD)" && git push -q origin HEAD:gh-pages && echo "live in a minute: https://duztman.github.io/dial-tool/help/"
+  git commit -qm "Help page from dev $(git -C "$OLDPWD" rev-parse --short HEAD)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" && git push -q origin HEAD:gh-pages && echo "live in a minute: https://duztman.github.io/dial-tool/help/"
 fi
 cd - >/dev/null && git worktree remove --force "$W"

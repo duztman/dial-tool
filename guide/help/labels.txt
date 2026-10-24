@@ -1,0 +1,152 @@
+Dial
+Diameter
+Scale everything with it
+Weight %
+Centre hole
+Plate
+Page
+Page margin
+Backdrop
+Colours
+Reset
+Rings, top first
+Text
+Type
+Resize Ring
+Length
+Ø
+Band width
+Shapes width
+Sector colours
+Shapes
+Shape
+Width
+Inner width ×
+Hollow wall
+Round outer
+Round inner
+Positions
+Offset
+Skip those
+Start
+Span
+Give way to rings above
+12 o’clock · first position
+Style
+Scale ×
+Gap
+Numerals
+Labels
+Custom
+First number
+Step
+Digits
+Start again after
+Placement
+Band
+Fill % of step
+Edit one numeral
+Radius ±
+Angle ± °
+Rotate °
+One hand
+Colour
+Disc Ø
+Marker
+Hole
+Hole length
+Hole width
+Mark ink
+Inside the disc
+Tail
+Round ends
+Tip length
+Head width
+Circle Ø
+Widest at %
+Barrel from %
+Circle at %
+Hub Ø
+Counterweight Ø
+Cap on this hand
+Cap Ø
+Cap colour
+Window
+Complication
+Big date
+Picture
+Moon age, days
+Radius
+Height
+Sides
+Corner
+Turn it with its radius
+Turn the text with it
+Frame
+Disc under it
+Shade
+Neighbours
+Frame width
+Clearance
+Follows the date
+Names
+Written
+Shows
+Jumps
+Inside the case
+Font
+Export a file
+Keep numerals as text in the SVG
+dpi
+Print
+Mono print mask
+Inverted
+Cut lines
+Outline and registration marks
+Hidden rings still cut
+What the windows show
+Mirrored, for toner transfer
+Paper
+Copies
+Room between
+A cut line round each
+A set of files
+Moving picture
+Seconds
+fps
+Size px
+Share dial as link
+Settings file
+Log
+Gallery
+Ink
+Ink height
+Watch
+View
+Case
+Metal
+Case colour
+Insert
+Strap
+Leather
+Pattern
+Light
+Lighting
+Sun
+From
+Shadows
+Darkness %
+Soft shadows
+Flare
+Kind
+Size %
+Case colour %
+Brightness %
+Glass reflection
+Width %
+Length %
+Shine %
+Effects
+Blurs, flare, shine, outline
+Export the watch
+Pixels
