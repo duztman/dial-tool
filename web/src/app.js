@@ -950,7 +950,7 @@ const PULSE_FLASH = 0.4;   // …and how much of a beat the whole flash takes (O
 const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
 // ── show mode's tabs (#509; the Show Case's column, re-hosted in the tool's rows). Their numbers in SECTIONS come after the dial side's (R9) ──
 ROWS["Show dial"] = [
-  hdr("Colours", { pin: true, summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026)
+  hdr("Colours", { summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026); not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
   hdr("Ink", { folded: false }),
   num("w_ink", "Ink height", 0, 10, 1, { whole: true }),
