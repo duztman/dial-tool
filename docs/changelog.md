@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.33 (web version) · 25 Oct 2026
+
+- **The Shadows pane's balance** (#526; Okay, 02:29, his marks: "This balance is what I'm after"): the sun box runs wide up to the sliders' column, same height; Angle · Height · Strength stand at the right edge, their column as wide as the squeezed slider; the exploded view is titled *Components* as the sun box is titled *Sun*; every corner of the pane round. A press on the sun's picture is read through the picture's scale, so a wide box places the sun right.
+- Checked: labels, links, the moment, the window test whole, the screenshots.
+
 ## beta 4.92.32 (web version) · 25 Oct 2026
 
 - **The Shadows pane squeezed** (#526; Okay, 02:20, his marks: "SQUEEZE sliders"; "In aligned with rings tab above. Right side stays still"): its left edge on the Rings tab's left edge, its right edge still the switch's; every slider shorter — 100 on a part's row, 160 beside the sun (`--shade-slide`, `--shade-slide-top`) — the rows as wide as they need, the exploded view takes the rest.

@@ -2995,7 +2995,7 @@ class DialTool {
   stack_picture() {
     const W = 120, H = 306, AX = W / 2, MM = 70, GAP = 24, STEP = 0.01, ROUND = 0.42;      // ROUND: an ellipse's height to its width      // px per mm; the least between two parts; an ink step as mm (ten steps, a tenth of a millimetre: the inks lie close over the plate, under every hand)
     const box = el("div", { className: "stackpic", id: "shadows-stack" });
-    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><line class="axis"/><g class="parts"></g></svg>`;
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><line class="axis"/><g class="parts"></g></svg><span class="word">Components</span>`;
     const parts = box.querySelector(".parts"), axis = box.querySelector(".axis");
     const refresh = () => {
       const S = this.S, hands = ["hour", "minute", "second"].filter((h) => S["ha_" + h] ? S["ha_" + h].show !== false : true);
@@ -3053,7 +3053,8 @@ class DialTool {
     };
     // a drag anywhere on the picture puts the sun under the finger
     const move = (e) => {
-      const r = box.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W, py = (e.clientY - r.top) / r.height * H;
+      const r = box.getBoundingClientRect(), k = Math.max(W / r.width, H / r.height);      // the picture keeps its proportions in a box of any width (it is centred), so the press is read through that scale
+      const px = W / 2 + (e.clientX - r.left - r.width / 2) * k, py = H / 2 + (e.clientY - r.top - r.height / 2) * k;
       const dx = px - cx, dy = py - cy, dist = Math.hypot(dx, dy), from = ((Math.atan2(dx, -dy) * 180 / Math.PI) + 360) % 360;
       this.S.sh_from = Math.round(from);
       this.S.sh_rise = Math.round(clamp(5 + 80 * (FAR - clamp(dist, NEAR, FAR)) / (FAR - NEAR), 5, 85));

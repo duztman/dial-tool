@@ -153,7 +153,7 @@
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: var(--canvas-inset);      /* undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) */
-    --sun-w: 224px; --sun-h: 204px; --sun-ray: 1.5px;      /* the Shadows pane's sun picture: its box (Okay's mark, 25 Oct 2026, 01:38); a ray's width (the icons' LINE) */
+    --sun-w: 224px; --sun-h: 204px; --sun-ray: 1.5px;      /* the Shadows pane's sun picture: the picture's grid and the box's height (Okay's mark, 25 Oct 2026, 01:38; its width runs to the sliders' column, 02:29); a ray's width (the icons' LINE) */
     --shade-slide: 100px; --shade-slide-top: 160px;      /* the Shadows pane's sliders, squeezed (Okay, 25 Oct 2026, 02:20: "squeeze sliders"): on a part's row · beside the sun */
     --stack-w: 120px; --stack-line: 1.25px; --stack-name: 76px;      /* the exploded view's frame, as wide as a hand's box; its lines (the icons' DENSE); the rows' names beside it, "Minute ticks" whole */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
