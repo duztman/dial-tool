@@ -25,6 +25,7 @@
   .colourlist > .row.showline > .eye[aria-pressed="true"], .colourlist > .row.showline > .eye:hover { color: var(--ink); }
   .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .colourlist > .row.showline > .place { display: flex; justify-content: end; }
+  .colourlist > .row.showline .colhead { font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; color: var(--uiblack, var(--ink)); }      /* the number column's name, in black, small capitals as Shenanigans' names */
   .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
   .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }

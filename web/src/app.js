@@ -3451,7 +3451,8 @@ class DialTool {
     const one = (id, title, read, write, alpha = false) => [{ id, title, read, write, alpha }];
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
-      if (S.ui_show) lines.push({ text: "Dial", colours: one("plate", "Dial", () => this.S.c_plate, (v) => { this.S.c_plate = v; this.changed(); }) });      // show mode only: the plate's colour heads the list, and each window's disc follows it (Okay, 23 Oct 2026: "Disk behind each window and plate color")
+      if (S.ui_show) lines.push({ text: "Dial", colours: one("plate", "Dial", () => this.S.c_plate, (v) => { this.S.c_plate = v; this.changed(); }),
+        tail: [{ key: "head", place: "number", make: () => ({ el: el("span", { className: "colhead", textContent: "Ink height" }), refresh: () => {} }) }] });      // the number column's name, on the Dial line (Okay, 24 Oct 2026, 20:26: "Is that column not ink height? Labelling there in black would be ok")      // show mode only: the plate's colour heads the list, and each window's disc follows it (Okay, 23 Oct 2026: "Disk behind each window and plate color")
       S.rings.forEach((ring, i) => {
         const text = ring.name || G.kind_of(ring), sectors = G.kind_of(ring) === "band" && G.positions_of(ring).length > 1;
         const line = { text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => { this.S.rings[i].c = v; this.changed(); }, true) };

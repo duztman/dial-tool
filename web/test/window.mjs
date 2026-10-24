@@ -2287,9 +2287,9 @@ await shot("10-bar");
       const eyes = rows.filter((l) => l.querySelector(":scope > .eye")).length;
       const hand = r("#hand-hour-bevel"), before = t.S.ha_hour.bevel; hand.click(); const flipped = t.S.ha_hour.bevel !== before; hand.click();
       t.S.rings[0].ink_d = was[1]; t.changed();
-      return { n: rows.length, eyes, ink: Boolean(field), step, lefts: new Set(lefts).size, height: Boolean(r("#hand-hour-height")), flipped, cap_line: rows.some((l) => l.querySelector("label").textContent === "Cap"), cap_square: Boolean(r(".row.showline .swatch#colour-cap")) }; });
+      return { n: rows.length, eyes, ink: Boolean(field), step, lefts: new Set(lefts).size, height: Boolean(r("#hand-hour-height")), flipped, cap_line: rows.some((l) => l.querySelector("label").textContent === "Cap"), cap_square: Boolean(r(".row.showline .swatch#colour-cap")), head: r(".row.showline .colhead")?.textContent }; });
     await shot("12b-show-colours");
-    check(lines.eyes >= 4 && lines.ink && lines.step === 2 && lines.lefts === 1 && lines.height && lines.flipped && (lines.cap_square ? !lines.cap_line : true),
+    check(lines.eyes >= 4 && lines.ink && lines.step === 2 && lines.lefts === 1 && lines.height && lines.flipped && lines.head === "Ink height" && (lines.cap_square ? !lines.cap_line : true),
       `show mode's Colours (#521; Okay, 24 Oct 2026: "Yes, as drawn"): ${lines.eyes} lines with an eye; a ring's own ink box sets its step from All inks (+2 → ${lines.step}); every number box in one column (${lines.lefts}); a hand's Bevel toggle and Height; the cap a square on its hand's line (${lines.cap_square})`);
   }
   const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length, n.isConnected]; });

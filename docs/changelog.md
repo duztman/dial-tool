@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.92.16 (web version) · 24 Oct 2026
+
+- **Show mode's Colours names its number column**: INK HEIGHT on the Dial line, in black small capitals, over the rings' ink boxes and the hands' heights (Okay, 20:26: "Is that column not ink height? Labelling there in black would be ok").
+
 ## beta 4.92.15 (web version) · 24 Oct 2026
 
 - **Ink per ring, and per hand, in show mode's Colours** (#521; "Yes, as drawn"): each ring's line is its eye · name · colour · its ink height in a number box; each hand's is its eye · name · colour · a Bevel toggle · its height (the dial side's shadow heights). The cap's colour is a square on the line of the hand it sits on ("A swatch on its hand's line"). Colours there are squares, so the names keep their room. The Ink pane's row is *All inks at once*: it moves every ring by the same amount, each keeping its step from it ("adding to or subbing from each same amount"). A ring's step (`ink_d`) is kept in the file and the session, not in a link.
