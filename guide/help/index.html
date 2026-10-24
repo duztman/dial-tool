@@ -35,7 +35,7 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
 <div class="wrap">
 <nav aria-label="Contents">
   <b>Start</b><a href="#idea">The idea</a><a href="#screen">The screen</a><a href="#first">A first dial</a>
-  <b>Tabs</b><a href="#dial">Dial</a><a href="#rings">Rings</a><a href="#hands">Hands</a><a href="#date">Date</a><a href="#export">Export</a>
+  <b>Tabs</b><a href="#dial">Dial</a><a href="#rings">Rings</a><a href="#hands">Hands</a><a href="#date">Windows</a><a href="#export">Export</a>
   <b>Around the preview</b><a href="#canvas">Corners and bar</a><a href="#show">Show mode</a>
   <b>More</b><a href="#how">How do I…</a><a href="#words">Words</a>
 </nav>
@@ -55,11 +55,11 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
 
 <h2 id="screen">The screen</h2>
 <dl>
-  <dt>Title line</dt><dd>Version, Help, the Gallery, the panel's colour swatch and the unit box (mm, pt, in, lignes, thou).</dd>
-  <dt>Tabs</dt><dd>Dial · Rings · Hands · Date · Export. Each opens its panes; pinned panes stay in view while the rest scrolls.</dd>
+  <dt>Title line</dt><dd>Version, Help, the Gallery and the unit box: mm, pt, in, lignes, thou.</dd>
+  <dt>Tabs</dt><dd>Dial · Rings · Hands · Windows · Export. Each opens its panes; pinned panes stay in view while the rest scrolls.</dd>
   <dt>Preview</dt><dd>The dial at true proportions. Scroll zooms, right-drag moves, two fingers pinch and move.</dd>
   <dt>Top left</dt><dd>Undo · redo, the list of steps under its chevron, and Versions: your saved dials.</dd>
-  <dt>Top right</dt><dd>Guides, the case and its strap, X-ray: preview helpers, never in a file.</dd>
+  <dt>Top right</dt><dd>Guides, Case, X-ray: preview helpers, never in a file.</dd>
   <dt>Bottom right</dt><dd>The Tiny preview, the dial alone (eye) and show mode (iris).</dd>
   <dt>Bottom bar</dt><dd>Time and speed, the date, the timeline, zoom and Fit.</dd>
 </dl>
@@ -71,7 +71,7 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
   <li>Dial: set the Diameter.</li>
   <li>Rings: add a ticks ring for the minute track, a markers ring for the hours, a numerals ring if you want figures.</li>
   <li>Hands: pick a shape for each hand.</li>
-  <li>Date: show a window at 3 if you need one.</li>
+  <li>Windows: tick the window at 3 if you need a date.</li>
   <li>Export: a PDF or SVG at true size; for print, tick Mono print mask under Print.</li>
 </ol>
 
@@ -81,14 +81,14 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
 <dl>
   <dt>Diameter</dt><dd>The plate's diameter, in mm.</dd>
   <dt>Scale everything with it</dt><dd>When on, rings, hands and windows grow and shrink with the diameter.</dd>
-  <dt>Weight %</dt><dd>Makes every line, mark and numeral heavier or lighter at once.</dd>
+  <dt>Weight %</dt><dd>Every width on the dial at once: marks, bands, hands, frames. Lengths and places stay; one undo takes it back.</dd>
   <dt>Centre hole</dt><dd>The hole for the hand pipes, Ø mm; 0 for none.</dd>
   <dt>Plate colour</dt><dd>On the Dial heading line.</dd>
 </dl>
 <h3>Page · Colours · Reset</h3>
 <dl>
   <dt>Page margin</dt><dd>Room round the dial on the exported page; also the room for registration marks.</dd>
-  <dt>Colours</dt><dd>Every colour on the dial in one list; change one and every part using it follows.</dd>
+  <dt>Colours</dt><dd>Every ring's colour in one list, a line per ring; a band with sectors has one per sector.</dd>
   <dt>Reset</dt><dd>Reset to the First dial, or Blank face: a white plate with hands and nothing else. Undo brings yours back.</dd>
 </dl>
 
@@ -111,7 +111,7 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
   <dt>Band · Sector colours</dt><dd>A band's fill; a colour per sector when it has several.</dd>
   <dt>Edit one numeral</dt><dd>Move, turn, scale or reshape one mark or numeral: Radius ±, Angle ±, Rotate, Scale.</dd>
 </dl>
-<p class="watch">A numeral or marker at a window's position is dropped; give way rules decide what shows where rings meet.</p>
+<p class="watch">Markers and numerals leave a window's position empty; other marks are cut back from the window's clear zone.</p>
 
 <h2 id="hands">Hands</h2>
 <p class="lead">Hour · Minute · Seconds, as tabs; the panes below edit the chosen hand.</p>
@@ -123,13 +123,13 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
   <dt>Cap</dt><dd>The disc over the pivot: Cap Ø; Cap on this hand when there is no seconds hand.</dd>
 </dl>
 
-<h2 id="date">Date</h2>
+<h2 id="date">Windows</h2>
 <p class="lead">Four windows, at 12 · 3 · 6 · 9, as cards. Tick a window's heading to show it.</p>
 <dl>
   <dt>Complication</dt><dd>Date, day, am · pm, moon phase; Big date for two discs.</dd>
   <dt>Shape</dt><dd>The hole: radius, width, height or Ø, sides, corner; turned with its radius or not.</dd>
   <dt>Frame · Clearance</dt><dd>A printed frame round the hole, and how far marks keep away from it.</dd>
-  <dt>Follows the date · Neighbours · Jumps</dt><dd>Read the date set in the bar; show the next and previous days; jump or creep.</dd>
+  <dt>Follows the date</dt><dd>Shows the date set in the bar, not typed text; a moon window shows its age.</dd><dt>Neighbours</dt><dd>The disc's next places show where the hole allows.</dd><dt>Jumps</dt><dd>am · pm only: snaps at midnight and noon; off, the disc sweeps once a day.</dd><dt>Inside the case</dt><dd>The disc may not pass the case; off for a face on a screen.</dd>
   <dt>Names · Written</dt><dd>A day window's language (EN, TR, DE, FR, IT) and Short or Full names.</dd>
   <dt>Font</dt><dd>The window's own font.</dd>
 </dl>
@@ -138,7 +138,7 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
 <dl>
   <dt>Export a file</dt><dd>PDF, SVG and PNG at true size; dpi for PNG; a Wear OS watch face.</dd>
   <dt>Print</dt><dd>Mono print mask, Inverted, Cut lines, Outline and registration marks, Hidden rings still cut, What the windows show, Mirrored for toner transfer; ink films, a print sheet, a spec sheet.</dd>
-  <dt>A set of files</dt><dd>Every export at once.</dd>
+  <dt>A set of files</dt><dd>Tick the files you want; Export ticked writes them all.</dd>
   <dt>Moving picture</dt><dd>The dial running: seconds, fps, size.</dd>
   <dt>Share dial as link</dt><dd>A link that opens this dial anywhere.</dd>
   <dt>Settings file</dt><dd>Save… · Load…: every value, to keep a dial for good.</dd>
@@ -149,7 +149,7 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
 <h2 id="canvas">Corners and bar</h2>
 <dl>
   <dt>Guides</dt><dd>Circles and lines for the chosen ring or window; the chevron picks which, and their colours.</dd>
-  <dt>Case · Strap</dt><dd>A case round the dial, preview only; no case to start.</dd>
+  <dt>Case</dt><dd>Dress, Field, Diver or Emre round the dial, as a flat silhouette, preview only; No case to start. Straps are in show mode.</dd>
   <dt>X-ray</dt><dd>The windows' discs under the plate, preview only.</dd>
   <dt>Shadows</dt><dd>Shadows from one sun; the chevron sets the light and how high each part stands.</dd>
   <dt>Backdrop</dt><dd>The colour behind the dial.</dd>
@@ -158,12 +158,12 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
 </dl>
 
 <h2 id="show">Show mode</h2>
-<p class="lead">The iris turns the tool into a showcase: the whole watch, lit. Your dial stays as it is.</p>
+<p class="lead">The iris turns the tool into a showcase: the whole watch, lit. Its tabs: Dial · Watch · Light · Export. Its Colours are your dial's; the round swatch on the title line puts the panel in greys.</p>
 <dl>
-  <dt>Show dial</dt><dd>The dial's colours and Ink height: how far printed ink stands proud of the plate.</dd>
+  <dt>Dial</dt><dd>The dial's colours and Ink height: how far printed ink stands proud of the plate.</dd>
   <dt>Watch</dt><dd>View, case, metal, insert; strap and its pattern.</dd>
   <dt>Light</dt><dd>Style and Lighting; Sun from and height (or drag on the canvas); shadows, flare, glass reflection, effects.</dd>
-  <dt>Show export</dt><dd>The watch as PNG or PDF.</dd>
+  <dt>Export</dt><dd>The watch as PNG or PDF.</dd>
 </dl>
 
 <h2 id="how">How do I…</h2>
@@ -171,11 +171,11 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
   <dt>start fresh</dt><dd>Dial › Reset › Blank face, or Reset to the First dial.</dd>
   <dt>find my dial again</dt><dd>Versions, top left; or open your settings file or link.</dd>
   <dt>change every colour</dt><dd>Dial › Colours.</dd>
-  <dt>lose the 3 beside a date window</dt><dd>It's already gone: marks at a window's position are dropped.</dd>
+  <dt>lose the 3 beside a date window</dt><dd>It's already gone: markers and numerals leave a window's position empty.</dd>
   <dt>keep marks off a band</dt><dd>On the marks' ring, Give way to rings above.</dd>
   <dt>move one numeral</dt><dd>Rings › Edit one numeral.</dd>
   <dt>print a mask</dt><dd>Export › Print › Mono print mask, then PDF or SVG.</dd>
-  <dt>type a value</dt><dd>Fields take sums and units: <code>12+3</code>, <code>2pt</code>.</dd>
+  <dt>type a value</dt><dd><code>+0.5</code> adds, <code>x2</code> multiplies, <code>/2</code> divides; a length takes a unit: <code>12pt</code>, <code>0.5in</code>.</dd>
 </dl>
 
 <h2 id="words">Words</h2>
@@ -185,7 +185,7 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
   <dt>Ticks ring</dt><dd>The minute track (chapter ring).</dd>
   <dt>Marker</dt><dd>An hour mark (index).</dd>
   <dt>Band</dt><dd>A solid ring of colour; thin bands make railroad rails.</dd>
-  <dt>Window</dt><dd>A hole in the plate showing a disc: date, day, am · pm, moon.</dd>
+  <dt>Window</dt><dd>A hole in the plate showing a disc: date, day, am · pm, moon phase, big date.</dd>
   <dt>Knock out</dt><dd>A ring cut clear round marks above it.</dd>
   <dt>Mask</dt><dd>Black on white, for etching or film.</dd>
 </dl>
