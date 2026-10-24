@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.15 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.16 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -889,6 +889,7 @@
   .colourlist > .row.showline > .eye[aria-pressed="true"], .colourlist > .row.showline > .eye:hover { color: var(--ink); }
   .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .colourlist > .row.showline > .place { display: flex; justify-content: end; }
+  .colourlist > .row.showline .colhead { font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; color: var(--uiblack, var(--ink)); }      /* the number column's name, in black, small capitals as Shenanigans' names */
   .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
   .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }
@@ -7216,7 +7217,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.15";
+var VERSION = "beta 4.92.16";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -19173,10 +19174,15 @@ var DialTool = class _DialTool {
     const one = (id, title, read, write, alpha = false) => [{ id, title, read, write, alpha }];
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
-      if (S.ui_show) lines.push({ text: "Dial", colours: one("plate", "Dial", () => this.S.c_plate, (v) => {
-        this.S.c_plate = v;
-        this.changed();
-      }) });
+      if (S.ui_show) lines.push({
+        text: "Dial",
+        colours: one("plate", "Dial", () => this.S.c_plate, (v) => {
+          this.S.c_plate = v;
+          this.changed();
+        }),
+        tail: [{ key: "head", place: "number", make: () => ({ el: el("span", { className: "colhead", textContent: "Ink height" }), refresh: () => {
+        } }) }]
+      });
       S.rings.forEach((ring, i2) => {
         const text = ring.name || kind_of(ring), sectors = kind_of(ring) === "band" && positions_of(ring).length > 1;
         const line = { text, colours: sectors ? this.sector_colours(i2) : one(`ring-${i2}`, text, () => (this.S.rings[i2] || {}).c, (v) => {
