@@ -29,6 +29,16 @@ a{color:inherit}
 code{font:13px ui-monospace,Menlo,monospace}
 footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
 @media (max-width:760px){.wrap{grid-template-columns:1fr;gap:16px}nav{position:static;display:flex;flex-wrap:wrap;gap:4px 14px}nav b{width:100%;margin:6px 0 0}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}}
+form.report{display:grid;gap:12px;max-width:560px;margin-top:12px}
+form.report label{display:grid;gap:4px;font-size:13px;color:var(--mute)}
+form.report label b{color:var(--ink);font-weight:500}
+form.report input,form.report textarea{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%}
+form.report textarea{min-height:88px;resize:vertical}
+form.report input:focus,form.report textarea:focus{outline:none;border-color:var(--ink)}
+form.report .gotcha{position:absolute;left:-9999px}
+form.report button{justify-self:start;font:inherit;font-weight:500;color:var(--paper);background:var(--ink);border:0;border-radius:6px;padding:8px 18px;cursor:pointer}
+form.report button:disabled{opacity:.4;cursor:default}
+#report-note{font-size:13px;color:var(--mute);min-height:1.5em;margin:0}
 </style>
 </head>
 <body>
@@ -37,7 +47,7 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
   <b>Start</b><a href="#idea">The idea</a><a href="#screen">The screen</a><a href="#first">A first dial</a>
   <b>Tabs</b><a href="#dial">Dial</a><a href="#rings">Rings</a><a href="#hands">Hands</a><a href="#date">Windows</a><a href="#export">Export</a>
   <b>Around the preview</b><a href="#canvas">Corners and bar</a><a href="#show">Show mode</a>
-  <b>More</b><a href="#how">How do I…</a><a href="#words">Words</a>
+  <b>More</b><a href="#how">How do I…</a><a href="#words">Words</a><a href="#report">Report a bug</a>
 </nav>
 <main>
 <header>
@@ -190,8 +200,63 @@ footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
   <dt>Mask</dt><dd>Black on white, for etching or film.</dd>
 </dl>
 
+<h2 id="report">Report a bug</h2>
+<p class="lead">For beta testers. Your name and the tester code are needed to send. Your browser and screen size go with the report.</p>
+<form class="report" id="report-form" novalidate>
+  <label><b>Name</b><input name="name" required autocomplete="name"></label>
+  <label><b>Tester code</b><input name="code" required autocomplete="off" spellcheck="false"></label>
+  <label><b>What happened</b><textarea name="happened" required></textarea></label>
+  <label>What you expected<textarea name="expected"></textarea></label>
+  <label>Steps to make it happen again<textarea name="steps" placeholder="1. Rings › Add a ring&#10;2. …"></textarea></label>
+  <label>Version, from the title line<input name="version" placeholder="4.92.7"></label>
+  <label>Link to the dial (Share dial as link › Copy link), if it helps<input name="dial_link" type="url"></label>
+  <label>Your email, if you want an answer<input name="email" type="email" autocomplete="email"></label>
+  <input class="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <button type="submit">Send</button>
+  <p id="report-note" role="status"></p>
+</form>
+
 <footer>Dial Tool · beta 4.92 · help written 24 Oct 2026 · <a href="../">open the tool</a></footer>
 </main>
 </div>
+<script>
+/* Bug reports go to Formspree, which emails them to Okay.
+   ENDPOINT: the form address from formspree.io (Okay's account); empty = not connected yet.
+   CODE_HASH: SHA-256 of the tester code. It keeps casual visitors out; it is not security
+   (anyone can read this page). To change the code: printf 'newcode' | sha256sum */
+const ENDPOINT = "";
+const CODE_HASH = "60700c26ced131eaac3cb060b54f0f2f08fac9dfad11916451b9fc7957138e48";
+
+const form = document.getElementById("report-form");
+const note = document.getElementById("report-note");
+const say = (t) => { note.textContent = t; };
+
+async function sha256(text) {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text.trim()));
+  return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = new FormData(form);
+  if (!data.get("name").trim()) return say("Add your name to send.");
+  if (!data.get("happened").trim()) return say("Say what happened.");
+  if (await sha256(data.get("code")) !== CODE_HASH) return say("That tester code isn't right.");
+  if (!ENDPOINT) return say("The form isn't connected yet. Nothing was sent.");
+  data.delete("code");
+  data.set("browser", navigator.userAgent);
+  data.set("screen", `${screen.width}×${screen.height} @${devicePixelRatio}x, window ${innerWidth}×${innerHeight}`);
+  data.set("_subject", `Dial Tool bug · ${data.get("name").trim()}`);
+  const button = form.querySelector("button");
+  button.disabled = true; say("Sending…");
+  try {
+    const answer = await fetch(ENDPOINT, { method: "POST", body: data, headers: { Accept: "application/json" } });
+    if (!answer.ok) throw new Error(answer.status);
+    form.reset(); say("Sent. Thank you.");
+  } catch {
+    say("It didn't send. Try again, or email the report.");
+  } finally { button.disabled = false; }
+});
+</script>
 </body>
 </html>

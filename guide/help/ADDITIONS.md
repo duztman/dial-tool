@@ -66,4 +66,4 @@ To do: read each Gallery entry's settings (`web/gallery.mjs`) and write its line
 
 ## Bug reports
 
-See the decision with Okay, 24 Oct 2026: a form on the site, name required, maybe a beta tester code. Not on the page until built.
+Built on the page (#536): name and tester code required, sent by Formspree; waiting on the form address and the code.
