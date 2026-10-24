@@ -179,8 +179,8 @@ If a term is used differently in conversation, ask, then update this file.
 | Term | Meaning |
 |---|---|
 | **Type** | Typography of a numerals or text ring (family, style, instance, language, size, tracking, axes, features). A new numerals ring copies the top one; date and day windows use it unless given a font. |
-| **Family / style** | A family (Helvetica Neue) and its styles, from the **font list** (`web/fonts.mjs`), an added font, or — in Chrome and Edge — the computer's fonts (**Installed**). |
-| **PostScript name** | One style's exact name (`HelveticaNeue-Bold`); stored in the ring's `ps`. |
+| **Family / style** | A family (Arimo) and its styles, from the **font list** (`web/fonts.mjs`), an added font, or — in Chrome and Edge — the computer's fonts (**Installed**). |
+| **PostScript name** | One style's exact name (`Arimo-Regular`); stored in the ring's `ps`. |
 | **Variable axis** | A continuous dimension of a variable font (`wght`, `wdth`…); each becomes a slider. |
 | **Named instance** | A preset point on a variable font's axes ("Bold Condensed"). |
 | **OpenType feature** | A font switch: `tnum` tabular, `onum` oldstyle, `ss01` stylistic set 1, `zero` slashed zero…; named as the font names it. |
@@ -199,7 +199,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **HarfBuzz** | The text engine, pinned in `web/package.json` (R30): text + font + features + axes + language → glyph outlines (R10). |
 | **Stand-in font** | Inter, packed in: draws numerals whose font isn't loaded; the log names it. |
 | **Installed fonts** | The font sheet's **Installed** button: the computer's fonts (Chrome, Edge, `queryLocalFonts`). Elsewhere: add files. |
-| **Link** (a dial's) | The tool's address with the dial after `#`: the dial only, not window state or font files (R31). **Link scheme 4** (`LINK_SCHEME`): "4" then **lean** settings (`lean()`, only what differs from the starting values), keys as codes from the **key table** (`LINK_KEYS`, only grows), colours hex, numbers to 3 decimals, time to the second, deflated, in Crockford's base 32. Other schemes are not read: the opener opens with a **note on the preview** and in the log. Once a link has opened its dial, the **address bar** shows only the site's address (the dial is in the session); **Copy link** gives the whole link (#537). |
+| **Link** (a dial's) | The tool's address with the dial after `#`: the dial only, not window state or font files (R31). **Link scheme 5** (`LINK_SCHEME`): "5" then **lean** settings (`lean()`, only what differs from the starting values), keys as codes from the **key table** (`LINK_KEYS`, only grows), colours hex, numbers to 3 decimals, time to the second, deflated, in Crockford's base 32. Other schemes are not read: the opener opens with a **note on the preview** and in the log. Once a link has opened its dial, the **address bar** shows only the site's address (the dial is in the session); **Copy link** gives the whole link (#537). |
 | **Window shape** | The hole's outline: rectangle · circle · polygon · arch (moon's) · half (am · pm's) · arc (a ring piece, for a day window at 12). Arch and half belong to their kind. **Turned**: along its radius, not level (off the quarters only). |
 | **Complication** | What a window shows (date · day · am · pm · moon phase; **big date** = Date with its tick, stored as kind 4, R9), and its row's name on Windows (#328). Its buttons act as **tabs**, each keeping its own settings for the window; position shared. Here only a window's kind. Key stays `kind` (R8). |
 | **Window** | A hole in the plate showing something, up to four, at 12 · 3 · 6 · 9; what shows is its **Complication**. Tab says Windows; key and number stay Date / 3 (R8). |

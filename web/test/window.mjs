@@ -1993,7 +1993,7 @@ check(await page.evaluate(() => location.hash === ""), "the address bar stays sh
     return { input: box.tagName === "INPUT", cut: c.textOverflow === "ellipsis" && c.whiteSpace === "nowrap", head: r.top >= fold.top && r.bottom <= fold.bottom, right: Math.round(fold.right - r.right), sign: Boolean(b.querySelector("svg")), mono: getComputedStyle(document.getElementById("log")).fontFamily.toLowerCase().includes("mono") }; });
   check(await page.inputValue("#link") === link && l.input && l.cut && l.head && l.right <= 1 && l.sign && l.mono, `the link stands on one line, cut at the box's edge; Copy link, with its sign, flush right on the heading line (${JSON.stringify(l)}); the log is monospaced`);
 }
-check(/#4[0-9A-Z]+$/.test(link), `Copy link: the address carries the dial in capitals and digits only, link scheme 4 (#278; 4 since 4.91, #488; ${link.split("#")[1].length} characters after #)`);
+check(/#5[0-9A-Z]+$/.test(link), `Copy link: the address carries the dial in capitals and digits only, link scheme 5 (#278; 5 since 4.92.18, #228; ${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
 const other = await (await visitor()).newPage();      // someone else's browser: no last session of this dial. A browser of its own, not a second tab: a tab shares the first one's storage, where the first keeps saving its dial while its clock runs (found 16 Oct 2026, 4.42.5: a save landed while this page started)
 await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));      // and what it keeps itself between the addresses below
@@ -2037,7 +2037,7 @@ await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 await other.goto(link.split("#")[0] + "#3NOTADIAL");
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await other.evaluate(() => window.dial_tool.S.rings.length > 0), "a broken link opens the tool anyway");
-await other.goto(link.split("#")[0] + "#2" + link.split("#4")[1]);      // the same dial written as scheme 2 (before 4.88): known as an older scheme, not read (R31)
+await other.goto(link.split("#")[0] + "#2" + link.split("#5")[1]);      // the same dial written as scheme 2 (before 4.88): known as an older scheme, not read (R31)
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await other.evaluate(() => { const t = window.dial_tool; return t.S.dial_d === 34 && !document.getElementById("preview-note").hidden; }), "a scheme-2 link (4.43–4.87) opens the First dial with the note (4.88, R31)");
 await other.goto(link.split("#")[0]);

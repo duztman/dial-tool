@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.92.17";
+export const VERSION = "beta 4.92.18";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -79,7 +79,7 @@ export const RING_BASE = {
   shape: 0, file: "", scale: 1.0, len: 2.8, w: 0.7, taper: 0.35, round_out: 0.0, round_in: 0.0, wall: 0.0,
   twelve: 0, twelve_scale: 1.0, twelve_gap: 0.5,
   labels: 0, custom: "", num_from: 0.0, num_step: 5.0, num_digits: 0, mode: 0, size: 2.4, nudge: {},
-  family: "Helvetica Neue", ps: "HelveticaNeue", tracking: 0.0, lang: 0, axes: {}, features: {},
+  family: "Arimo", ps: "Arimo-Regular", tracking: 0.0, lang: 0, axes: {}, features: {},
   width: 1.0, fill: 100.0,
   num_again: 0,                                    // Numbers: the count starts again after this many positions (0 = never), as on Ferguson's dial or a two-hour track (13 Oct 2026)
   guide: -1,                                       // its guide's colour (preview only, R5): a place in GUIDE_COLOURS · -1 = one by its place in the list (ring_guide) · -2 = none (13 Oct 2026)
@@ -352,7 +352,7 @@ const BETA1_DEFAULTS = {
   tr_rail: false, tr_rail_w: 0.1, tr_collision: 0, tr_clear: 0.25,
   mk_shape: 0, mk_svg: "", mk_at: 0, mk_len: 2.8, mk_w: 0.7, mk_offset: 0.0, mk_taper: 0.35,
   mk_round_out: 0.0, mk_round_in: 0.0, mk_wall: 0.0, mk_twelve: 0, mk_twelve_scale: 1.0, mk_twelve_gap: 0.5,
-  ty_family: "Helvetica Neue", ty_ps: "HelveticaNeue", ty_size: 2.4, ty_tracking: 0.0,
+  ty_family: "Arimo", ty_ps: "Arimo-Regular", ty_size: 2.4, ty_tracking: 0.0,
   ty_lang: 0, ty_axes: {}, ty_features: {},
   nu_set: 0, nu_custom: "", nu_at: 0, nu_mode: 0, nu_r: 10.0, nu_nudge: {},
   ha_on: true, ha_style: 0, ha_svg_hour: "", ha_svg_min: "", ha_svg_sec: "",
@@ -466,7 +466,7 @@ export function fresh_settings(over = null) {
 //   it went up because an am · pm window now draws its one disc whatever its old `look`, so a scheme-2 link with the
 //   Sky or Band picture would draw something else. Links of schemes 1 and 2 are not read (R31).
 
-export const LINK_SCHEME = 4;      // 4 since 4.91: a numerals ring sits in its cap-height band (#488); 3 since 4.88: an am · pm window draws its one disc (R31)
+export const LINK_SCHEME = 5;      // 5 since 4.92.18: a ring's starting font is Arimo, bundled, instead of Helvetica Neue, which isn't (#228; Okay, 24 Oct 2026: "Bundled fonts are all free to use"); 4 since 4.91: a numerals ring sits in its cap-height band (#488); 3 since 4.88: an am · pm window draws its one disc (R31)
 
 /** the topmost hand that shows: its place in HANDS, or -1 */
 export const top_hand = (S) => [2, 1, 0].find((i) => S["ha_" + HANDS[i]].on) ?? -1;

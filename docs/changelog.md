@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.92.18 (web version) · 24 Oct 2026
+
+- **A ring's starting font is Arimo** (#228; Okay, 21:05: "Helvetica not a bundled font. Bundled fonts are all free to use"): bundled (Apache 2.0), Helvetica's proportions, so the Type pane no longer says "not loaded" with Inter standing in. The DrawBot-era key `ty_family` follows. Settings files that name Helvetica Neue keep it.
+- **Link scheme 5** (R31): a link that left the font out meant Helvetica Neue, so it would now draw Arimo; links of scheme 4 open the First dial with the older-link note. The Gallery and the examples are written again (`node gallery.mjs`, `node examples.mjs`).
+- Checked: links (scheme 5 there and back), labels, complications, the window test; the starting dial's numerals in Arimo on the screenshot.
+
 ## beta 4.92.17 (web version) · 24 Oct 2026
 
 - **The short address** (#537; Okay, 19:40: "hide the full address and make the link still work"; 20:45: "OK, Copy link only"): a dial's link opens its dial, keeps it in the session, then the address bar shows only the site's address. Copy link copies the whole dial; a reload brings the dial back from the session. In a private window, where nothing can be kept, the address keeps the dial (R17). Bookmarks and the iPad's share sheet give the bare site.
