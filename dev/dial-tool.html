@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.21 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.22 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1328,13 +1328,18 @@
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: var(--u4); padding: var(--u6) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
   .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
-  .picker header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+  .picker header { display: flex; align-items: start; justify-content: space-between; gap: var(--gap); }      /* on the search field's line: the title and Light · Dark; the filters' tray hangs under the field */
   /* Find: at the sheet's top right, as wide as the stickers' column under it; a magnifier in it, no words */
-  .picker header > .find { position: relative; width: var(--find); }
-  .picker header > .find > input { width: 100%; padding-right: var(--control-large); }
-  .picker header > .find > input::-webkit-search-cancel-button { -webkit-appearance: none; }
-  .picker header > .find > svg { position: absolute; right: var(--u3); top: 50%; translate: 0 -50%; color: var(--grey); pointer-events: none; }
+  .picker header > .findbox { display: grid; width: var(--find); }
+  .findbox > .find { position: relative; }
+  .findbox > .find > input { width: 100%; padding-right: var(--control-large); }
+  .findbox > .find > input::-webkit-search-cancel-button { -webkit-appearance: none; }
+  .findbox > .find > svg { position: absolute; right: var(--u3); top: 50%; translate: 0 -50%; color: var(--grey); pointer-events: none; }
   .picker header h2 { font-size: var(--t-l); }
+  /* the filters (R35): out of the search bar, in its outline continued down, two lines of three pills */
+  .findtray { display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: var(--u1); padding: var(--u1); border: var(--hair) solid var(--rule); border-top: 0; background: var(--field); }
+  .filterpill { height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u1); border: var(--hair) solid var(--rule); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
+  .filterpill:hover { color: var(--ink); }
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: var(--u4); }      /* straight under the list: its edge is the line between them */
   .picker .squares { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); }      /* on the list's three columns */
@@ -1386,7 +1391,7 @@
    A layer of its own after the controls and the panel, so no control has to say it again and nothing there
    (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it; a tab (.tab) draws its own. */
 @layer chosen {
-  .segs > button.on, .pillswitch > button.on, .btnline > button.on, .circles > button.on, .pickt.on, .tile[aria-pressed="true"], .sticker.ui[aria-pressed="true"],
+  .segs > button.on, .pillswitch > button.on, .btnline > button.on, .circles > button.on, .pickt.on, .tile[aria-pressed="true"], .sticker.ui[aria-pressed="true"], .filterpill[aria-pressed="true"],
   .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
   .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .headtools .sign[aria-expanded="true"] .rim { stroke: var(--ink); }
@@ -1923,7 +1928,8 @@
        fonts (Chrome, Edge on a desktop), never on a phone; in a narrow desktop window it would squeeze the others into
        three lines each (Okay, 15 Oct 2026, 07:14: "Installed is back. Solve this") — so here it isn't shown, and the two
        keep their second lines */
-    .picker header > .find { width: auto; flex: 1; }      /* Fonts · the Light/Dark pill · Find share the line (#276) */
+    .picker header > .findbox { width: auto; flex: 1; }      /* Fonts · the Light/Dark pill · Find share the line (#276) */
+    .findtray { grid-template-columns: repeat(2, 1fr); }      /* the filters on three lines of two: three to a line don't fit a phone's field */
     .picker .squares .adds > #local-fonts { display: none; }
     .picker .squares .adds.three > .pickt :is(small, br) { display: revert; }
     .picker .squares .adds.three > .pickt span { white-space: nowrap; }
@@ -7225,7 +7231,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.21";
+var VERSION = "beta 4.92.22";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15632,6 +15638,8 @@ var STICKER_LEGEND = [
   ["3 st", "styles", "Separate styles: Regular, Bold\u2026", ""]
 ];
 var FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
+var FONT_FILTERS = [["sans", "Sans"], ["serif", "Serif"], ["variable", "Variable"], ["condensed", "Condensed"], ["mono", "Mono"], ["nonlatin", "Non-Latin"]];
+var font_is = (fonts2, kind) => fonts2.some((f2) => kind === "variable" ? Object.keys(f2.axes || {}).length > 0 : kind === "mono" ? (f2.kinds || []).includes("mono") || (f2.features || []).includes("tnum") : (f2.kinds || []).includes(kind));
 var NAME_LEAST = 0.7;
 var AXIS_WORDS = { wdth: "wd", opsz: "opt", GRAD: "grad", XHGT: "xh", SOFT: "soft", MONO: "mono", CASL: "cas" };
 var kind_in = (...names) => (R) => names.includes(kind_of(R));
@@ -21119,8 +21127,22 @@ var DialTool = class _DialTool {
   build_picker() {
     const find = el("input", { type: "search", id: "font-find", ariaLabel: "Find a font", title: "Find a font" });
     find.oninput = () => this.fill_picker(true);
-    const finder = el("span", { className: "find" }, find);
-    finder.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
+    const field = el("span", { className: "find" }, find);
+    field.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
+    this.font_filters = /* @__PURE__ */ new Set();
+    const tray = el("span", { className: "findtray", role: "group", ariaLabel: "Show only" }, ...FONT_FILTERS.map(([kind, word]) => {
+      const pill = el("button", { type: "button", className: "filterpill", id: "font-filter-" + kind, textContent: word });
+      pill.setAttribute("aria-pressed", "false");
+      pill.onclick = () => {
+        const on = !this.font_filters.has(kind);
+        if (on) this.font_filters.add(kind);
+        else this.font_filters.delete(kind);
+        pill.setAttribute("aria-pressed", String(on));
+        this.fill_picker(true);
+      };
+      return pill;
+    }));
+    const finder = el("span", { className: "findbox" }, field, tray);
     const list = el("div", { className: "fontlist", id: "font-list" });
     const rail = el("span", { className: "rail", ariaHidden: "true" }, el("i"));
     this.rail = rail;
@@ -21268,13 +21290,14 @@ var DialTool = class _DialTool {
   fill_picker(again = false) {
     const list = $("#font-list"), R = this.font_shown(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
     const regular = (fonts2) => fonts2.find((f2) => /^(regular|roman|book|normal)$/i.test(f2.style)) || fonts2[0];
-    const key = [...by.keys()].join("|") + "/" + q + "/" + font_list().length;
+    const key = [...by.keys()].join("|") + "/" + q + "/" + [...this.font_filters].join(",") + "/" + font_list().length;
     if (again || list.dataset.shown !== key) {
       list.dataset.shown = key;
       list.replaceChildren();
       let group = null;
       for (const [family, fonts2] of by) {
         if (q && !family.toLowerCase().includes(q)) continue;
+        if (this.font_filters.size && ![...this.font_filters].some((kind) => font_is(fonts2, kind))) continue;
         const f2 = regular(fonts2);
         if (f2.group !== group) {
           group = f2.group;
@@ -22070,7 +22093,7 @@ var DialTool = class _DialTool {
   async fonts_at_start() {
     for (const f2 of font_list()) {
       const listed = FONT_LIST.find((x2) => x2.ps === f2.ps);
-      this.catalog.set(f2.ps, { family: listed ? listed.family : f2.family, style: listed ? listed.style : f2.style, ps: f2.ps, group: "list" });
+      this.catalog.set(f2.ps, { ...listed || { kinds: f2.family === "Inter" ? ["sans"] : [] }, family: listed ? listed.family : f2.family, style: listed ? listed.style : f2.style, ps: f2.ps, group: "list" });
     }
     for (const f2 of FONT_LIST) if (!this.catalog.has(f2.ps)) this.catalog.set(f2.ps, { ...f2, group: "list" });
     for (const f2 of this.remembered()) if (!this.catalog.has(f2.ps)) this.catalog.set(f2.ps, { ...f2, group: "added" });
