@@ -8,9 +8,9 @@
 <title>Dial Tool · Help</title>
 <meta name="description" content="Every pane and control of Dial Tool, in one sentence each.">
 <style>
-@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2?v=ac06ffa) format("woff2")}
-@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2?v=ac06ffa) format("woff2")}
-@font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2?v=ac06ffa) format("woff2")}
+@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2?v=9662ad4) format("woff2")}
+@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2?v=9662ad4) format("woff2")}
+@font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2?v=9662ad4) format("woff2")}
 :root{--bug:#c8331b;--map-w:211px;--map-h:132px;--map-frame:7px;--map-ring:5px;--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
 *{box-sizing:border-box}html{scroll-padding-top:96px;scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -36,14 +36,14 @@ nav b{display:flex;align-items:center;margin:0 0 2px;color:var(--ink);font-weigh
 .intro p{margin:.5em 0 0;color:var(--mute);max-width:60ch}
 h2{clear:both;position:relative;margin:56px 0 4px;font-size:26px;font-weight:600;padding-bottom:8px;border-bottom:1px solid transparent}
 h2::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--ink);z-index:1}
-h3{margin:28px 0 6px;font-size:19px;font-weight:600}
-p.lead{margin:12px 0 4px;color:var(--mute);max-width:64ch}
+h3{margin:42px 0 9px;font-size:19px;font-weight:600}
+p.lead{margin:18px 0 6px;color:var(--mute);max-width:64ch}
 dl{display:grid;grid-template-columns:9em minmax(0,1fr);column-gap:16px;margin:0;border-top:1px solid var(--line)}
-dt,dd{margin:0;padding:11px 0;border-bottom:1px solid var(--line)}
+dt,dd{margin:0;padding:16.5px 0;border-bottom:1px solid var(--line)}
 dt{font-weight:500;padding-right:16px}dd{color:var(--ink)}
 .watch{margin:10px 0 0 24px;font-size:17px;color:var(--mute);max-width:60ch}
 .watch::before{content:"Watch · ";color:var(--ink);font-weight:600}
-ol,ul{padding-left:20px;max-width:66ch}li{margin:14px 0}
+ol,ul{padding-left:20px;max-width:66ch}li{margin:21px 0}
 a{color:inherit}
 code{font:17px ui-monospace,Menlo,monospace}
 footer{margin-top:64px;font-size:14px;color:var(--mute)}
@@ -96,7 +96,7 @@ h2:has(.map) + .lead + *{clear:both}
 .box img{display:block;max-width:100%;max-height:calc(100vh - 110px);width:auto;height:auto;border:0;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
 .box figcaption{margin-top:12px;color:var(--ink);font-size:17px}.box figcaption b{font-weight:600}.box figcaption span{color:var(--mute)}
 table.two{width:100%;border-collapse:collapse;margin-top:10px;table-layout:fixed}
-table.two th,table.two td{text-align:left;vertical-align:top;padding:11px 12px 11px 0;border-bottom:1px solid var(--line)}
+table.two th,table.two td{text-align:left;vertical-align:top;padding:16.5px 12px 16.5px 0;border-bottom:1px solid var(--line)}
 table.two thead th{font-size:15px;color:var(--mute);font-weight:500;padding-top:0}
 table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{width:9em}
 @media (max-width:760px){table.two thead{display:none}table.two,table.two tbody,table.two tr,table.two th,table.two td{display:block;width:auto}table.two tbody th{padding-bottom:2px;border:0}table.two td{padding:2px 0 8px;border:0}table.two td:not([colspan])::before{display:block;font-size:14px;color:var(--mute)}table.two td:nth-of-type(1):not([colspan])::before{content:"Mouse"}table.two td:nth-of-type(2)::before{content:"Finger"}table.two tr{border-bottom:1px solid var(--line);padding:9px 0}}
@@ -131,7 +131,7 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
 <h2 id="screen"><span class="map" data-map="screen" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span>The screen</h2>
 <p class="lead">The window's eight parts, by number.</p>
 <figure class="shot">
-  <img src="img/screen.webp?v=ac06ffa" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
+  <img src="img/screen.webp?v=9662ad4" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
   <i style="left:23.5%;top:2.4%">①</i><i style="left:30.5%;top:9.5%">②</i><i style="left:80%;top:20%">③</i><i style="left:47.5%;top:3.1%">④</i>
   <i style="left:89.5%;top:3.1%">⑤</i><i style="left:41.5%;top:86%">⑥</i><i style="left:95%;top:89%">⑦</i><i style="left:33.5%;top:96.5%">⑧</i>
 </figure>
@@ -223,7 +223,7 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
 <h3>Window</h3>
 <dl>
   <dt>Window at</dt><dd>3 · 6 · 9 · 12 on the heading line, or ··· for any place or time, such as 2:15.</dd>
-  <dt>Complication</dt><dd>Big date for two discs, the tens and the units.<span class="row"><span><i class="ic" data-ic="window-date"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 2.25H23.25M24.75 3.75V17.25M23.25 18.75H6.75M5.25 17.25V3.75"></path><path d="M23.25 2.25A1.5 1.5 0 0 1 24.75 3.75M24.75 17.25A1.5 1.5 0 0 1 23.25 18.75M6.75 18.75A1.5 1.5 0 0 1 5.25 17.25M5.25 3.75A1.5 1.5 0 0 1 6.75 2.25" stroke-width="1.625"></path><path d="M12.75 8L15.25 6V15" stroke-width="1.625"></path></svg></i>Date</span><span><i class="ic" data-ic="window-day"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 4.25H26.25M27.75 5.75V15.25M26.25 16.75H3.75M2.25 15.25V5.75"></path><path d="M26.25 4.25A1.5 1.5 0 0 1 27.75 5.75M27.75 15.25A1.5 1.5 0 0 1 26.25 16.75M3.75 16.75A1.5 1.5 0 0 1 2.25 15.25M2.25 5.75A1.5 1.5 0 0 1 3.75 4.25" stroke-width="1.625"></path><path d="M10.75 14V7L15 12L19.25 7V14" stroke-width="1.5625"></path></svg></i>Day</span><span><i class="ic" data-ic="window-am-pm"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.25 3.75H24.75M26.25 5.25V15.75M24.75 17.25H5.25M3.75 15.75V5.25"></path><path d="M24.75 3.75A1.5 1.5 0 0 1 26.25 5.25M26.25 15.75A1.5 1.5 0 0 1 24.75 17.25M5.25 17.25A1.5 1.5 0 0 1 3.75 15.75M3.75 5.25A1.5 1.5 0 0 1 5.25 3.75" stroke-width="1.625"></path><path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" fill="currentColor" stroke="none"></path></svg></i>am · pm</span><span><i class="ic" data-ic="window-moon-phase"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" fill="currentColor" stroke="none"></path><circle cx="15" cy="10.5" r="9.25"></circle></svg></i>Moon</span></span><img src="img/windows.webp?v=ac06ffa" width="300" height="300" alt="A dial with four windows: the date at 12, the moon at 3, the day at 6, am · pm at 9."></dd>
+  <dt>Complication</dt><dd>Big date for two discs, the tens and the units.<span class="row"><span><i class="ic" data-ic="window-date"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 2.25H23.25M24.75 3.75V17.25M23.25 18.75H6.75M5.25 17.25V3.75"></path><path d="M23.25 2.25A1.5 1.5 0 0 1 24.75 3.75M24.75 17.25A1.5 1.5 0 0 1 23.25 18.75M6.75 18.75A1.5 1.5 0 0 1 5.25 17.25M5.25 3.75A1.5 1.5 0 0 1 6.75 2.25" stroke-width="1.625"></path><path d="M12.75 8L15.25 6V15" stroke-width="1.625"></path></svg></i>Date</span><span><i class="ic" data-ic="window-day"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 4.25H26.25M27.75 5.75V15.25M26.25 16.75H3.75M2.25 15.25V5.75"></path><path d="M26.25 4.25A1.5 1.5 0 0 1 27.75 5.75M27.75 15.25A1.5 1.5 0 0 1 26.25 16.75M3.75 16.75A1.5 1.5 0 0 1 2.25 15.25M2.25 5.75A1.5 1.5 0 0 1 3.75 4.25" stroke-width="1.625"></path><path d="M10.75 14V7L15 12L19.25 7V14" stroke-width="1.5625"></path></svg></i>Day</span><span><i class="ic" data-ic="window-am-pm"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.25 3.75H24.75M26.25 5.25V15.75M24.75 17.25H5.25M3.75 15.75V5.25"></path><path d="M24.75 3.75A1.5 1.5 0 0 1 26.25 5.25M26.25 15.75A1.5 1.5 0 0 1 24.75 17.25M5.25 17.25A1.5 1.5 0 0 1 3.75 15.75M3.75 5.25A1.5 1.5 0 0 1 5.25 3.75" stroke-width="1.625"></path><path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" fill="currentColor" stroke="none"></path></svg></i>am · pm</span><span><i class="ic" data-ic="window-moon-phase"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" fill="currentColor" stroke="none"></path><circle cx="15" cy="10.5" r="9.25"></circle></svg></i>Moon</span></span><img src="img/windows.webp?v=9662ad4" width="300" height="300" alt="A dial with four windows: the date at 12, the moon at 3, the day at 6, am · pm at 9."></dd>
   <dt>Moon</dt><dd>Picture: Arch, Phase or Line; Moon age, days, when it doesn't follow the date (0 new, 14.8 full).</dd>
 </dl>
 <h3>Shape</h3>
@@ -387,6 +387,16 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
   addEventListener("keydown", (e) => { if (e.key === "Escape") box.classList.remove("open"); });
 }
 
+{ // a jump from the menu lands the section's rule on the line under the menu's first title (Okay, 24 Oct 2026, 21:01:
+  // "Lines align with top menu line when jumped to"); measured at the time, so a heading with a sign or a picture lands the same
+  const line = () => document.querySelector("nav b").getBoundingClientRect().bottom;
+  const land = (id, smooth) => { const h = document.getElementById(id); if (!h) return;
+    scrollTo({ top: scrollY + h.getBoundingClientRect().bottom - line(), behavior: smooth ? "smooth" : "auto" }); };
+  document.querySelectorAll('a[href^="#"]').forEach((a) => a.addEventListener("click", (e) => {
+    const id = a.hash.slice(1); if (!document.getElementById(id) || !document.querySelector("nav b").offsetParent || getComputedStyle(document.querySelector("nav")).position !== "sticky") return;
+    e.preventDefault(); history.pushState(null, "", "#" + id); land(id, !matchMedia("(prefers-reduced-motion: reduce)").matches); }));
+  addEventListener("load", () => { if (location.hash && getComputedStyle(document.querySelector("nav")).position === "sticky") land(location.hash.slice(1), false); });
+}
 { // the menu follows the reader: the sections in view are marked, their group gets the eye
   const links = [...document.querySelectorAll("nav a")], seen = new Set();
   const mark = () => { links.forEach((a) => a.classList.toggle("on", seen.has(a.hash.slice(1))));
