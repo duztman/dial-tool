@@ -67,7 +67,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Round outer / inner** | Corner radius at a mark's outer or inner end; true fillets, any angle. |
 | **Hollow wall** | Turns a mark or hand into an outline of that thickness (dot → ring; hand → lume opening). |
 | **Placement** | How numerals sit: **upright** · **radial** · **radial, auto-flip** (never upside down) · **on path** (letters follow the circle). |
-| **Nudge** | Per-position correction: radius ±, angle ±, rotate, size ×, and a mark's own shape; for every ring but a band (#349). On the dial: first press picks the ring, second the item. |
+| **Nudge** | Per-position correction (the pane is called **Edit one numeral** · **Edit one mark**, #513): radius ±, angle ±, rotate, size ×, and a mark's own shape; for every ring but a band (#349). On the dial: first press picks the ring, second the item. |
 | **Rings pane** | The pinned pane on top of Rings: tools (plus for the five kinds; move up · move down · duplicate · delete), the ring list, the **ring drawer**. Folded: *Rings: <name>* and a summary. |
 | **Ring drawer** | Framed box under the selected row (#253, after Okay's PSD `selected-ring_181026`): the **details** on two lines, a swatch, and **size** (a mark's length, a dot's Ø, a numeral's size, a band's width; Okay's "scale") and **radius** as value buttons. `ringline` / `lineholder` in code. |
 | **Dial Mono** | JetBrains Mono, packed and subset (`web/fonts/ui/mono_font.py`): the unit box's face and the selected row's numbers (#302). Not a dial font. |

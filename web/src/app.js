@@ -719,7 +719,7 @@ const ROWS = {
     // editable … a tick can grow or become anything else, a wedge"): which one — picked in the list, or on the dial, a
     // first press choosing the ring and a second the one pressed — and its own radius, angle, turn and size; a mark
     // also its own shape. The one chosen is outlined on the dial while this pane is open
-    hdr("Nudge one numeral", { folded: true, show: nudgeable, title: (R) => (G.has_text(R) ? "Nudge one numeral" : "Nudge one mark") }),
+    hdr("Edit one numeral", { folded: true, show: nudgeable, title: (R) => (G.has_text(R) ? "Edit one numeral" : "Edit one mark") }),
     custom("nudge", { show: nudgeable }),      // which one, and Reset
     // its four adjusters, number rows on the numeral chosen above (Okay's notes, p. 6–7, #252, beta 4.45.2: "every
     // adjuster gets ±; angle and radius get sliders"): each a full row, its name opening the popup (#249)
@@ -1674,7 +1674,7 @@ class DialTool {
   /** the numeral or mark Nudge works on, outlined on the dial in its ring's guide colour while the Nudge pane is open
    *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
   draw_picked() {
-    const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
+    const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Edit one numeral");
     const d = !S.ui_show && !this.unselected && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => x.ring === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part = k >= 0 && d.parts ? d.parts[k] : null;
     // a box touching it, not its outline (Okay, 04:52: "selected number on dial too aggressive. This may be a rectangular tangent box around number")
@@ -3849,7 +3849,7 @@ class DialTool {
     if (R.skip) where.push(["Skip where", G.SKIP_FROM[R.skip]]);
     if (R.knock) where.push(["Knock out", G.KNOCK_FROM[R.knock]]);
     const nudged = Object.keys(R.nudge || {}).filter((k) => R.nudge[k] && Object.values(R.nudge[k]).some((v) => +v));
-    if (G.has_text(R) && nudged.length) { const labels = G.ring_labels(R); where.push(["Nudge one numeral", nudged.map((k) => labels[+k] || +k + 1).join(", ")]); }
+    if (G.has_text(R) && nudged.length) { const labels = G.ring_labels(R); where.push(["Edit one numeral", nudged.map((k) => labels[+k] || +k + 1).join(", ")]); }
     return [what, where];
   }
 
@@ -6061,7 +6061,7 @@ class DialTool {
     if (piece.kind === "date") S.ui_window = piece.window;
     if (same) { this.fill_ring_list(); this.sync_rows(); } else this.show_section();
     if (second) {                                  // a numeral or mark picked for Nudge: its pane opens, since it starts folded (#270)
-      const nudge = this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
+      const nudge = this.rows.find((r) => r.fold && r.row.text === "Edit one numeral");
       if (nudge && this.is_folded(nudge)) this.fold(nudge, false);
     }
     this.render();

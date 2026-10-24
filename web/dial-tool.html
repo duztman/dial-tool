@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.1 · built 2026-10-23 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.2 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7159,7 +7159,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.1";
+var VERSION = "beta 4.92.2";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15671,7 +15671,7 @@ var ROWS = {
     // editable … a tick can grow or become anything else, a wedge"): which one — picked in the list, or on the dial, a
     // first press choosing the ring and a second the one pressed — and its own radius, angle, turn and size; a mark
     // also its own shape. The one chosen is outlined on the dial while this pane is open
-    hdr("Nudge one numeral", { folded: true, show: nudgeable, title: (R) => has_text(R) ? "Nudge one numeral" : "Nudge one mark" }),
+    hdr("Edit one numeral", { folded: true, show: nudgeable, title: (R) => has_text(R) ? "Edit one numeral" : "Edit one mark" }),
     custom("nudge", { show: nudgeable }),
     // which one, and Reset
     // its four adjusters, number rows on the numeral chosen above (Okay's notes, p. 6–7, #252, beta 4.45.2: "every
@@ -16778,7 +16778,7 @@ var DialTool = class _DialTool {
   /** the numeral or mark Nudge works on, outlined on the dial in its ring's guide colour while the Nudge pane is open
    *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
   draw_picked() {
-    const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
+    const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Edit one numeral");
     const d = !S.ui_show && !this.unselected && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x2) => x2.ring === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part2 = k >= 0 && d.parts ? d.parts[k] : null;
     const b = part2 ? part2.bounds() : null, f2 = (v) => v.toFixed(3);
@@ -19545,7 +19545,7 @@ var DialTool = class _DialTool {
     const nudged = Object.keys(R.nudge || {}).filter((k) => R.nudge[k] && Object.values(R.nudge[k]).some((v) => +v));
     if (has_text(R) && nudged.length) {
       const labels = ring_labels(R);
-      where.push(["Nudge one numeral", nudged.map((k) => labels[+k] || +k + 1).join(", ")]);
+      where.push(["Edit one numeral", nudged.map((k) => labels[+k] || +k + 1).join(", ")]);
     }
     return [what, where];
   }
@@ -22196,7 +22196,7 @@ var DialTool = class _DialTool {
       this.sync_rows();
     } else this.show_section();
     if (second) {
-      const nudge = this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
+      const nudge = this.rows.find((r) => r.fold && r.row.text === "Edit one numeral");
       if (nudge && this.is_folded(nudge)) this.fold(nudge, false);
     }
     this.render();

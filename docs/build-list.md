@@ -103,6 +103,23 @@ The Show Case was built to be put into Dial Tool; its export stays. "Showcase UI
 | 511 | **The mode change flashes a misplaced dial** (Okay, 23 Oct 2026, 17:53: "activate showcase flashes a misplaced dial for one or two frames on first activation. Same goes for coming back to main from showcase"): Safari on the iPad and on the Intel Mac; the first swoop each way. Not seen in Chromium. To find: which frame draws the dial before `swoop()` places it (the class toggle, the first `place()`, or a font or layout settling on first use) | **Sunday 25 Oct**, with Okay |
 | 512 | **The dial's shadows reach where no real light could** (Okay, 23 Oct 2026, 17:53, two pictures: the hands' shadows fall a hand's length away across the plate, under the date window: "These shadows on the dial are impossible… limit the dial shadows to a degree, much smaller than this"). His reading: the shadow logic is right, but a light low enough to throw these would also carry the case's inner shadow across the plate, and that stays at the edge — so the case side has a limit the hands don't. To do: a far smaller limit for the hands' shadows on the dial (4.92 caps every shadow at a 20° sun, too long here), set from real heights — the plate's depth in the case, the hands' heights over the plate (`sh_hour`, `sh_minute`, `sh_second`, `sh_cap`) and the case wall's — so the hands' and the case's shadows come from one light and agree. Investigate those heights first, show Okay the figures | **Sunday 25 Oct**, with Okay |
 
+### L · Before v1, Okay's notes of 24 Oct 2026 ("New crucial items before launch")
+
+From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Okay's words are quoted. Not built; ranked with him on Sunday 25 Oct.
+
+| # | Item | Status |
+|---|---|---|
+| 513 | **"Nudge one numeral" is named "Edit one numeral" and gets the ring's font, and with it colour** ("also this selection is redundant, just only have the numbers we can see on screen listed here. For example there are only 4 numerals on this ring, yet we have controls on nonexistent unseeable items. Also horrible number confusion here. Font sizes need to go higher"). Today's picker lists `G.ring_labels(R)`, so which items are "nonexistent" needs his picture; the "number confusion" is the picker's `1 · 12` labels (position and word). With #339, #252, #349 | open — v1 (his note); the rename alone is small |
+| 514 | **The controller wider** ("as wide as two columns. The gap between plus and minus becomes a good place to just untouchably write the name of the thing being edited"; on very wide columns "spans exactly as wide as the slider below … always exactly slider overlapping slider, longest as possible"; "positions does not have controllers, add and make them wide as right two columns") | open — v1 |
+| 515 | **Days of the week in full, or custom** (open 7 slots, 7 input boxes). With #135 (names by language) and #346 | open — v1 |
+| 516 | **Am/pm gets two sub-options**: this disc, and a typed-out am/pm "default jump mechanism" with custom text, opening inputs like the week's (#515) | open — v1 |
+| 517 | **Versions go up, right of the top-row buttons** | open — v1 |
+| 518 | **Canvas buttons: labels hidden by default**, loaded with an animation as on mobile; on desktop hovering the icon reveals the name, the whole is a button. **Chevrons all point down** | open — v1 |
+| 519 | **The top shadow config is back on the main view** ("shouldn't. Should look the same") — ask which version he last saw it right in | ask |
+| 520 | **Cases are filled shapes, no outline** ("these cases are not outlines, these are filled in shapes with no outline") — 4.91.13 filled main's case in greys; ask whether this is that or a new case | ask |
+| 521 | **Ink per ring, and per hand** ("Colors not persistent anymore. Instead of single ink height, every ring gets a color and ink height selector with eye like colours. The individual ink height slider becomes 'all inks at once' which links all inks same amount, not equalizing the ink heights, adding to or subbing from each same amount. Hands also get individual eye rows, bevel, color and height. Cap moves with whatever it's attached to"). Same ground as #510's "ink per colour"; "Colors not persistent anymore" to be asked (against #77) | open — v1; ask first |
+| 522 | **Paint finishes in show mode** ("simple textures and slight shape modification to achieve a closer to real paint distribution look") | after v1 (his note) |
+
 ## After v1
 
 | # | Item | Status |

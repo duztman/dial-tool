@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.2 (web version) · 24 Oct 2026
+
+- **The pane "Nudge one numeral" is called "Edit one numeral"** (a ring of marks: "Edit one mark"), the first of Okay's Oct 24 notes (build list #513; "Nudge one numeral is named 'edit one numeral'"). The name only: the picker, the rows and the data are as they were; the font and colour for one numeral, and the picker's list, wait for his pictures (#513).
+- The Oct 24 notes are build list group L (#513–#522), not built.
+
 ## beta 4.92.1 (web version) · 23 Oct 2026
 
 - **Show mode's Colours list takes the Dial's colour first** (the plate, `c_plate`) and **a line for each window's disc** under the window's own (`disc_c`; none of its own shows white). Okay, 17:36: "Disk behind each window and plate color, yes." The dial side's Colours pane is as it was: the plate has its own row on the Dial tab, the disc under each window's.
