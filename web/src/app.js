@@ -597,6 +597,8 @@ const numerals_only = kind_in("numerals");
 const with_text = kind_in("numerals", "text");
 const nudgeable = kind_in("ticks", "markers", "numerals", "text");      // what has positions of its own to nudge: all but a band (4.78, #349)      // rings that draw words: numerals, and a text ring (#297)
 const W = { scope: "window" };
+/** the note in each place an SVG will go after v1 (#530; Okay, 24 Oct 2026: "spaces set. Moon, ampm, dial only"). */
+const SVG_LATER = "Your own picture, from an SVG file, comes after v1.";
 const win_on = (T) => T.on;
 const win_is = (...kinds) => (T) => T.on && kinds.includes(G.WINDOW_KINDS[T.kind]);
 const shape_is = (...shapes) => (T) => T.on && shapes.includes(G.window_shape(T));
@@ -803,6 +805,7 @@ const ROWS = {
     // its picture (4.73, #346; the disc sketches B: "All are good"): Arch as before · Phase, the moon lit as it is, in
     // the disc's colour, its dark side in the shade's, the sky in the picture's · Line, its outline and dark side in one ink
     seg("look", "Picture", G.PICTURES["moon phase"], { ...W, id: "window-look-moon", show: win_is("moon phase") }),
+    info(SVG_LATER, { ...W, show: win_is("moon phase") }),      // a place made ready for an SVG (#530)
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     info("0 new moon · 14.8 full.", { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     // the hole: its shape (buttons on the heading's line, #265), where and how big, its colours (one line, #266), what
@@ -846,6 +849,7 @@ const ROWS = {
     // an am · pm window (#516; Okay, 24 Oct 2026: "Am/pm gets two sub options, one is this disc, other is a typed out am pm
     // default jump mechanism, allows custom text, opens up inputs like the week"): its disc, or its two words, jumping
     seg("ampm_form", "Shows", ["Disc", "Words"], { ...W, show: win_is("am · pm") }),
+    info(SVG_LATER, { ...W, show: win_is("am · pm") }),      // a place made ready for an SVG (#530)
     custom("own_names", { ...W, text: "Words", nest: true, count: 2, hint: () => ["AM", "PM"], show: (T) => win_is("am · pm")(T) && T.ampm_form === 1 }),      // MON or MONDAY (#515; Okay, 24 Oct 2026: "Days of the week option to be written in full"); Custom comes third (R9)
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
@@ -3728,11 +3732,12 @@ class DialTool {
     wrap.append(go, el("span", { className: "quiet", textContent: "White plate and hands, nothing else." }));
   }
 
-  /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
+  /** the plate's background: a place made ready for an SVG, with a note and no button (#530, #218; Okay, 24 Oct 2026:
+   *  "Svg imports postponed to consideration after v01. However make their places ready and display a message … in
+   *  relevant places"). A button that only says "not built" is a dead end (R17). */
   row_background(wrap) {
-    const note = el("span", { className: "quiet", hidden: true, textContent: "Not built yet." });
     wrap.append(el("label", { textContent: "Background" }),
-      el("span", { className: "tools" }, el("button", { type: "button", className: "btn", id: "background-add", textContent: "Add image…", onclick: () => { note.hidden = false; } }), note));
+      el("span", { className: "tools" }, el("span", { className: "quiet", id: "background-note", textContent: SVG_LATER })));
   }
 
 
@@ -6654,7 +6659,7 @@ class DialTool {
     this.log(way < 0 ? `undone: ${step_name(HISTORY.now, HISTORY.future.at(-1))} · ${HISTORY.past.length} more` : `redone: ${step_name(HISTORY.past.at(-1), HISTORY.now)} · ${HISTORY.future.length} more`);
   }
 
-  /** shortly after the last change: keep the session, take a step for undo, and make the address bar say this dial.
+  /** shortly after the last change: keep the session, take a step for undo, and bring the link box up to date.
    *  Every frame asks; a change to the dial starts the wait again (one drag of a slider is one step), but frames that
    *  only move the time leave a waiting save alone and keep the session every 2 s — so while time plays, changes are
    *  kept and the address follows (#234: they waited for time to stop). */
@@ -6667,8 +6672,8 @@ class DialTool {
       this.saving = null;
       if (this.closed) return;
       this.take_step();
-      try { localStorage.setItem(LAST, JSON.stringify(this.S)); } catch (e) { /* private window: nothing kept */ }
-      try { history.replaceState(null, "", await this.show_link()); } catch (e) { /* the address stays as it was */ }
+      keep_and_shorten(this.S);
+      this.show_link();
     }, changed ? 400 : 2000);
   }
 
@@ -6692,7 +6697,7 @@ class DialTool {
       try { await navigator.clipboard.writeText(link); copied = true; } catch (e) { /* said below */ }
     }
     if (copied) this.log(`link copied · ${link.length} characters`);
-    else this.log(`couldn’t copy by itself; the link is in the address bar, and here:\n${link}`);
+    else this.log(`couldn’t copy by itself; the link is in the Link box, and here:\n${link}`);
     if (button) {
       const word = button.querySelector("span");
       clearTimeout(this.copied_back);
@@ -6700,7 +6705,6 @@ class DialTool {
       this.copied_back = setTimeout(() => { word.textContent = "Copy link"; }, 1600);
       if (!copied && this.link_box && this.link_box.isConnected && this.link_box.offsetParent) { this.link_box.focus(); this.link_box.select(); }
     }
-    try { history.replaceState(null, "", link); } catch (e) { /* fine */ }
   }
 
   log(message) {
@@ -6714,6 +6718,17 @@ class DialTool {
 }
 
 // ── start ────────────────────────────────────────────────────
+
+/** The short address (#537; Okay, 24 Oct 2026: "The address bar is nice to copy and share but cumbersome to just copy
+ *  the domain and folder. Can we hide the full address and make the link still work"). A dial's link opens the dial,
+ *  then the address bar is cut back to the site's own address, so copying it copies the site. The dial stays in the
+ *  session (a reload brings it back); Copy link gives the whole dial. Where the session can't be kept (a private
+ *  window) the address keeps the dial, so a reload doesn't lose it (R17). */
+function keep_and_shorten(S) {
+  try { localStorage.setItem(LAST, JSON.stringify(S)); } catch (e) { return; }      // nothing kept: the address stays
+  if (!location.hash) return;
+  try { history.replaceState(null, "", location.href.split("#")[0]); } catch (e) { /* the address stays as it was */ }
+}
 
 let tool = null;
 
@@ -6730,12 +6745,13 @@ export async function open_window(pathkit, harfbuzz, font_bytes) {
     tool.log(`${OLD_LINK_NOTE} (link scheme ${link.old}; this Dial Tool reads scheme ${G.LINK_SCHEME})`);
     tool.say(OLD_LINK_NOTE);
   };
-  if (linked) opened(linked);
+  if (linked) { opened(linked); keep_and_shorten(tool.S); }
   window.addEventListener("hashchange", async () => {              // another dial's link pasted into this tab
     const next = await unpack(location.hash);
     if (!next) return;
     tool.reopen({ ...(next.settings ?? structuredClone(OPENER)), ui_section: tool.S.ui_section });
     opened(next);
+    keep_and_shorten(tool.S);
   });
   tool.sync_time();
   start_ink();                                     // short labels in boxes, centred on their ink (ink.js)

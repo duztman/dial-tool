@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.92.17 (web version) · 24 Oct 2026
+
+- **The short address** (#537; Okay, 19:40: "hide the full address and make the link still work"; 20:45: "OK, Copy link only"): a dial's link opens its dial, keeps it in the session, then the address bar shows only the site's address. Copy link copies the whole dial; a reload brings the dial back from the session. In a private window, where nothing can be kept, the address keeps the dial (R17). Bookmarks and the iPad's share sheet give the bare site.
+- **SVG places made ready** (#530; "spaces set. Moon, ampm, dial only"): one note, *Your own picture, from an SVG file, comes after v1*, under a moon window's Picture, under an am · pm window's Shows, and on the Dial tab's Background line.
+- **Add image… is gone** (#218, a dead end, R17): Background holds the note instead.
+- R31 names link scheme 4 and the short address; the glossary's *Link* too.
+- Checked: links, labels, complications, the window test (new: the address short after a link opens, after Copy link and after a pasted link; a reload keeps the dial; Background is a note and no button), the three notes on screenshots.
+
 ## beta 4.92.16 (web version) · 24 Oct 2026
 
 - **Show mode's Colours names its number column**: INK HEIGHT on the Dial line, in black small capitals, over the rings' ink boxes and the hands' heights (Okay, 20:26: "Is that column not ink height? Labelling there in black would be ok").

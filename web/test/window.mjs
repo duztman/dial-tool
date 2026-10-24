@@ -821,7 +821,7 @@ for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC3
 await shot("4c4-guides-dark");
 await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
-check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Page","Colours","Reset"]' && await page.isVisible("#background-add"), "Dial has four panes (Reset last since 4.41.25): Dial stays in view, Page and Colours scroll under it (Okay, 20 Oct 2026, 03:41: 'Page moves to gray area'); Background is a button");
+check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Page","Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has four panes (Reset last since 4.41.25): Dial stays in view, Page and Colours scroll under it (Okay, 20 Oct 2026, 03:41: 'Page moves to gray area'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
 // units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
 // the unit box round its word's ink, 2 px all round and a line (#302): [word, width, height, from the column's end, the room
 // between its line and its letters — top, bottom, left, right — counted on its own picture, in px (a canvas's measure of
@@ -1972,9 +1972,9 @@ await page.click('.gallery a:has-text("Diver") >> nth=-1');
     const rows = await page.evaluate(() => { const a = [...document.querySelectorAll(".gallery a")].filter((x) => x.textContent.includes("Diver")).at(-1), next = [...a.parentElement.children].indexOf(a) + 3, below = a.parentElement.children[next]; return below ? Math.round(below.getBoundingClientRect().top - a.getBoundingClientRect().bottom) : null; });
   check(f[0] && f[1] === "0px" && f[2] === "Edit this dial · In a new tab" && f[3] === "grid" && (rows === null || rows >= 0), `a press on a card fills it with the chosen tint, no line round it, its two choices (${f[2]}) growing down over the row under it, the rows staying put (notes 2, 18 Oct 2026); the dial is not taken yet (${f.join(" · ")})`);
   await page.click('.gallery a:has-text("Diver") >> nth=-1 >> text=Edit this dial'); }
-await page.waitForFunction((h) => location.hash === h && window.dial_tool.statik && window.dial_tool.S.ui_section === 4, example, { timeout: 8000 }).catch(() => {});
+await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ui_section === 4 && window.dial_tool.log_lines.some((l) => l.includes("opened the dial in the address")), null, { timeout: 8000 }).catch(() => {});
 await page.waitForTimeout(700);
-check(await page.evaluate((h) => location.hash === h, example) && await S("t.log_lines.slice(0, 3).every((l) => !l.includes('stands in'))"), "clicking Diver opens it: the address is its link and its fonts are drawn");
+check(await page.evaluate(() => location.hash === "") && await S("t.log_lines.some((l) => l.includes('opened the dial in the address'))") && await S("t.log_lines.slice(0, 3).every((l) => !l.includes('stands in'))"), "clicking Diver opens it from its link, its fonts drawn; the address is then the site's own, short (#537)");
 await shot("9-example");
 await page.setInputFiles("#load-file", saved);
 await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2);
@@ -1986,7 +1986,8 @@ await page.evaluate(() => window.dial_tool.set_value("global", "ha_beat", 1));  
 await page.waitForTimeout(300);
 await page.click("#copy-link");
 await page.waitForFunction(() => window.dial_tool.log_lines[0].includes("link copied"), null, { timeout: 5000 }).catch(() => {});
-const link = await page.evaluate(() => location.href);
+const link = await page.evaluate(() => navigator.clipboard.readText()).catch(() => "") || await page.inputValue("#link");
+check(await page.evaluate(() => location.hash === ""), "the address bar stays short while Copy link copies the whole dial (#537; Okay, 24 Oct 2026: \"hide the full address and make the link still work\")");
 { // the link on one line, cut at the box's edge; Copy link with its sign, flush right on the pane's heading line (#277)
   const l = await page.evaluate(() => { const box = document.getElementById("link"), c = getComputedStyle(box), b = document.getElementById("copy-link"), fold = b.closest(".pane").querySelector(".fold").getBoundingClientRect(), r = b.getBoundingClientRect();
     return { input: box.tagName === "INPUT", cut: c.textOverflow === "ellipsis" && c.whiteSpace === "nowrap", head: r.top >= fold.top && r.bottom <= fold.bottom, right: Math.round(fold.right - r.right), sign: Boolean(b.querySelector("svg")), mono: getComputedStyle(document.getElementById("log")).fontFamily.toLowerCase().includes("mono") }; });
@@ -1999,6 +2000,16 @@ await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));     
 await other.goto(link);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
+{ // the short address (#537): the link opens the dial, the address is cut back to the site's, and a reload keeps the dial from the session
+  // (a browser of its own: "other" clears its session at every load, so its reload could not keep anything)
+  const fresh = await (await visitor()).newPage();
+  await fresh.goto(link); await fresh.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+  const cut = await fresh.evaluate(() => location.hash === "" && location.href === location.href.split("#")[0]);
+  await fresh.reload(); await fresh.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+  const kept = await fresh.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
+  await fresh.close();
+  check(cut && JSON.parse(kept).ha_beat === JSON.parse(got).ha_beat && JSON.parse(kept).dial_d === JSON.parse(got).dial_d && JSON.parse(kept).rings.length === JSON.parse(got).rings.length, "a dial's link opens the dial, then the address bar shows only the site; a reload brings the same dial back (#537)");
+}
 {
   // the same within what a link rounds (#246): a number to 3 decimals, a colour to hex, the time to the second (test/linktrip.mjs)
   const apart = (a, b, at = "") => typeof a === "number" && typeof b === "number" ? (Math.abs(a - b) <= (at === ".t" ? 0.5 : 0.5 / 255 + 0.5e-4) ? [] : [at])
@@ -2026,7 +2037,7 @@ await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 await other.goto(link.split("#")[0] + "#3NOTADIAL");
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await other.evaluate(() => window.dial_tool.S.rings.length > 0), "a broken link opens the tool anyway");
-await other.goto(link.split("#")[0] + "#2" + link.split("#3")[1]);      // the same dial written as scheme 2 (before 4.88): known as an older scheme, not read (R31)
+await other.goto(link.split("#")[0] + "#2" + link.split("#4")[1]);      // the same dial written as scheme 2 (before 4.88): known as an older scheme, not read (R31)
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await other.evaluate(() => { const t = window.dial_tool; return t.S.dial_d === 34 && !document.getElementById("preview-note").hidden; }), "a scheme-2 link (4.43–4.87) opens the First dial with the note (4.88, R31)");
 await other.goto(link.split("#")[0]);
@@ -2082,11 +2093,11 @@ await other.context().close();
 await page.evaluate(() => window.dial_tool.reopen({ ui_section: window.dial_tool.S.ui_section }));      // the plain starting values (the Settings file pane has Save… · Load… only, #434)
 await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ha_hour.round === 0);
 await page.waitForTimeout(600);
-const short = await page.evaluate(() => location.hash);
+const short = await page.evaluate(async () => "#" + (await window.dial_tool.show_link()).split("#")[1]);
 check(short.length < 12, `the starting dial's link is short (${short})`);
 await page.evaluate((l) => { location.hash = l.split("#")[1]; }, link);
 await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2, null, { timeout: 5000 }).catch(() => {});
-check(await S("S.ha_hour.round === 2"), "pasting a link into the open tool switches to that dial");
+check(await S("S.ha_hour.round === 2") && await page.evaluate(() => location.hash === ""), "pasting a link into the open tool switches to that dial, and the address goes short again (#537)");
 
 // ── nothing jumps: a click on the preview keeps the rows; panes slide; the Guides switch keeps its size ──
 await tab("Rings");
