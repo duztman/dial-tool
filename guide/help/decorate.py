@@ -62,7 +62,7 @@ def small_map(name):
             f'{parts}<rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="3" class="frame"/></svg>')
 
 text = page.read_text()
-text = re.sub(r'<i class="ic" data-ic="([a-z]+)">.*?</i>', lambda m: f'<i class="ic" data-ic="{m[1]}">{icon(m[1])}</i>', text, flags=re.S)
+text = re.sub(r'<i class="ic" data-ic="([a-z0-9-]+)">.*?</i>', lambda m: f'<i class="ic" data-ic="{m[1]}">{icon(m[1])}</i>', text, flags=re.S)
 text = re.sub(r'<span class="map" data-map="([a-z]+)"[^>]*>.*?</span>', lambda m: f'<span class="map" data-map="{m[1]}" title="Where on the screen">{small_map(m[1])}</span>', text, flags=re.S)
 page.write_text(text)
 print("icons:", len(re.findall(r'class="ic"', text)), "· maps:", len(re.findall(r'class="map"', text)))
