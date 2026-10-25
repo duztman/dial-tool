@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## help page · 26 Oct 2026 — the spec column only where it informs
+
+Okay, 26 Oct 2026, 02:24: "These right columns become less informative and perplexing in many views. Either incorporate sentence format pertinent information there or leave it empty or remove altogether. decide for each instance."
+
+- A pane keeps the spec column when three or more of its rows, and at least 60 % of them, carry a range (8 panes: the sizes of a ring, a hand, a window): range in ink, then "starts …" in grey, so a value always says what it is.
+- Every other pane (62: choices, switches, a value here and there) drops it: its ranges and start values close the row's sentence ("Range 15–50 mm; starts 34."), on two columns, name · text (`dl.rows.two`). `check.py` holds those rows to two cells.
+
 ## help page · 26 Oct 2026 — one grid, three sizes, pictures of the panes
 
 Okay, 26 Oct 2026, four drawn rounds (01:43–02:08): "These sections need better design … Utilize darker hr lines to denote sub sections starting and finishing"; "Too cluttered and busy" (ia.net); "horizontal rows unreadable on dotted table. Work about levels of hr lines"; "One grid to rule everything. Keep it simple. No many font sizes, 3 is the limit … Design is not adding shit you think might look good"; "Hr lines closer to the paragraph start then paragraph end … Try populating with images any bit of process".

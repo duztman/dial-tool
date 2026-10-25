@@ -41,6 +41,8 @@ missing = [l for l in labels if l.lower().replace("’", "'") not in text and l 
 
 # every list a two-column grid: a name and its line, so one more of either shifts every row after it (Okay, 26 Oct 2026: the Rings rows out of line)
 def out_of_line(attrs, dl):
+    if 'class="rows two"' in attrs:      # a pane without the spec column: a name and its line
+        return any(len(re.findall(r"<dt[ >]", r)) != 1 or len(re.findall(r"<dd[ >]", r)) != 1 for r in re.findall(r"<div>(.*?)</div>\s*(?=<div>|$)", dl.strip(), flags=re.S))
     if 'class="rows"' in attrs:      # the grid's rows: each a name, its line and its spec, three cells (Okay, 26 Oct 2026: "One grid to rule everything")
         return any(len(re.findall(r"<dt[ >]", r)) != 1 or len(re.findall(r"<dd[ >]", r)) != 2 for r in re.findall(r"<div>(.*?)</div>\s*(?=<div>|$)", dl.strip(), flags=re.S))
     return len(re.findall(r"<dt[ >]", dl)) != len(re.findall(r"<dd[ >]", dl))
