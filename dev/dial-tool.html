@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.2 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.3 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -39,11 +39,11 @@
     /* colour */
     --paper: #FCFCFA; --ink: #111; --grey: #5C5C58; --rule: #B9B9B4; --rule-light: #D4D4CF; --ground: #ECECE8;
     --white: #fff; --black: #000;                  /* pure, for what must show on any colour: the pointer label, the day's handle, the hues' strip */
-    --scroll: #E8E8E6;                             /* the part of the panel that scrolls: 8 % darker than the paper */
+    --scroll: #E8E8E6;                             /* the part of the panel that scrolls: 8 % darker than the paper; the font box's head stands on it too */
     --field: var(--white);                              /* inside a control: fields, tiles, buttons */
     --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
     --ink-hover: #333331;                          /* a filled control under the pointer */
-    --wait: #8E8E89;                               /* a sign that waits to be used: the rename box */
+    --wait: #8E8E89;                               /* a sign that waits to be used: the rename box, the ring drawer's keys, the (i) sign; the font sheet's chosen style and its quiet buttons share it */
     --select: #F6D5CB; --select-rule: #D98A74;     /* what is selected: a light red, the seconds hand's (--play) toward paper (Okay, 20 Oct 2026: "This blue accent gets red everywhere we see it") */
     --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
     --veil: rgba(0, 0, 0, 0.06); --veil-strong: rgba(0, 0, 0, 0.1);      /* a touch of dark on a coloured row */
@@ -73,8 +73,8 @@
     --air: calc(4 * var(--unit));                  /* under an open pane */
     --hair: 1px; --thick: 2px; --triple: calc(3 * var(--hair));      /* a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
-    --box-side-value: 52px; --box-side-step: 22px;      /* the number box beside a hand's box and in a quiet row (4.64): its value · each of − + */
-    --side-num: calc(var(--box-side-value) + 2 * var(--box-side-step));      /* …so that column is this wide */
+    --box-side-value: 52px; --box-side-step: 22px;      /* the number box beside a hand's box and in a quiet row (4.64): its value · each of − +; the colour list's ink-height box too */
+    --side-num: calc(var(--box-side-value) + 2 * var(--box-side-step));      /* …so that column is this wide; the Shadows pane's rows and the colour list use the same column */
     /* a side row's tracks, the gaps written in: the name, the slider straight after it (the name's column holds the
        longest, Counter Ø, with a little to spare), a gap, the number box (Okay, 19 Oct 2026, 23:46: "removing the gap
        and moving things to the left for that place, bit to the slider bit to the numbers boxes") */
@@ -141,7 +141,7 @@
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
     --ringline-inner: var(--triple);               /* its second, inner line: three times the outer */
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
-    --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
+    --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch; show mode's grey swatch in the header is the same dot */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
     /* the number popup — the controller (#249; Okay's second drawing, controller 2.svg, 18 Oct 2026, #330): one dark
        square holding three things one height (66 at full size): the value in bold on a grey pill, the slider in a
@@ -181,8 +181,8 @@
     --font-night: #3F3F3E; --font-night-well: #2F2F2E; --font-night-hover: #4B4B49; --font-night-rule: #66665F; --font-night-select: #4E6478; --font-night-ink: #ECECE8; --font-night-grey: #C6C6C1;
     /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
     --round-large: 14px; --round: 8px; --round-small: 5px; --round-tiny: 3px;      /* …and a sticker's corners, a small swatch's */
-    --dot: 14px;                                   /* a swatch to pick from (a band's sectors) */
-    --pill-gap: var(--unit);                       /* a colour pill: this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these */
+    --dot: 14px;                                   /* a swatch to pick from (a band's sectors); the Backdrop switch's sign is one */
+    --pill-gap: var(--unit);                       /* a colour pill (and the font name line beside its swatch): this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these */
     --pill: calc(1em + 2 * var(--pill-gap));       /* its height. The swatch is as high as the hex is set (1em) */
     --pop-width: 388px; --pop-chips: 11;           /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width (the room between two: a special) */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
@@ -265,7 +265,7 @@
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
        kept when Okay looks through this list (#294) */
-    --nudge: 2px;                                  /* the eyes stand this much right of the margin */
+    --nudge: 2px;                                  /* the eyes stand this much right of the margin: a pane's eye and a ring row's alike */
     --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
     --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
     --ring-gap: 4px;                               /* between framed rows */
@@ -458,6 +458,11 @@
   .log, .link { display: block; width: 100%; margin: 0; padding: var(--u3) var(--u4); border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
   .log { min-height: var(--log-least); max-height: var(--log-most); overflow-y: auto; }
   .link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }      /* the link on one line, cut at the box's edge; Copy link copies it whole (Okay, 16 Oct 2026, #277; three lines that wrapped before) */
+
+  /* shared by two regions (sectors.md §7): the browser's own list, unseen over a chevron box (the menu box, the Case switch) */
+  :is(.menubox, .casebox) > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  /* a gripper's groove: the one line across its pill (the ring list's pill, the drawer's gripper) */
+  :is(.listgrip, .sheetgrip)::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
 }
 
 /* the panel's frame: header, units, section tabs, the pinned part and the part that scrolls, panes */
@@ -961,7 +966,6 @@
   .pinned:not(:has(.pane:not(.folded))) .listgrip { display: none; }      /* every pinned pane folded: nothing to make taller or shorter (Okay, 20 Oct 2026: "When eye closed unusable resizer disappears", #479) */
   .pinbody { overflow-y: auto; overscroll-behavior: contain; }      /* the pinned panes, made shorter by their pill: they scroll inside */
   .listgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--ink); }
-  .listgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
   .listgrip.gripping::before { box-shadow: 0 0 0 var(--hair) var(--paper); }
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); cursor: pointer; }
@@ -1157,7 +1161,6 @@
   .menubox > .v { flex: 1 1 0; display: grid; align-items: center; justify-content: end; padding: 0 var(--u1); }
   .menubox.words > .v { justify-content: start; min-width: 0; padding: 0 var(--u2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }      /* a choice in words reads from the left (Outer, Arabic, Smooth) */
   .menubox > .arrow { flex: none; display: grid; place-items: center; width: var(--pos-step); border-left: var(--hair) solid var(--rule); }
-  .menubox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }      /* the browser's own list, unseen over the box */
   .menubox > input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0 var(--u1); border: 0; text-align: right; font-size: var(--t-s); }
   .menubox > .go { flex: none; display: grid; place-items: center; width: var(--pos-step); padding: 0; border: 0; border-left: var(--hair) solid var(--rule); background: var(--ink); color: var(--paper); }
   @media (hover: hover) { .menubox:hover { background: var(--hover); } }
@@ -1455,7 +1458,6 @@
   /* its chevron in a square of its own behind a line, as Guides' and Shadows' are (4.82; Okay, 19 Oct 2026: "Case icon
      and its spacing need work"): the sign u3 from the left as theirs, the word u4 clear of the line */
   .casebox .arrow { align-self: stretch; display: grid; place-items: center; }      /* folded with the word, no square of its own (the switches' words, below) */
-  .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (Okay, 19 Oct 2026: "Dashes for invisible: shorter dash shorter gaps, denser outline") */
   .casebox.on > :is(.sign, svg) { opacity: 1; }      /* on: its sign alone lights; the word stays dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
@@ -2051,7 +2053,6 @@
     .sheetgrip { display: grid; place-items: center; grid-row: 3; grid-column: 1; align-self: start; justify-self: center; z-index: 6; width: var(--grip-hit); height: var(--grip-hit); translate: 0 -50%; touch-action: none; cursor: ns-resize; }
     /* a pill, grey as the line it sits on, one groove across it; held, it is black with a white edge and the whole line goes black (Okay, 06:51) */
     .sheetgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--rule); }
-    .sheetgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
     #app.gripping .sheetgrip::before { background: var(--ink); box-shadow: 0 0 0 var(--hair) var(--white); }
     #app.gripping .sheetgrip::after { background: var(--white); }
     #app.gripping .panel { border-top-color: var(--ink); }
@@ -7329,7 +7330,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.2";
+var VERSION = "beta 4.94.3";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
