@@ -35,7 +35,7 @@
     .bar .zooms > .fit { border-left-width: var(--hair); }      /* FIT alone: its own left line (it shares − +'s elsewhere) */
     .steps12 button:nth-child(odd) { display: none; }      /* every other hour: 1 3 5 … wait for room */
     main { grid-row: 2; }
-    .panel { grid-row: 3; grid-column: 1; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
+    .panel { grid-row: 3; grid-column: 1; display: block; overflow-y: auto; border-right: 0; border-top: var(--hair) solid var(--rule); }
     .form { overflow: visible; }
     .tabs { position: sticky; top: 0; z-index: 3; background: var(--paper); }      /* over what scrolls under it: the tabs' notches, an open number box */
     .ringlist ol { max-height: none; }

@@ -28,7 +28,7 @@
   .ringlist .eye:hover { background: var(--veil); }
   .ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
   .ringlist li.ring:hover .grip, .ringlist li.ring.on .grip { color: var(--grey); }
-  .ringlist li.ring.dragged { opacity: 0.45; }
+  .ringlist li.ring.dragged { opacity: var(--dim); }
   .ringlist li.ring.dragged .grip { cursor: grabbing; }
   .ringlist .dropline { position: absolute; left: 0; right: 0; height: var(--triple); background: var(--ink); pointer-events: none; }
   .ringlist .kindicon { grid-column: 3; display: grid; place-items: center; height: 100%; color: var(--ink); }      /* the kind, pictured (#254) */
@@ -143,12 +143,12 @@
      its own width, so it meets each end of the lane as the knob does (--p, the slider's place, 0–1, set by filled()) */
   .numpop .popvalue { display: grid; align-items: center; width: max-content; height: var(--num-pop-small); margin-left: calc(var(--p, 0) * 100%); translate: calc(var(--p, 0) * -100%) 0; padding: 0 calc(var(--num-pop-small) / 2); border-radius: calc(var(--num-pop-small) / 2); background: var(--num-pop-value); }
   .numpop .popword { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; color: var(--white); font: 600 var(--t-l)/1 var(--sans); pointer-events: none; user-select: none; }      /* the name between − and +, not pressable */
-  .numpop .popvalue input[type="text"] { field-sizing: content; width: auto; min-width: 2ch; height: auto; padding: 0; border: 0; background: none; font: 700 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); letter-spacing: 0.02em; text-align: center; color: var(--num-pop-ground); }
+  .numpop .popvalue input[type="text"] { field-sizing: content; width: auto; min-width: 2ch; height: auto; padding: 0; border: 0; background: none; font: 700 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); letter-spacing: var(--track-20); text-align: center; color: var(--num-pop-ground); }
   @supports not (field-sizing: content) { .numpop .popvalue input[type="text"] { width: 5ch; } }      /* where a field can't size to its text (older Safari): five figures' room */
   .numpop .popvalue input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .popvalue input[type="text"]::selection { background: var(--white); color: var(--num-pop-ground); }      /* chosen to be typed over: white behind the figures */
   .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0;
-    --ink: var(--num-pop-disc); --well: var(--num-pop-well); --field: var(--white); --thumb: var(--num-pop-thumb); --thumb-eye: var(--num-pop-eye); --thumb-eye-edge: calc(var(--num-pop-eye) + 0.75px); --track: var(--num-pop-track); --row-rule: transparent; --surface: var(--num-pop-ground); }
+    --ink: var(--num-pop-disc); --well: var(--num-pop-well); --field: var(--white); --thumb: var(--num-pop-thumb); --thumb-eye: var(--num-pop-eye); --thumb-eye-edge: calc(var(--num-pop-eye) + var(--three-quarter)); --track: var(--num-pop-track); --row-rule: transparent; --surface: var(--num-pop-ground); }
   .numpop .row > * { grid-column: 1; }
   .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-pill) / 2); background: var(--white); }      /* the knob as far from the pill's ends as from its top and bottom */
   .numpop .row input[type="range"]::-webkit-slider-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); }
@@ -173,7 +173,7 @@
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
   .detail.round { border: 0; }
   .detail.round svg { fill: none; }      /* lines only; the first position's dot fills itself */
-  .detail.round { --pos-line: calc(var(--hair) + 0.75px); }      /* its lines 0.75 thicker than a hairline (Okay, 19 Oct 2026, 20:37: "Line thicknesses .75 thicker") */
+  .detail.round { --pos-line: calc(var(--hair) + var(--three-quarter)); }      /* its lines 0.75 thicker than a hairline (Okay, 19 Oct 2026, 20:37: "Line thicknesses .75 thicker") */
   .detail.round .used { stroke: currentColor; stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
   .detail.round .skipped { stroke: var(--rule); stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
   .detail.round .axis { stroke-width: var(--pos-line); }
@@ -239,7 +239,7 @@
   .givebox { grid-column: 3 / -1; display: grid; gap: var(--u2); padding: var(--u2) 0 0; border: var(--hair) solid var(--row-rule); background: var(--field); }
   .givepic { display: flex; justify-content: center; padding: 0 var(--u3); }
   .givepic svg { display: block; max-width: 100%; height: auto; }
-  .givepic .above { opacity: 0.45; }      /* the rings above: context, as the dial's edge behind the A's — outlines, so what lies under them shows */
+  .givepic .above { opacity: var(--dim); }      /* the rings above: context, as the dial's edge behind the A's — outlines, so what lies under them shows */
   .givechoices { display: grid; padding: 0 var(--u3); }
   .givechoices .check { height: var(--control); font-size: var(--t-s); }
   .givebox > .row.side.quiet { grid-template-columns: var(--side-columns); column-gap: 0; padding: 0 var(--u3); }

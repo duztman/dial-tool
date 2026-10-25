@@ -21,7 +21,7 @@
   .guides:has(.guidelist:not([hidden])) { z-index: 1; }      /* its list over the case and X-ray under it */
   /* the case's switch (in the top right corner, under Guides): its kind's name and a chevron, as Backdrop is a word and its chip; the
      system's list over it, unseen; with a case on, its outline solid like a switch that is on */
-  .casebox { --sign-w: 18px; position: relative; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch); }
+  .casebox { --sign-w: var(--sign-18); position: relative; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch); }
   /* its chevron in a square of its own behind a line, as Guides' and Shadows' are (4.82; Okay, 19 Oct 2026: "Case icon
      and its spacing need work"): the sign u3 from the left as theirs, the word u4 clear of the line */
   .casebox .arrow { align-self: stretch; display: grid; place-items: center; }      /* folded with the word, no square of its own (the switches' words, below) */
@@ -33,7 +33,7 @@
      dial; a reach of a fingertip round each, unseen */
   .handles .handle { fill: var(--white); stroke: none; cursor: grab; pointer-events: all; }      /* the handle's sign in white on its disc */
   .handles .handle .reach { fill: transparent; stroke: none; }
-  .handles .handle .seat { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; }      /* the disc a handle sits in: its guide's colour, solid, a white hairline round it (#486; Okay, 04:52: "No transparency on handles, backgrounds solid") */
+  .handles .handle .seat { fill: var(--handle); stroke: var(--white); stroke-width: var(--glow-line); }      /* the disc a handle sits in: its guide's colour, solid, a white hairline round it (#486; Okay, 04:52: "No transparency on handles, backgrounds solid") */
   .handles.dragging .handle { cursor: grabbing; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
      everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
@@ -41,7 +41,7 @@
   .tinywin { position: fixed; z-index: 60; overflow: hidden; border: var(--thick) solid var(--ink); border-radius: var(--tiny-round); box-shadow: var(--tiny-cast) var(--tiny-cast) 0 var(--tiny-shade); cursor: grab; touch-action: none; user-select: none; }
   .tinywin.held { cursor: grabbing; }
   .tinyface > svg { display: block; }
-  .tinyshut { position: absolute; top: var(--u2); left: var(--u2); display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border-radius: 50%; background: var(--paper); color: var(--ink); opacity: 0; transition: opacity 0.15s; }
+  .tinyshut { position: absolute; top: var(--u2); left: var(--u2); display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border-radius: 50%; background: var(--paper); color: var(--ink); opacity: 0; transition: opacity var(--tiny-fade); }
   .tinywin:hover .tinyshut, .tinywin.awake .tinyshut, .tinyshut:focus-visible { opacity: 1; }
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
@@ -61,7 +61,7 @@
   /* the undo history (Okay, 23 Oct 2026: "no thinlines no round/sharp clash, simple rounded corner black popup, 1px line
      (spanning the margins as well) between items"): one rounded night part; its lines plain words, each under a hairline
      across its whole width */
-  .historylist { position: absolute; z-index: 5; top: calc(100% + var(--unit)); left: 0; display: grid; min-width: calc(6 * var(--control-large)); max-height: 60vh; overflow-y: auto; padding: 0;
+  .historylist { position: absolute; z-index: 5; top: calc(100% + var(--unit)); left: 0; display: grid; min-width: calc(6 * var(--control-large)); max-height: 60dvh; overflow-y: auto; padding: 0;
     border-radius: var(--round-switch); background: var(--night); color: var(--white); }
   .historylist > * { margin: 0; padding: var(--u2) var(--pop-pad); text-align: left; white-space: nowrap; }
   .historylist > * + * { border-top: var(--hair) solid var(--night-rule); }
@@ -87,7 +87,7 @@
   /* Versions, under undo (#435): a switch with its sign and word, as Backdrop's; its list drops under it — the panel's
      ground, its cards as wide as the Gallery's (the panel's width). Function first: its look is to be designed with Okay */
   .versions { position: relative; display: flex; }
-  .versionsbox { --sign-w: 16px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch); }
+  .versionsbox { --sign-w: var(--sign-16); gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch); }
   .versionlist { position: absolute; top: calc(100% + var(--unit)); left: 0; width: var(--panel-w); max-width: calc(100vw - 2 * var(--canvas-inset)); max-height: var(--list-room); overflow-y: auto; padding: 0 var(--pop-pad); border: var(--hair) solid var(--ink); border-radius: var(--round-switch); background: var(--paper); color: var(--ink); }
   .versionline { display: flex; gap: var(--unit); }
   #instance-cards a { touch-action: none; }      /* a finger on a card arranges, not scrolls (the list scrolls by its edge) */
@@ -104,10 +104,9 @@
   .setoffer { display: flex; align-items: center; gap: var(--unit); }
   .offerbtn { padding: var(--u1) var(--u3); border: var(--hair) solid var(--white); background: none; color: var(--white); font: inherit; cursor: pointer; }      /* its buttons, drawn for the note's dark ground */
   .offerbtn.main { background: var(--white); color: var(--ink); }
-  .setoffer[hidden] { display: none; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; }      /* no step that way: its outline as the others' (Okay, 21 Oct 2026, 23:34: "keep outlines as others while inactive"), its sign paler, nothing under a pointer or a finger */
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
-  .guidesbox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
+  .guidesbox { --sign-w: var(--sign-18); gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
@@ -146,7 +145,7 @@
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
      little of the ground between them. A hairline under every line. */
   .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--guide-name) + var(--guide-none) + 8 * var(--guide-dot) + 9 * var(--guide-gap) + 2 * var(--ring-thick)); max-width: calc(100vw - 2 * var(--canvas-inset));
-    max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) 0 0; }      /* less on top: a line's own height already stands its dots off the edge. Its room at the sides is its parts' (next rule), so its bottom section can reach both edges */
+    max-height: calc(100dvh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) 0 0; }      /* less on top: a line's own height already stands its dots off the edge. Its room at the sides is its parts' (next rule), so its bottom section can reach both edges */
   .guidelist > * { margin-inline: var(--pop-pad); }
   .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidekind.off .name { color: var(--grey); }
@@ -170,10 +169,8 @@
   .guidescroll { position: relative; }
   .guidesheet .guidehead { grid-template-columns: minmax(0, 1fr) auto; }
   .guidesheet .guidehead.gap { margin-top: var(--u4); }      /* a group after a group: air over its heading (Okay, 24 Oct 2026, 23:21: "close repeating lines need more space") */
-  .guidesheet .guidehead.gap[hidden] { display: none; }
   .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-circle) var(--guide-circle); column-gap: var(--u2); margin-left: var(--guide-inset); }      /* the tier: a group's lines inset under their heading (their group's box carries the list's side room) */
   .guidesheet .guidekind.selected > .name { justify-self: start; max-width: 100%; box-sizing: border-box; height: var(--guide-circle); line-height: var(--guide-circle); padding: 0 var(--u3); border-radius: var(--round-pill); background: var(--ink); color: var(--paper); font-weight: 400; }      /* the selected ring or window: its name in a filled pill, the chosen word's look (Okay, 25 Oct 2026: "Selected one gets its own personally tailored one word pill") */
-  .guideadded[hidden] { display: none; }
   .guideadded .guidekind:last-child { box-shadow: none; }      /* the last line meets the foot's edge: no rule of its own there */
   .gdot, .gchev { width: var(--guide-circle); height: var(--guide-circle); border-radius: 50%; display: grid; place-items: center; justify-self: center; }      /* each in a circle of its own, concentric (Okay: "If something can be a circle, is") */
   .gdot::before { content: ""; width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
@@ -194,7 +191,6 @@
   .guidepop.dots .tone:not(.on)::before { opacity: var(--guide-dim); }
   .guidepop.dots :is(.tone, .none).on { box-shadow: inset 0 0 0 var(--hair) var(--ink); background: none; color: var(--ink); }      /* the chosen one: its circle drawn, concentric round its dot */
   .guidepop.dots .none svg { flex: none; }
-  .guidepop[hidden] { display: none; }
   /* the foot, one ground (Okay, 25 Oct 2026, his marks on the drawing): Add and its three free pills; Thickness as a
      pill switch and Reset All a quiet word; the pills' edges on the lines' right edge */
   .guidesheet .guidesettings { padding: var(--u2) var(--pop-pad) var(--u3); background: var(--field); }
@@ -209,7 +205,7 @@
   .guidelist.guidesheet .guidelast { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; column-gap: var(--u2); align-items: center; height: var(--guide-row); margin-inline: 0; padding: 0; background: none; }
   .guidelist.guidesheet .guidelast > label:first-child { color: var(--grey); }
   .guidelist.guidesheet .guidelast > .numcell { display: contents; }
-  .guidelist.guidesheet .guidelast > .resetall { display: grid; padding: 0; border: 0; }
+  .guidelist.guidesheet .guidelast > .resetall { grid-column: 3; align-self: stretch; display: grid; align-items: center; }      /* Reset All in the third column, as tall as the line */
   .guidelist.guidesheet .guidelast > .ask { grid-column: 1 / -1; }
   .gword { padding: 0 0 0 var(--u2); font-size: var(--t-s); color: var(--grey); }
   .gword:hover { color: var(--ink); }
@@ -229,18 +225,8 @@
   .guidefield { flex: none; display: inline-flex; align-items: center; color: var(--grey); }
   .guidefield input { height: var(--control); padding: 0; border: 0; background: none; color: inherit; text-align: right; }
   .guidefield input:focus { color: var(--ink); outline-offset: var(--u1); }      /* typing: its ring stands off the figures */
-  .dots .remove { color: var(--grey); }
-  .dots .remove:hover { color: var(--ink); }
-  .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
-  .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
-  .dots .tone { background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
-  .dots .tone:not(.on) { opacity: var(--guide-dim); }
-  .dots .tone.on { box-shadow: 0 0 0 var(--ring-gap-in) var(--paper), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick)) var(--c), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick) + var(--hair)) var(--chip-rule); }
   .dots .none { color: var(--grey); }
-  .dots .none { width: var(--guide-none); height: var(--guide-none); }      /* the none sign: larger than a colour (4.79, "the oslashes for no went too small"), drawn at 14 */
-  .dots .none svg { flex: none; }
   .dots .none:hover { color: var(--ink); }
-  .dots .none.on { background: var(--ink); color: var(--paper); box-shadow: 0 0 0 var(--ring-thick) var(--ink); }
   /* Thickness, on the list's own columns: name · slider · value · stepper */
   .guidelist .row { grid-template-columns: var(--guide-name) minmax(0, 1fr) var(--col) var(--col); min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidelist .row > :is(label, input[type="range"]) { grid-column: auto; }
@@ -252,23 +238,13 @@
   .guidelast > * { grid-row: 1; }
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
-  .guidelast > .numcell { grid-column: 2; display: flex; justify-content: flex-end; height: var(--control); pointer-events: none; }
-  .guidelast :is(.numbox, .gthick) { pointer-events: auto; }
-  .guidelast > .resetall { grid-column: 3; align-self: stretch; display: flex; align-items: center; padding-left: var(--gap); border-left: var(--hair) solid var(--paper); }      /* its rule: the ground's, from the section's top to the box's bottom (#305) */
   /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
   .guidelast.asking > :not(.ask) { visibility: hidden; }
   .guidelast > .ask { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; color: var(--ink); }
-  .guidelast > .ask[hidden] { display: none; }
   .guidelast .answers { display: flex; gap: var(--u2); }
   .roundb { display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: none; color: var(--ink); }
   .roundb:hover { background: var(--ink); color: var(--paper); }
   .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
-  /* a popup's bottom section (#305; Okay, 16 Oct 2026: "whole bottom section hr line color, top line gone,
-     perpendicular same thickness touches box bottom, lowest line gone. This is a bottom section rule. For these
-     popups"): the Guides' Thickness · Reset All, the Shadows' Reset. Filled with the line colour from edge to edge and
-     down to the box's bottom (the list is cut to its round corners); no line over or under it; a rule in it is a
-     hairline of the ground, from its top to the box's bottom (.resetall) */
-  .guidelist > .popfoot, .guidesettings > .popfoot { min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--pop-pad) env(safe-area-inset-bottom); background: var(--row-rule); box-shadow: none; }
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: calc(var(--shade-right, var(--panel-w)) - var(--shade-left, var(--margin))); max-width: calc(100vw - 2 * var(--margin));
     max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); }      /* from the panel's margin to the switch's right edge, standing on the switch (its corners all round: Okay, 02:29, "ROUND CORNERS") */      /* over the panel's column, so the dial and its shadows stay in view (Okay, 25 Oct 2026, 02:02: "This has to open on the left so we'd see the shadow on the dials"); from the switch's foot up to the canvas's top */
@@ -329,7 +305,7 @@
     background: var(--ink); color: var(--white); box-shadow: 0 0 0 var(--hair) var(--white), 0 0 0 var(--thick) var(--ink); font-weight: 600; text-align: center; }
   .tip { position: absolute; z-index: 2; pointer-events: none; padding: var(--u1) var(--u3); background: var(--ink); color: var(--white); white-space: nowrap;
     box-shadow: 0 0 0 var(--hair) var(--white), 0 0 0 var(--thick) var(--ink); font-weight: 600; }
-  .tip svg { position: absolute; left: calc(var(--arrow, 50%) - 10px); top: 100%; overflow: visible; }
+  .tip svg { position: absolute; left: calc(var(--arrow, 50%) - var(--tip-half)); top: 100%; overflow: visible; }
   .tip.below svg { top: auto; bottom: 100%; transform: scaleY(-1); }
   .tip svg path { fill: none; }
   .tip svg .a { stroke: var(--ink); stroke-width: var(--tip-arrow); }

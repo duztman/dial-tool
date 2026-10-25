@@ -19,7 +19,11 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || 
 const visitor = async () => {
   const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, acceptDownloads: true, reducedMotion: "reduce" });      // panes fold at once here; their slide has a check of its own
   await c.grantPermissions(["local-fonts"]).catch(() => {});
-  await c.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them; a first visit has a check of its own (#270)
+  // every storage touch in an init script waits a task (setTimeout 0): read or written at the document's very start, in
+  // Chromium a file:// page's localStorage is then lost at its next reload (measured 25 Oct 2026: 7 of 30 reloads came
+  // back empty, 0 of 30 with the wait; #541 — the short address's reload and the session's). The app never saw it: no
+  // browser runs scripts before a page. The same in every test and in icons/check.mjs.
+  await c.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); }, 0); });      // every pane open, as for a visitor who has opened them; a first visit has a check of its own (#270)
   // the tool's own fonts come from its site; here they are served from web/fonts/, so the test needs no network
   await c.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
   return c;
@@ -30,7 +34,7 @@ const errors = [];
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
 page.on("pageerror", (e) => errors.push(e.message));
 const settings = process.argv[2];
-if (settings) await page.addInitScript((s) => { if (!sessionStorage.getItem("seeded")) { localStorage.setItem("dial-tool-last", s); sessionStorage.setItem("seeded", "1"); } }, fs.readFileSync(settings, "utf8"));
+if (settings) await page.addInitScript((s) => { setTimeout(() => { if (!sessionStorage.getItem("seeded")) { localStorage.setItem("dial-tool-last", s); sessionStorage.setItem("seeded", "1"); } }, 0); }, fs.readFileSync(settings, "utf8"));
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 
@@ -54,6 +58,20 @@ const click_mm = async (x, y) => {
   await frame();
 };
 const clock = (r, a) => [r * Math.sin(a * Math.PI / 180), r * Math.cos(a * Math.PI / 180)];
+// Load… a settings file and wait on the app's own word for it (#541): the log says "loaded <name>" (or why not) the
+// moment load_text() has run, so the wait is on that line, not on a value the dial may or may not hold. If no word
+// comes in 5 s the file is handed over once more (the input may have been rebuilt under the first try), and a stall
+// prints what the app said (R17: never a bare timeout).
+const load_settings_file = async (file) => {
+  const name = path.basename(file), said = () => page.evaluate((n) => window.dial_tool.log_lines.findIndex((l) => l.includes(`loaded ${n}`) || l.includes(`load ${n}`)), name);
+  await page.evaluate(() => { window.__loading = window.dial_tool; });      // a load makes a new tool (reopen), with a log of its own
+  const came = (ms) => page.waitForFunction((n) => { const t = window.dial_tool, L = t.log_lines; return (t !== window.__loading && L.some((l) => l.includes(`loaded ${n}`))) || L.some((l) => l.includes(`couldn’t load ${n}`)); }, name, { timeout: ms }).then(() => true, () => false);
+  await page.setInputFiles("#load-file", file);
+  if (await came(5000)) return;
+  console.log(`      (the settings file's load gave no word in 5 s: handing it over again, #541)`);
+  await page.setInputFiles("#load-file", file);
+  if (!(await came(10000))) console.log("FAIL  loading the settings file: the app said nothing in 15 s — its log:", JSON.stringify(await page.evaluate(() => window.dial_tool.log_lines.slice(0, 8))), JSON.stringify(errors.slice(0, 3)), "said at", await said());
+};
 const download = async (selector) => {
   const [d] = await Promise.all([page.waitForEvent("download"), page.click(selector)]);
   const file = path.join(OUT, d.suggestedFilename());
@@ -677,9 +695,9 @@ const dot_c = (sel) => page.$eval(sel, (d) => d.style.getPropertyValue("--c"));
 }
 { // the list's look: lines 30 high (#305: "tighter"); in the dot's popup a colour not chosen at 40 % (18 Oct, notes 2: "fainter"), the "none" sign one path
   await page.click("#guide-gd_hole-colour");
-  const look = await page.evaluate(() => { const q = (s) => document.querySelector("#guide-list " + s); return [Math.round(q(".guidekind").getBoundingClientRect().height), getComputedStyle(q("#guide-pop .tone:not(.on)")).opacity, getComputedStyle(q("#guide-pop .tone.on")).opacity, q("#guide-pop .none svg").querySelectorAll("path, circle, line").length, !q("#guide-pop").hidden]; });
+  const look = await page.evaluate(() => { const q = (s) => document.querySelector("#guide-list " + s); return [Math.round(q(".guidekind").getBoundingClientRect().height), getComputedStyle(q("#guide-pop .tone:not(.on)"), "::before").opacity, getComputedStyle(q("#guide-pop .tone.on"), "::before").opacity, q("#guide-pop .none svg").querySelectorAll("path, circle, line").length, !q("#guide-pop").hidden]; });
   await page.click("#guide-gd_hole-colour");
-  check(look[0] === 30 && look[1] === "0.4" && look[2] === "1" && look[3] === 1 && look[4] && await page.isHidden("#guide-pop"), `a guide's line is ${look[0]} high; its dot opens the colours by it, a colour not chosen at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path; the dot again shuts them`);
+  check(look[0] === 30 && look[1] === "0.4" && look[2] === "1" && look[3] === 1 && look[4] && await page.isHidden("#guide-pop"), `a guide's line is ${look[0]} high; its dot opens the colours by it, a colour not chosen at ${look[1]} (its dot, the ::before, alone: the button under it whole — found 25 Oct 2026 at 0.4 × 0.4), the chosen one whole; the "none" sign is ${look[3]} path; the dot again shuts them`);
 }
 // windows have their own section, as rings (#271): Selected · All · None, Selected to start; a line per window that is on, in its own colour; its edges drawn solid, its middle dotted, as a ring's (#272).
 // One thing in focus (#301): the tab says which — Rings its selected ring, Windows its selected window, the others neither; with All the rest show faded
@@ -1428,7 +1446,7 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 43 -1
 {
   const row = await page.evaluate(() => { const rows = [...document.querySelectorAll("#font-picker .fontrow")], x = (e) => Math.round(e.getBoundingClientRect().left), by = (f) => rows.find((r) => r.dataset.family === f);
     return { names: new Set(rows.map((r) => x(r.querySelector(".name")))).size, numerals: new Set(rows.map((r) => x(r.querySelector(".sample")))).size, order: rows.every((r) => x(r.querySelector(".name")) < x(r.querySelector(".sample")) && x(r.querySelector(".sample")) < x(r.querySelector(".has"))), drawn: by("Jost").querySelector(".name svg path") !== null, barlow: [...by("Barlow").querySelectorAll(".sticker")].map((e) => e.textContent + "/" + e.className.split(" ")[1]).join(" "), archivo: [...by("Archivo").querySelectorAll(".sticker")].map((e) => e.textContent + "/" + e.className.split(" ")[1]).join(" "), sticker: (() => { const c = getComputedStyle(by("Archivo").querySelector(".sticker.weight")), d = getComputedStyle(by("Archivo").querySelector(".sticker.width")); return [c.fontFamily.includes("Silkscreen"), c.fontSize, c.backgroundColor !== d.backgroundColor, c.borderTopLeftRadius].join(" "); })(), two_lines: rows.filter((r) => r.dataset.group === "list" && r.querySelector(".has").getBoundingClientRect().height > 20).map((r) => r.dataset.family).join(), one_line: by("Arimo").querySelector(".has").getBoundingClientRect().height < 30 && by("Routed Gothic").querySelector(".has").getBoundingClientRect().height < 30 && rows.every((r) => r.dataset.group !== "list" || r.querySelector(".has").getBoundingClientRect().height < 45), three: rows.filter((r) => r.querySelector(".has") && r.querySelector(".has").getBoundingClientRect().height >= 45).map((r) => r.dataset.family + " " + r.dataset.group).join(), sets: [...by("Cormorant").querySelectorAll(".sticker.sets")].map((e) => e.textContent).join(" | "), legend: [...document.querySelectorAll("#font-legend dt")].map((e) => e.textContent).join(" "), legend_at: (() => { const leg = document.querySelector("#font-legend"), b = document.querySelector("#font-legend-open"); if (!leg.hidden) return false; b.click(); const l = leg.getBoundingClientRect(), q = document.querySelector("#font-picker .squares").getBoundingClientRect(), shown = !leg.hidden && l.bottom <= q.top + 1 && b.getAttribute("aria-expanded") === "true"; b.click(); return shown && leg.hidden; })(), cut: [...new Set(rows.map((r) => r.querySelector(".sample svg")).filter(Boolean).map((sv) => Math.round(sv.getBoundingClientRect().height)))].join(), fits: rows.every((r) => { const n = r.querySelector(".name"), g = n.querySelector("svg"); return !g || g.getBoundingClientRect().right <= n.getBoundingClientRect().right + 0.5 || Math.abs(g.getBoundingClientRect().width - parseFloat(g.style.minWidth)) < 0.5; }), has: new Set(rows.map((r) => Math.round(r.querySelector(".has").getBoundingClientRect().width))).size, line: getComputedStyle(rows[0]).borderBottomColor === getComputedStyle(document.querySelector(".fontlist")).borderTopColor,
-      squares: [...document.querySelectorAll("#font-picker .squares .pickt")].filter((b) => b.offsetParent).map((b) => { const r = b.getBoundingClientRect(); return b.textContent + " " + (Math.round(r.height) <= 46); }).join(" · "), three: (() => { const a = [...document.querySelectorAll("#font-picker .adds > .pickt")].map((b) => b.getBoundingClientRect()), l = document.querySelector("#font-legend-open").getBoundingClientRect(), w = a.map((r) => Math.round(r.width)); return a.length === 2 && new Set(w).size === 1 && Math.abs(a[0].top - l.top) < 1 && getComputedStyle(document.querySelector("#font-picker .adds small")).display !== "none"; })() }; });
+      squares: [...document.querySelectorAll("#font-picker .squares .pickt")].filter((b) => b.offsetParent).map((b) => { const r = b.getBoundingClientRect(); return b.textContent + " " + (Math.round(r.height) <= 46); }).join(" · "), adds: (() => { const a = [...document.querySelectorAll("#font-picker .adds > .pickt")].map((b) => b.getBoundingClientRect()), l = document.querySelector("#font-legend-open").getBoundingClientRect(), w = a.map((r) => Math.round(r.width)); return a.length === 2 && new Set(w).size === 1 && Math.abs(a[0].top - l.top) < 1 && getComputedStyle(document.querySelector("#font-picker .adds small")).display !== "none"; })() }; });
   check(row.names === 1 && row.numerals === 1 && row.order && row.drawn && row.line, "a line of the sheet: the family's name drawn in its own face at the left · its numerals, all starting on one line · what it has; a full line between two");
   check(row.barlow === "bold/weight tab/figure frac/figure 4 st/styles" && row.archivo === "w. 100–900/weight wd/width tab/figure old/figure zero/figure frac/figure" && row.sticker === "true 8px true 3px" && row.has === 1, `what a family has, as stickers in the pixel font, in short words (bold and italic whole), a colour for each kind, round corners: Barlow ${row.barlow}; Archivo ${row.archivo}; their column is one width (${row.sticker})`);
   check(row.one_line, `a row's stickers stand on one line where the column lets them, never three in the tool's own list (on two: ${row.two_lines || "none"}; three: ${row.three || "none"})`);
@@ -1436,7 +1454,7 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 43 -1
   check(row.legend === "w. 100–900 bold italic wd opt tab old zero frac 2 ss 5 cv 3 st" && row.legend_at, `a legend says what each sticker means: folded to a button beside the squares, it opens upwards over them (${row.legend})`);
   check(row.cut === "33", `numerals keep their size in every row, bigger (Okay, 24 Oct 2026: "ENLARGE NUMS"): the wide ones are cut at their column's edge, none above (${row.cut} high)`);
   check(row.fits, "every family's name fits its column: the long ones are drawn smaller, down to 70 % of their size, then cut (the law of the name column, 13 Oct 2026)");
-  check(row.squares === "Add font link(gfonts, url) true · Add font file(woff, ttf, otf) true · Legend(OpenType abbr.) true" && row.three, `the buttons for adding a font: a link and a file, sharing the first two columns on one line with their second lines (Installed is a tab over the list, R35); short (no higher than 46); the legend's button in the third column (${row.squares})`);
+  check(row.squares === "Add font link(gfonts, url) true · Add font file(woff, ttf, otf) true · Legend(OpenType abbr.) true" && row.adds, `the buttons for adding a font: a link and a file, sharing the first two columns on one line with their second lines (Installed is a tab over the list, R35); short (no higher than 46); the legend's button in the third column (${row.squares})`);
   await page.keyboard.press("Escape");
   { // the text's colour, a pill with its hex (#408): its swatch stands in the ring list's colour column; the name's whole line opens the sheet
     const col = await page.evaluate(() => { const mid = (e) => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; }; return [mid(document.querySelector(".ringline .colour")), mid(document.querySelector("#font-c .dot")), document.querySelector("#font-c").getBoundingClientRect().right <= document.querySelector("#lang").getBoundingClientRect().left, document.querySelector("#font-name").getBoundingClientRect().right <= document.querySelector("#font-c").getBoundingClientRect().left + 0.5 && document.querySelector("#font-change") === null]; });
@@ -1989,8 +2007,7 @@ check(JSON.stringify(JSON.parse(fs.readFileSync(saved, "utf8"))) === before_save
 await page.evaluate(() => window.dial_tool.reopen({ ui_section: window.dial_tool.S.ui_section }));      // the plain starting values (the Settings file pane has Save… · Load… only, #434)
 await page.waitForFunction(() => window.dial_tool.statik);
 check(await S("S.ha_hour.round === 0"), "Plain dial clears them");
-await page.setInputFiles("#load-file", saved);
-await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2, null, { timeout: 15000 }).catch(async () => console.log("FAIL  loading the settings file: the dial did not come back in 15 s — the app's log:", JSON.stringify(await page.evaluate(() => window.dial_tool.log_lines.slice(0, 8))), JSON.stringify(errors.slice(0, 3))));      // seen twice on 24 Oct 2026, not reproduced: say what the app said instead of a bare timeout
+await load_settings_file(saved);
 const after_load = await S("JSON.stringify({ ...S, ui_section: 0 })");
 check(after_load === JSON.stringify({ ...JSON.parse(before_save), ui_section: 0 }), "Load… brings every setting back");
 { // after Load the pane names the file and Save… offers that name again; a sentence says what a settings file is (Okay, 16 Oct 2026, #279)
@@ -2020,8 +2037,7 @@ await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.u
 await page.waitForTimeout(700);
 check(await page.evaluate(() => location.hash === "") && await S("t.log_lines.some((l) => l.includes('opened the dial in the address'))") && await S("t.log_lines.slice(0, 3).every((l) => !l.includes('stands in'))"), "clicking Diver opens it from its link, its fonts drawn; the address is then the site's own, short (#537)");
 await shot("9-example");
-await page.setInputFiles("#load-file", saved);
-await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2);
+await load_settings_file(saved);
 
 // ── a dial as a link ──
 await context.grantPermissions(["local-fonts", "clipboard-read", "clipboard-write"]).catch(() => {});
@@ -2040,7 +2056,7 @@ check(await page.evaluate(() => location.hash === ""), "the address bar stays sh
 check(/#5[0-9A-Z]+$/.test(link), `Copy link: the address carries the dial in capitals and digits only, link scheme 5 (#278; 5 since 4.92.18, #228; ${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
 const other = await (await visitor()).newPage();      // someone else's browser: no last session of this dial. A browser of its own, not a second tab: a tab shares the first one's storage, where the first keeps saving its dial while its clock runs (found 16 Oct 2026, 4.42.5: a save landed while this page started)
-await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));      // and what it keeps itself between the addresses below
+await other.addInitScript(() => { setTimeout(() => localStorage.removeItem("dial-tool-last"), 0); });      // and what it keeps itself between the addresses below
 await other.goto(link);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
@@ -2049,10 +2065,13 @@ const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, u
   const fresh = await (await visitor()).newPage();
   await fresh.goto(link); await fresh.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
   const cut = await fresh.evaluate(() => location.hash === "" && location.href === location.href.split("#")[0]);
+  // the session is written before the address is cut (keep_and_shorten); the reload comes once the browser's storage
+  // shows it (#541: a reload once brought the opener back — the write not yet there, or lost)
+  const stored = await fresh.waitForFunction(() => { try { return JSON.parse(localStorage.getItem("dial-tool-last")).dial_d; } catch (e) { return false; } }, null, { timeout: 5000 }).then((h) => h.jsonValue(), () => "none");
   await fresh.reload(); await fresh.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
-  const kept = await fresh.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
+  const kept = await fresh.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 })), opened = await fresh.evaluate(() => window.dial_tool.log_lines.filter((l) => /session|opener|address/.test(l)).join(" | "));
   await fresh.close();
-  check(cut && JSON.parse(kept).ha_beat === JSON.parse(got).ha_beat && JSON.parse(kept).dial_d === JSON.parse(got).dial_d && JSON.parse(kept).rings.length === JSON.parse(got).rings.length, `a dial's link opens the dial, then the address bar shows only the site; a reload brings the same dial back (#537; cut ${cut}, diameter ${JSON.parse(kept).dial_d} / ${JSON.parse(got).dial_d}, beat ${JSON.parse(kept).ha_beat} / ${JSON.parse(got).ha_beat}, rings ${JSON.parse(kept).rings.length} / ${JSON.parse(got).rings.length})`);
+  check(cut && stored === JSON.parse(got).dial_d && JSON.parse(kept).ha_beat === JSON.parse(got).ha_beat && JSON.parse(kept).dial_d === JSON.parse(got).dial_d && JSON.parse(kept).rings.length === JSON.parse(got).rings.length, `a dial's link opens the dial, then the address bar shows only the site; a reload brings the same dial back (#537; cut ${cut}, stored ${stored}, diameter ${JSON.parse(kept).dial_d} / ${JSON.parse(got).dial_d}, beat ${JSON.parse(kept).ha_beat} / ${JSON.parse(got).ha_beat}, rings ${JSON.parse(kept).rings.length} / ${JSON.parse(got).rings.length}; the app: ${opened})`);
 }
 {
   // the same within what a link rounds (#246): a number to 3 decimals, a colour to hex, the time to the second (test/linktrip.mjs)
@@ -2602,8 +2621,8 @@ check(await page.$eval("#ampm", (b) => b.firstElementChild && b.firstElementChil
 // ── under a finger: small controls are pressed from a little outside their edge too ──
 const touch = await browser.newContext({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
 const pad = await touch.newPage();
-await pad.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
-await pad.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open (#270)
+await pad.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); }, 0); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+await pad.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); }, 0); });      // every pane open (#270)
 await pad.goto("file://" + process.cwd() + "/dial-tool.html");
 await pad.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await pad.tap("#guides-more");

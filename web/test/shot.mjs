@@ -6,9 +6,9 @@ const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromi
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
 page.on("console", (m) => { if (m.type() === "error") console.log("console error:", m.text()); });
 page.on("pageerror", (e) => console.log("page error:", e.message));
-if (settings) await page.addInitScript((s) => localStorage.setItem("dial-tool-last", s), fs.readFileSync(settings, "utf8"));
-else await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
-await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them (#270)
+if (settings) await page.addInitScript((s) => { setTimeout(() => localStorage.setItem("dial-tool-last", s), 0); }, fs.readFileSync(settings, "utf8"));
+else await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); }, 0); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); }, 0); });      // every pane open, as for a visitor who has opened them (#270)
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await page.waitForTimeout(300);

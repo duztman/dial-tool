@@ -21,7 +21,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || 
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 page.on("pageerror", (e) => console.log("page error:", e.message));
 await page.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
-await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });
+await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); }, 0); });
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await page.click(`button[data-tab="${tab}"]`);

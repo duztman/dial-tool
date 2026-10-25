@@ -131,24 +131,24 @@
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
   .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
-  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: 1; shape-rendering: crispEdges; }
-  .ruler .line { opacity: 0.4; }
-  .ruler .hour { opacity: 0.85; }
-  .ruler .half { opacity: 0.6; }
-  .ruler .small { opacity: 0.38; }
+  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: var(--hair); shape-rendering: crispEdges; }
+  .ruler .line { opacity: var(--ruler-line); }
+  .ruler .hour { opacity: var(--ruler-hour); }
+  .ruler .half { opacity: var(--ruler-half); }
+  .ruler .small { opacity: var(--ruler-small); }
   .bar .day { touch-action: none; cursor: ew-resize; }      /* the strip reads presses itself (app.js day_strip): no pan, no swipe */
   .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); pointer-events: none; }      /* the keyboard's and a screen reader's way in; presses go to the strip */
   /* the needle (Okay, 18 Oct 2026, notes 2: "The moving needle is 1px wide and red, starts from the bottom of the screen
      unlike the ruler which has room below"): placed by app.js (place_needle) from the ruler's top to the bar's foot */
   .bar .day .needle { position: absolute; z-index: 1; width: var(--hair); translate: -50% 0; background: var(--play); pointer-events: none; }
   .bar .day input[type="range"]::-webkit-slider-runnable-track { height: var(--ruler); border-radius: 0; background: none; }
-  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: none; box-shadow: none; }      /* not drawn: the needle stands in its place */
+  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--day-handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: none; box-shadow: none; }      /* not drawn: the needle stands in its place */
   .bar .day input[type="range"]::-moz-range-track { height: var(--ruler); background: none; }
   .bar .day input[type="range"]::-moz-range-progress { background: none; }
-  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: none; box-shadow: none; }
+  .bar .day input[type="range"]::-moz-range-thumb { width: var(--day-handle); height: var(--ruler); border-radius: 0; background: none; box-shadow: none; }
   .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-light); }
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
-  .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--handle) / 2); }
+  .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--day-handle) / 2); }
   .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-light); }
   .steps12 button:hover { text-decoration: underline; }
   .steps12 button.on { font-weight: 700; }

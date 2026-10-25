@@ -34,8 +34,7 @@
      buttons and fields look as they do elsewhere, light on dark. Its head drags it. Rows of colours: a name, then the
      chips. Then the field of one hue, the strip of hues and (rings only) the strip of how see-through, tall enough
      for a finger. Last, one line: RGB · CMYK · HEX, the colour, the values, COPY — small, boxed, capitals. */
-  .colourpop { position: fixed; z-index: 5; display: grid; gap: var(--pop-gap); width: var(--pop-width); max-width: 100vw; max-height: 100vh; padding: 0 var(--pop-pad) var(--pop-pad); }
-  .colourpop[hidden] { display: none; }
+  .colourpop { position: fixed; z-index: 5; display: grid; gap: var(--pop-gap); width: var(--pop-width); max-width: 100vw; max-height: 100dvh; padding: 0 var(--pop-pad) var(--pop-pad); }
   .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
   .colourpop header h2 { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   .colourpop header .sign { border-radius: var(--round-small); }
@@ -56,7 +55,6 @@
   :is(.hue, .alpha) i { top: 50%; width: calc(var(--knob) * 0.5); height: calc(var(--pop-hue) + var(--u1)); border-radius: var(--knob); }
   .alpha i { background: var(--solid, var(--black)); }
   .alpharow { display: flex; align-items: center; gap: var(--gap); }
-  .alpharow[hidden] { display: none; }
   .alpharow input { flex: none; width: var(--col); text-align: center; }
   .asnumbers { display: flex; gap: var(--chip-gap); align-items: center; font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
   .asnumbers .segs { flex: none; }

@@ -33,7 +33,7 @@
   .row.sheetrow > .btn { grid-column: 3 / span 2; justify-self: start; }
   .row.sheetrow > .sheetpage { grid-column: 5 / -1; justify-self: end; width: var(--sheet-w); }
   .sheetpage svg { display: block; width: 100%; height: auto; }
-  .sheetpage .paper { fill: var(--white); stroke: var(--rule); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .sheetpage .paper { fill: var(--white); stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .sheetpage .copy { fill: var(--ink); }
   .row.resetblank > .btn { grid-column: 3 / -1; justify-self: start; }
   .row.resetblank > .quiet { grid-column: 3 / -1; }
@@ -104,7 +104,6 @@
   .row.haslink > .linkpill:hover { border-color: var(--grey); }
   .row.haslink > .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
   /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
-}
 
   /* show mode: a number's slider on a line of its own under its name and box, as wide as the row — the column is narrow,
      and in the row the slider was left too short (Okay, 23 Oct 2026: "Why are these short?"; the Show Case's rule,
@@ -116,3 +115,4 @@
   /* show mode: the notes the whole width (Okay, 23 Oct 2026: "explainers span the whole width"); ticks, colour chips and
      pills stand in the first column after the names, as on the dial side ("Color swatches and pills go back") */
   .showing .body .row.note > .quiet { grid-column: 1 / -1; }
+}

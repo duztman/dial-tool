@@ -18,9 +18,9 @@ const page = await browser.newPage({ viewport: { width: +(process.env.CROP_W || 
 page.on("pageerror", (e) => console.log("page error:", e.message));
 page.on("console", (m) => { if (m.type() === "error") console.log("console error:", m.text()); });
 await page.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
-if (settings) await page.addInitScript((s) => localStorage.setItem("dial-tool-last", s), fs.readFileSync(settings, "utf8"));
-else await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });
-await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });
+if (settings) await page.addInitScript((s) => { setTimeout(() => localStorage.setItem("dial-tool-last", s), 0); }, fs.readFileSync(settings, "utf8"));
+else await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); }, 0); });
+await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); }, 0); });
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await page.click(`button[data-tab="${tab}"]`);

@@ -93,15 +93,6 @@ const box = (x, y, w, h, r, side = LINE, corner = CURVE) => {      // side, corn
 };
 const icon = (inside, size = 16, high = size) => `<svg viewBox="0 0 ${size} ${high}" width="${size}" height="${high}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
 const ticks = (n, r0, r1, c = 0) => Array.from({ length: n }, (_, i) => { const a = i * 2 * Math.PI / n, x = Math.sin(a), y = -Math.cos(a); return `M${(c + x * r0).toFixed(2)} ${(c + y * r0).toFixed(2)}L${(c + x * r1).toFixed(2)} ${(c + y * r1).toFixed(2)}`; }).join("");
-// a wave ring: a circle whose radius swings n times round it, r(θ) = R + a·cos(nθ) — a guilloché line, drawn smooth
-const wave = (cx, cy, R, a, n, steps = 72) => {
-  const P = Array.from({ length: steps }, (_, i) => { const t = (i / steps) * 2 * Math.PI, r = R + a * Math.cos(n * t); return [cx + r * Math.sin(t), cy - r * Math.cos(t)]; });
-  const f = (v) => v.toFixed(2);
-  return `M${f(P[0][0])} ${f(P[0][1])}` + P.map((p1, i) => {     // through every point, a cubic each (Catmull-Rom)
-    const p0 = P[(i - 1 + steps) % steps], p2 = P[(i + 1) % steps], p3 = P[(i + 2) % steps];
-    return `C${f(p1[0] + (p2[0] - p0[0]) / 6)} ${f(p1[1] + (p2[1] - p0[1]) / 6)} ${f(p2[0] - (p3[0] - p1[0]) / 6)} ${f(p2[1] - (p3[1] - p1[1]) / 6)} ${f(p2[0])} ${f(p2[1])}`;
-  }).join("") + "Z";
-};
 // a ring that holds a sign (a tab, a window card): outer edge at 15.5 from the centre, as before; drawn in CURVE
 const RIM = 15.5 - CURVE / 2, RIM_IN = 15.5 - CURVE;      // its radius, and its inner edge
 const rim = (cls = "") => `<circle${cls ? ` class="${cls}"` : ""} cx="17" cy="17" r="${RIM}" ${sw(CURVE)}/>`;
@@ -164,15 +155,11 @@ const eye = (open) => icon(EYE[open ? "open" : "closed"]);
 const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
 // a "none" in a row of colour dots: a slashed circle on 14, larger than the dots (Okay, 19 Oct 2026, 00:59: "the oslashes for no went too small"); so small, LINE is enough
 const none_dot = `<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M7 ${1 + LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${13 - LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${1 + LINE / 2}M4.25 4.25L9.75 9.75"/></svg>`;      // ring and stroke one path: where they meet nothing doubles, at any opacity (Okay, 16 Oct 2026, #271)
-// a cross at the same size, in its place on an added guide's line: remove it (#305, 4.45.3)
-const cross_dot = icon(`<path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" ${sw(SLANT)}/>`, 10);
 // small pictures for choices that are easier seen than read: drawn at the size they are shown, 38 × 27 (they were
 // drawn on 28 × 20 and enlarged 1.35 times; Okay, 13 Oct 2026: "bigger, better (less detail) icons… this goes for all")
 const pic = (inside) => icon(inside, 38, 27);
 const solid = `fill="currentColor" stroke="none"`;
-const faint = `${sw(CURVE)} opacity="0.45"`;       // context (the dial's edge behind the A's): as heavy as any line, fainter in colour
 const KIND_PIC = 24;                               // a kind's picture, a square this wide: the ring line and the Add menu
-const A = (x) => `M${x - 2.75} 12.25L${x} 5.5L${x + 2.75} 12.25`;      // an A, as a chevron: how a numeral stands
 // Placement's arrows (18 Oct 2026): a thin stem and a big filled head, 6 long in all, centred on (px, py), pointing dir
 // degrees clockwise from up; the stem runs from the tail into the head's base, so no gap shows between them
 const stem_at = (px, py, dir) => {
@@ -333,7 +320,7 @@ const GIF_MOST = 600, GIF_FPS_MOST = 25;      // a GIF's largest side (px) and f
 // Shadows · E the dial alone. Not while typing, on a slider or a menu, with ⌘/Ctrl/⌥ held, or with a dialog open
 const KEYS = {
   h: (t) => t.set_value("global", "ha_on", !t.S.ha_on),
-  x: (t) => { if (!$("#xray")?.hidden) t.set_value("global", "xray", !t.S.xray); },
+  x: (t) => { if ($("#xray")?.offsetParent) t.set_value("global", "xray", !t.S.xray); },      // only while its switch is on screen: show mode puts it away by the stylesheet, not by `hidden`
   s: (t) => t.set_value("global", "sh_on", !t.S.sh_on),
   e: (t) => { if (t.comparing) t.compare(false); else t.dial_alone(t.eye_button.getAttribute("aria-pressed") !== "true"); },
 };
@@ -342,7 +329,6 @@ const FINE = (off) => Math.max(1 / (1 + off / FINE_HALF), FINE_LEAST);
 const POP_LINGER_MS = 1200, POP_FADE_MS = 120;      // the number popup: after its last use it fades, quickish (Okay, 17 Oct 2026); the stylesheet's --num-pop-linger and --num-pop-fade say the same
 const SNAP_DEG = 2;        // a text ring's angle snaps to an index this close (#297)
 const RING_ROWS = 5;       // the ring list shows this many rings (and the drawer) before it scrolls; its pill makes it taller or shorter (#256)
-const SPIN_MS = 1600;      // Now and back: the big hands turn once, opposite ways, and land; the seconds hand goes straight there (07:36)
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -990,7 +976,7 @@ ROWS.Watch = [
   col("c_metal", "Case colour", { or: (S) => SHOW.metal_colour(S) }),
   pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i) => SHOW.insert_picture(i), { show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" }),      // tiles, each insert a ring in its two colours
   hdr("Strap", { folded: false }),
-  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO"], { order: [1, 3, 2], offered: (S) => (G.CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3] : [1, 3]) }),      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
+  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO"], { order: [1, 3, 2], offered: (S) => (G.CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3] : [1, 3]), get: (S) => (S.strap === 0 ? 1 : S.strap) }),      // 0 (an older file) reads as Leather, so a pill is always lit      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
   col("c_strap", "Leather", { show: (S) => S.strap !== 2 && S.strap !== 3 }),
   // the NATO (#524; Okay, 24 Oct 2026: "Nato colors should be selectable. One solid option. Options can be free living
   // single pills"): its patterns as pills of their own, Solid last (R9); a pattern taken starts again from its own colours
@@ -1174,7 +1160,8 @@ async function pack(S) {
   return `${G.LINK_SCHEME}` + G.base32(await through(new TextEncoder().encode(G.link_text(S)), new CompressionStream("deflate-raw")));
 }
 
-/** the part after # → { settings } for a dial, { old: scheme } for a link of an older scheme, or null. `also` names
+/** the part after # → { settings } for a dial, { old: scheme } for a link of an older scheme, { bad: true } for a link
+ *  of this scheme that can't be read (cut short in a paste, a letter wrong), or null when there is no link. `also` names
  *  older schemes read anyway with today's reading: only for the dials saved in this browser (entry_settings). */
 async function unpack(hash, also = []) {
   const kind = G.link_kind(hash);
@@ -1182,12 +1169,13 @@ async function unpack(hash, also = []) {
   if (kind.scheme !== G.LINK_SCHEME && !also.includes(kind.scheme)) return { old: kind.scheme };
   try {
     const settings = G.from_link_text(new TextDecoder().decode(await through(G.un_base32(kind.letters), new DecompressionStream("deflate-raw"))));
-    return settings ? { settings } : null;
+    return settings ? { settings } : { bad: true };
   } catch (e) {
-    return null;
+    return { bad: true };                          // said by the caller (R17: never another dial drawn quietly in its place)
   }
 }
 const OLD_LINK_NOTE = "This link is from an older Dial Tool and can’t be opened: here is the First dial.";
+const BAD_LINK_NOTE = "This link can’t be read — it may have been cut short when copied. The dial shown is the one this browser had, or the First dial.";
 
 // ── a set of saved dials as one link (#523; Okay, 24 Oct 2026: "Share dial (set — if there are versions under dial)
 //   as link"; his answers: Copy set link in the Share pane, it opens as Compare, the receiver is asked before anything
@@ -1259,7 +1247,6 @@ function step_name(a, b) {
 class DialTool {
   constructor(settings) {
     this.S = G.fresh_settings(settings);
-    this.opened = structuredClone(this.S);      // the dial as it opened: a quiet number is grey until it differs from this (#250)
     this.statik = null;                            // everything that doesn't move, rebuilt when geometry changes
     this.static_dirty = true;
     this.pending = false;                          // a frame has been asked for
@@ -1347,7 +1334,7 @@ class DialTool {
         } else if (e.key === " " && !e.repeat) {
           tool.play(!tool.playing);
           e.preventDefault();
-        } else if (e.key.toLowerCase() === "g" && !e.repeat && !e.shiftKey) {      // G: guides on or off (Okay, 18 Oct 2026, notes 2)
+        } else if (e.key.toLowerCase() === "g" && !e.repeat && !e.shiftKey && !tool.S.ui_show) {      // G: guides on or off (Okay, 18 Oct 2026, notes 2); not in show mode, where there are none to show
           tool.set_value("global", "guides", !tool.S.guides);
           e.preventDefault();
         } else if (!e.repeat && !e.shiftKey && KEYS[e.key.toLowerCase()]) {      // more like G (#472; Okay, 20 Oct 2026, 02:37: "Can we get shortcuts like these for keyboards")
@@ -2219,7 +2206,7 @@ class DialTool {
     if (!T || T.win.hidden || !this.statik) return;
     const go = () => {
       T.at = performance.now(); T.timer = 0;
-      T.face.innerHTML = svg_document({ ...this.S, guides: false, out_production: false, out_mirror: false }, this.statik, this.S.t, { preview: true }).replace(/^<\?xml[^>]*>\s*/, "");
+      T.face.innerHTML = svg_document({ ...this.S, guides: false, xray: false, out_production: false, out_mirror: false }, this.statik, this.S.t, { preview: true }).replace(/^<\?xml[^>]*>\s*/, "");
     };
     if (now) { clearTimeout(T.timer); return go(); }
     if (!T.timer) T.timer = setTimeout(go, Math.max(0, TINY_EVERY - (performance.now() - T.at)));
@@ -2689,7 +2676,6 @@ class DialTool {
     more.onclick = () => open(list.hidden);
     this.shadows_open = open;
     const row = (r) => this.build_row({ ...r, scope: "global" });
-    const head = (text) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: text }));
     // the pane (#526; Okay's drawing, 24 Oct 2026, and his answers of 25 Oct): the sun's picture on top, dragged (round =
     // the angle, toward the middle = higher); under it Angle · Height · Strength as three named sliders (R15, form D);
     // then the parts, exploded, top to bottom as they stand — Cap · Seconds · Minutes · Hours · every ring (its ink
@@ -2973,10 +2959,10 @@ class DialTool {
     this.shadows_tick.title = on ? "Shadows are on: press to hide them" : "Shadows are off: press to show them";
     if ($("#shadow-list").hidden) return;
     // a line per ring shown, built again when the rings change: its ink height, the same number as show mode's Colours (#521)
-    const rings = JSON.stringify(this.S.rings.map((r) => [r.name, r.show !== false]));
+    const rings = JSON.stringify(this.S.rings.map((r) => [r.name, r.on]));      // a ring is shown or hidden by `on` (RING_BASE); there is no `show` key (found 25 Oct 2026: hidden rings had a line too)
     if (this.shadow_rings.dataset.rings !== rings) {
       this.shadow_rings.dataset.rings = rings;
-      this.shadow_ring_rows = this.S.rings.map((ring, i) => this.build_row({ ...num("ink", ring.name || G.kind_of(ring), 0, 10, 1, { whole: true, side: true, part: `ring-${i}`, id: `shadow-ring-${i}`,
+      this.shadow_ring_rows = this.S.rings.map((ring, i) => [ring, i]).filter(([ring]) => ring.on).map(([ring, i]) => this.build_row({ ...num("ink", ring.name || G.kind_of(ring), 0, 10, 1, { whole: true, side: true, part: `ring-${i}`, id: `shadow-ring-${i}`,
         get: () => { const R = this.S.rings[i]; return R ? clamp(this.S.w_ink + (R.ink_d || 0), 0, 10) : 0; },
         put: (app, v) => { const R = this.S.rings[i]; if (!R) return; R.ink_d = clamp(v, 0, 10) - this.S.w_ink; this.changed(); } }), scope: "global" }));
       this.shadow_rings.replaceChildren(...this.shadow_ring_rows.map((r) => r.el));
@@ -2998,11 +2984,11 @@ class DialTool {
     box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><line class="axis"/><g class="parts"></g></svg><span class="word">Components</span>`;
     const parts = box.querySelector(".parts"), axis = box.querySelector(".axis");
     const refresh = () => {
-      const S = this.S, hands = ["hour", "minute", "second"].filter((h) => S["ha_" + h] ? S["ha_" + h].show !== false : true);
+      const S = this.S, hands = ["hour", "minute", "second"].filter((h) => S.ha_on && S["ha_" + h] && S["ha_" + h].on);      // the hands shown: `on` (HAND_BASE), as the dial draws them
       const list = [{ name: "cap", z: Math.max(S.sh_cap, ...hands.map((h) => S["sh_" + h])) + 0.01, draw: (y) => `<ellipse cx="${AX}" cy="${y}" rx="6" ry="2.5" class="fill"/>` }];
       for (const h of hands) { const len = { hour: 32, minute: 40, second: 46 }[h], w = { hour: 3.5, minute: 2.5, second: 1.25 }[h]; list.push({ name: h, z: S["sh_" + h], draw: (y) => `<circle cx="${AX}" cy="${y}" r="2.5"/><line x1="${AX}" y1="${y}" x2="${AX + len}" y2="${y}" stroke-width="${w}"/><line x1="${AX}" y1="${y}" x2="${AX - 10}" y2="${y}" stroke-width="${w}"/>` }); }
       // the rings: rounder ellipses, spread evenly from the smallest to the frame's width (Okay, 01:58: "rounder ellipses, proportionally more space between rings so they fit the horizontal gap perfectly")
-      const shown = S.rings.map((R, i) => [R, i]).filter(([R]) => R.show !== false);
+      const shown = S.rings.map((R, i) => [R, i]).filter(([R]) => R.on);
       shown.forEach(([R, i], n) => { const r = clamp(S.w_ink + (R.ink_d || 0), 0, 10), rx = 18 + (AX - 10 - 18) * (n / Math.max(1, shown.length - 1)); list.push({ name: `ring-${i}`, z: r * STEP, draw: (y) => `<ellipse cx="${AX}" cy="${y}" rx="${rx.toFixed(1)}" ry="${(rx * ROUND).toFixed(1)}"/>` }); });
       list.push({ name: "plate", z: 0, draw: (y) => `<ellipse cx="${AX}" cy="${y}" rx="${AX - 4}" ry="${((AX - 4) * ROUND).toFixed(1)}" stroke-width="1.5"/><circle cx="${AX}" cy="${y}" r="1.5"/><rect x="${AX + 22}" y="${y - 2.5}" width="8" height="5" rx="1"/>` });
       list.push({ name: "disc", z: -S.sh_disc - 0.3, draw: (y) => `<ellipse cx="${AX}" cy="${y}" rx="30" ry="${(30 * ROUND).toFixed(1)}" stroke-dasharray="2 2"/>` });
@@ -3114,7 +3100,7 @@ class DialTool {
       if (r.applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(this.target(r.row.scope));      // a heading's selector shows even when its pane is folded
     }
     if (this.value_pop) {
-      if (!this.value_pop.box.isConnected) this.value_pop = null;      // its line went with the section
+      if (!this.value_pop.button.isConnected) this.value_pop_close();      // its line went with the section: the box (on the body) goes with it
       else this.value_pop.r.refresh(this.target(this.value_pop.r.row.scope));
     }
     this.pop_refresh();
@@ -3569,7 +3555,7 @@ class DialTool {
   pop_refresh() {
     const P = this.pop;
     if (!P || !P.at) return;
-    const S = this.S, colour = P.at.swatch.isConnected ? P.at.read() : null;
+    const colour = P.at.swatch.isConnected ? P.at.read() : null;
     if (!Array.isArray(colour)) return this.pop_close();      // its swatch is gone (another section, a ring deleted)
     const rgb = colour.slice(0, 3), value = to_hex(rgb).toUpperCase();
     P.title.textContent = P.at.label();
@@ -3802,7 +3788,7 @@ class DialTool {
       for (const c of cards) {
         const w = G.windows_of(S)[c.slot], at = !w.on && w.at === G.WINDOW_BASE.at ? c.at : w.at;      // never used: shown at its card's place, where it will start
         const used = w.on || w.at !== G.WINDOW_BASE.at || w.at_deg != null;
-        const place = used ? G.window_place(w) : G.DATE_AT[at][0], angle = used ? G.window_angle(w) : G.DATE_AT[at][1], a = angle * Math.PI / 180;
+        const place = used ? G.window_place(w) : G.DATE_AT[at][0], angle = used ? G.window_angle(w) : G.DATE_AT[at][1];
         const state = `${angle}/${Boolean(w.on)}`;
         if (c.drawn !== state) {
           c.drawn = state;
@@ -4271,7 +4257,8 @@ class DialTool {
       b.ariaLabel = `${label_of(r, T())} ${text} ${this.unit()[0]}`;
     };
     let press = null;
-    b.onpointerdown = (e) => { press = { x: e.clientX, y: e.clientY, v: T()[row().key], moved: false }; b.setPointerCapture(e.pointerId); };
+    const read = () => { const r = row(), t = T(); return (r.get ? r.get(t) : t[r.key]) ?? 0; }, write = (r, v) => (r.put ? r.put(this, v) : this.set_value(r.scope, r.key, v));      // a row that stands for another setting (get, put): the same way in as build_row's (R34)
+    b.onpointerdown = (e) => { press = { x: e.clientX, y: e.clientY, v: read(), moved: false }; b.setPointerCapture(e.pointerId); };
     b.onpointermove = (e) => {
       if (!press) return;
       const d = (e.clientX - press.x) - (e.clientY - press.y);      // right or up: more
@@ -4279,7 +4266,7 @@ class DialTool {
       if (!press.moved) { press.moved = true; this.value_pop_close(); this.tag_hide(); b.classList.add("dragging"); }
       const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
       this.guides_live(r.scope !== "nudge");
-      this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
+      write(r, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
     };
     b.onpointerup = b.onpointercancel = (e) => { const was = press; press = null; b.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(b, row(), { x: e.clientX, y: e.clientY }); };
     b.onclick = (e) => { if (!e.detail && !this.value_pop) this.value_pop_open(b, row()); };      // the keyboard (Enter, Space) opens it too
@@ -4311,7 +4298,8 @@ class DialTool {
       if (!press.moved) { press.moved = true; this.value_pop_close(); label.classList.add("dragging"); }
       const v = press.v + Math.round(d / 2) * row.step * (e.shiftKey ? 0.1 : 1);
       this.guides_live(row.scope !== "nudge");
-      this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +clamp(Math.max(v, row.lo), ...(row.limits || [-Infinity, Infinity])).toFixed(6));      // a name dragged stops at the row's limits too (#233)
+      const w = row.whole ? clamp(Math.round(v), row.lo, row.hi) : +clamp(Math.max(v, row.lo), ...(row.limits || [-Infinity, Infinity])).toFixed(6);      // a name dragged stops at the row's limits too (#233)
+      if (row.put) row.put(this, w); else this.set_value(row.scope, row.key, w);      // a row that stands for another setting writes through its put (the Shadows pane's ink rows; found 25 Oct 2026: a drag wrote S.ink, a key that is no setting)
     };
     label.onpointerup = label.onpointercancel = (e) => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.touch && !was.moved) this.value_pop_open(label, row, { x: e.clientX, y: e.clientY }); };
   }
@@ -4363,7 +4351,7 @@ class DialTool {
     this.value_pop_close();
     for (const old of document.querySelectorAll(".numpop.fading")) old.remove();      // one on its way out: gone now
     this.tag_hide();
-    const r = this.build_row({ ...row, inpop: true, side: false, block: false, tip: null });
+    const r = this.build_row({ ...row, inpop: true, side: false, block: false, named: false, tip: null });      // whatever the row's form, the controller is the full one: value, slider, − + and the name (R15; a named slider's opened bare, found 25 Oct 2026)
     // the controller (Okay's second drawing, 18 Oct 2026, controller 2.svg): one dark square; at its top the value in a
     // grey pill, then the slider in a white pill, then − and + as two discs. No name: "No name necessary, preview shows
     // what's changing anyway" (the row's label stays out of sight, for the screen reader: the box is named by it).
@@ -5277,7 +5265,7 @@ class DialTool {
   build_picker() {
     // Find: a field with a magnifier, no words in it (Okay, 13 Oct 2026)
     const find = el("input", { type: "search", id: "font-find", ariaLabel: "Find a font", title: "Find a font" });
-    find.oninput = () => { this.font_sheet_keep(); this.fill_picker(true); };
+    find.oninput = () => { this.font_sheet_keep(); this.fill_picker(true, false); };      // the list follows the typing; it never jumps back to the ring's font while a search is typed (found 25 Oct 2026)
     const field = el("span", { className: "find" }, find);
     field.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
     // the filters (R35; Okay, 24 Oct 2026: "Any of them"; 23:32, his marks: "One line, full sheet width"): six pills on
@@ -5289,7 +5277,7 @@ class DialTool {
     const tray = el("span", { className: "findtray", role: "group", ariaLabel: "Show only" }, ...FONT_FILTERS.map(([kind, word]) => {
       const pill = el("button", { type: "button", className: "filterpill", id: "font-filter-" + kind, textContent: word });
       pill.setAttribute("aria-pressed", String(this.font_filters.has(kind)));
-      pill.onclick = () => { const on = !this.font_filters.has(kind); if (on) this.font_filters.add(kind); else this.font_filters.delete(kind); pill.setAttribute("aria-pressed", String(on)); this.font_sheet_keep(); this.fill_picker(true); };
+      pill.onclick = () => { const on = !this.font_filters.has(kind); if (on) this.font_filters.add(kind); else this.font_filters.delete(kind); pill.setAttribute("aria-pressed", String(on)); this.font_sheet_keep(); this.fill_picker(true, false); };
       return pill;
     }));
     const finder = el("span", { className: "findbox" }, field);
@@ -5398,7 +5386,8 @@ class DialTool {
     this.load_remembered();
   }
 
-  fill_picker(again = false) {
+  /** again: build the list afresh (fonts came, the search or a filter changed); to_font: then scroll to the ring's own font (R35: the sheet opens on it) */
+  fill_picker(again = false, to_font = again) {
     const list = $("#font-list"), R = this.font_shown(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
     const regular = (fonts) => fonts.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || fonts[0];
     const key = [...by.keys()].join("|") + "/" + q + "/" + [...this.font_filters].join(",") + "/" + this.font_tab + "/" + G.font_list().length;
@@ -5433,7 +5422,7 @@ class DialTool {
       // the stickers' column is as wide as the Find field above it and starts under its left edge (Okay, 13 Oct 2026):
       // the stylesheet sets it (--font-has); the numerals are cut at its edge
       const on = list.querySelector(`.fontrow[data-family="${CSS.escape(R.family)}"]`);
-      if (on && again) list.scrollTop = Math.max(0, on.offsetTop - list.offsetTop - 80);
+      if (on && to_font) list.scrollTop = Math.max(0, on.offsetTop - list.offsetTop - 80);
     }
     for (const row of list.querySelectorAll(".fontrow")) row.classList.toggle("on", row.dataset.family === R.family);
     $("#picker-note").textContent = this.font_note || "";
@@ -5826,7 +5815,7 @@ class DialTool {
     const n = cards.length, out = new Array(n).fill(null);
     out[0] = first;
     if (last) out[n - 1] = last;
-    for (let r = 0, k = 0; r * 3 < n && whites.length; r++) {      // the zigzag: column 2 · 1 · 0 · 1 · 2 …
+    for (let r = 0; r * 3 < n && whites.length; r++) {      // the zigzag: column 2 · 1 · 0 · 1 · 2 …
       const col = [2, 1, 0, 1][r % 4], at = r * 3 + col;
       if (at < n && !out[at]) out[at] = whites.shift();
     }
@@ -6851,8 +6840,10 @@ class DialTool {
     this.closed = true;
     this.playing = false;
     this.value_pop_close();                        // a controller left open would outlive the dial it was for, standing over the new panel (found 18 Oct 2026, 4.52)
-    clearTimeout(this.saving);
+    for (const t of ["saving", "merge_wait", "hole_timer", "guides_timer", "words_timer", "zoom_tip", "info_tip", "copied_back"]) clearTimeout(this[t]);      // nothing of this tool fires into the next one's window
     for (const w of this.watchers) w.disconnect();
+    if (this.menus_list) { this.menu_list_close(); this.menus_list.remove(); }      // the one list and the one tag stand on the body, outside #app: they go with their tool (found 25 Oct 2026: one more of each per dial opened)
+    if (this.tag) this.tag.remove();
   }
 
   /** start again with new settings (the simplest way to update every control). */
@@ -6988,7 +6979,7 @@ class DialTool {
     this.S.ui_ring = clamp(this.S.ui_ring, 0, this.S.rings.length - 1);
     this.static_dirty = true;
     this.scale_from = null;
-    this.value_pop = null;
+    this.value_pop_close();                        // the controller goes with the controls it stood over (found 25 Oct 2026: left on the page, its row gone)
     this.show_section();                           // every control from the settings again
     this.load_fonts_in_use();
     this.render();
@@ -7010,7 +7001,7 @@ class DialTool {
       if (this.closed) return;
       this.take_step();
       keep_and_shorten(this.S);
-      this.show_link();
+      this.show_link().catch((e) => this.log(`couldn’t write the link: ${e.message}`));      // R17: packing (CompressionStream) failing is said, not lost
     }, changed ? 400 : 2000);
   }
 
@@ -7076,11 +7067,14 @@ export async function open_window(pathkit, harfbuzz, font_bytes) {
   const set = await unpack_set(location.hash);    // a set of dials (#523): looked at over the last session, nothing kept unasked
   const linked = await unpack(location.hash);      // a dial in the address comes first…
   let settings = linked?.settings ?? (linked?.old !== undefined ? structuredClone(OPENER) : null);      // (a link of an older scheme: the First dial, R31)
-  if (!settings) { try { settings = JSON.parse(localStorage.getItem(LAST)); } catch (e) { settings = null; } }   // …then the last session…
+  let from = linked && !linked.bad ? null : "no last session in this browser";      // where the dial came from, said in the log (R17: a dial drawn from the opener is never silent); after an unreadable link too
+  if (!settings) { try { settings = JSON.parse(localStorage.getItem(LAST)); if (settings) from = "the last session"; } catch (e) { settings = null; from = `couldn’t read the last session (${e.message})`; } }   // …then the last session…
   if (!settings) settings = structuredClone(OPENER);      // …then the opener: the guide's First dial (opener.js; 16 Oct 2026)
   tool = new DialTool(settings);
+  if (from) tool.log(from === "the last session" ? "opened the last session" : `${from}: the First dial`);
   const opened = (link) => {
     if (link.settings) { tool.log("opened the dial in the address"); return; }
+    if (link.bad) { tool.log(`${BAD_LINK_NOTE} (${location.hash.length - 1} characters after #)`); tool.say(BAD_LINK_NOTE); return; }
     tool.log(`${OLD_LINK_NOTE} (link scheme ${link.old}; this Dial Tool reads scheme ${G.LINK_SCHEME})`);
     tool.say(OLD_LINK_NOTE);
   };
@@ -7095,6 +7089,7 @@ export async function open_window(pathkit, harfbuzz, font_bytes) {
     if (got) return set_opened(got);
     const next = await unpack(location.hash);
     if (!next) return;
+    if (next.bad) return opened(next);           // the dial that is open stays; the note says why
     tool.reopen({ ...(next.settings ?? structuredClone(OPENER)), ui_section: tool.S.ui_section });
     opened(next);
     keep_and_shorten(tool.S);

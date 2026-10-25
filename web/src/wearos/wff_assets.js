@@ -1,4 +1,5 @@
 // wff_assets.js — Renders Wear OS assets (SVGs and PNGs) from Dial Tool geometry
+import { day_list, LANGS as MOMENT_LANGS } from "../moment.js";
 import {
   circle,
   hand_shape,
@@ -79,31 +80,6 @@ export function svg_dial_face(S, statik, ambient = false) {
   return layer_svg(S, items);
 }
 
-const DAYS_FULL = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-
-/**
- * Infers the 7 day-of-week labels (1=Sunday .. 7=Saturday in WFF [DAY_OF_WEEK])
- * matching the length and letter casing of the user's sample text in the window.
- */
-export function day_labels_for(sampleText) {
-  const raw = String(sampleText || "MON").trim();
-  const s = /^\d+$/.test(raw) || !raw ? "MON" : raw;
-  const len = s.length;
-  const base = DAYS_FULL.map((d) => {
-    if (len === 1) return d.slice(0, 1);
-    if (len === 2) return d.slice(0, 2);
-    if (len === 3) return d.slice(0, 3);
-    return d;
-  });
-  if (s === s.toLowerCase()) {
-    return base.map((d) => d.toLowerCase());
-  }
-  if (len >= 2 && s[0] === s[0].toUpperCase() && s.slice(1) === s.slice(1).toLowerCase()) {
-    return base.map((d) => d[0] + d.slice(1).toLowerCase());
-  }
-  return base;
-}
-
 /**
  * Rebuilds a single window (`winIndex = 0..3`) with a custom state mutation,
  * without rebuilding any rings or other windows.
@@ -118,6 +94,7 @@ function build_single_window(S, winIndex, mutate) {
   };
   const w = windows_of(S_copy)[winIndex];
   w.on = true;
+  if (WINDOW_KINDS[w.kind] !== "am · pm") w.follows = false;      // the frame's own text or age: a window that follows the bar's date would overwrite it with today's (found 25 Oct 2026: every frame of the sheet was the same). An am · pm window reads the frame's time (S_copy.t) and, in word form, its words through `follows`
   mutate(w, S_copy);
   return build_static(S_copy).windows[0];
 }
@@ -210,7 +187,9 @@ export function svg_window_sheet(S, x) {
   const frameAlpha = frameColor[3] < 1 ? ` fill-opacity="${num(frameColor[3])}"` : "";
 
   const zeroPadDate = kind === "date" && /^0\d$/.test(String(x.w.text || "").trim());
-  const dayLabels = kind === "day" ? day_labels_for(x.w.text) : null;
+  // a day window's seven names: the window's own language and form (Short · Full · Custom, moment.js), Monday first
+  // there and Sunday first in WFF's [DAY_OF_WEEK] (found 25 Oct 2026: the sheet was English whatever the window said)
+  const dayLabels = kind === "day" ? (() => { const d = day_list(MOMENT_LANGS[x.w.names] || "en", x.w.day_form, x.w.own_names); return [d[6], ...d.slice(0, 6)]; })() : null;
 
   const out = [
     `<?xml version="1.0" encoding="UTF-8"?>`,

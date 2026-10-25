@@ -174,9 +174,9 @@ function patch_utf8_string_pool(poolChunk, targetStr, replacementStr) {
   let curOff = 0;
   for (const s of strings) {
     offsets.push(curOff);
-    const clipped = [...s].slice(0, 120).join("");
-    const strBytes = strToU8(clipped).slice(0, 125);
-    const charLen = Math.min([...clipped].length, 125);
+    let chars = [...s].slice(0, 120);                 // a UTF-8 string entry holds one byte for its length in characters and one in bytes: 125 at most
+    while (strToU8(chars.join("")).length > 125) chars.pop();      // cut by whole characters, never inside a multi-byte one (a cut byte would make the pool unreadable)
+    const clipped = chars.join(""), strBytes = strToU8(clipped), charLen = chars.length;
     const entry = new Uint8Array(2 + strBytes.length + 1);
     entry[0] = charLen;
     entry[1] = strBytes.length;

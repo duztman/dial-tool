@@ -34,16 +34,13 @@ const hsl2hex = ([h, s, l]) => { s = Math.max(0, Math.min(1, s)); l = Math.max(0
   return "#" + [r, g, b].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join(""); };
 const mixc = (a, b, t) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, "0")).join("");
 const deepen = (c) => { const [h, sat, l] = hex2hsl(c); return hsl2hex([h, sat < 0.12 ? sat : Math.min(1, sat * 1.25), l * 0.86]); };      // greys stay grey
-const brighter = (h, k) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(h.slice(i, i + 2), 16) + (255 - parseInt(h.slice(i, i + 2), 16)) * k).toString(16).padStart(2, "0")).join("");
+/** a colour's lightness held between 15 % and 85 %, so a plate or an ink is never lost in black or white in the drawing.
+ *  Through hex2hsl and hsl2hex, one way of reading and writing a colour (found 25 Oct 2026: a hue read here on its own
+ *  went negative for dark reds and magentas and wrote "#3e-f0f", which the browser drops — the plate drew black). */
 function clampL(h) {
-  let [r, g, b] = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
-  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  const [hue, sat, l] = hex2hsl(h);
   if (l >= 0.15 && l <= 0.85) return h;
-  const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
-  let hue = 0; if (d) hue = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
-  const L2 = Math.min(0.85, Math.max(0.15, l)), c = (1 - Math.abs(2 * L2 - 1)) * sat, x = c * (1 - Math.abs((hue % 2) - 1)), m = L2 - c / 2;
-  const [r1, g1, b1] = hue < 1 ? [c, x, 0] : hue < 2 ? [x, c, 0] : hue < 3 ? [0, c, x] : hue < 4 ? [0, x, c] : hue < 5 ? [x, 0, c] : [c, 0, x];
-  return "#" + [r1, g1, b1].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join("");
+  return hsl2hex([hue, sat, Math.min(0.85, Math.max(0.15, l))]);
 }
 
 // ── colours: light · body · shade for every metal, leather and nylon, one table per style ──
@@ -324,7 +321,7 @@ function caseEngineer(C, v, L) {
     // the cushion: its flat top, then a bevel all round, each piece toned by which way it faces
     const o = cushionPts(C.cushion.a, C.cushion.n), i = cushionPts(C.cushion.a - C.cushionBevel, C.cushion.n);
     out.push(shape(P(o), T[1], 0.2, T[2]));
-    let run = null; const N = o.length, quads = [];
+    const N = o.length, quads = [];
     for (let k = 0; k < N; k++) {
       const k2 = (k + 1) % N, nx = o[k2][1] - o[k][1], ny = -(o[k2][0] - o[k][0]), phi = Math.atan2(ny, nx) * 180 / Math.PI;
       quads.push({ pts: [o[k], o[k2], i[k2], i[k]], t: tone(T, phi, 0.85, L) });
@@ -475,9 +472,6 @@ function natoEngineer(C, L, set, open, span) {
     for (const [a, b, k] of stripes) {
       const T = S[k];
       h += `<rect x="${f(x0 + a * w)}" y="${f(Math.min(y0, y1))}" width="${f((b - a) * w)}" height="${f(Math.abs(y1 - y0))}" fill="${T[1]}"/>`;
-      // the weave: a rib every 0.8 mm, its lit face toward the light (ribs run across, so their normal is up or down)
-      const lit = tone(T, 270, 0.6, L) === T[0] ? T[0] : tone(T, 90, 0.6, L) === T[0] ? T[0] : null;
-
     }
     h += `<rect x="${f(x0)}" y="${f(Math.min(y0, y1))}" width="${f(w)}" height="${f(Math.abs(y1 - y0))}" fill="url(#${WEAVE})"/>`;      // the weave
     // the two folded edges: a sliver lit on the side the light comes from
@@ -677,12 +671,11 @@ function silhouette(C) {
 }
 function contact(C, L, strap, span, soft) {
   const u = [Math.cos(rad(L)), Math.sin(rad(L))], k = longer(SUN_H), off = [-u[0] * 0.9 * k, -u[1] * 0.9 * k];
-  const w = C.lugw - 0.2, yc = C.l2l / 2 - 3.4, leather = strap.startsWith("leather");
+  const w = C.lugw - 0.2, leather = strap.startsWith("leather");
   const area = OUTL_S.map((d) => `<path d="${d}"/>`).join("");      // the strap as drawn: the shadow stays on it, never beside it (22 Oct 2026)
   const id = "ct" + (BLOB_N++);
   CLIPS.push(`<clipPath id="${id}">${area}</clipPath>`);
   let h = `<g clip-path="url(#${id})"><g fill="#000" opacity="${f(SH_OP)}">${silhouette(C).map(([d, kk]) => sweep(d, [off[0] * 1.6 * kk, off[1] * 1.6 * kk])).join("")}</g></g>`;      // the parts swept, as the ground shadow (22 Oct 2026)
-  const ink = soft ? `stroke="#000" stroke-opacity="0.4" stroke-width="0.35"` : `stroke="${INK}" stroke-width="${LW}"`;
   for (const sy of [-1, 1]) {
     const tip = C.l2l / 2;
     if (!leather) h += `<path d="M${f(-w / 2)} ${f(sy * (tip - 2.6))}H${f(w / 2)}" stroke="#000" stroke-opacity="0.2" stroke-width="0.8"/><path d="M${f(-w / 2)} ${f(sy * (tip - 2.2))}H${f(w / 2)}" stroke="#fff" stroke-opacity="0.12" stroke-width="0.4"/>`;      // the nylon over the bar: a soft ridge
@@ -706,7 +699,7 @@ function silhouetteOutline(paths, L = 0) {
 function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1) {
   WEAVE = strap.endsWith("-big") ? "weavebig" : "weave"; strap = strap.replace(/-big$/, "");
   SUN_H = h; CLIPS = [];
-  const C = { ...scaleCase(CASES[key], size), key, dialOverride: dial, ...(metal ? { metal: METALS[metal] } : {}) }, span = open ? 260 : 64, Wd = 92, H = open ? 290 : 120, cy = open ? -18 : 0;
+  const C = { ...scaleCase(CASES[key], size), key, dialOverride: dial, ...(metal ? { metal: METALS[metal] } : {}) }, span = open ? 260 : 64;
   OUTL_S = []; OUTT = OUTL_S;
   const strapSVG = strap === "bracelet" ? braceletSVG(C, L, open ? C.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C, L, strap.split("-")[1], open, span) : natoSVG(C, L, strap.split("-")[1], open, span);
   // shadow: everything's silhouette shifted away from the light, flat; the case casts further than the strap
@@ -716,10 +709,9 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   // black at one opacity, painted once as a group — it darkens whatever it falls on and never doubles where parts overlap
   const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}">` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
   OUTL_C = []; OUTT = OUTL_C; const caseStr = caseSVG(C, v, L);
-  const ribs = Object.entries({ ...NATO_SETS, ...NATO_MORE }).flatMap(([n, S]) => S.map((T, k) => `<pattern id="ribs-${n}-${k}" width="4" height="0.8" patternUnits="userSpaceOnUse"><rect width="4" height="0.3" fill="${T[0]}" fill-opacity="0.55"/></pattern>`)).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
-<defs>${"__CLIPS__"}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath>${ribs}${TEXTURES}</defs>
-<defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6 + cy * 0)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
+<defs>${"__CLIPS__"}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath>${TEXTURES}</defs>
+<defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
 
@@ -765,7 +757,7 @@ export function tilePicture(key, w = 38, h = 27) {
 }
 
 // ── one drawing for the page (Dial Show Case, show mode) ──
-const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 }, DIAL = 19.5;      // 17:15: the whole watch at 120 %, centred
+const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 };      // 17:15: the whole watch at 120 %, centred
 /** the whole watch's frame, width and height in mm: known before anything is drawn (show mode's Fit, the swoop) */
 export const fullBox = () => [FULL.w, FULL.h];
 const STYLES = {

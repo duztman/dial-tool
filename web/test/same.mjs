@@ -50,8 +50,8 @@ async function open(options) {
   page.setDefaultTimeout(2500);
   page.on("pageerror", (e) => console.log("page error:", e.message));
   await page.addInitScript(() => { Date.now = () => 1791900000000; });      // a still clock, so nothing differs by the hour
-  await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
-  await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them (#270)
+  await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); }, 0); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+  await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); }, 0); });      // every pane open, as for a visitor who has opened them (#270)
   await page.goto("file://" + (process.env.PAGE || process.cwd() + "/dial-tool.html"));      // PAGE=…: another build, to keep its look
   await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 30000 });
   await page.waitForTimeout(300);
@@ -83,6 +83,7 @@ async function pointer(page, name) {
   for (const i of firsts) {
     for (const forced of ["hover", "active", "focus-visible"]) {
       await cdp.send("CSS.forcePseudoState", { nodeId: nodeIds[i], forcedPseudoClasses: forced === "focus-visible" ? ["focus", "focus-visible"] : forced === "active" ? ["hover", "active"] : [forced] });
+      await settled(page);      // a state that animates (a switch's words unfolding) is read once it has arrived, not mid-way (found 25 Oct 2026: the hover widths differed between two saves)
       const rows = await page.evaluate(({ sel, i, SNAP }) => {
         const e = document.querySelectorAll(sel)[i];
         e.dataset.sameProbe = "1";
@@ -97,6 +98,11 @@ async function pointer(page, name) {
   await cdp.detach();
 }
 const unfold = (page) => page.evaluate(() => { for (let n = 0; n < 4; n++) document.querySelectorAll(".pane.folded > .fold").forEach((f) => f.click()); });      // every pane open
+/** every running animation and transition done, or 1.5 s, whichever is first */
+const settled = (page) => page.evaluate(async () => {
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));      // a forced state's transitions begin at the next style pass: let it come first
+  await Promise.race([Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))), new Promise((r) => setTimeout(r, 1500))]);
+}).catch(() => {});
 const tab = async (page, name) => { await page.click(`button[data-tab="${name}"]`); await unfold(page); await page.waitForTimeout(300); };
 const attempt = async (what, run) => { try { await run(); } catch (e) { console.log(`  (state skipped: ${what}: ${String(e.message).split("\n")[0]})`); states["SKIPPED " + what] = []; } };
 

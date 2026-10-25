@@ -88,7 +88,7 @@ export function svg_document(S, statik, t, { preview = false, selected = null, l
         clip = ` clip-path="url(#cut-${out.length - 1})"`;
       }
       out.push(`<g${id}${clip}>`, ...text.texts.map(svg_text), `</g>`);
-    } else if (item.role === "guide") {
+    } else if (item.stroke) {                      // a line, not a fill: a guide, a disc's dashed edge in X-ray (preview only, R5)
       out.push(`<path${id} d="${item.path.svg(5, true)}" fill="none" stroke="${rgb(item.stroke)}" stroke-opacity="${item.stroke[3]}" stroke-width="${num(0.03 * item.px)}"/>`);
     } else {
       const alpha = item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : "";

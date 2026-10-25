@@ -10,7 +10,6 @@ import {
   svg_preview,
   svg_window_sheet,
   compute_window_layout,
-  day_labels_for,
 } from "../src/wearos/wff_assets.js";
 import { build_wearos_apk, build_signed_wearos_apk } from "../src/wearos/apk_packager.js";
 import { unzipSync } from "../src/wearos/fflate.js";
@@ -93,15 +92,6 @@ if (!svgSecond || !svgSecond.includes("<path")) {
 console.log("✓ All layer SVGs (including disc hand) generated and validated successfully");
 
 // 4. Test all 4 Window Visualizations (date, day, am · pm, moon phase) across all 4 slots
-if (day_labels_for("MON").join(",") !== "SUN,MON,TUE,WED,THU,FRI,SAT") {
-  throw new Error("day_labels_for('MON') failed");
-}
-if (day_labels_for("Tu").join(",") !== "Su,Mo,Tu,We,Th,Fr,Sa") {
-  throw new Error("day_labels_for('Tu') failed");
-}
-if (day_labels_for("friday").join(",") !== "sunday,monday,tuesday,wednesday,thursday,friday,saturday") {
-  throw new Error("day_labels_for('friday') failed");
-}
 
 const S_win = fresh_settings({
   da_on: true,
@@ -164,8 +154,22 @@ for (const x of statik_win.windows) {
   if (groupMatches.length !== layout.frames) {
     throw new Error(`Window ${x.index} (${layout.kind}) expected ${layout.frames} frame groups, got ${groupMatches.length}`);
   }
+  // every frame draws its own state (a date 1–31, a weekday, a half hour, a moon age), never today's for all of them
+  // (found 25 Oct 2026: a window that follows the bar's date gave one picture 31 times)
+  const bodies = sheetSvg.split("<g transform=").slice(1).map((g) => g.replace(/^[^>]*>/, ""));
+  const distinct = new Set(bodies).size;
+  if (distinct < Math.min(layout.frames, 7)) {
+    throw new Error(`Window ${x.index} (${layout.kind}): only ${distinct} distinct frames of ${layout.frames} — the frames are not drawing their own state`);
+  }
 }
-console.log("✓ All 4 window visualizations (date, day, am · pm, moon phase) sprite sheets & WFF XML validated");
+// an am · pm window in word form (its words jump at noon and midnight, #516): the frames differ too — half AM, half PM
+{
+  const S_words = fresh_settings({ ...structuredClone(S_win), windows: [{ ...structuredClone(WINDOW_BASE), on: true, kind: 2, at: 2, ampm_form: 1 }] });
+  const x = build_static(S_words).windows.find((w) => w.w.kind === 2);
+  const bodies = svg_window_sheet(S_words, x).split("<g transform=").slice(1).map((g) => g.replace(/^[^>]*>/, ""));
+  if (bodies.length !== 48 || bodies[0] !== bodies[23] || bodies[24] !== bodies[46] || bodies[0] === bodies[24]) throw new Error(`am · pm in words: ${bodies.length} frames; the AM half must read alike, the PM half alike, and the two differ`);
+}
+console.log("✓ All 4 window visualizations (date, day, am · pm, moon phase) sprite sheets & WFF XML validated; am · pm in words jumps");
 
 // 5. Test APK Packaging & Signing with dummy/sample PNG buffers (including window_0..3)
 const dummyPng = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]); // PNG header

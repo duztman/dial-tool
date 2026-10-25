@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.93";
+export const VERSION = "beta 4.93.1";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -623,7 +623,11 @@ export function lean(S) {
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
     else out[k] = S[k];
   }
-  if ("sh_bevel" in out) for (const h of HANDS) out["ha_" + h] = { ...(out["ha_" + h] || {}), bevel: Boolean(S["ha_" + h] && S["ha_" + h].bevel) };      // with Bevels % in it, every hand says its Bevel, so fresh_settings never takes it for an older link
+  // with Bevels % in it, every hand says its Bevel, so fresh_settings never takes it for an older link. A hand left out
+  // above (still the starting hand) is written whole against HAND_BASE here, never as `{ bevel }` alone: a hand object
+  // in a link replaces the starting hand entirely, so a bare one would come back as HAND_BASE (the plain hand), not as
+  // DEFAULTS' (found 25 Oct 2026)
+  if ("sh_bevel" in out) for (const h of HANDS) out["ha_" + h] = { ...differing(S["ha_" + h] || {}, HAND_BASE), bevel: Boolean(S["ha_" + h] && S["ha_" + h].bevel) };
   return out;
 }
 
@@ -1174,6 +1178,7 @@ export function ring_labels(ring) {
 /** a word on the circle, letter by letter: [letter, clock angle, flipped?, offset].
  *  Real kerning and tracking; one baseline for all letters; the bottom half flips to read left → right. */
 function path_letters(txt, r, a, t, size) {
+  r = Math.max(r, 1e-3);                           // at a radius of 0 the letters' angles would be NaN (c / r), and NaN reaches the file (found 25 Oct 2026); a hair of a radius keeps every number real
   const flip = ((a % 360) + 360) % 360 > 90 && ((a % 360) + 360) % 360 < 270;
   const tr = t.tracking / 1000 * size;
   const letters = [...txt];
@@ -1591,7 +1596,7 @@ export const shows_day = (S) => windows_of(S).some((w) => w.on && WINDOW_KINDS[w
 export const day_short = (names) => MOMENT_NAMES[MOMENT_LANGS[names] || "en"].days;
 
 export function shown_day(S) {
-  if (S.date) return S.date;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(S.date || "")) return S.date;      // a day as the bar writes it; anything else (a link can carry any text) is today, never NaN into the moment
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -1669,7 +1674,7 @@ export function window_disc(S, x) {
   const w = x.w, kind = WINDOW_KINDS[w.kind], R = S.dial_d / 2, room = R - DISC_RIM;
   const centre = clock_point(w.r, window_angle(w)), turn = window_turn(w);
   const put = (p, turned = true) => (turn && turned ? p.rotate(-turn) : p).translate(...centre);
-  const shape = window_shape(w), high = shape === "rectangle" || shape === "arc" ? w.h : shape === "arch" ? w.w / 2 : w.w;      // as build_window
+  const shape = window_shape(w);
   if (kind === "date" || kind === "day") {
     const e = radial_extent(x.window);
     if (!e) return null;
@@ -1867,7 +1872,7 @@ export function inks_of(S) {
   for (const ring of S.rings) {
     if (!ring.on) continue;
     out.push(ink_hex(ring.c));
-    if (KINDS[ring.kind] === "band") for (const c of Object.values(ring.cs || {})) out.push(ink_hex(c));
+    if (KINDS[ring.kind] === "band" || has_text(ring)) for (const c of Object.values(ring.cs || {})) out.push(ink_hex(c));      // a sector's or one numeral's own colour (#513) is an ink too: it gets its film (found 25 Oct 2026)
   }
   for (const w of windows_of(S)) if (w.on) out.push(ink_hex(w.ink || INK));
   return [...new Set(out)];
@@ -1945,7 +1950,6 @@ export function scene(S, statik, t, preview = true, selected = null) {
     const discs = preview && S.xray ? windows.map((x) => ({ x, d: window_disc(S, x) })).filter((v) => v.d) : [];
     const xray = discs.length > 0, chosen = xray ? discs.find((v) => v.x.index === (S.ui_window ?? 0)) || null : null;
     const under = discs.filter((v) => v !== chosen).sort((p, q) => q.d.outer - p.d.outer);      // the biggest first: the deepest
-    const layers = (chosen ? 1 : 0) + 1 + 1 + under.length;      // the selected disc · the hands · the face · each other disc
     const dim = (fill, layer) => (xray && fill ? [...fill.slice(0, 3), fill[3] * Math.max(1 - 0.15 * layer, 0.25)] : fill);      // layer 0 at the top
     const face = chosen ? 2 : 1, hands_layer = chosen ? 1 : 0;
     under.forEach(({ x, d }, i) => {
@@ -2006,7 +2010,6 @@ export function scene(S, statik, t, preview = true, selected = null) {
     // reach as drawn. A window: the edges its hole reaches; which windows, as for rings (gd_wins, gd_wsel).
     // A ring's dotted line is its radius — where it is resized from (#257, 4.47: the outer end, the middle or the inner
     // end of its marks; a numeral's anchor); a window's is its middle.
-    const built = new Map(statik.rings.map((d) => [d.ring, d]));
     const edges = (k, outer, inner, px, a, at = (outer + inner) / 2) => {
       for (const r of [...new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px, a);
       if (outer - inner > 0.01 && at > 0) add("guide", circle(2 * at), null, { stroke: tone(k, a), px, dots: true });

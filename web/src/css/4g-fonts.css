@@ -67,7 +67,6 @@
   .listbox { display: grid; grid-template-rows: minmax(0, 1fr); min-height: 0; }
   .listwrap { position: relative; display: grid; min-height: 0; }
   /* the sheet's two tabs (R35): Dial Tool's fonts · Installed, as the hands' tabs, standing on the list's top line */
-  .sheettabs[hidden] { display: none; }
   .sheettabs .segs { display: grid; grid-auto-flow: column; grid-auto-columns: max-content; }
   .sheettabs .tab { height: var(--tab-high); padding: 0 var(--u4); font-weight: 600; }
   .fontlist { height: 100%; border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; scrollbar-width: none; }
@@ -121,7 +120,6 @@
   .legend { position: absolute; z-index: 2; left: calc((100% - 2 * var(--unit)) / 3 + var(--unit)); right: 0; bottom: calc(100% + var(--unit)); display: grid;
     grid-template-columns: calc(50% + var(--unit) / 2) minmax(0, 1fr); overflow-y: auto; margin: 0; padding: var(--u6);
     border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-solid-near); color: var(--ink); font-size: var(--t-xxs); line-height: 1.3; }      /* a size under the buttons' words */
-  .legend[hidden] { display: none; }
   .legendhead { grid-column: 1 / -1; padding-bottom: var(--unit); color: var(--grey); font: 400 var(--t-pixel-legend)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; opacity: var(--pixel-ink); }      /* its title across both columns from the top left, on one line, in the pixel font at half a size more (R32's one exception) */
   .legend :is(dt, dd) { padding: var(--unit) 0; border-top: var(--hair) solid var(--rule); }
   .legend dt { display: flex; justify-content: flex-end; align-items: flex-start; padding-right: var(--u3); }

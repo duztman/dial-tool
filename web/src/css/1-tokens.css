@@ -84,6 +84,7 @@
     --logo-narrow: 22px;                           /* Okay's mark, larger on a phone (06:24: "larger okay icon on mobile") */
     --track-50: 0.05em;                            /* tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
+    --track-20: 0.02em;                            /* tracking 20: the controller's value, a little apart */
     --compare-d: 0px;                              /* set by compare_place(): the size every saved dial is shown at in Compare (#435) */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --play-size: 34px; --play-pulse: 30%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat, then fades the whole way to 0 (22 % until Okay's notes, p. 14, #282: "from 30 % to 0") */
@@ -124,11 +125,11 @@
     --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4) * var(--num-pop-k)); --num-pop-eye: calc(6px * var(--num-pop-k)); --num-pop-sign: calc(44px * var(--num-pop-k));      /* the knob's white eye, a radius: his 2.13 */
     --num-pop-fade: 120ms; --num-pop-linger: 1200ms;      /* it comes at once; after its last use it fades away, quickish (Okay, 17 Oct 2026: "comes lightning fast, fade away quickish after use") */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
-    --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
+    --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: calc(var(--thumb-eye) + var(--three-quarter));      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */
     --log-least: 96px; --log-most: 260px;          /* the Export log: at least this high, at most this */
     --round-switch: 10px;                          /* the switches on the preview: undo, Guides, Backdrop */
-    --ruler: 22px; --names: 18px; --handle: var(--triple);      /* the day's ruler: its height, the hours' names under it, the handle's width */
+    --ruler: 22px; --names: 18px; --day-handle: var(--triple);      /* the day's ruler: its height, the hours' names under it, the handle's width */
     --bar-lead-narrow: 46px; --bar-day-narrow: 48px;      /* on a phone the bar is two lines: the panel's controls, then the day */
     --tick: 16px;                                  /* a tick box */
     --tick-gap: var(--u4);                         /* from a tick box to its words (the box's margin and a space's width before, 8.25 + 3.4); a note under the words starts there too (#420) */
@@ -191,6 +192,7 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    --three-quarter: 0.75px;                       /* lines a little heavier than a hairline (Okay, 19 Oct 2026: "Line thicknesses .75 thicker"): Positions' lines, the slider knob's eye edge */
     --guide-pill-pad: var(--u2);                   /* a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) */
     /* the bar's date popup, as measured from Okay's final drawing (20 Oct 2026, 01:05: "all else is pixel perfect. gaps, placements within blocks, block sizes") */
     --datepop-ground: #BFBFBF;                     /* its light ground */
@@ -244,6 +246,11 @@
     --canvas-inset-wide: 12px; --canvas-inset: var(--canvas-inset-wide);      /* from the preview's edge to what stands on it (a phone sets --canvas-inset to --u5; the title row keeps the wide one) */
     --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* lines, but not one of the three: the pointer label's arrow, its dark line and the white line inside it */
+    --tip-half: 10px;                              /* half the pointer label's arrow drawing: the arrow's point stands on --arrow */
+    --dim: 0.45;                                   /* a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured */
+    --ruler-line: 0.4; --ruler-hour: 0.85; --ruler-half: 0.6; --ruler-small: 0.38;      /* the day's ruler: its lines' strength by their rank (hours, halves, the small ones) */
+    --tiny-fade: 150ms;                            /* the Tiny Preview's eye fades in this long */
+    --sign-18: 18px; --sign-16: 16px;              /* a canvas switch's sign, as drawn: 18 for Guides and the case, 16 for Versions */
   }
   @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 11px; --guide-gap: 13px; --guide-row: 38px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }

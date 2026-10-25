@@ -44,8 +44,8 @@ const differences = (a, b, at = "") => {
 const dials = [
   ["the opener (the guide's First dial)", OPENER],
   ["Okay's watch", OKAYS_WATCH],
-  ...DIALS.map((d) => [`Gallery: ${d.name}`, { ...d.settings, guides: true }]),
-  ...example_dials().map((d) => [`example: ${d.name}`, { ...d.settings, guides: true }]),
+  ...DIALS.map((d) => [`Gallery: ${d.name}`, d.settings]),
+  ...example_dials().map((d) => [`example: ${d.name}`, d.settings]),
 ];
 let longest = 0;
 for (const [name, settings] of dials) {
@@ -64,6 +64,14 @@ for (const [name, settings] of dials) {
   check(back.ha_beat === 1 && back.t === 36610 && back.rings[0].custom === "#a1b2c3, ##, #1", `the beat travels (${back.ha_beat}), the time to the second (${back.t}), a text starting with # stays a text`);
   S.rings[0].custom = "#a1b2c3";
   check(G.fresh_settings(read(link(S))).rings[0].custom === "#a1b2c3", "even a text that is all a colour's hex");
+}
+
+// Bevels % moved on a dial whose hands are still the starting hands: every hand is written whole, so the plain dial's
+// hands come back as themselves, not as HAND_BASE (found 25 Oct 2026: a bare `{ bevel }` hand replaced the starting hand)
+{
+  const S = G.fresh_settings({}); S.sh_bevel = 40;
+  const back = G.fresh_settings(read(link(S))), diff = differences(S, back);
+  check(diff.length === 0, `Bevels % on the plain dial keeps its starting hands (hour ${back.ha_hour.len} mm long, ${back.ha_hour.w} wide)${diff.length ? " — " + diff.slice(0, 4).join(" · ") : ""}`);
 }
 
 // an older scheme is recognised, not read: the page opens the First dial with a note (window.mjs checks that)

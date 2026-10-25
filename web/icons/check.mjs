@@ -43,8 +43,8 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, dev
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await page.addInitScript(() => { Date.now = () => 1791900000000; });
-await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
-await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them (#270)
+await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); }, 0); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+await page.addInitScript(() => { setTimeout(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); }, 0); });      // every pane open, as for a visitor who has opened them (#270)
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await page.waitForTimeout(300);

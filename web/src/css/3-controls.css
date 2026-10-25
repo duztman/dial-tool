@@ -59,7 +59,7 @@
   .circles > button { display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--field); }
   .circles > button:hover { background: var(--hover); }
   .circles > .atmore.on { font-size: var(--t-xs); }
-  .atmore:not(.on) { letter-spacing: 0.1em; }      /* the three dots, a little apart */
+  .atmore:not(.on) { letter-spacing: var(--track-100); }      /* the three dots, a little apart */
   :is(.step, .segs > button) + button { border-left: 0; }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
