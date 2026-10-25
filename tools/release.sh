@@ -37,6 +37,10 @@ site() {
   git -C "$W" reset -q --hard origin/gh-pages
 }
 
+# the font files, their licences and their README, to the site's fonts/ (FONT_SITE in src/font_list.js): both pages
+# fetch a font from there when a ring uses it. Added to, never cleared, so an older build's fonts stay where it looks
+fonts() { mkdir -p "$W/fonts" && cp -R "$R/web/fonts/." "$W/fonts/"; }
+
 T=$(git log -1 --format='%(trailers:only,unfold)' HEAD)
 VER=$(sed -n 's/^export const VERSION = "beta \(.*\)";/\1/p' web/src/geometry.js)
 
@@ -50,7 +54,8 @@ if [ "$1" = dev ]; then
   mkdir -p "$W/dev"
   cp "$R/web/dial-tool.html" "$W/dev/dial-tool.html"      # the build
   cp "$R/web/dev/index.html" "$W/dev/index.html"          # the loader that fetches it fresh
-  cd "$W" && git add dev
+  fonts
+  cd "$W" && git add dev fonts
   git diff --cached --quiet && { echo "the /dev/ page has this build already"; exit 0; }
   git commit -q -m "Dev $VER: $LINE" ${T:+-m "$T"}
   git push -q origin gh-pages
@@ -79,7 +84,8 @@ to_main                                               # pushes dev too: a step m
 site
 cd "$W"
 cp "$R/web/dial-tool.html" "$W/index.html"
-git add index.html
+fonts
+git add index.html fonts
 git commit -q -m "Beta $V: $LINE" ${T:+-m "$T"}
 git push -q origin gh-pages
 echo "released $V: dev and main $(git -C "$R" rev-parse --short HEAD), gh-pages $(git rev-parse --short HEAD) — live in a minute at https://duztman.github.io/dial-tool/"

@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.93.2 (web version) · 25 Oct 2026
+
+- **Six more of Peter Wiegel's fonts in the list** (#501; Okay, 12:02: "Go with 1"): Berliner Wand, Böcklins Universe, CAT Childs, CAT Robertson, CAT Stack and Varieté (its main cut), all SIL OFL, from Okay's own download of Wiegel's CAT Fonts zip. `web/fonts.mjs` has a source for such files, `catfonts`: kept by hand in `web/fonts/`, never fetched. 75 families now; the list 1.0 MB, 0.41 MB as loaded.
+- **The site's fonts folder is filled at every push**: `tools/release.sh` copies `web/fonts/` up to the site's `fonts/` (where both pages fetch a font from) with every dev push and every step. The folder had only ever been copied by hand, before #501, so the 28 families of 4.92.21 were not online until this push.
+- Left out of his download, and why: Questa (its desktop licence forbids web embedding; installed on his Mac it shows under Installed), Banana Serif (a brand's own font), and the families not in the tier list (to come only on his word).
+- Checked: links, labels, complications, the window test; the six in the sheet on a screenshot.
+
 ## beta 4.93.1 (web version) · 25 Oct 2026 — the code audit
 
 Okay, 25 Oct 2026, 02:46: "get this software tip top position code wise … fix all the bugs, known flakes". Three review passes over `web/src` (the window, the geometry and files, the stylesheet) and a peer audit of the fixes; nothing new to see on the dial unless a fix says so.

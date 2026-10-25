@@ -32,6 +32,9 @@ const SOURCES = {
   routed: { font: (dir, file) => `https://raw.githubusercontent.com/dse/routed-gothic/365e340/dist/ttf/${file}`, licence: () => "https://raw.githubusercontent.com/dse/routed-gothic/365e340/LICENSE.md", suffix: "-OFL.txt" },
   wiegel: { font: (zip, file) => [WIEGEL(zip), file], licence: (zip) => [WIEGEL(zip), "Open Font License.txt"], suffix: "-OFL.txt" },
   gutenberg: { font: (zip, file) => [WIEGEL(zip), file], licence: () => null, suffix: "-free-software.txt" },
+  // Wiegel's fonts from Okay's own download of his CAT Fonts collection (25 Oct 2026; peter-wiegel.de is not reachable
+  // from a session): the files and their OFL are kept by hand in fonts/ and fonts/licences/, never fetched
+  catfonts: { font: () => null, licence: () => null, suffix: "-OFL.txt" },
   apache: { font: (dir, file) => `https://raw.githubusercontent.com/google/fonts/${GOOGLE_COMMIT}/apache/${dir}/${encodeURIComponent(file)}`, licence: (dir) => `https://raw.githubusercontent.com/google/fonts/${GOOGLE_COMMIT}/apache/${dir}/LICENSE.txt`, suffix: "-Apache.txt" },
   datto: { font: (dir, file) => `https://raw.githubusercontent.com/amcchord/datto-d-din/${DATTO_COMMIT}/${file}`, licence: () => `https://raw.githubusercontent.com/amcchord/datto-d-din/${DATTO_COMMIT}/OFL-1.1.txt`, suffix: "-OFL.txt" },
 };
@@ -81,8 +84,8 @@ const FAMILIES = [
   ["Koch-Fraktur", "poster Fraktur, 1908", "wiegel", "KochFraktur-UNZ1A.zip", ["Koch Fraktur_UNZ1A.ttf", "Regular"]],
   ["TGL 0-16", "technical-drawing lettering (DIN 16); DIN 17, slanted", "wiegel", "TGL_0-16.zip", ["TGL 0-16.ttf", "Regular"], ["TGL 0-17.ttf", "Slanted"]],
   // the middle tier and the non-Latin numeral fonts (#501; Okay, 21 Oct 2026: "Adding them into the site before v1 is a
-  // must"; 24 Oct 2026, 21:50: "501 is on, priority"): the ones on google/fonts here; Wiegel's 31 and Railway Sans come
-  // when their files are in (their sites are not reachable from a session)
+  // must"; 24 Oct 2026, 21:50: "501 is on, priority"): the ones on google/fonts here; the rest of Wiegel's 31 and Railway Sans
+  // come when their files are in (their sites are not reachable from a session)
   ["Aboreto", "light Roman caps, tabular", "google", "aboreto", ["Aboreto-Regular.ttf", "Regular"]],
   ["Anta", "squared techno", "google", "anta", ["Anta-Regular.ttf", "Regular"]],
   ["Audiowide", "wide techno", "google", "audiowide", ["Audiowide-Regular.ttf", "Regular"]],
@@ -101,6 +104,13 @@ const FAMILIES = [
   ["Syncopate", "wide geometric caps", "apache", "syncopate", ["Syncopate-Regular.ttf", "Regular"], ["Syncopate-Bold.ttf", "Bold"]],
   ["Tenor Sans", "humanist caps", "google", "tenorsans", ["TenorSans-Regular.ttf", "Regular"]],
   ["Zen Dots", "dotted-corner techno", "google", "zendots", ["ZenDots-Regular.ttf", "Regular"]],
+  // Wiegel's, from the middle tier (#501; Okay, 25 Oct 2026: the six of the 31 in his download)
+  ["Berliner Wand", "Berlin wall lettering, DIN-like, narrow", "catfonts", "", ["Berliner_Wand.ttf", "Regular"]],
+  ["Böcklins Universe", "Jugendstil display, 1904", "catfonts", "", ["Boecklins-Universe.ttf", "Regular"]],
+  ["CAT Childs", "flared display", "catfonts", "", ["CATChilds.ttf", "Regular"]],
+  ["CAT Robertson", "DIN-like single stroke", "catfonts", "", ["robertson.ttf", "Regular"]],
+  ["CAT Stack", "inline, after the old Stack lettering", "catfonts", "", ["cat_stack.ttf", "Regular"]],
+  ["Varieté", "heavy display", "catfonts", "", ["Variete.ttf", "Regular"]],
   ["Reem Kufi", "Kufic Arabic, Arabic-Indic digits", "google", "reemkufi", ["ReemKufi[wght].ttf", "Regular"]],
   ["Noto Sans Bengali", "Bengali digits", "google", "notosansbengali", ["NotoSansBengali[wdth,wght].ttf", "Regular"]],
   ["Noto Sans Devanagari", "Devanagari digits", "google", "notosansdevanagari", ["NotoSansDevanagari[wdth,wght].ttf", "Regular"]],
@@ -127,7 +137,7 @@ const KINDS = {
   "CAT Kurier": "", "Erika Type": "serif mono", "GL-Nummernschild": "sans condensed mono", "Immermann": "sans condensed", "Koch-Fraktur": "", "TGL 0-16": "sans",
   "Aboreto": "sans", "Anta": "sans", "Audiowide": "sans", "Big Shoulders Display": "sans condensed", "Black Ops One": "sans", "Courier Prime": "serif mono",
   "Gilda Display": "serif", "Julius Sans One": "sans", "Krona One": "sans", "Libre Caslon Display": "serif", "Limelight": "serif", "Major Mono Display": "sans mono",
-  "Pathway Extreme": "sans", "Sirin Stencil": "serif", "Stardos Stencil": "serif", "Syncopate": "sans", "Tenor Sans": "sans", "Zen Dots": "sans",
+  "Pathway Extreme": "sans", "Berliner Wand": "sans condensed", "Böcklins Universe": "", "CAT Childs": "serif", "CAT Robertson": "sans", "CAT Stack": "sans", "Varieté": "sans", "Sirin Stencil": "serif", "Stardos Stencil": "serif", "Syncopate": "sans", "Tenor Sans": "sans", "Zen Dots": "sans",
   "Reem Kufi": "sans nonlatin", "Noto Sans Bengali": "sans nonlatin", "Noto Sans Devanagari": "sans nonlatin", "Vazirmatn": "sans nonlatin",
   "Noto Sans Indic Siyaq Numbers": "nonlatin", "Noto Sans Mayan Numerals": "nonlatin", "Noto Serif Ottoman Siyaq": "serif nonlatin",
   "Noto Sans Tamil": "sans nonlatin", "Kanit": "sans nonlatin", "Noto Serif SC": "serif nonlatin",
@@ -150,6 +160,7 @@ const local = (file) => file.replace(/[\[\], ]+/g, "-").replace(/-\./, ".");    
 const zips = new Map();                                                           // a zip is fetched once, to a temporary folder
 async function get(from, to) {
   if (fs.existsSync(to)) return;
+  if (from === null) throw new Error(`${path.basename(to)} is kept by hand and is missing`);
   if (Array.isArray(from)) {                                                      // [zip's URL, file inside it]
     const [url, inside] = from;
     if (!zips.has(url)) {
@@ -232,7 +243,8 @@ Taken from github.com/google/fonts (folder \`ofl/\`) and github.com/dse/routed-g
 peter-wiegel.de, and — D-DIN — from github.com/amcchord/datto-d-din, a copy of Datto's own \`D-DIN_complete.zip\` (Datto's
 page is not reachable from a session); unchanged, only renamed (\`Jost[wght].ttf\` → \`Jost-wght.ttf\`, spaces to dashes).
 On 24 Oct 2026 (#501) the middle tier's and the non-Latin numeral fonts that are on google/fonts joined (\`apache/\` for
-Syncopate). Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
+Syncopate). On 25 Oct 2026 six of Wiegel's middle tier joined from Okay's own download of his CAT Fonts zip
+(kept by hand, source \`catfonts\`). Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
 — but one: Noto Serif SC (25 MB whole, OFL with no Reserved Font Name) is cut to the characters a dial uses (\`SUBSET\` in
 \`web/fonts.mjs\`: Latin, digits, Chinese numerals and the date's words).
 Inter, the page's stand-in font, is packed inside the page itself (also OFL). The list is written by \`web/fonts.mjs\`.

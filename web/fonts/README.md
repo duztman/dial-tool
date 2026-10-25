@@ -9,7 +9,8 @@ Taken from github.com/google/fonts (folder `ofl/`) and github.com/dse/routed-got
 peter-wiegel.de, and — D-DIN — from github.com/amcchord/datto-d-din, a copy of Datto's own `D-DIN_complete.zip` (Datto's
 page is not reachable from a session); unchanged, only renamed (`Jost[wght].ttf` → `Jost-wght.ttf`, spaces to dashes).
 On 24 Oct 2026 (#501) the middle tier's and the non-Latin numeral fonts that are on google/fonts joined (`apache/` for
-Syncopate). Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
+Syncopate). On 25 Oct 2026 six of Wiegel's middle tier joined from Okay's own download of his CAT Fonts zip
+(kept by hand, source `catfonts`). Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
 — but one: Noto Serif SC (25 MB whole, OFL with no Reserved Font Name) is cut to the characters a dial uses (`SUBSET` in
 `web/fonts.mjs`: Latin, digits, Chinese numerals and the date's words).
 Inter, the page's stand-in font, is packed inside the page itself (also OFL). The list is written by `web/fonts.mjs`.
@@ -75,6 +76,12 @@ Inter, the page's stand-in font, is packed inside the page itself (also OFL). Th
 | Syncopate | `Syncopate-Regular.ttf` `Syncopate-Bold.ttf` |  | [licence](licences/Syncopate-Apache.txt) |
 | Tenor Sans | `TenorSans-Regular.ttf` | Copyright (c) 2011, Denis Masharov <denis.masharov@gmail.com>, | [licence](licences/TenorSans-OFL.txt) |
 | Zen Dots | `ZenDots-Regular.ttf` | Copyright 2021 The Dots Project Authors (https://github.com/googlefonts/zen-dots) | [licence](licences/ZenDots-OFL.txt) |
+| Berliner Wand | `Berliner_Wand.ttf` | Copyright (c) 2018, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/BerlinerWand-OFL.txt) |
+| Böcklins Universe | `Boecklins-Universe.ttf` | Copyright (c) 2018, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/BöcklinsUniverse-OFL.txt) |
+| CAT Childs | `CATChilds.ttf` | Copyright (c) 2014, CAT-Fonts, Peter Wiegel (http://www.catfonts.de | wiegel@peter-wiegel.de), | [licence](licences/CATChilds-OFL.txt) |
+| CAT Robertson | `robertson.ttf` | Copyright (c) 2015, CAT-Fonts, Peter Wiegel (http://www.catfonts.de | wiegel@peter-wiegel.de), | [licence](licences/CATRobertson-OFL.txt) |
+| CAT Stack | `cat_stack.ttf` | Copyright (c) 2009, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/CATStack-OFL.txt) |
+| Varieté | `Variete.ttf` | Copyright (c) 2009, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/Varieté-OFL.txt) |
 | Reem Kufi | `ReemKufi-wght.ttf` | Copyright 2015-2022 The Reem Kufi Project Authors (https://github.com/aliftype/reem-kufi), with Reserved Font Name "Josefin Sans". | [licence](licences/ReemKufi-OFL.txt) |
 | Noto Sans Bengali | `NotoSansBengali-wdth-wght.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/bengali) | [licence](licences/NotoSansBengali-OFL.txt) |
 | Noto Sans Devanagari | `NotoSansDevanagari-wdth-wght.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/devanagari) | [licence](licences/NotoSansDevanagari-OFL.txt) |
