@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.13 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.14 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -927,9 +927,13 @@
      and Hands stands on the same five columns: the eye (an ink's fold, a part's A or B) · the kind mark (the ring
      list's) · the name · the swatch column (a lone colour a pill with its hex, several squares from its left) · the
      height box. A Colours line has no height: its squares may run on to the line's end, six to a line. */
-  .colourlist > .row.showline { grid-template-columns: var(--eye) var(--kind-pic) minmax(0, 1fr) var(--pill-w) var(--side-num); column-gap: var(--u1); }      /* half-unit gaps: at 312 the name keeps room for "Triangle at 12" (85) */
+  .colourlist > .row.showline { position: relative; grid-template-columns: var(--kind-pic) minmax(0, 1fr) var(--pill-w) var(--side-num); column-gap: var(--u2); }
   .colourlist > .row.showline > * { grid-column: auto; }
-  .colourlist > .row.showline > .eye { display: grid; place-items: center start; color: var(--grey); }
+  /* the first place — a line's eye, an ink's fold, a part's A or B — stands in the panel's left column, under the panes'
+     own eyes, so the line's tiny mark leads it (Okay, 25 Oct 2026, 22:02: "Eyes and icons won't gel … Check if pushing
+     eyes to left column work") */
+  .colourlist > .row.showline > :first-child { position: absolute; top: 0; bottom: 0; left: calc(var(--nudge) - var(--eye) - var(--gap)); width: var(--eye); }      /* as a heading's eye stands: its column, its nudge */
+  .colourlist > .row.showline > .eye { display: grid; place-items: center; color: var(--grey); }
   .colourlist > .row.showline > .eye[aria-pressed="true"] { color: var(--ink); }
   @media (hover: hover) { .colourlist > .row.showline > .eye:hover { color: var(--ink); } }
   .colourlist > .row.showline > .mark { display: grid; place-items: center; height: 100%; color: var(--grey); }      /* a tiny mark, quiet beside the name */
@@ -942,7 +946,7 @@
   .colourlist > .row.showline > .place { display: flex; justify-content: end; }
   .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
   .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
-  .colourlist > .row.showline.bare > :is(.single, .swatches) { grid-column: 4 / -1; max-width: calc(6 * var(--pill) + 5 * var(--chip-gap) + var(--pill-w)); }      /* six squares a line, the note after them */
+  .colourlist > .row.showline.bare > :is(.single, .swatches) { grid-column: 3 / -1; max-width: calc(6 * var(--pill) + 5 * var(--chip-gap) + var(--pill-w)); }      /* six squares a line, the note after them */
   .colourlist > .row.showline.bare > .place { display: none; }
   /* a group's name (Rings · Hands · Windows; On the dial · On the discs · Disc depths): grey, sentence case, at the rows'
      size, as the Shadows pane's Part Heights; a pane's number column named at its heading's end, small and grey */
@@ -950,13 +954,15 @@
   .colourlist > .row.showsub .colhead { color: var(--grey); font-size: var(--t-s); }
   .pane > .colhead { justify-self: end; margin-left: auto; color: var(--grey); font-size: var(--t-xs); }
   /* Inks: its lines on the same columns; the ink's fold in the eye's place, its part count as its name */
-  .inklist .chev { display: grid; place-items: center start; color: var(--grey); }
+  .inklist .chev { display: grid; place-items: center; color: var(--grey); }
   .inklist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
   @media (hover: hover) { .inklist .chev:hover { color: var(--ink); } }
   .inklist > .row.inkline > label { color: var(--ink); }
   .inklist > .row.inkline.open > .place.two { display: flex; align-items: center; justify-content: end; gap: var(--u3); color: var(--grey); }      /* Two inks in the number's place, its word right against it */
-  .inklist > .row.inkpart > .letter { justify-self: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the eye's place */
-  .row.bevels > .pillswitch { grid-column: 2 / -1; justify-self: end; flex-wrap: nowrap; }
+  .inklist > .row.inkpart > .letter { display: grid; place-items: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the eye's place */
+  .row.bevels { grid-template-columns: auto minmax(0, 1fr); }
+  .row.bevels > label { grid-column: 1; }
+  .row.bevels > .pillswitch { grid-column: 2; justify-self: end; flex-wrap: nowrap; }      /* its name, then its pills to the line's end, on one line */
   .inklist .pillswitch.ab > button { padding: 0 var(--u2); }      /* the pill fits the swatch column, a gap before the name */
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }
 
@@ -7412,7 +7418,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.13";
+var VERSION = "beta 4.94.14";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11977,9 +11983,8 @@ var PICS = {
     // less line height to the lines"): heavier (.words), tracked 0.5, the two lines 7.5 apart (were 9)
     [["ABC", 12, 8.25], ["XYZ", 12, 15.75]].map(([t, x2, y]) => `<text class="figure words" x="${x2}" y="${y}" font-size="5.5" letter-spacing="0.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join("")
   ][i2], KIND_PIC),
-  // show mode's Dial tab (#546; Okay, 25 Oct 2026: "Tiny marks … look at prescedents"): beside the ring marks above, a
-  // hand on its pivot (the Hands tab's two hands, on this grid) and a window (the Windows tab's, alone), each at KIND_PIC
-  hand_mark: icon(`<path d="M12.25 12.25V5.75M12.25 12.25L16.25 14.75"/><circle cx="12.25" cy="12.25" r="1.25" fill="currentColor" stroke="none"/>`, KIND_PIC),
+  // show mode's Dial tab (#546; Okay, 25 Oct 2026: "Tiny marks … look at prescedents"; "Hands unnecessary to iconize"):
+  // beside the ring marks above, a window (the Windows tab's, alone), at KIND_PIC
   window_mark: icon(`<rect x="7" y="8.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none"/>`, KIND_PIC),
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [
@@ -13328,7 +13333,6 @@ var COLOUR = {
             this.S["ha_" + h].on = on;
             this.changed();
           } };
-          line.mark = PICS.hand_mark;
           if (cap_shows(S) && k === top_hand(S)) {
             line.colours = [...line.colours, { ...cap, square: true }];
             line.note = "hand \xB7 cap";
@@ -13584,11 +13588,10 @@ var COLOUR = {
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
       const tall = (h, text) => [{ key: "height", place: "number", make: () => this.line_number(num2("sh_" + h, text, 0, 3, 0.05, { scope: "global", block: true, id: `show-${h}-height` })) }];
-      if (cap_shows(S)) lines.push({ text: "Cap", mark: PICS.hand_mark, colours: [{ ...this.cap_colour(), id: "cap-hands", square: true }], tail: tall("cap", "Cap height") });
+      if (cap_shows(S)) lines.push({ text: "Cap", colours: [{ ...this.cap_colour(), id: "cap-hands", square: true }], tail: tall("cap", "Cap height") });
       for (const [h, text] of [["second", "Seconds"], ["minute", "Minutes"], ["hour", "Hours"]]) {
         lines.push({
           text,
-          mark: PICS.hand_mark,
           colours: [{ ...this.hand_colour(h, text + " hand"), id: `hand-${h}-hands`, square: true }],
           tail: tall(h, text + " height"),
           eye: { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => {
