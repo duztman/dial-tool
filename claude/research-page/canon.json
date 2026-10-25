@@ -1,0 +1,121 @@
+{
+ "lume-grades": {
+  "large": "img/canon-lume-grades.webp",
+  "w": 1960,
+  "h": 1348,
+  "cap": "Lume grades: daylight colour, then the glow at 0, 10, 30, 60 and 180 minutes after charging. Model brightness relative to C3; C1 to C9 are daylight colour codes, a white body glows weaker.",
+  "ed": "second edition, Fig. 1"
+ },
+ "lume-ways": {
+  "large": "img/canon-lume-ways.webp",
+  "w": 1960,
+  "h": 940,
+  "cap": "Three ways lume reaches a dial, and how each shows by day and by night: printed on the dial, filled into an applied frame, sandwich under a cut-out.",
+  "ed": "first edition"
+ },
+ "daynight": {
+  "large": "img/canon-daynight.webp",
+  "w": 1960,
+  "h": 700,
+  "cap": "The Day · Night switch on one dial: the watch through one colour matrix (Krawczyk 2005, two stops down), the lume drawn on top; the photo look at 0 min, the eye at 45 min, bloom off.",
+  "ed": "second edition, Fig. 3"
+ },
+ "closing": {
+  "large": "img/canon-closing.webp",
+  "w": 1960,
+  "h": 600,
+  "cap": "Closing-up: the same 0.35 mm-high print with the ink spreading 0, 12 and 24 µm each side; the e's eye narrows, then fills.",
+  "ed": "first edition"
+ },
+ "misreg": {
+  "large": "img/canon-misreg.webp",
+  "w": 1960,
+  "h": 580,
+  "cap": "Misregistration: a white numeral printed over a red track, the second ink shifted 0, 30 and 60 µm; only visible where two inks meet.",
+  "ed": "first edition"
+ },
+ "edge": {
+  "large": "img/canon-edge.webp",
+  "w": 1960,
+  "h": 660,
+  "cap": "Edge roughness of 15 µm: invisible at whole-watch size (50 µm a pixel), plain in a loupe (5 µm a pixel).",
+  "ed": "first edition"
+ },
+ "pad-vs-toner": {
+  "large": "img/canon-pad-vs-toner.webp",
+  "w": 1960,
+  "h": 940,
+  "cap": "Okay's own method turned over: pad print sits on top of the brass; under the toner the brass stays up and the ground is etched down, matte, undercut at the edges.",
+  "ed": "first edition"
+ },
+ "eight-ways": {
+  "large": "img/canon-eight-ways.webp",
+  "w": 1960,
+  "h": 1280,
+  "cap": "One mark made eight ways, seen through a loupe: pad print, screen print, toner-transfer etch, laser, galvanic gilt, decal, UV inkjet, applied index.",
+  "ed": "first edition"
+ },
+ "finest-v2": {
+  "large": "img/canon-finest-v2.webp",
+  "w": 1960,
+  "h": 968,
+  "cap": "Finest line and finest gap each method holds, as reported (mm, log scale): the dot is the middle of what sources report, the whisker the lowest to highest.",
+  "ed": "second edition, Fig. 18"
+ },
+ "seven-finishes": {
+  "large": "img/canon-seven-finishes.webp",
+  "w": 1960,
+  "h": 1180,
+  "cap": "Seven finishes under one sun at 300°, plates only: flat, fumé, sunburst, linear brushed, grained, lacquer, enamel.",
+  "ed": "first edition"
+ },
+ "why-rays": {
+  "large": "img/canon-why-rays.webp",
+  "w": 1960,
+  "h": 760,
+  "cap": "Why a sunburst's bright rays run across the light: a groove is a tiny cylinder; light that meets it side-on fans out to the eye; with the sun at 9 the grooves at 12 and 6 shine.",
+  "ed": "first edition"
+ },
+ "ink-heights": {
+  "large": "img/canon-ink-heights.webp",
+  "w": 1960,
+  "h": 800,
+  "cap": "One ink in three height shapes, reserved in #545's mm keys: flat, rim (coffee ring), dome (filled).",
+  "ed": "first edition"
+ },
+ "far-near": {
+  "large": "img/canon-far-near.webp",
+  "w": 1960,
+  "h": 800,
+  "cap": "Sunburst under a far sun and under a near lamp: the far sun gives a straight bow-tie; a near lamp bends it onto the circle whose diameter runs from the centre to the hotspot.",
+  "ed": "first edition, Fig. 17"
+ },
+ "engraved-v2": {
+  "large": "img/canon-engraved-v2.webp",
+  "w": 1960,
+  "h": 1180,
+  "cap": "Engraved and stamped textures under one sun at 300°: clous de Paris, barleycorn, wave (flinqué ground), tapisserie, linen, azurage, snailing, bark.",
+  "ed": "second edition, Fig. 14"
+ },
+ "stones": {
+  "large": "img/canon-stones.webp",
+  "w": 1960,
+  "h": 660,
+  "cap": "Aventurine, mother-of-pearl, meteorite and carbon under one sun.",
+  "ed": "first edition"
+ },
+ "redraw": {
+  "large": "img/canon-redraw.webp",
+  "w": 1960,
+  "h": 920,
+  "cap": "Time to redraw one 800 px dial after the sun moves, headless Chromium, no GPU, three runs: grained 96 ms, enamel 46, sunburst with 720 wedges 40, the flat plate 21.",
+  "ed": "first edition"
+ },
+ "sweep": {
+  "large": "img/canon-sweep.webp",
+  "w": 1960,
+  "h": 580,
+  "cap": "A light-sweep sheet: one sunburst dial under four sun angles, then the same dial by night.",
+  "ed": "first edition"
+ }
+}

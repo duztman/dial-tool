@@ -1,0 +1,64 @@
+{
+ "finishes-enamel": [
+  "enamel_blancpain",
+  "enamel_omega",
+  "enamel_speake",
+  "patek_cloisonne"
+ ],
+ "finishes-paint-lacquer-and-fum\u00e9": [
+  "fume_moser",
+  "gradient_sicura",
+  "lacquer_stella"
+ ],
+ "finishes-engraved-and-stamped": [
+  "guilloche_pratt"
+ ],
+ "finishes-stones-and-others": [
+  "meteorite_genevrier"
+ ],
+ "finishes-metal-finishes": [
+  "sunburst_binkada2",
+  "sunburst_alpinist"
+ ],
+ "lume-how-lume-is-applied": [
+  "applied_davosa",
+  "applied_explorer",
+  "lume_panerai"
+ ],
+ "lume-other-luminous-materials": [
+  "lume_ball",
+  "lume_elgin"
+ ],
+ "lume": [
+  "lume_kilby",
+  "lume_regent",
+  "lume_snk"
+ ],
+ "ink-and-production": [
+  "print_sicura",
+  "sicura_regatta"
+ ],
+ "microbrands-20232026-who-they-are": [
+  "cw_c60",
+  "cw_c60r",
+  "cw_c70",
+  "cw_c8b",
+  "cw_c8",
+  "lorier",
+  "yema",
+  "yema2"
+ ],
+ "ink-and-production-pad-print-the-numbers": [
+  "print_defect",
+  "print_machine",
+  "radium_painters",
+  "casio",
+  "seiko_macro"
+ ],
+ "how-they-design-and-produce-dials-dial-makers": [
+  "dial_factory"
+ ],
+ "microbrands-20232026-the-fairs": [
+  "ww2023"
+ ]
+}
