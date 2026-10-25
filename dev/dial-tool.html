@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.17 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.18 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -316,6 +316,7 @@
   #app.away { --away: 1; }
   .showing { --panel-w: var(--show-panel-w); }
   #app.showing { grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
+  #app.showing.alone { grid-template-rows: 1fr calc(var(--bar-height) * (1 - var(--away))); }      /* show mode's eye: the bar slides down out of the window with the panel (Okay, 25 Oct 2026: "Eye hides bar too"); the dial side's eye keeps its bar */
   @media (prefers-reduced-motion: reduce) { #app { transition: none; } }
   .starting { padding: var(--margin); }
   h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }
@@ -515,6 +516,7 @@
   .showing .panel::-webkit-scrollbar { display: none; }
   .showing .form::-webkit-scrollbar { display: none; }
   .showing .mast { translate: 0; }
+  #app.showing.alone .mast { translate: calc(-2 * var(--panel-w) * var(--away)) 0; }      /* the eye in show mode: the title stays where it stood while the panel slides away, as on the dial side — twice the width back, as the panel both moves its column and slides (Okay, 25 Oct 2026: "Dial tool header stays on collapsed panels on show case same as main") */
   .showing .panel > header { height: var(--header); }      /* main's title line, so the tabs' line falls on the undo buttons' bottom as on the dial side (Okay, 25 Oct 2026, 18:05: "main looks correct"; --header's rule "for the Show Case too"); the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
   .showing .title h1 { white-space: nowrap; }
   .showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
@@ -7431,7 +7433,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.17";
+var VERSION = "beta 4.94.18";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7806,7 +7808,7 @@ var DEFAULTS = {
   // a Wear OS watch face's name (4.67, farukahmet's PR #1); "" = Dial Tool. Its package's name follows from it
   strap: 1,
   c_strap: [0.29, 0.2, 0.14, 1],
-  // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather), 3 a NATO (w_nato). Never none (Okay, 22 Oct 2026)
+  // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather), 4 the diver's links bracelet (Emre's H-links; Okay, 25 Oct 2026: "Links add"), 3 a NATO (w_nato). Never none (Okay, 22 Oct 2026)
   bezel: 0,
   // the case round the dial (watch.js, CASE_OF_BEZEL): the list only grows (R9). 0 dress, 1 diver, 2 field, 3 dress, 4 field, 5 emre01 — 2 and 4 were the pilot and sport sketches, 0 "no case": no watch is caseless now (Okay, 22 Oct 2026). Preview only (R26)
   // ── w_: the watch round the dial in show mode (22 Oct 2026, build list #509; R7). Kept in the settings file and the
@@ -10755,12 +10757,14 @@ function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   return s + `</g>`;
 }
 var barrel = (...a) => STYLE === "engineer" ? barrelEngineer(...a) : barrelMiyazaki(...a);
-function vaultEngineer({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null }) {
-  const lv = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
+function vaultEngineer({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
   const pitch = 6.4, out = [];
   for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
     const w = Math.max(16, W2 - k * 0.45), mid = w * 0.36, g = 0.18, kk = 0.99;
-    const a = sy * y, b = sy * Math.min(span, y + pitch), top = Math.min(a, b), bot = Math.max(a, b);
+    const ya = wrap.map(y), yb = wrap.map(Math.min(span, y + pitch));
+    if (yb - ya < 0.12) break;
+    const a = sy * ya, b = sy * yb, top = Math.min(a, b), bot = Math.max(a, b), lv = wrap.light(lv0, (y + Math.min(span, y + pitch)) / 2);
     const parts = [
       [-w / 2, -mid / 2 - g / 2, [0.6, 0.12, 0.12, 0.6]],
       [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
@@ -10784,12 +10788,14 @@ function vaultEngineer({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2
   }
   return out.join("");
 }
-function vaultMiyazaki({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null }) {
-  const lv = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
+function vaultMiyazaki({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
   const pitch = 6.4, out = [];
   for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
     const w = Math.max(16, W2 - k * 0.45), mid = w * 0.36, g = 0.18, kk = 0.99;
-    const a = sy * y, b = sy * Math.min(span, y + pitch), top = Math.min(a, b), bot = Math.max(a, b);
+    const ya = wrap.map(y), yb = wrap.map(Math.min(span, y + pitch));
+    if (yb - ya < 0.12) break;
+    const a = sy * ya, b = sy * yb, top = Math.min(a, b), bot = Math.max(a, b), lv = wrap.light(lv0, (y + Math.min(span, y + pitch)) / 2);
     const parts = [
       [-w / 2, -mid / 2 - g / 2, [0.6, 0.12, 0.12, 0.6]],
       [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
@@ -10810,11 +10816,13 @@ function vaultMiyazaki({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2
   return out.join("");
 }
 var vaultBracelet = (o) => STYLE === "engineer" ? vaultEngineer(o) : vaultMiyazaki(o);
-function linksBracelet({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22 }) {
-  const lv = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
-  const h = 4.4, g = 0.15, mid = W2 * 0.46, out = [`<rect x="${f(-W2 / 2 + 0.3)}" y="${f(Math.min(sy * y0, sy * span))}" width="${f(W2 - 0.6)}" height="${f(Math.abs(span - y0))}" fill="${ramp[0]}"/>`];
-  const piece = (x0, x1, a, b) => {
-    const top = Math.min(sy * a, sy * b), bot = Math.max(sy * a, sy * b), r = Math.min(0.9, (bot - top) * 0.3), d = rrect4(x0, top, x1, bot, [r, r, r, r]);
+function linksBracelet({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
+  const h = 4.4, g = 0.15, mid = W2 * 0.46, out = [`<rect x="${f(-W2 / 2 + 0.3)}" y="${f(Math.min(sy * wrap.map(y0), sy * wrap.map(span)))}" width="${f(W2 - 0.6)}" height="${f(Math.abs(wrap.map(span) - wrap.map(y0)))}" fill="${ramp[0]}"/>`];
+  const piece = (x0, x1, a0, b0) => {
+    const a = wrap.map(a0), b = wrap.map(b0);
+    if (b - a < 0.12) return;
+    const lv = wrap.light(lv0, (a0 + b0) / 2), top = Math.min(sy * a, sy * b), bot = Math.max(sy * a, sy * b), r = Math.min(0.9, (bot - top) * 0.3), d = rrect4(x0, top, x1, bot, [r, r, r, r]);
     out.push(barrel(d, x0, top, x1, bot, 0.99, ramp, lv, 1));
     if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
   };
@@ -10827,6 +10835,20 @@ function linksBracelet({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2
     if (c1 > c0 + 0.5) piece(-mid / 2 + g / 2, mid / 2 - g / 2, c0, c1);
   }
   return out.join("");
+}
+var WRIST_R = 12;
+var WRIST_FLAT = 1;
+var FLAT_WRAP = { map: (y) => y, light: (lv) => lv };
+function wristWrap(y0) {
+  const ys = y0 + WRIST_FLAT, th = (y) => Math.max(0, Math.min(Math.PI / 2, (y - ys) / WRIST_R));
+  return {
+    span: ys + WRIST_R * Math.PI / 2,
+    map: (y) => y <= ys ? y : ys + WRIST_R * Math.sin(th(y)),
+    light: (lv, y) => {
+      const t = th(y), c = Math.cos(t), si = Math.sin(t);
+      return [lv[0], lv[1] * c - lv[2] * si, lv[1] * si + lv[2] * c];
+    }
+  };
 }
 function braceletSVG(C2, L, span) {
   const R = C2.od / 2, lw = C2.lugw, W2 = C2.lugw - 0.2, yE = C2.l2l / 2 + 0.8, ramp = ramp6(C2.metal);
@@ -10846,10 +10868,12 @@ function braceletSVG(C2, L, span) {
     out += `<path d="M${arc2.map((p) => `${f(p[0])} ${f(p[1])}`).join("L")}" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="0.5"/>`;
     out += INKB ? `<path d="${end}" fill="none" stroke="${INKB}" stroke-width="0.22" stroke-linejoin="round"/>` : "";
     OUTT.push(end);
-    out += (BRACELET_KIND === "links" ? linksBracelet : vaultBracelet)({ W: W2, y0: yE, span, sy, L, H: SUN_H, ramp, ink: INKB });
-    for (let k = 0, y = yE; y + 6.4 <= span + 0.01; k++, y += 6.4) {
-      const w = Math.max(16, W2 - k * 0.45);
-      OUTT.push(`M${f(-w / 2)} ${f(sy * y)}H${f(w / 2)}V${f(sy * (y + 6.4))}H${f(-w / 2)}Z`);
+    const wrap = wristWrap(yE), far = wrap.span;
+    out += (BRACELET_KIND === "links" ? linksBracelet : vaultBracelet)({ W: W2, y0: yE, span: far, sy, L, H: SUN_H, ramp, ink: INKB, wrap });
+    for (let k = 0, y = yE; y + 6.4 <= far + 0.01; k++, y += 6.4) {
+      const w = Math.max(16, W2 - k * 0.45), a = wrap.map(y), b = wrap.map(y + 6.4);
+      if (b - a < 0.12) break;
+      OUTT.push(`M${f(-w / 2)} ${f(sy * a)}H${f(w / 2)}V${f(sy * b)}H${f(-w / 2)}Z`);
     }
   }
   return out;
@@ -11008,7 +11032,11 @@ function tilePicture(key, w = 38, h = 27) {
 }
 var DETAIL = 31;
 var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
-var fullBox = () => [FULL.w, FULL.h];
+var fullBox = (kind = null, size = 1, bracelet = false) => {
+  if (!bracelet || !CASES[kind]) return [FULL.w, FULL.h];
+  const C2 = scaleCase(CASES[kind], size), h = 2 * (C2.l2l / 2 + 0.8 + WRIST_FLAT + WRIST_R + 6);
+  return [h * FULL.w / FULL.h * 2, h];
+};
 var STYLES = {
   engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
   miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` }
@@ -11065,7 +11093,8 @@ function draw(o) {
     return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur);
   };
   const R = STYLE_.ramp, vb = (x2, y, w, h) => `${f(x2)} ${f(y)} ${f(w)} ${f(h)}`;
-  const box3 = o.view === "full" ? [-FULL.w / 2, -FULL.h / 2, FULL.w, FULL.h] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];
+  const [fw, fh] = fullBox(o.key, o.size, o.strap === "bracelet" || o.strap === "links");
+  const box3 = o.view === "full" ? [-fw / 2, -fh / 2, fw, fh] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];
   const e = (box3[2] + box3[3]) / 4, cx = box3[0] + box3[2] / 2, cy = box3[1] + box3[3] / 2;
   const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f(cx - e)}" y1="${f(cy - e)}" x2="${f(cx + e)}" y2="${f(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";
   const ground = (svg, fill) => svg.replace('<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>', `${lin ? `<defs>${lin}</defs><rect x="-300" y="-300" width="600" height="600" fill="url(#floorg)"/>` : ""}<rect x="-300" y="-300" width="600" height="600" fill="${fill}"/>`);
@@ -11115,7 +11144,7 @@ function options(S, items, effects) {
     }),
     // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
     A: Object.fromEntries(HANDS2.map((h) => [h, 0])),
-    strap: S.strap === 2 && diver ? "bracelet" : S.strap === 3 ? "nato" : "leather",
+    strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather",
     nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P2.metals[METAL_NAMES[S.w_metal]] || P2.metals.steel,
     leather: hex(S.c_strap),
@@ -11203,7 +11232,7 @@ var GRADIENTS2 = [
 function fit_zoom(tool2, w, h) {
   const S = tool2.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, cb = caseBox(kind, sizeFor(kind, S.dial_d));
   if (S.w_view === 2) return Math.min(w, h) / page_mm(S);
-  const [bw, bh] = S.w_view === 1 ? fullBox() : [cb.w, cb.h];
+  const [bw, bh] = S.w_view === 1 ? fullBox(kind, sizeFor(kind, S.dial_d), kind === "diver" && (S.strap === 2 || S.strap === 4)) : [cb.w, cb.h];
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
 }
 function tint_panel(panel, on, backdrop, in_greys = false) {
@@ -12782,9 +12811,9 @@ ROWS.Watch = [
   pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i2) => insert_picture(i2), { show: (S) => CASE_OF_BEZEL[S.bezel] === "diver" }),
   // tiles, each insert a ring in its two colours
   hdr("Strap", { folded: false }),
-  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO"], { order: [1, 3, 2], offered: (S) => CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3] : [1, 3], get: (S) => S.strap === 0 ? 1 : S.strap }),
+  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO", "Links"], { order: [1, 3, 2, 4], offered: (S) => CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3, 4] : [1, 3], get: (S) => S.strap === 0 ? 1 : S.strap }),
   // 0 (an older file) reads as Leather, so a pill is always lit      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
-  col("c_strap", "Leather", { show: (S) => S.strap !== 2 && S.strap !== 3 }),
+  col("c_strap", "Leather", { show: (S) => ![2, 3, 4].includes(S.strap) }),
   // the NATO (#524; Okay, 24 Oct 2026: "Nato colors should be selectable. One solid option. Options can be free living
   // single pills"): its patterns as pills of their own, Solid last (R9); a pattern taken starts again from its own colours
   seg("w_nato", "Pattern", ["Bond", "Regimental", "Khaki", "Black \xB7 grey", "Olive", "Grey", "Solid"], {
@@ -17151,14 +17180,19 @@ var PREVIEW = {
     this.fitted = true;
     this.sliding = true;
     if (this.view_end) app.removeEventListener("transitionend", this.view_end);
+    const back = () => {
+      if (!on) app.classList.remove("alone");
+    };
     this.view_end = (e) => {
       if (e.target === app) {
         this.sliding = false;
+        back();
         this.fit();
         this.render();
       }
     };
     setTimeout(() => {
+      back();
       if (this.sliding) {
         this.sliding = false;
         this.render();
@@ -17166,6 +17200,7 @@ var PREVIEW = {
     }, 1200);
     app.addEventListener("transitionend", this.view_end);
     app.classList.toggle("away", on);
+    if (on && app.classList.contains("showing")) app.classList.add("alone");
     if (app.classList.contains("showing") && !app.classList.contains("swooping")) {
       const follow = () => {
         if (!this.sliding) return;
@@ -23461,6 +23496,7 @@ var MODE = {
       leaving.animate([{ transform: "translateX(0)" }, { transform: `translateX(${on ? -r.right : innerWidth - r.left}px)` }], { duration: T, easing: ease, fill: "forwards" }).finished.then(() => leaving.remove());
     }
     app.classList.add("snap", "away");
+    app.classList.remove("alone");
     app.classList.toggle("showing", on);
     {
       const r = this.svg.getBoundingClientRect();
