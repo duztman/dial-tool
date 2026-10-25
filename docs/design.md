@@ -288,7 +288,7 @@ above → `python3 icons/look.py` reads how heavy each line looks and names any 
 
 ## 10 · The panel's layout
 
-How the panel's parts are laid out, in the stylesheet's terms (R32 names the tokens).
+How the panel's parts are laid out, in the stylesheet's terms (R32 names the tokens; `docs/sectors.md` is the index from a region on screen to its rule and its token).
 
 - **A framed thing** — a ring row, the font box — stands between the pane's lines, from the labels' line to the pane's
   right line; inside, `--frame-pad` keeps what is in it off the frame (the eye at the left of a ring row, the steppers

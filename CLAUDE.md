@@ -8,7 +8,7 @@
 2. `docs/handoff.md` §1 — where things stand, what is open, what Okay must verify.
 3. `docs/build-list.md` — the open items, one line each (the full row: `docs/build-list-notes.md`).
 4. `docs/working-with-okay.md` before the first round with him.
-5. Then only what the task touches: the rule's page from `docs/rules.md` (the index; one file per rule in `docs/rules/`), the term's line in `docs/glossary-watch.md` or `docs/glossary-tool.md`, the canon `docs/design.md` for anything shown, `docs/brief.md` for goals and open questions, `README.md` for where every file is.
+5. Then only what the task touches: the rule's page from `docs/rules.md` (the index; one file per rule in `docs/rules/`), the term's line in `docs/glossary-watch.md` or `docs/glossary-tool.md`, the canon `docs/design.md` for anything shown — **for a change to the look, start at `docs/sectors.md`** (where a thing on screen lives, which token moves it, what proves it; `docs/css-map.md` is its generated token table), `docs/brief.md` for goals and open questions, `README.md` for where every file is.
 
 ## Binding
 
@@ -21,14 +21,14 @@
 ## The loop of a push
 
 1. **Set up** once per container: `bash tools/setup.sh` (libraries, fonts, `npm install`, the shallow clone's fetch widened — without it `tools/release.sh` fails or builds the live page on a stale `gh-pages`).
-2. **Change** `web/src/`: `geometry.js` (settings, geometry, drawing, `VERSION`, `LINK_KEYS`), `output.js` (SVG, PDF), the window in `app.js` and its parts — one file each (`rows.js`, `panel.js`, `rings.js`, `hands.js`, `windows.js`, `colour.js`, `fonts.js`, `preview.js`, `guides.js`, `bar.js`, `cards.js`, `export.js`, `mode.js`, `icons.js`, `ui.js`, `session.js`), `css/` one cascade layer per file (R32). Look while working: `node build.mjs`, then `node test/shot.mjs out.png` or `node test/look.mjs`; measure the DOM, not the eye. Guard a change with a check in `web/test/window.mjs` whose message quotes Okay's words.
+2. **Change** `web/src/`: `geometry.js` (settings, geometry, drawing, `VERSION`, `LINK_KEYS`), `output.js` (SVG, PDF), the window in `app.js` and its parts — one file each (`rows.js`, `panel.js`, `rings.js`, `hands.js`, `windows.js`, `colour.js`, `fonts.js`, `preview.js`, `guides.js`, `bar.js`, `cards.js`, `export.js`, `mode.js`, `icons.js`, `ui.js`, `session.js`), `css/` one cascade layer per file (R32; find the region and its token in `docs/sectors.md` first). After a token changes: `node css-map.mjs` (the test fails on a stale `docs/css-map.md`). Look while working: `node build.mjs`, then `node test/shot.mjs out.png` or `node test/look.mjs`; measure the DOM, not the eye. Guard a change with a check in `web/test/window.mjs` whose message quotes Okay's words.
 3. **Test** (R19): a small push `cd web && npm run small` (~2.5 min); a step `npm test` whole (~3 min: parity with `dial.py`, labels, links, complications, Wear OS, the window in Chromium, the icons). **Look at the screenshots in `web/test/out/`** before handing over. A change that must not change the look: `node test/same.mjs save` before, `node test/same.mjs` after (R32c).
 4. **Docs**: `docs/changelog.md` a section on top; `docs/decisions.md` a row; a done item's row to `docs/build-list-done.md`; the rule or glossary line if one changed.
 5. **Bump** `VERSION` in `web/src/geometry.js`, README line 8, the version line below; `node build.mjs` (`web/dial-tool.html` is committed); one commit on `dev`, "beta X: first line", with the attribution trailers the session gives. A small push counts in the third number (4.89 → 4.89.1), a step in the second (R19).
 6. **Release**: a small push `tools/release.sh dev "first line"` (pushes `dev`, copies the build to the /dev/ page); a step `tools/release.sh 4.9x "first line"` (the row in `docs/versions.md`, `main` moved to `dev`, the released page) — **on Okay's word only**, and a session's safety check may refuse it (a production deploy): then he runs it from his Mac. Tags and GitHub Releases can't be pushed from a session (`tools/versions.sh tag` from his Mac).
 7. **Reply**: short bullets — what changed, the values used, what is open. He reads on an iPad.
 
-**Version**: beta 4.94.1 on `dev` and /dev/ (<https://duztman.github.io/dial-tool/dev/>, a loader in `web/dev/index.html`, own browser storage); beta 4.93 on `main` and <https://duztman.github.io/dial-tool/>; 25 Oct 2026. The step to `main` waits for Okay.
+**Version**: beta 4.94.2 on `dev` and /dev/ (<https://duztman.github.io/dial-tool/dev/>, a loader in `web/dev/index.html`, own browser storage); beta 4.93 on `main` and <https://duztman.github.io/dial-tool/>; 25 Oct 2026. The step to `main` waits for Okay.
 
 ## Where things live, and what not to touch
 

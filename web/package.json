@@ -5,8 +5,8 @@
   "description": "Dial Tool, web version: source in src/, one-file build in dial-tool.html",
   "scripts": {
     "build": "node build.mjs",
-    "test": "python3 test/parity.py && node test/labels.mjs && node test/linktrip.mjs && node test/moment.mjs && node test/wearos_test.mjs && node build.mjs && node test/window.mjs && node icons/check.mjs",
-    "small": "node test/labels.mjs && node test/linktrip.mjs && node test/moment.mjs && node build.mjs && node test/window.mjs && node icons/changed.mjs",
+    "test": "node css-map.mjs check && python3 test/parity.py && node test/labels.mjs && node test/linktrip.mjs && node test/moment.mjs && node test/wearos_test.mjs && node build.mjs && node test/window.mjs && node icons/check.mjs",
+    "small": "node css-map.mjs check && node test/labels.mjs && node test/linktrip.mjs && node test/moment.mjs && node build.mjs && node test/window.mjs && node icons/changed.mjs",
     "icons": "node build.mjs && node icons/check.mjs",
     "icons:look": "python3 icons/look.py"
   },

@@ -241,7 +241,6 @@
     --pop-pad: 19px; --pop-top: 16px; --pop-gap: 12px;      /* a night part (colour pop-out, guides' list, the bio): the space inside its edges at the sides and the foot, a little more than at its top (Okay, 19 Oct 2026, 21:17: "3px padding from all sides except top"), and the space between its blocks */
     --pop-foot: calc(var(--control) + 2 * var(--u2));      /* a popup's bottom section (#305): a control, a unit over and under it */
     --guide-gap: 7px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next: 2 + 3 of ring; notes 2, 18 Oct 2026: "closer") */
-    --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
     --canvas-inset-wide: 12px; --canvas-inset: var(--canvas-inset-wide);      /* from the preview's edge to what stands on it (a phone sets --canvas-inset to --u5; the title row keeps the wide one) */
     --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */

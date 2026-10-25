@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.94.2 (web version) · 25 Oct 2026 — sectors: the index from a thing on screen to its lever
+
+Okay, 25 Oct 2026, 14:12: "does it make sense to create a design rules separately so when i'm drawing by words, you get what to implement … an agent working on pushing and pulling css values struggles"; 14:15: "not a rule set, an index to easily find what you're looking for, and insurance against agents missing info. No new bulk to the system. Go".
+
+- **`docs/sectors.md`** (~1,100 words, by hand): the screen as nested regions — the panel (header, tabs, pinned part, the scrolling part's panes, rows and their kinds, boxes, pop-outs), the preview (the corner stack and its lists, the Shadows pane, the switches), the bar, the controller, narrow screens — each with its selector, one line of rule, its tokens, and where the full word is (rule, canon §, glossary line, check). An index into what exists; nothing restated at length.
+- **`docs/css-map.md`** (generated, never edited): every token of `web/src/css/` with its value, the comment beside it, where it is used, where a part sets it again, and which `.js` sets or reads it. `web/css-map.mjs` writes it; `node css-map.mjs check` runs first in `npm test` and `npm run small`, so the map can't go stale.
+- The map's first find: `--ring-gap-in` was set and used nowhere since the audit removed `.dots` (4.93.1) — gone. The build changes by that one line; the small check is green.
+- `CLAUDE.md` (the read order, the loop's step 2), R32's page, canon §10 and the README point at the index.
+
 ## docs · 25 Oct 2026 — the docs made lean (no build change)
 
 Okay, 25 Oct 2026, 13:41: "back to our documents, the read order, the detailed parts. what can we trim ther, how to organize better. going and reading one specific rule or process for each function better through one large md or several smaller mds?" — then "Do all" (13:54) to the plan: one mandatory read, one file per rule, one line per term, one line per open item. Measured before: the start read was 25,400 words; after, `CLAUDE.md` + `handoff.md` §1 + the build list are 3,600, with `working-with-okay.md` and the rules index 5,600.
