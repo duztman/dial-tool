@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.8 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.9 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -833,6 +833,21 @@
   /* show mode: the notes the whole width (Okay, 23 Oct 2026: "explainers span the whole width"); ticks, colour chips and
      pills stand in the first column after the names, as on the dial side ("Color swatches and pills go back") */
   .showing .body .row.note > .quiet { grid-column: 1 / -1; }
+
+  /* show mode's Light tab, the Sun pane's top (Okay, 25 Oct 2026, "sun locked"; guides.js, row_sunbox): one box, five
+     rows high, its outline in the column's ink with sharp corners, drawn inside the box (an outline, so the columns
+     inside keep the rows' places: "box simply gets an outline with sharp corners to adapt to the environment"); laid
+     on the number row's columns — the picture over the open space before the number boxes' column, centred in it;
+     the values on that column, each name over its figure, flush left on the boxes' left line, at the rows' size,
+     names faded and figures in ink ("Labels numbers stack flush left, not editable … Faded colors. Black figures") */
+  .row.sunrow { display: block; padding: var(--u2) 0; box-shadow: none; }
+  .sunbox { display: grid; grid-template-columns: var(--num-columns); height: calc(5 * var(--line)); outline: var(--hair) solid var(--ink); outline-offset: calc(-1 * var(--hair)); }
+  .sunbox > .sunpic { grid-column: 1 / 6; overflow: hidden; }
+      /* the picture's own colours: 6-preview.css, after the Shadows pane's, a later layer */
+  .sunbox > .sunvalues { grid-column: 7 / -1; display: flex; flex-direction: column; justify-content: space-evenly; }
+  .sunvalue { display: grid; }
+  .sunvalue > .name { color: var(--grey); }
+  .sunvalue > .figure { color: var(--ink); }
 }
 
 /* a hand's pane: its detail box, the line of shapes, side rows with their number box */
@@ -1714,6 +1729,8 @@
   .sunpic .fall { fill: none; stroke: var(--night-rule); stroke-width: var(--sun-dot); stroke-linecap: round; stroke-dasharray: 0 var(--sun-dot-gap); }      /* where the shadows fall: the far side of the dial, as a ring of dots */
   .sunpic .sun > circle { fill: var(--ink); }
   .sunpic .rays line { stroke: var(--ink); stroke-width: var(--sun-ray); stroke-linecap: round; }
+  .sunbox .sunpic :is(.dial, .hole, .fall) { stroke: var(--grey); }      /* in show mode's Light tab (4c-rows.css): the picture faded in the column's grey, the sun and its rays in ink ("Faded colors") */
+  .sunbox .sunpic .word { display: none; }      /* the pane's heading says Sun */
   .sunpic .word { position: absolute; left: var(--shade-word-x); top: var(--shade-word-y); font-size: var(--t-s); font-weight: 600; color: var(--ink); pointer-events: none; }
   .shadelist .three { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); margin: var(--u2) 0; border-left: var(--hair) solid var(--night); }      /* the column: a hairline of the night at its left, the box's unit over and under it; the three thirds divided by the same line */
   .shadelist .row.named { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; align-content: start; row-gap: var(--shade-named-gap); min-height: 0; padding: var(--shade-named-top) var(--shade-named-right) 0 var(--shade-named-left); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--night); }
@@ -1866,7 +1883,7 @@
      the panel's square left, #190) — quiet, so they don't shout under the panel, but for the time, which sings.
      Under the preview: the day slider with its steps, no wider than on an iPad, then the view: how to zoom · − + 1 ·
      Fit 1, at the right. (Okay, 14 Oct 2026, 23:19 and 23:26, build list #190) */
-  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-light); border-top: var(--hair) solid var(--bar-rule); }
+  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--canvas-inset); background: var(--bar); color: var(--bar-light); border-top: var(--hair) solid var(--bar-rule); }
   .bar .lead { flex: none; align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
   .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-light); background: none; color: var(--bar-light); }
@@ -1970,26 +1987,23 @@
   .bar .barpop .popstep { display: grid; place-items: center; width: calc(var(--control) + 3 * var(--hair)); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }      /* − 27 inside, + 26: as drawn */
   .bar .barpop .popstep + .popstep { width: calc(var(--control) + var(--hair)); border-left: 0; }
   @media (hover: hover) { .bar .barpop .popstep:hover { background: var(--bar-field); } }
-  /* the zoom's, on a phone (Okay, 20 Oct 2026, 00:34: "Zoom popup has plus minus in the tooltip with note. On mobile"):
-     the note how to zoom, then − and +; its right edge on FIT's, the screen's edge being near */
-  .bar .zoomwell { position: relative; display: flex; align-items: center; gap: var(--gap); }      /* the group's own gap, as before it was wrapped */
-  .bar .barpop.zoompop { left: auto; right: 0; translate: none; }
-  .bar .zoompop .popword { color: var(--ink); padding-right: var(--u2); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); drawn as the bar's
      other boxes are — the light outline, the word in the same light, the bar's field under a pointer (Okay, 19 Oct 2026,
      #414: "Why? fill with grey, worst colour") */
   .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-light); background: none; color: var(--bar-light); font-size: var(--t-s); text-transform: uppercase; }
   @media (hover: hover) { .bar .lead #now:hover { background: var(--bar-field); } }
   .bar .time { width: 100%; text-align: center; }
-  .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
-  /* the zoom area (Okay, 18 Oct 2026, notes 2): the magnifier first, faint, nothing to press but its tag (how to zoom and
-     move, under the pointer; a tap shows it on a touch screen); then − + FIT side by side, sharing their lines — FIT a
-     word button with NOW's room either side (#315). */
-  .bar .zoomsign { display: flex; align-items: center; color: var(--bar-light); cursor: help; }
+  .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it; from its divider to the squares, the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps", when Fit too stood a margin from the edge; the squares' edge is the canvas switches' line since 25 Oct 2026 — the two gaps differ, asked) */
+  /* the view (Okay, 25 Oct 2026: "like 3 stuck together canvas buttons on the bar, aligned with canvas brothers from
+     edge"): zoom out · zoom in · fit, squares made as the canvas's switches — their size and the outer corners are the
+     switches' own tokens (--control-large, --round-switch), so the two move together; joined as undo · redo are, the
+     inner lines shared. In the bar's light, as its other boxes. Their right edge on the canvas switches' line
+     (--canvas-inset from the window's right, the .bar's padding) */
   .bar .zooms { flex: none; display: flex; }
-  .bar .zooms > .icon { flex: none; width: calc(var(--col) / 2); }
-  .bar .zooms > .fit { flex: none; padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }      /* FIT, as NOW and AM are set (Okay, 15 Oct 2026, 06:21: "is fit alright? It's looking pale") */
-  .bar .zooms > button + button { border-left-width: 0; }      /* the width alone: its style and colour stay, so a phone can give FIT its own line back (#453) */
+  .bar .zooms > button { flex: none; width: var(--control-large); height: var(--control-large); padding: 0; border-radius: 0; }
+  .bar .zooms > :first-child { border-radius: var(--round-switch) 0 0 var(--round-switch); }
+  .bar .zooms > :last-child { border-radius: 0 var(--round-switch) var(--round-switch) 0; }
+  .bar .zooms > button + button { border-left-width: 0; }      /* the width alone: its style and colour stay, so a phone can give Fit its own line back (#453) */
   .bar .status { display: none; }      /* hidden (Okay, 14 Oct 2026, 23:19); app.js still writes it */
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
@@ -2036,7 +2050,7 @@
     .bar .lead { width: 100%; height: var(--bar-lead-narrow); }
     .bar .group { border-left: 0; }
     .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
-    .bar .viewing { padding: 0 var(--margin) 0 0; }
+    .bar .viewing { padding: 0 var(--canvas-inset) 0 0; }      /* Fit's right edge on the canvas switches' line */
     .bar .lead { padding-left: var(--u6); }      /* the red dot with room either side, as much left as right (Okay, 15 Oct 2026, 07:45: "red dot with more space on both sides"); was: the row started at the margin */
     .bar .lead .play { margin-right: calc(var(--u6) - var(--u2)); }      /* the row's own gap (u2) makes the rest */
     /* the time at the size of everything else in the bar, AM and FIT (07:45: "smaller, 'same size with all' digi
@@ -2051,8 +2065,8 @@
     .bar .speeds { --speed-thumb: var(--speed-thumb-narrow); }      /* room for "720X" (25 px of the pixel face) */
     .bar .speedtrack input[type="range"]::-webkit-slider-thumb { background: var(--bar-light); box-shadow: none; }      /* no ring of the bar's ground: it would cut the box's line */
     .bar .speedtrack input[type="range"]::-moz-range-thumb { background: var(--bar-light); box-shadow: none; }
-    .bar .zooms > .icon { display: none; }          /* a phone pinches: FIT stays; − + are in the magnifier's popup (#445) */
-    .bar .zooms > .fit { border-left-width: var(--hair); }      /* FIT alone: its own left line (it shares − +'s elsewhere) */
+    .bar .zooms > :not(#fit) { display: none; }      /* a phone pinches: Fit alone (Okay, 25 Oct 2026) */
+    .bar .zooms > #fit { border-left-width: var(--hair); border-radius: var(--round-switch); }      /* alone: its own left line and all four corners (it shares the zoom squares' elsewhere) */
     .steps12 button:nth-child(odd) { display: none; }      /* every other hour: 1 3 5 … wait for room */
     main { grid-row: 2; }
     .panel { grid-row: 3; grid-column: 1; display: block; overflow-y: auto; border-right: 0; border-top: var(--hair) solid var(--rule); }
@@ -7376,7 +7390,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.8";
+var VERSION = "beta 4.94.9";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -10952,8 +10966,6 @@ var INKED = [
   // the bottom bar's hours and 10:10
   "#ampm",
   // AM · PM, the time's own window
-  ".fit > span",
-  // Fit, beside its magnifier
   "#show-now > .word",
   // the showcase's Now pill (15 Oct 2026)
   "#show-ten > .word",
@@ -11992,8 +12004,13 @@ var TOOL_ICONS = {
   versions: `<circle cx="8.25" cy="8.25" r="5.5" ${sw(CURVE)}/><path d="M8.25 8.25V5.25"/><path d="M8.25 8.25L10.5 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
-  // the bar's zoom note: the lens with an i in it, the note it opens (Okay's drawing, 23 Oct 2026, "zoom+i"), on 16
-  zoominfo: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M6.75 6.25V9.75"/><circle cx="6.75" cy="4.25" r="0.75" fill="currentColor" stroke="none"/>`,
+  // the bar's three view squares (Okay, 25 Oct 2026: "Two m glasses one with a plus other minus. And lastly the fit is
+  // an icon four arrows from a square's corners into center"): a lens with − · a lens with + · four arrows from the
+  // corners in (fit.mjs; look.py: − 2.5 %; the + crowds the lens, so its cross is DENSE; the arrows' heads meet their
+  // slanted shafts and read heavier there, so the heads are DENSE: 10 % in place, 9 % light alone — perception decides)
+  zoomout: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M4.25 6.75H9.25"/>`,
+  zoomin: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M4.25 6.75H9.25M6.75 4.25V9.25" ${sw(DENSE)}/>`,
+  fit: `<path d="M2.25 2.25L6.25 6.25M14.25 2.25L10.25 6.25M2.25 14.25L6.25 10.25M14.25 14.25L10.25 10.25" ${sw(SLANT)}/><path d="M6.25 3.75V6.25H3.75M10.25 3.75V6.25H12.75M6.25 12.75V10.25H3.75M10.25 12.75V10.25H12.75" ${sw(DENSE)}/>`,
   // an (i) beside a setting's name: what it does, in a tag (#357). A ring holding a stem and a dot; quiet by its grey
   info: `<circle cx="8.25" cy="8.25" r="6" ${sw(CURVE)}/><path d="M8.25 7.25V11.25"/><circle cx="8.25" cy="4.75" r="1" fill="currentColor" stroke="none"/>`,
   // →: take what was typed (a Custom count, #357): the up arrow turned
@@ -12647,14 +12664,16 @@ ROWS.Light = [
   seg("w_style", "Style", ["Engineer", "Miyazaki"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
   hdr("Sun", { folded: false }),
-  num2("sh_from", "From", 0, 359, 1, { whole: true }),
-  // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026)
-  num2("sh_rise", "Height", 5, 85, 1, { whole: true }),
+  custom("sunbox"),
+  // the sun's picture with the three values (guides.js, row_sunbox; Okay, 25 Oct 2026: "sun locked")
+  num2("sh_from", "Angle \xB0", 0, 359, 1, { whole: true }),
+  // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026); named as in the Shadows pane
+  num2("sh_rise", "Height \xB0", 5, 85, 1, { whole: true }),
+  num2("sh_dark", "Strength %", 0, 100, 1, { whole: true }),
+  // the shadows' darkness, the Shadows pane's Strength (Okay, 25 Oct 2026: "Darkness becomes the box's Strength slider")
+  chk("sh_blur", "Soft shadows"),
   info("One finger or the pointer moves the sun: its direction is where the light comes from; nearer the middle, higher. Two fingers zoom and move the drawing; on a trackpad, pinch and scroll.", {}),
   // the Show Case's words
-  hdr("Shadows", { folded: false }),
-  num2("sh_dark", "Darkness %", 0, 100, 1, { whole: true }),
-  chk("sh_blur", "Soft shadows"),
   hdr("Flare", { folded: false, show: (S) => S.ui_effects }),
   chk("w_flare_on", "Flare", { show: (S) => S.ui_effects, head: true }),
   // on its pane's heading line (Okay, 23 Oct 2026: "tick box and its label moves up … on the eye's row")
@@ -18157,10 +18176,33 @@ var GUIDES = {
    *  2026: "Drag it"); the sliders under it follow. The rays point away from the dial, symmetrical about that line,
    *  and grow with the sun's distance (Okay: "Rays can grow on distant suns, shorter when they are close"); a sun
    *  near a corner has its rays cut by the frame ("the rays pop in and out"). Drawn once, moved by attributes. */
-  sun_picture(id) {
+  /** show mode's Light tab, the Sun pane's top (Okay, 25 Oct 2026, four drawn rounds, "sun locked"): one box, an
+   *  outline with sharp corners in the column's ink ("adapt to the environment"); the sun's picture centred in the
+   *  open space at its left ("Sun centres the open space"), larger for the sliders' absence; at its right Angle ·
+   *  Height · Strength as plain values, each name over its figure, flush left on the number boxes' line, not
+   *  editable ("Labels numbers stack flush left, not editable"), at the rows' size, names faded, figures in ink.
+   *  The sliders are the ordinary rows under it. */
+  row_sunbox(wrap, out) {
+    const sun = this.sun_picture("light", true);
+    const value = (name) => {
+      const figure = el("span", { className: "figure" });
+      return { el: el("div", { className: "sunvalue" }, el("span", { className: "name", textContent: name }), figure), figure };
+    };
+    const values = [value("Angle"), value("Height"), value("Strength")];
+    wrap.classList.add("sunrow");
+    wrap.append(el("div", { className: "sunbox" }, sun.el, el("div", { className: "sunvalues" }, ...values.map((v) => v.el))));
+    out.refresh = (T) => {
+      sun.refresh();
+      [`${T.sh_from}\xB0`, `${T.sh_rise}\xB0`, `${T.sh_dark} %`].forEach((text, i2) => {
+        values[i2].figure.textContent = text;
+      });
+    };
+  },
+  sun_picture(id, centred2 = false) {
     const W2 = token("--sun-w", 297), H2 = token("--sun-h", 204), cx = 136, cy = H2 / 2, R = 81.5, NEAR = 12, FAR = 123;
     const box3 = el("div", { className: "sunpic", id: id + "-sun" });
-    box3.innerHTML = `<svg viewBox="0 0 ${W2} ${H2}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
+    const VX = centred2 ? cx - H2 / 2 : 0, VW = centred2 ? H2 : W2;
+    box3.innerHTML = `<svg viewBox="${VX} 0 ${VW} ${H2}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
     const sun = box3.querySelector(".sun"), rays = box3.querySelector(".rays"), fall = box3.querySelector(".fall");
     for (let i2 = 0; i2 < 16; i2++) rays.append(svg_el("line"));
     const where = () => {
@@ -18181,8 +18223,8 @@ var GUIDES = {
       fall.setAttribute("cy", (cy + Math.cos(a) * (R - 3)).toFixed(1));
     };
     const move = (e) => {
-      const r = box3.getBoundingClientRect(), k = Math.max(W2 / r.width, H2 / r.height);
-      const px = W2 / 2 + (e.clientX - r.left - r.width / 2) * k, py = H2 / 2 + (e.clientY - r.top - r.height / 2) * k;
+      const r = box3.getBoundingClientRect(), k = Math.max(VW / r.width, H2 / r.height);
+      const px = VX + VW / 2 + (e.clientX - r.left - r.width / 2) * k, py = H2 / 2 + (e.clientY - r.top - r.height / 2) * k;
       const dx = px - cx, dy = py - cy, dist = Math.hypot(dx, dy), from = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
       this.S.sh_from = Math.round(from);
       this.S.sh_rise = Math.round(clamp(5 + 80 * (FAR - clamp(dist, NEAR, FAR)) / (FAR - NEAR), 5, 85));
@@ -23437,11 +23479,6 @@ var DialTool = class _DialTool {
     this.speed_name = el("span", { className: "humpname rider", ariaHidden: "true" });
     humps.append(this.speed_name);
     this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
-    const view2 = (id, title, inside, act) => {
-      const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act });
-      b.innerHTML = icon(inside);
-      return b;
-    };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
     const steps = el("div", { className: "steps12" });
     for (const [t, text] of DAY_STEPS) {
@@ -23489,40 +23526,18 @@ var DialTool = class _DialTool {
     this.watchers[0].observe(this.time_slider);
     this.watchers.push(new ResizeObserver(() => this.set_speed(this.speed)));
     this.watchers.at(-1).observe(this.speed_slider);
-    const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page" }, el("span", { textContent: "Fit" }));
-    fit_button.onclick = () => {
+    const touch = matchMedia("(hover: none), (pointer: coarse)").matches;
+    const square = (id, name, tip, inside, act) => {
+      const b = el("button", { type: "button", className: "icon", id, ariaLabel: name, onclick: act });
+      b.dataset.tip = tip;
+      b.innerHTML = icon(inside);
+      return b;
+    };
+    const zooming = touch ? "\xB7 or pinch" : "\xB7 or scroll";
+    const fit_button = square("fit", "Fit", touch ? "Fit \xB7 two fingers move" : "Fit \xB7 right-drag or two fingers move", TOOL_ICONS.fit, () => {
       this.fit();
       this.render();
-    };
-    const touch = matchMedia("(hover: none), (pointer: coarse)").matches;
-    const zoom_sign = el("span", { className: "zoomsign", tabIndex: 0, role: "note", ariaLabel: "How to zoom and move" });
-    zoom_sign.dataset.tip = touch ? "Pinch to zoom \xB7 two fingers move" : "Scroll zooms \xB7 right-drag moves \xB7 two fingers pinch and move";
-    zoom_sign.innerHTML = icon(TOOL_ICONS.zoominfo);
-    const zstep = (sign) => el("button", { type: "button", className: "popstep", innerHTML: sign < 0 ? STEP.minus : STEP.plus, ariaLabel: sign < 0 ? "Zoom out" : "Zoom in", onclick: () => {
-      this.zoom(sign < 0 ? 1 / 1.4 : 1.4, middle());
-      this.render();
-    } });
-    const zoom_pop = el(
-      "div",
-      { className: "barpop zoompop", id: "zoom-pop", hidden: true },
-      el("div", { className: "popline" }, el("span", { className: "popword", textContent: zoom_sign.dataset.tip }), el("span", { className: "popsteps" }, zstep(-1), zstep(1)))
-    );
-    const zoom_away = (e) => {
-      if (!zoom_pop.contains(e.target) && !zoom_sign.contains(e.target)) {
-        zoom_pop.hidden = true;
-        document.removeEventListener("pointerdown", zoom_away, true);
-      }
-    };
-    zoom_sign.onclick = () => {
-      if (this.pop_is_sheet()) {
-        zoom_pop.hidden = !zoom_pop.hidden;
-        if (!zoom_pop.hidden) document.addEventListener("pointerdown", zoom_away, true);
-        return;
-      }
-      this.tag_show(zoom_sign);
-      clearTimeout(this.zoom_tip);
-      this.zoom_tip = setTimeout(() => this.tag_hide(), 2400);
-    };
+    });
     const bar = el(
       "footer",
       { className: "bar" },
@@ -23537,22 +23552,16 @@ var DialTool = class _DialTool {
       this.day_box = el("div", { className: "group day" }, this.ruler, this.time_slider, steps, this.needle),
       el("div", { className: "group viewing" }, this.status, el(
         "span",
-        { className: "zoomwell" },
-        zoom_sign,
-        zoom_pop,
-        el(
-          "span",
-          { className: "zooms" },
-          view2("zoom-out", "Zoom out", SIGNS.minus, () => {
-            this.zoom(1 / 1.4, middle());
-            this.render();
-          }),
-          view2("zoom-in", "Zoom in", SIGNS.plus, () => {
-            this.zoom(1.4, middle());
-            this.render();
-          }),
-          fit_button
-        )
+        { className: "zooms" },
+        square("zoom-out", "Zoom out", `Zoom out ${zooming}`, TOOL_ICONS.zoomout, () => {
+          this.zoom(1 / 1.4, middle());
+          this.render();
+        }),
+        square("zoom-in", "Zoom in", `Zoom in ${zooming}`, TOOL_ICONS.zoomin, () => {
+          this.zoom(1.4, middle());
+          this.render();
+        }),
+        fit_button
       ))
     );
     this.set_speed(1);
@@ -23605,7 +23614,7 @@ var DialTool = class _DialTool {
     this.closed = true;
     this.playing = false;
     this.value_pop_close();
-    for (const t of ["saving", "merge_wait", "hole_timer", "guides_timer", "words_timer", "zoom_tip", "info_tip", "copied_back"]) clearTimeout(this[t]);
+    for (const t of ["saving", "merge_wait", "hole_timer", "guides_timer", "words_timer", "info_tip", "copied_back"]) clearTimeout(this[t]);
     for (const w of this.watchers) w.disconnect();
     for (const off of this.cleanups) off();
     if (this.menus_list) {
