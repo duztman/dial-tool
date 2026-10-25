@@ -23,27 +23,23 @@ What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next, an
 | `archive/glossary-full-2026-10-21.md` | The glossary before it was made leaner, with drawing details (the Play triangle's flare, the packed UI fonts) the lean one leaves to the code. |
 | `archive/guide/` | The old guides (the 4 Oct DrawBot guidebook and the 4.36.1 web review pages). |
 | `docs/versions.md`, `tools/versions.sh` | Every build and its commit. `tools/versions.sh tag` makes a tag per version; `tools/versions.sh open 4.30` puts that version, whole, in a folder beside the clone. |
-| `docs/handoff.md`, `tools/release.sh`, `tools/setup.sh` | For the next Claude session: where things stand and how the work runs (`handoff.md`); a fresh container made ready for the tests (`setup.sh`); a version put on the live page, or `main` brought up to `dev` (`release.sh`). |
+| `CLAUDE.md`, `docs/handoff.md`, `docs/working-with-okay.md`, `tools/release.sh`, `tools/setup.sh` | For a Claude session: the read order and the loop of a push (`CLAUDE.md`); where things stand (`handoff.md` §1); how the work goes with Okay (`working-with-okay.md`); a fresh container made ready (`setup.sh`); a version put on the live page, or `main` brought up to `dev` (`release.sh`). |
 | `docs/brief.md` | Goals, outputs, open questions, parked ideas. |
 | `docs/decisions.md` | Every decision, dated, with Okay's words as the reason (not read before working). |
-| `docs/rules.md` | Standing rules — check code against these in reviews. |
+| `docs/rules.md`, `docs/rules/` | The rules: the index, and one page per rule — check code against them in reviews, cite the number. |
 | `docs/design.md` | The design canon: type, grid, colour, pictures, redrawn controls, icons — for the guide, the tool and anything else shown. |
-| `docs/glossary.md` | Watch terms and tool terms, and which word means what here. |
-| `docs/build-list.md` | Numbered open items, things to verify, ideas; `docs/build-list-done.md` holds the done ones (numbers are never reused). |
+| `docs/glossary.md`, `docs/glossary-watch.md`, `docs/glossary-tool.md` | Which word means what here: the watch and the dial; the tool and its code. |
+| `docs/build-list.md`, `docs/build-list-notes.md` | Numbered open items, one line each, and their full rows; `docs/build-list-done.md` holds the done ones (numbers are never reused). |
 | `docs/changelog.md` | Versions, what changed in each. |
 | `docs/font-research-2026-10-16.md`, `docs/font-tiers-2026-10-16.md` | The font research of 16 Oct 2026: which fonts Okay accepted (Peter Wiegel's 46, Font Picks' 49), how, their licences, and the tiers of the font list. |
 | `docs/project-prompt.md` | Start-off prompt for the Claude Project. |
 | `packer/` | **Dial Packer**, a side product (19 Oct 2026): packs discs of three sizes densely on a page, for visuals like the guide's cover. One built file, `packer/dial-packer.html`; online at <https://duztman.github.io/dial-tool/packer/>. How it works and how to change it: `packer/README.md`. |
 | `show-case/` | **Dial Show Case**: a dial in a whole watch, two styles (Engineer, Miyazaki), its own export. Online at <https://duztman.github.io/dial-tool/show-case/>; its engine is `web/src/watch.js`; going into the app as show mode before v1 (build list group K); how it works: `show-case/README.md`. |
-| `archive/drawbot/` | **The DrawBot version, frozen since 12 Oct 2026 (R30)** — kept, not edited: `dial.py` (beta 2.3), its tests, its preview plan, its rules, words and build-list items (`rules-drawbot.md`, `glossary-drawbot.md`, `build-list-drawbot.md`), reference renders, and the 4 Oct guidebook. `web/test/parity.py` still uses `dial.py` and `tools/test_harness.py` from here. |
+| `archive/drawbot/` | **The DrawBot version, frozen since 12 Oct 2026 (R30)** — kept, not edited: `dial.py` (beta 2.3), its tests, its preview plan, its rules, words and build-list items (`rules-drawbot.md`, `glossary-drawbot.md`, `build-list-drawbot.md`), reference renders, and the 4 Oct guidebook. `web/test/parity.py` still uses `dial.py` and `tools/test_harness.py` from this folder. |
 
 ## For agents
 
-Taking over from another session: start with [`docs/handoff.md`](docs/handoff.md).
-Read in this order: `README.md` → `docs/rules.md` → `docs/brief.md` → `docs/glossary.md` → `docs/build-list.md`.
-Keep the docs up to date after every decision and flag inconsistencies between them.
-After any change in `web/`: `cd web && npm install && npm test`, and look at the screenshots in `web/test/out/` (R19).
-Every version gets a row in `docs/versions.md` (version, date, commit) as it goes live: `tools/release.sh X "first line"`; `tools/release.sh main` brings `main` up to `dev`.
+Start with [`CLAUDE.md`](CLAUDE.md): the read order, the binding rules, the loop of a push. `docs/handoff.md` §1 says where things stand.
 
 ## Licence
 

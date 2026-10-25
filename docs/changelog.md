@@ -1,8 +1,19 @@
 # Dial Tool — changelog
 
+## docs · 25 Oct 2026 — the docs made lean (no build change)
+
+Okay, 25 Oct 2026, 13:41: "back to our documents, the read order, the detailed parts. what can we trim ther, how to organize better. going and reading one specific rule or process for each function better through one large md or several smaller mds?" — then "Do all" (13:54) to the plan: one mandatory read, one file per rule, one line per term, one line per open item. Measured before: the start read was 25,400 words; after, `CLAUDE.md` + `handoff.md` §1 + the build list are 3,600, with `working-with-okay.md` and the rules index 5,600.
+
+- **`CLAUDE.md`** is the one mandatory read (~900 words): the read order, what is binding, the loop of a push in seven steps, where things live and what not to touch. The loop and the setup steps that were in `handoff.md` §2–§3 and in `README.md` live only here now.
+- **`docs/rules/`**: one page per rule, named `R<n>-<slug>.md`, each ending with how it is checked; `docs/rules.md` is the index (number, one-line gist, link). R15's controller is **R15a**; R32 is split into R32 (cascade, tokens, the bans, hover), **R32a** (sizes of type, INKED), **R32b** (the specials block), **R32c** (the look-check); R32's layout paragraphs (a framed thing, a heading with controls, a number row's tracks) are design canon now, `docs/design.md` §10.
+- **The glossary** in two files, one line per term: `docs/glossary-watch.md` (the watch, rings, hands, windows, type) and `docs/glossary-tool.md` (the window, numbers and the controller, the preview, show mode, files and links, code); `docs/glossary.md` points to them.
+- **The build list**: a row is #, title, where it came from (date, his words), status; the full rows, by number, are `docs/build-list-notes.md`, read when an item is taken up. Six rows whose status was done (#515, #516, #519, #521, #524, #525) moved to `docs/build-list-done.md`. The "Last updated" paragraph is one line.
+- **`docs/handoff.md`** is §1 (where things stand, rewritten at each handover) and how to hand over; what it said about working with Okay and the sketch loop is **`docs/working-with-okay.md`**.
+- `README.md`'s agent section points to `CLAUDE.md`; its files table names the new files. Every link between the docs checked by script; the only stale paths left are in the changelog, decisions and the guide's test notes, which are history.
+
 ## beta 4.94.1 (web version) · 25 Oct 2026 — faster, the same output
 
-Okay, 25 Oct 2026, 13:11: "Deeper look, what would make us and the app work faster, optimize but do not lose function." Measured first (`docs/handoff.md` §4b has the numbers), then only changes whose output is the same.
+Okay, 25 Oct 2026, 13:11: "Deeper look, what would make us and the app work faster, optimize but do not lose function." Measured first (`docs/working-with-okay.md` §2 has the numbers), then only changes whose output is the same.
 
 - **For us**: `same.mjs` in 2 minutes instead of 4 — its three screens (mouse, finger, phone) walk at once in contexts of their own, and a snapshot reads the properties from a list made once instead of walking each element's style declaration (five times faster, byte-identical text, proved on every element). The window test is 126 s, 47 s of them sleeps that wait for the app's own animations — left as they are. The full `npm test` is about 3 minutes.
 - **For the app**: the packed engines and font are decoded by a plain loop (`Uint8Array.from` with a function was the single largest cost at start: 154 → 11 ms of a 600 ms first frame). PathKit gets our paths as numbers and gives them back as numbers (`_pk`, `_from_pk`; the SVG-text round trip cost more than Skia's own work: 2.3 ms against 0.3 for a ten-figure word) — a slider step on a heavy ring 40 % faster (the Gauge's Scale ring 40 → 22 ms, Rally 16 → 7). A stroke's round caps come back as conics, which have no place in our commands: that one path still goes through the text, as before. Coordinates are now exact to the float, not to five decimals; a file may differ from before in its fifth decimal.

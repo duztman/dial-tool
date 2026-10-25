@@ -285,3 +285,17 @@ drawing.svg 16` puts it on the grid, gives each line its width and prints the co
 block → `node icons/check.mjs` (also part of `npm test`) checks every icon in the running window against the rules
 above → `python3 icons/look.py` reads how heavy each line looks and names any that is off, and why → look at
 `icons/out/sheet.png`, then on the Mac and the iPad. The numbers propose; the eye decides.
+
+## 10 · The panel's layout
+
+How the panel's parts are laid out, in the stylesheet's terms (R32 names the tokens).
+
+- **A framed thing** — a ring row, the font box — stands between the pane's lines, from the labels' line to the pane's
+  right line; inside, `--frame-pad` keeps what is in it off the frame (the eye at the left of a ring row, the steppers
+  and Change… at the right of the font box, whose sliders give up that room).
+- **A heading that carries controls on its line** (a window's places, its shapes) gives them a unit over and under, as
+  the tiles in a row get, and grows to hold them; its title keeps the place it has on every heading, the same gap over
+  it (Okay, 16 Oct 2026: "These rows are allowed height growth now… appropriate vertical padding like all the rows";
+  "top gap stays same").
+- **A number's row lays its tracks out in full** (`--num-columns`: columns, gaps, then the two tiles) rather than
+  nudging its field and stepper.

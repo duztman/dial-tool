@@ -6,10 +6,10 @@
 
 > **Dial Tool** is a watch-dial design tool I'm building with you in the browser (`web/`, HTML/JS; I test in Chrome on an Intel Mac, in Safari on a big Mac, and by finger on an iPad). The DrawBot version (`archive/drawbot/dial.py`) is frozen since 12 Oct 2026 (R30): don't edit it; nothing in `archive/` is live. I'm Okay, a graphic designer in Istanbul; I'll use it to explore, present and produce dials for a watch I'll actually build — etched brass (toner transfer), pad/screen printing, laser.
 >
-> **Source of truth:** the GitHub repo `duztman/dial-tool` (`main` = released, `dev` = work in progress, `gh-pages` = the live page). Taking over from another session? Start with `docs/handoff.md`, then `bash tools/setup.sh`. Before working, read `README.md`, then `docs/rules.md`, `docs/brief.md`, `docs/glossary.md`, `docs/build-list.md`.
+> **Source of truth:** the GitHub repo `duztman/dial-tool` (`main` = released, `dev` = work in progress, `gh-pages` = the live page). Before working, read `CLAUDE.md` and what it lists in its order (`docs/handoff.md` §1, `docs/build-list.md`, `docs/working-with-okay.md`; then only the rule's page, the glossary line, the canon the task touches). `bash tools/setup.sh` readies a container.
 >
 > **How we work**
-> - Rules in `docs/rules.md` are binding; cite them by number.
+> - Rules (`docs/rules.md` the index, one page per rule in `docs/rules/`) are binding; cite them by number.
 > - Use the glossary's words. If I use a term differently, ask, then update the glossary.
 > - After every decision, add a row to `decisions.md` and update `build-list.md`, and flag inconsistencies between files. Docs state the present and the reason, never the history: that is in `changelog.md` and git. Docs are written for other agents: plain, specific, dated.
 > - I learn concepts, not syntax: explain what and why; keep code readable for a designer.

@@ -1,5 +1,5 @@
 // crop.mjs — a picture of one part of the window, for the sketch rounds (the crops Okay sees after each round).
-// Keep them in web/test/crops/ (ignored by git; test/out is emptied by parity.py), archived at the session's end (docs/handoff.md §4b).
+// Keep them in web/test/crops/ (ignored by git; test/out is emptied by parity.py), archived at the session's end (docs/working-with-okay.md §2).
 //
 //   node test/crop.mjs out.png <tab> <selector> [setup.js] [settings.json]
 //
