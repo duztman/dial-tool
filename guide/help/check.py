@@ -40,7 +40,11 @@ gone = [l for l in before if l not in labels]
 missing = [l for l in labels if l.lower().replace("’", "'") not in text and l not in known]
 
 # every list a two-column grid: a name and its line, so one more of either shifts every row after it (Okay, 26 Oct 2026: the Rings rows out of line)
-bad = [i for i, dl in enumerate(re.findall(r"<dl[^>]*>(.*?)</dl>", page, flags=re.S)) if len(re.findall(r"<dt[ >]", dl)) != len(re.findall(r"<dd[ >]", dl))]
+def out_of_line(attrs, dl):
+    if 'class="rows"' in attrs:      # the grid's rows: each a name, its line and its spec, three cells (Okay, 26 Oct 2026: "One grid to rule everything")
+        return any(len(re.findall(r"<dt[ >]", r)) != 1 or len(re.findall(r"<dd[ >]", r)) != 2 for r in re.findall(r"<div>(.*?)</div>\s*(?=<div>|$)", dl.strip(), flags=re.S))
+    return len(re.findall(r"<dt[ >]", dl)) != len(re.findall(r"<dd[ >]", dl))
+bad = [i for i, (attrs, dl) in enumerate(re.findall(r"<dl([^>]*)>(.*?)</dl>", page, flags=re.S)) if out_of_line(attrs, dl)]
 if bad: print(f"LISTS OUT OF LINE (a <dt> without its one <dd>): lists {bad}"); sys.exit(1)
 print(f"app {version} · page checked against {checked}")
 if checked != version:

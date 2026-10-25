@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## help page · 26 Oct 2026 — one grid, three sizes, pictures of the panes
+
+Okay, 26 Oct 2026, four drawn rounds (01:43–02:08): "These sections need better design … Utilize darker hr lines to denote sub sections starting and finishing"; "Too cluttered and busy" (ia.net); "horizontal rows unreadable on dotted table. Work about levels of hr lines"; "One grid to rule everything. Keep it simple. No many font sizes, 3 is the limit … Design is not adding shit you think might look good"; "Hr lines closer to the paragraph start then paragraph end … Try populating with images any bit of process".
+
+- **One grid** for every list, table and card: name (`--name` 9em) · text · spec (`--spec` 10em: the range in ink over the start value in grey). Each pane of the app a `section.pane`; Rings and Windows open on a matrix of which pane shows for which kind.
+- **Three sizes**: 26 a section, 19 the text and a pane's name, 15 the small things (spec, captions, keys, notes, footer).
+- **Rules in three levels**: a section's ink rule under its heading; an ink rule where a pane begins, and where a section's last pane ends; a row's hairline, nearer the row it opens (`--row-top` 13.5 px under it, `--row-bottom` 19.5 px over the next).
+- **Twelve pictures** from the current build (`shoot2.cjs`), each at its true 1× size: the controller on a desk and on an iPad, the iPad window, the Shadows pane, the Guides list and the font sheet (numbered, their numbers in the picture's margins), the colour pop-out, show mode's Backdrop and Light › Sun, the ring list, Positions, the bar's zoom.
+- `check.py` holds every row to its three cells.
+
 ## help page · 26 Oct 2026 — rewritten against beta 4.94.20, published
 
 Okay, 26 Oct 2026, 01:02: "help page needs a lot of info, a lot of work. its design is great now. add a round numbered what is where for show case screenshot as well." 01:22: "keep building and push when ready".
