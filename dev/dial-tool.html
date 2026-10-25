@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.4 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.5 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -232,14 +232,14 @@
     --three-quarter: 0.75px;                       /* lines a little heavier than a hairline (Okay, 19 Oct 2026: "Line thicknesses .75 thicker"): Positions' lines, the slider knob's eye edge */
     --guide-pill-pad: var(--u2);                   /* a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) */
     /* the Shadows pane, as measured from Okay's drawing of 25 Oct 2026 ("Just made things pixel perfect", dial-tool-shadows-pane-4.93_O.pdf) */
-    --shade-pad: 25px; --shade-round: 15px; --shade-gap: 14px;      /* the pane's room inside its edge · its corners · from the top box to the parts' first line */
+    --shade-w: 498px; --shade-pad: 25px; --shade-round: 15px; --shade-gap: 14px;      /* the pane's width, the drawing's — on every screen (16:55: "Keep window width same") ·       /* the pane's room inside its edge · its corners · from the top box to the parts' first line */
     --shade-under: 21px; --shade-foot-gap: 15px; --shade-axis-end: 12px;      /* under the last row's line to the diagram's bottom edge · from there to the footer · the axis stops this short of the edge */
     --foot-value: 36px;                            /* the footer's number box: its value's width (Bevels %) */
     --shade-named-top: 13px; --shade-named-left: 11px; --shade-named-right: 11px; --shade-slide-in: 5px; --shade-named-gap: 3px;      /* a named slider's third: the name's room from the line over it and from the left line; the slider's own room past that, at both ends; between the name and the slider */
     --shade-track: 15px; --shade-knob: 25px;       /* its fat track and the pill knob carrying the value (the thin fill inside the track is --track) */
     --shade-word-x: 12px; --shade-word-y: 11px;    /* a box's name (Sun · Parts) from its corner */
     --limit-flash-ms: 900;                          /* how long LIMIT stands in a row's name (read by panel.js) */
-    --shade-lit: #F00;                             /* the part being sized: its slider's fill and knob, and the line from the part down to the plate in the diagram */
+    --shade-lit: #F00; --shade-dash: 2 2;                             /* the part being sized: its slider's fill and knob, and the line from the part down to the plate in the diagram; the dashes of the piece it changes */
     --foot-h: 53px; --foot-in: 13px; --foot-tick-gap: 8px;      /* a night popup's footer (§popfoot in 6-preview.css): its height; a cell's room at each side of what it holds; between a tick and its word */
     /* the bar's date popup, as measured from Okay's final drawing (20 Oct 2026, 01:05: "all else is pixel perfect. gaps, placements within blocks, block sizes") */
     --datepop-ground: #BFBFBF;                     /* its light ground */
@@ -1115,6 +1115,7 @@
     --ink: var(--num-pop-disc); --well: var(--num-pop-well); --field: var(--white); --thumb: var(--num-pop-thumb); --thumb-eye: var(--num-pop-eye); --thumb-eye-edge: calc(var(--num-pop-eye) + var(--three-quarter)); --track: var(--num-pop-track); --row-rule: transparent; --surface: var(--num-pop-ground); }
   .numpop .row > * { grid-column: 1; }
   .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-pill) / 2); background: var(--white); }      /* the knob as far from the pill's ends as from its top and bottom */
+  .numpop.lit .row input[type="range"] { --ink: var(--shade-lit); }      /* a Shadows part's controller: the slider in the lit red, as its row (Okay, 25 Oct 2026) */
   .numpop .row input[type="range"]::-webkit-slider-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); }
   .numpop .row input[type="range"]::-moz-range-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); }
   .numpop .places { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--num-pop-gap); }      /* a window's places, every one (#264), three to a line */
@@ -1692,8 +1693,8 @@
   @media (hover: hover) { .roundb:hover { background: var(--ink); color: var(--paper); } }
   .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
-  .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: calc(var(--shade-right, var(--panel-w)) - var(--shade-left, var(--margin))); max-width: calc(100vw - 2 * var(--margin));
-    max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); border-radius: var(--shade-round); }      /* from the panel's margin to the switch's right edge, standing on the switch, its corners all round (Okay, 25 Oct 2026, 02:29: "ROUND CORNERS"); over the panel's column, so the dial and its shadows stay in view */
+  .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: var(--shade-w); max-width: calc(100vw - 2 * var(--margin));
+    max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); border-radius: var(--shade-round); }      /* from the panel's margin, as wide as the drawing whatever the panel's width — over the dial on an iPad (Okay, 25 Oct 2026, 16:55: "Keep window width same, ok to go over onto the dial if need be"), standing on the switch, its corners all round (Okay, 25 Oct 2026, 02:29: "ROUND CORNERS"); over the panel's column, so the dial and its shadows stay in view */
   /* the Shadows pane, to Okay's drawing of 25 Oct 2026 (#526, "pixel perfect"; dial-tool-shadows-pane-4.93_O.pdf): one
      box on top holds the sun's picture and, in a column at its right as wide as the diagram, Angle · Height · Strength
      as named sliders (R15, form D) on fat tracks with the value in the knob; under it a hairline, the heading line
@@ -1749,7 +1750,9 @@
   .stackpic .parts > g .dark { fill: var(--night); }
   .stackpic .parts > g.lit { stroke: var(--ink); }
   .stackpic .parts > g.lit .fill { fill: var(--ink); }
-  .stackpic .drop { stroke: var(--shade-lit); stroke-width: var(--hair); }      /* the lit part's height: a line down the axis to the plate, and the plate's hole in the same colour */
+  .stackpic .drop line { stroke: var(--shade-lit); stroke-width: var(--hair); }      /* the lit part's height: a line down the axis to the plate, and the plate's hole in the same colour */
+  .stackpic .drop .knock { stroke: var(--night); }      /* under the red: the axis knocked out, so the dashes stand on the night alone */
+  .stackpic .drop .moving { stroke-dasharray: var(--shade-dash); }      /* the piece this row changes: from the part to the next one toward the plate */
   .stackpic .drop:not(.on) { display: none; }
   .stackpic .parts > g.plate.dropped .hole { stroke: var(--shade-lit); }
   /* §popfoot — a night popup's footer (Okay's drawing, 25 Oct 2026: "logically pixel perfect … objects snap to edges,
@@ -7372,7 +7375,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.4";
+var VERSION = "beta 4.94.5";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15207,7 +15210,7 @@ var PANEL = {
     if (steps && row.text && !r.el.querySelector(".linkpill")) steps.lastElementChild.before(el("span", { className: "popword", ariaHidden: "true", textContent: row.text }));
     const head = el("div", { className: "pophead" }, ...field ? [el("div", { className: "popvalue" }, field)] : []);
     head.hidden = !field;
-    const box3 = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
+    const box3 = el("div", { className: "numpop" + (row.part ? " lit" : ""), id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
     const home = button.closest(".row"), parts = home ? [...home.children].filter((c) => !c.matches("label, .menulabel, .popname, .linkpill") && c.offsetParent) : [];
     const span = parts.length ? parts.map((c) => c.getBoundingClientRect()).reduce((a, b) => ({ left: Math.min(a.left, b.left), right: Math.max(a.right, b.right) })) : null;
     document.body.append(box3);
@@ -17788,7 +17791,6 @@ var GUIDES = {
       more.setAttribute("aria-expanded", String(on2));
       if (!on2) return;
       const b = box3.getBoundingClientRect(), tab = $('.tabs button[data-tab="Rings"]')?.getBoundingClientRect();
-      list.style.setProperty("--shade-right", `${Math.round(b.right)}px`);
       if (tab) list.style.setProperty("--shade-left", `${Math.round(tab.left)}px`);
       list.style.setProperty("--shade-bottom", `${Math.round(innerHeight - b.top)}px`);
       this.sync_shadows();
@@ -18093,8 +18095,8 @@ var GUIDES = {
    *  y of each part is read from its row in the window (R21), so the picture follows the rows whatever they are. */
   stack_picture() {
     const box3 = el("div", { className: "stackpic", id: "shadows-stack" });
-    box3.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><line class="drop"/></svg><span class="word">Parts</span>`;
-    const svg = box3.querySelector("svg"), parts = box3.querySelector(".parts"), axis = box3.querySelector(".axis"), drop = box3.querySelector(".drop");
+    box3.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><g class="drop"><line class="knock"/><line class="fixed"/><line class="moving"/></g><g class="parts top"></g></svg><span class="word">Parts</span>`;
+    const svg = box3.querySelector("svg"), parts = box3.querySelector(".parts:not(.top)"), top = box3.querySelector(".parts.top"), axis = box3.querySelector(".axis"), drop = box3.querySelector(".drop");
     const LEN = { hour: 23.5, minute: 34.5, second: 46 }, TAIL = 10;
     const draw3 = {
       cap: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="6" ry="2.5"/>`,
@@ -18120,18 +18122,23 @@ var GUIDES = {
         list.push({ name, y, svg: kind === "hand" ? draw3.hand(ax, y, name) : draw3[kind](ax, y) });
       }
       const lit = list.find((p) => p.name === this.shade_lit);
-      const drawn2 = lit ? [...list.filter((p) => p !== lit), lit] : list;
-      parts.innerHTML = drawn2.map((p) => `<g data-part="${p.name}" class="${p.name === "plate" ? "plate" : ""}${p === lit ? " lit" : ""}${lit && p.name === "plate" ? " dropped" : ""}">${p.svg}</g>`).join("");
+      const one = (p) => `<g data-part="${p.name}" class="${p.name === "plate" ? "plate" : ""}${p === lit ? " lit" : ""}${lit && p.name === "plate" ? " dropped" : ""}">${p.svg}</g>`;
+      parts.innerHTML = list.filter((p) => p !== lit).map(one).join("");
+      top.innerHTML = lit ? one(lit) : "";
       axis.setAttribute("x1", ax);
       axis.setAttribute("x2", ax);
       axis.setAttribute("y1", first ?? 0);
       axis.setAttribute("y2", H2 - token("--shade-axis-end", 12));
       drop.classList.toggle("on", Boolean(lit && plate_y !== null));
       if (lit && plate_y !== null) {
-        drop.setAttribute("x1", ax);
-        drop.setAttribute("x2", ax);
-        drop.setAttribute("y1", lit.y);
-        drop.setAttribute("y2", plate_y);
+        const i2 = list.indexOf(lit), toward = lit.y < plate_y ? list[i2 + 1] : list[i2 - 1], next_y = toward ? toward.y : plate_y;
+        for (const [cls, y1, y2] of [["knock", lit.y, plate_y], ["fixed", next_y, plate_y], ["moving", lit.y, next_y]]) {
+          const l = drop.querySelector("." + cls);
+          l.setAttribute("x1", ax);
+          l.setAttribute("x2", ax);
+          l.setAttribute("y1", y1);
+          l.setAttribute("y2", y2);
+        }
       }
     };
     return { el: box3, refresh };
