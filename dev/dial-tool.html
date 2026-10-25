@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.14 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.15 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -936,6 +936,7 @@
   .colourlist > .row.showline > .eye { display: grid; place-items: center; color: var(--grey); }
   .colourlist > .row.showline > .eye[aria-pressed="true"] { color: var(--ink); }
   @media (hover: hover) { .colourlist > .row.showline > .eye:hover { color: var(--ink); } }
+  .colourlist > .row.showline.off > :is(.mark, label, .single, .swatches) { color: var(--rule); opacity: 0.5; }      /* a part hidden on the watch: its line greys, as a hidden ring's in main's list (#547) */
   .colourlist > .row.showline > .mark { display: grid; place-items: center; height: 100%; color: var(--grey); }      /* a tiny mark, quiet beside the name */
   .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .colourlist > .row.showline > :is(.colour, .single) { justify-self: start; }
@@ -7418,7 +7419,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.14";
+var VERSION = "beta 4.94.15";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11952,6 +11953,11 @@ var EYE = {
   closed: `<path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05" ${sw(CURVE)}/>`
 };
 var eye = (open) => icon(EYE[open ? "open" : "closed"]);
+var SHOWN = {
+  on: `<circle cx="8.25" cy="8.25" r="4" fill="currentColor" stroke="none"/>`,
+  off: `<circle cx="8.25" cy="8.25" r="3.5" ${sw(CURVE)}/>`
+};
+var shown_dot = (on) => icon(SHOWN[on ? "on" : "off"]);
 var NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;
 var none_dot = `<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M7 ${1 + LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${13 - LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${1 + LINE / 2}M4.25 4.25L9.75 9.75"/></svg>`;
 var pic = (inside) => icon(inside, 38, 27);
@@ -13277,12 +13283,7 @@ var COLOUR = {
         if (line.note) group.append(el("span", { className: "note", textContent: line.note }));
         const name = el("label", { textContent: line.text });
         if (!showing) return el("div", { className: "row" }, name, group);
-        const eye_place = line.eye ? el("button", { type: "button", className: "eye", title: line.eye.title, ariaLabel: line.eye.title, onclick: () => line.eye.write(!line.eye.read()) }) : el("i");
-        if (line.eye) holder.extras.push({ refresh: () => {
-          const on = Boolean(line.eye.read());
-          eye_place.innerHTML = eye(on);
-          eye_place.setAttribute("aria-pressed", String(on));
-        } });
+        const eye_place = line.eye ? el("button", { type: "button", className: "eye seen", title: line.eye.title, ariaLabel: line.eye.title, onclick: () => line.eye.write(!line.eye.read()) }) : el("i");
         const mark = el("span", { className: "mark" });
         if (line.mark) mark.innerHTML = line.mark;
         const number = el("span", { className: "place" });
@@ -13291,7 +13292,14 @@ var COLOUR = {
           number.append(made.el);
           holder.extras.push(made);
         }
-        return el("div", { className: "row showline" + (line.tail ? "" : " bare") }, eye_place, mark, name, group, number);
+        const row = el("div", { className: "row showline" + (line.tail ? "" : " bare") }, eye_place, mark, name, group, number);
+        if (line.eye) holder.extras.push({ refresh: () => {
+          const on = Boolean(line.eye.read());
+          eye_place.innerHTML = shown_dot(on);
+          eye_place.setAttribute("aria-pressed", String(on));
+          row.classList.toggle("off", !on);
+        } });
+        return row;
       }));
     }
     for (const x2 of holder.extras || []) x2.refresh(this.S);
@@ -24021,7 +24029,7 @@ var DialTool = class _DialTool {
       more.setAttribute("aria-expanded", String(on));
       if (!on) return;
       this.take_step();
-      const all = [...HISTORY.past, HISTORY.now, ...HISTORY.future.slice().reverse()], here = HISTORY.past.length, SHOWN = 20;
+      const all = [...HISTORY.past, HISTORY.now, ...HISTORY.future.slice().reverse()], here = HISTORY.past.length, SHOWN2 = 20;
       const line = (i2) => {
         const done = i2 <= here, way = done ? -1 : 1, times = done ? here - i2 + 1 : i2 - here;
         const b = el("button", {
@@ -24037,8 +24045,8 @@ var DialTool = class _DialTool {
         return b;
       };
       const ahead = [], back = [];
-      for (let i2 = all.length - 1; i2 > here && ahead.length < SHOWN; i2--) ahead.push(line(i2));
-      for (let i2 = here; i2 > 0 && back.length < SHOWN; i2--) back.push(line(i2));
+      for (let i2 = all.length - 1; i2 > here && ahead.length < SHOWN2; i2--) ahead.push(line(i2));
+      for (let i2 = here; i2 > 0 && back.length < SHOWN2; i2--) back.push(line(i2));
       list.replaceChildren(...ahead, el("div", { className: "nowline", textContent: "Now" }), ...back.length ? back : [el("p", { className: "quiet", textContent: "Nothing to undo yet." })]);
     };
     more.onclick = () => {
