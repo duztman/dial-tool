@@ -4,11 +4,13 @@
 
 **What it is.** One text page at https://duztman.github.io/dial-tool/help/ — every pane and control in the app's own words, one sentence each, read away from the tool. The guide (`guide/`, R25) stays the illustrated walk-through and the maker sheet; the help page is the quick reference. Its motto is the guide's: exact, lean, quick (`guide/notes-okay.md`).
 
-**Source.** `guide/help/index.html`, hand-written, one file, no build. Published by copying it to `help/index.html` on `gh-pages`. Written against beta 4.92.5 (`dev`); the footer names the version. Updated on Okay's word, like the guide.
+**Source.** `guide/help/index.html`, hand-written, one file, no build. Published by copying it to `help/index.html` on `gh-pages`. Written against the version in its `<meta name="checked">` (beta 4.94.20, 26 Oct 2026); the footer names it. Updated on Okay's word, like the guide.
 
 **Where the words come from.** Pane titles and row labels are the app's (`hdr(…)`, `num/chk/seg/pick(…)` in `web/src/app.js`, the `SECTIONS` block), button titles and aria labels for the canvas. A sentence says what a control does; nothing from memory. Next pass: a script that lists every label in `app.js` and flags any the page doesn't name (so a new row can't be missed).
 
-**Order.** The idea (four models) · the screen · a first dial · Dial · Rings · Hands · Date · Export · corners and bar · show mode · How do I… · Words.
+**Order.** The idea (four models) · the screen · a first dial · Dial · Rings · Hands · Windows · Export · corners and bar · show mode (its own numbered picture) · keys · iPad and desktop · signs · Gallery (every card, what makes it) · How do I… · Words · Report a bug.
+
+**Starting values** are the First dial's (`web/src/opener.js`, what a new visitor opens on and Dial › Reset brings back); a value the First dial doesn't set is the code's default (`DEFAULTS`); a new ring, window or guide gives its own template's.
 
 **Not yet done.**
 - The app's **Help** link still opens the guide (`GUIDE` in `web/src/app.js`, line 38, `target="_blank"`). Pointing it at `/help/` is one line in a small push, on Okay's word: the page links the guide at its top.

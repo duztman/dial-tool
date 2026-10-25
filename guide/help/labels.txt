@@ -119,8 +119,10 @@ Share dial as link
 Settings file
 Log
 Gallery
-Ink
+Inks
 All inks at once
+Hands
+Bevels %
 Watch
 View
 Case
@@ -133,9 +135,9 @@ Pattern
 Light
 Lighting
 Sun
-From
-Shadows
-Darkness %
+Angle °
+Height °
+Strength %
 Soft shadows
 Flare
 Kind

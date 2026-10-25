@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## help page · 26 Oct 2026 — rewritten against beta 4.94.20, published
+
+Okay, 26 Oct 2026, 01:02: "help page needs a lot of info, a lot of work. its design is great now. add a round numbered what is where for show case screenshot as well." 01:22: "keep building and push when ready".
+
+- Every section read from the code (fact sheets per area, each fact with its file and line), then written in the page's own markup: every pane and row with its label as the app shows it, its range and its starting value. Starting values are the First dial's (`opener.js`), the code's defaults where it sets none.
+- **Show mode** in full: a numbered picture of its window (nine parts, `img/show.webp`), then Into show mode and back · Dial (Colours · Inks · Hands) · Watch · Light · Export · Shenanigans · Backdrop · The eye · What is drawn · What is kept where (which keys travel in a link and which don't).
+- **Gallery**, a new section: the pill, a card's two buttons, and all twenty cards in order, each with its rings and the setting that makes it.
+- **How do I…** in six groups (Start · Rings and type · Hands and windows · Look and light · Save, share, print · Show mode); **Words** from 8 to 64 terms.
+- Corrected: "Inks · sheets" is part of Print; Copy set link is in Share dial as link; the bar's zoom is three squares; X-ray shows with a date, day or am · pm window; no Cap tab; the windows' colours are in Shape; the Light tab's sun is Angle ° · Height ° · Strength %.
+- `check.py`: every one of the app's 154 labels named on the page.
+
 ## beta 4.94.20 (web version) · 26 Oct 2026 — the Strap row's choices as free pills
 
 - **Show mode's Strap row** (Watch tab): Leather · NATO · Bracelet · Links as free single pills that wrap, as the NATO Pattern row under it. The four in one pill were wider than the column (246 against 202), so Links sat scrolled off its end.
