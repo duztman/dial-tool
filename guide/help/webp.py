@@ -3,7 +3,7 @@
 from pathlib import Path
 from PIL import Image
 here = Path(__file__).parent / "img"
-sizes = {"screen": 1440, "hands": 784, "windows": 720}
+sizes = {"screen": 1440, "show": 1440, "hands": 784, "windows": 720}
 sizes.update({p.stem: 1600 for p in here.glob("where-*.png")})      # the real screens behind the maps, for the lightbox
 for name, width in sizes.items():
     if not (here / f"{name}.png").exists(): continue      # made earlier and already WebP
