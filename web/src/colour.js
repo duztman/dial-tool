@@ -297,7 +297,7 @@ export const COLOUR = {
           swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
-        if (line.note) group.append(el("span", { className: "note", textContent: line.note }));      // what the squares are, in grey: "12 sectors", "hand · cap"
+        if (line.note) { const dots = el("span", { className: "dots" }, ...group.children); group.append(dots, el("span", { className: "note", textContent: line.note })); }      // the swatches six to a line in their own box, then what they are, in grey: "12 sectors", "hand · cap"
         const name = el("label", { textContent: line.text });
         if (!showing) return el("div", { className: "row" }, name, group);
         // show mode's line (#546): the eye (or its empty place), the part's kind mark, the name, the colour(s) on the one

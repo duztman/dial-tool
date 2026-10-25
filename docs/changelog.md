@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.94.16 (web version) · 25 Oct 2026 — show mode's Dial tab: small swatches
+
+Okay, 25 Oct 2026, 22:50, with a crop of the tab: "these swatches are big. i dont think they are up to code. ui on left either uses small swatches or labelled code, do the same."
+
+- **Several colours on a line are small swatches** (`--dot`, the dial side's swatch to pick from: 14, 18 under a finger): a band's sectors, a hand and its cap, a window's colours, a disc's prints, and each Hands line's colour. A lone colour stays the labelled pill (swatch and hex).
+- **Six to a line** in a box of their own (`.dots`), the grey note beside them, not under ("Six to a line, two lines").
+
 ## beta 4.94.15 (web version) · 25 Oct 2026 — show mode's Dial tab: show or hide is a dot
 
 Okay, 25 Oct 2026, 22:13: "Eyes doing different functions, make the second levels something else?"; in question mode, "A · dot", "Show mode's Dial tab only"; 22:14: "Build" (#547).

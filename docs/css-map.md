@@ -39,7 +39,7 @@
 | `--canvas-top` | `var(--canvas-inset)` | undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) | 6-preview ×3 | 8-narrow `:root` → `var(--canvas-inset)` |
 | `--checker` | `repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px` | what shows through a see-through colour | 4e-colour ×2 |  |
 | `--chip` · special | `22px` | a colour to pick: in the pop-out's two rows, in the guides' list (the gap between two: a special) | 3-controls ×3, 6-preview ×4 | 1-tokens `:root` → `30px` |
-| `--chip-gap` · special | `4px` | between two colours to pick | 3-controls ×2, 4e-colour ×7 |  |
+| `--chip-gap` · special | `4px` | between two colours to pick | 3-controls ×2, 4e-colour ×8 |  |
 | `--chip-rule` | `rgba(0, 0, 0, 0.25)` |  | 3-controls, 4e-colour, 6-preview ×3 | 3-controls `.night` → `var(--night-chip-rule)`; set by show.js |
 | `--col` | `54px` |  | 1-tokens ×5, 3-controls, 4a-panel, 4e-colour ×2, 4g-fonts, 6-preview ×2 | 4a-panel `.showing .panel` → `var(--show-col)`; 8-narrow `:root` → `calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6)` |
 | `--column` · the window's | `—` |  | 4a-panel | set by show.js |
@@ -70,7 +70,7 @@
 | `--day-wide` | `518px` | the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) | 7-bar |  |
 | `--details-line` · special | `17px` | the ring drawer's two lines of details, baseline to baseline (the same drawing: 16–17) | 4f-rings |  |
 | `--dim` · special | `0.45` | a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured | 4f-rings ×2 |  |
-| `--dot` · special | `14px` | a swatch to pick from (a band's sectors); the Backdrop switch's sign is one | 4e-colour ×2, 6-preview | 1-tokens `:root` → `18px` |
+| `--dot` · special | `14px` | a swatch to pick from (a band's sectors); the Backdrop switch's sign is one | 4e-colour ×5, 6-preview | 1-tokens `:root` → `18px` |
 | `--dot-tiny` | `10px` | a colour inside a line of words: a folded pane's summary | 4e-colour ×2 |  |
 | `--eye` | `16px` | the toggle column | 1-tokens ×2, 4a-panel ×8, 4e-colour ×2 |  |
 | `--faint` | `0.35` | how much of a switch on the preview shows at rest | 4a-panel ×2, 4f-rings, 6-preview ×4 |  |
@@ -205,9 +205,9 @@
 | `--panel-w` | `calc(var(--panel) + var(--hair))` | the panel's column: its lines and its right hairline | 2-base ×2, 4a-panel ×4, 6-preview ×4 | 2-base `.showing` → `var(--show-panel-w)` |
 | `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×6, 4b-lines-tabs, 4e-colour ×2, 4f-rings ×6, 4g-fonts, 5-chosen, 6-preview ×7, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
 | `--picked` · the window's | `—` |  | 6-preview | set by rings.js |
-| `--pill` | `calc(1em + 2 * var(--pill-gap))` | its height. The swatch is as high as the hex is set (1em) | 4e-colour ×4 |  |
+| `--pill` | `calc(1em + 2 * var(--pill-gap))` | its height. The swatch is as high as the hex is set (1em) | 4e-colour |  |
 | `--pill-gap` | `var(--unit)` | a colour pill (and the font name line beside its swatch): this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these | 1-tokens ×2, 4e-colour ×2, 4g-fonts |  |
-| `--pill-w` | `calc(3 * var(--pill-gap) + 5.25 * var(--t-s))` | its width with a hex: the swatch (1em), the seven monospace figures (0.6em each), its three spaces (79 measured) — the swatch column of show mode's Dial tab (#546) | 4e-colour ×2 |  |
+| `--pill-w` | `calc(3 * var(--pill-gap) + 5.25 * var(--t-s))` | its width with a hex: the swatch (1em), the seven monospace figures (0.6em each), its three spaces (79 measured) — the swatch column of show mode's Dial tab (#546) | 4e-colour |  |
 | `--pixel` | `"Silkscreen", ui-monospace, Menlo, monospace` | tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) | 4c-rows, 4f-rings, 4g-fonts ×2, 7-bar, 8-narrow |  |
 | `--pixel-ink` | `0.7` | how much of the pixel font shows: full strength is too dark on black (Okay, 13 Oct 2026) | 4f-rings, 4g-fonts ×3 |  |
 | `--pixel-ink-bar` · special | `1` | the bar's 1X, 720X and the speed riding over the thumb: the pixel font at full strength in their own colours, not --pixel-ink (Okay, 15 Oct 2026, 00:18: "same color as the ball") | 7-bar, 8-narrow |  |

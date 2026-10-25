@@ -34,12 +34,14 @@
   .colourlist > .row.showline > :is(.colour, .single) { justify-self: start; }
   .colourlist > .row.showline > .single { display: flex; }
   .colourlist > .row.showline > .swatches { display: flex; flex-wrap: wrap; align-items: center; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
-  .colourlist > .row.showline .swatch { width: var(--pill); height: var(--pill); border-radius: var(--round-small); }
+  .colourlist > .row.showline .swatch { width: var(--dot); height: var(--dot); border-radius: var(--round-small); }      /* several colours, or a Hands line's: the small swatch the dial side picks from (Okay, 25 Oct 2026, 22:50: "these swatches are big … ui on left either uses small swatches or labelled code, do the same") */
   .colourlist > .row.showline .note { flex: 1 1 auto; min-width: 0; margin-left: var(--u2); color: var(--grey); font-size: var(--t-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }      /* what the squares are: "12 sectors", "hand · cap" */
   .colourlist > .row.showline > .place { display: flex; justify-content: end; }
   .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
   .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
-  .colourlist > .row.showline.bare > :is(.single, .swatches) { grid-column: 3 / -1; max-width: calc(6 * var(--pill) + 5 * var(--chip-gap) + var(--pill-w)); }      /* six squares a line, the note after them */
+  .colourlist > .row.showline.bare > :is(.single, .swatches) { grid-column: 3 / -1; }
+  .colourlist > .row.showline > .swatches { flex-wrap: nowrap; }
+  .colourlist > .row.showline > .swatches > .dots { flex: none; display: flex; flex-wrap: wrap; gap: var(--chip-gap); max-width: calc(6 * var(--dot) + 5 * var(--chip-gap)); }      /* six swatches a line (Okay: "Six to a line, two lines"), the note beside them */
   .colourlist > .row.showline.bare > .place { display: none; }
   /* a group's name (Rings · Hands · Windows; On the dial · On the discs · Disc depths): grey, sentence case, at the rows'
      size, as the Shadows pane's Part Heights; a pane's number column named at its heading's end, small and grey */
