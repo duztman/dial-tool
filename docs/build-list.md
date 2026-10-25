@@ -95,9 +95,6 @@ The Show Case was built to be put into Dial Tool; its export stays. "Showcase UI
 | 489 | Dial Show Case into Dial Tool | 22 Oct 2026 | in v1 |
 | 506 | Phase 1, shadows |  | verify |
 | 509 | Phase 3 — show mode |  | built |
-| 510 | Phase 4 — clean-up and the rest of show mode | 23 Oct 2026 — "We messed up the buttons but I'll help you fix them later" | in part — the Backdrop (4.94.17), the eye hiding the bar and Links (4.94.18) done; the buttons' looks with Okay |
-| 507 | Phase 1 leftovers |  | in part — Blurs and case heights done (4.94.17); the strap's rise band open |
-| 511 | The mode change flashes a misplaced dial | 23 Oct 2026 | Sunday 25 Oct |
 
 ### L · Before v1, Okay's notes of 24 Oct 2026 ("New crucial items before launch")
 
@@ -112,7 +109,6 @@ From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Oka
 | 536 | Help page and bug reports | 24 Oct 2026 | now |
 | 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane (4.94.4) and the Light tab's sun box (4.94.9) built; the guides' foot open |
 | 528 | Dramatic lighting more dramatic |  | built (4.94.19); the darkness to confirm |
-| 529 | Bracelets drawn half visible, round an imaginary wrist |  | in part — closed round a wrist (4.94.18); the photo's light, soft outlines and gradients open |
 | 530 | SVG imports after v1 |  | decided |
 | 531 | Hand bevels lost on the tool side |  | done (bring back); the rest open |
 | 532 | After v1, from his list of 24 Oct |  | after v1 |
@@ -130,6 +126,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | From | Status |
 |---|---|---|---|
+| 529 | Bracelets drawn half visible, round an imaginary wrist |  | after v1 (Okay, 26 Oct 2026: "529 push to future"); closed round a wrist built (4.94.18) |
 | 169 | One strip for every position | — "very very good… prioritize this" | after v1 |
 | 175 | A hand as a stack |  | after v1 |
 | 184 | Snapping | 14 Oct 2026, on #85 | after v1 |
@@ -208,5 +205,4 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | # | Item | From | Status |
 |---|---|---|---|
 | 491 | Ink thicknesses | — "You can tackle ink thicknesses next" | next |
-| 492 | Dial Show Case notes, 20:11 |  | open |
 | 493 | Bracelet ends wrapped as round a wrist |  | parked |
