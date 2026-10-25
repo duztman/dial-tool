@@ -2,7 +2,7 @@
 #   python3 guide/help/check.py          report
 #   python3 guide/help/check.py --done   after the page is revised: record this app version and its labels as checked
 #
-# It reads every row label in web/src/app.js (the ROWS block: hdr, num, chk, seg, pick, pop, txt, col) and
+# It reads every row label in web/src/rows.js (the ROWS block: hdr, num, chk, seg, pick, pop, txt, col) and
 #  1. compares them with labels.txt, the labels at the last check: labels added and gone since;
 #  2. looks for each label in the page's text: a label the page never names is listed, unless known.txt says why;
 #  3. compares the app's VERSION with the version the page was checked against (<meta name="checked">), and lists
@@ -12,7 +12,7 @@ from pathlib import Path
 
 here = Path(__file__).parent
 root = here.parent.parent
-app = (root / "web/src/app.js").read_text()
+app = (root / "web/src/rows.js").read_text()      # the panel's rows (app.js is in parts since 4.94, #69)
 page = (here / "index.html").read_text()
 version = re.search(r'VERSION = "([^"]+)"', (root / "web/src/geometry.js").read_text())[1]
 checked = re.search(r'<meta name="checked" content="([^"]+)"', page)

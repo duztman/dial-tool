@@ -2460,7 +2460,7 @@ await shot("10-bar");
   const nato = await page.evaluate(async () => { const t = window.dial_tool, was = [t.S.strap, t.S.w_nato, t.S.c_nato], w = (ms) => new Promise((r) => setTimeout(r, ms));
     document.querySelector('button[data-tab="Watch"]').click(); await w(100); t.set_value("global", "strap", 3); t.set_value("global", "w_nato", 0); await w(100);
     const seen = () => [...document.querySelectorAll(".panel .row.col")].filter((r) => r.offsetParent).map((r) => r.querySelector("label").textContent).filter((n) => /Stripe|^Colour$/.test(n)).join(" ");
-    const pills = document.querySelectorAll(".panel .pillswitch.free > button").length, three = seen();      // the panel's (the Guides foot has three of its own, #539)
+    const pills = [...document.querySelectorAll(".panel .pillswitch.free")].find((g) => g.textContent.includes("Regimental")).children.length, three = seen();      // the Pattern row's own (the Strap row is free pills too, 4.94.20; the Guides foot has three, #539)
     [...document.querySelectorAll(".panel .pillswitch.free > button")].find((b) => b.textContent === "Solid").click(); await w(100); const one = seen();
     const row = [...document.querySelectorAll(".panel .row.col")].find((r) => r.offsetParent && r.querySelector("label").textContent === "Colour");
     const id = row.querySelector("button").id; t.pop_open(t.colour_of_row(t.rows.find((r) => r.el === row).row), row.querySelector("button")); t.pop.at.write([1, 0, 0, 1]); t.pop_close(); const c = JSON.stringify(t.S.c_nato);
@@ -2489,10 +2489,12 @@ await shot("10-bar");
     const was = await page.evaluate(() => [window.dial_tool.S.bezel, window.dial_tool.S.strap]);
     await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 1); t.set_value("global", "strap", 4); t.changed(); });
     await page.click('.tabs button[data-tab="Watch"]'); await frame();
-    const got = await page.evaluate(() => { const words = [...document.querySelectorAll(".panel button")].filter((b) => b.checkVisibility()).map((b) => b.textContent.trim());
-      return { links: words.includes("Links") && words.includes("Bracelet"), drawn: window.dial_tool.watch_g.innerHTML.length > 1000 }; });
+    const got = await page.evaluate(() => { const g = [...document.querySelectorAll(".panel .pillswitch")].find((p) => p.textContent.includes("Links")), pr = g.getBoundingClientRect();
+      const inside = [...g.children].filter((b) => b.checkVisibility()).every((b) => { const r = b.getBoundingClientRect(); return r.left >= pr.left - 0.5 && r.right <= pr.right + 0.5; });      // no choice scrolled off the pill's end
+      const words = [...g.children].filter((b) => b.checkVisibility()).map((b) => b.textContent.trim());
+      return { links: words.includes("Links") && words.includes("Bracelet") && inside && g.scrollWidth <= g.clientWidth + 1, drawn: window.dial_tool.watch_g.innerHTML.length > 1000 }; });
     await page.evaluate((w) => { const t = window.dial_tool; t.set_value("global", "bezel", w[0]); t.set_value("global", "strap", w[1]); }, was);
-    check(got.links && got.drawn, `the diver offers Bracelet and Links (${got.links}), the links drawn (${got.drawn})`);
+    check(got.links && got.drawn, `the diver offers Bracelet and Links, every choice in view (${got.links}), the links drawn (${got.drawn})`);
   }
   { // show mode's top as main's (Okay, 25 Oct 2026, 18:05: "Show mode and main tops, missing bar and alignments check, main looks correct"): the title line main's height, the tabs' hairline drawn, on the undo buttons' bottom
     const top = await page.evaluate(() => { const R = (q) => document.querySelector(q).getBoundingClientRect(), c = getComputedStyle(document.querySelector(".tabs"));

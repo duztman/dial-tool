@@ -514,7 +514,7 @@ ROWS.Watch = [
   col("c_metal", "Case colour", { or: (S) => SHOW.metal_colour(S) }),
   pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i) => SHOW.insert_picture(i), { show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" }),      // tiles, each insert a ring in its two colours
   hdr("Strap", { folded: false }),
-  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO", "Links"], { order: [1, 3, 2, 4], offered: (S) => (G.CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3, 4] : [1, 3]), get: (S) => (S.strap === 0 ? 1 : S.strap) }),      // 0 (an older file) reads as Leather, so a pill is always lit      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
+  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO", "Links"], { free: true, order: [1, 3, 2, 4], offered: (S) => (G.CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3, 4] : [1, 3]), get: (S) => (S.strap === 0 ? 1 : S.strap) }),      // 0 (an older file) reads as Leather, so a pill is always lit      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
   col("c_strap", "Leather", { show: (S) => ![2, 3, 4].includes(S.strap) }),
   // the NATO (#524; Okay, 24 Oct 2026: "Nato colors should be selectable. One solid option. Options can be free living
   // single pills"): its patterns as pills of their own, Solid last (R9); a pattern taken starts again from its own colours

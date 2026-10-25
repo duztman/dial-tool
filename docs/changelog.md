@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.94.20 (web version) · 26 Oct 2026 — the Strap row's choices as free pills
+
+- **Show mode's Strap row** (Watch tab): Leather · NATO · Bracelet · Links as free single pills that wrap, as the NATO Pattern row under it. The four in one pill were wider than the column (246 against 202), so Links sat scrolled off its end.
+- Checked: the window test (the diver's strap choices all in view; the NATO count is its own row's).
+- The help page's tools: `check.py` reads the rows from `rows.js` (app.js is in parts); the page's zoom signs are the bar's three squares; `shoot.cjs` also takes show mode's window (`img/show.png`), its parts measured for the page's numbers.
+
 ## beta 4.94.19 (web version) · 26 Oct 2026 — show mode's title flush right; Dramatic's spotlight still and true
 
 Okay, 25 Oct 2026, 23:45: "on right name needs to stay flush right sadly, an exception. go on to the remaining points"; #528 (24 Oct 2026): "Dramatic needs more dramatic lighting. A non animated spotlight, darker bg. Spotlight highlights bg to real color."
