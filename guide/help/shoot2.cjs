@@ -70,7 +70,7 @@ async function places(page, name, clip, parts) {
   // 1 · a row's controller: Diameter's name pressed, on the Dial tab
   await tab("Dial");
   await page.click('label[for="global-dial-d-Diameter"]'); await page.waitForTimeout(300);
-  await shoot(page, "controller-desk", ["#value-pop", ".row:has(#global-dial-d-Diameter)", ".panel .pane.has"]);
+  await shoot(page, "controller-desk", ["#value-pop", ".panel .pane.has:has(#global-dial-d-Diameter)"]);
   await away();
 
   // 4 · the Shadows pane
@@ -113,7 +113,7 @@ async function places(page, name, clip, parts) {
 
   // 6 · the font sheet from the numerals ring's font box
   await page.click("#font-current"); await page.waitForTimeout(800); await page.mouse.move(1300, 880);
-  await page.evaluate(() => { const r = document.querySelector('#font-picker .fontrow[data-group="list"]') || document.querySelector("#font-picker .fontrow"); if (r) r.setAttribute("data-help", "first"); });
+  await page.evaluate(() => { const top = document.querySelector("#font-picker .fontlist").getBoundingClientRect().top, r = [...document.querySelectorAll("#font-picker .fontlist .fontrow")].find((e) => e.getBoundingClientRect().top >= top - 1); if (r) r.setAttribute("data-help", "first"); });      // the first line in view: the list scrolls to the ring's font
   { const clip = await shoot(page, "fonts", ["#font-picker"]);
     if (clip) await places(page, "fonts", clip, [["Light · Dark", ["#font-ground-light", "#font-ground-dark"]], ["search (Find a font)", ["#font-find"]], ["the six filters", [".filterpill"]], ["Dial Tool’s fonts · Installed", ["#font-picker .sheettabs"]], ["a font's line", ['#font-picker .fontrow[data-help="first"]']], ["the Legend", ["#font-legend-open"]]]); }
   console.log("font tabs shown:", await page.evaluate(() => { const e = document.querySelector("#font-picker .sheettabs"); return !!e && !e.hidden; }));
@@ -145,7 +145,7 @@ async function places(page, name, clip, parts) {
   await frame(pad);
   await pad.screenshot({ path: path.join(OUT, "ipad.png") }); made.push(["ipad", 2360, 1640]);
   await pad.tap('label[for="global-dial-d-Diameter"]'); await pad.waitForTimeout(400);
-  await shoot(pad, "controller-ipad", ["#value-pop", ".row:has(#global-dial-d-Diameter)", ".panel .pane.has"]);
+  await shoot(pad, "controller-ipad", ["#value-pop", ".panel .pane.has:has(#global-dial-d-Diameter)"]);
   await browser.close();
 
   console.log("MADE", JSON.stringify(made));
