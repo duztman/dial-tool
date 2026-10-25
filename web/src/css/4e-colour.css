@@ -19,9 +19,13 @@
      and Hands stands on the same five columns: the eye (an ink's fold, a part's A or B) · the kind mark (the ring
      list's) · the name · the swatch column (a lone colour a pill with its hex, several squares from its left) · the
      height box. A Colours line has no height: its squares may run on to the line's end, six to a line. */
-  .colourlist > .row.showline { grid-template-columns: var(--eye) var(--kind-pic) minmax(0, 1fr) var(--pill-w) var(--side-num); column-gap: var(--u1); }      /* half-unit gaps: at 312 the name keeps room for "Triangle at 12" (85) */
+  .colourlist > .row.showline { position: relative; grid-template-columns: var(--kind-pic) minmax(0, 1fr) var(--pill-w) var(--side-num); column-gap: var(--u2); }
   .colourlist > .row.showline > * { grid-column: auto; }
-  .colourlist > .row.showline > .eye { display: grid; place-items: center start; color: var(--grey); }
+  /* the first place — a line's eye, an ink's fold, a part's A or B — stands in the panel's left column, under the panes'
+     own eyes, so the line's tiny mark leads it (Okay, 25 Oct 2026, 22:02: "Eyes and icons won't gel … Check if pushing
+     eyes to left column work") */
+  .colourlist > .row.showline > :first-child { position: absolute; top: 0; bottom: 0; left: calc(var(--nudge) - var(--eye) - var(--gap)); width: var(--eye); }      /* as a heading's eye stands: its column, its nudge */
+  .colourlist > .row.showline > .eye { display: grid; place-items: center; color: var(--grey); }
   .colourlist > .row.showline > .eye[aria-pressed="true"] { color: var(--ink); }
   @media (hover: hover) { .colourlist > .row.showline > .eye:hover { color: var(--ink); } }
   .colourlist > .row.showline > .mark { display: grid; place-items: center; height: 100%; color: var(--grey); }      /* a tiny mark, quiet beside the name */
@@ -34,7 +38,7 @@
   .colourlist > .row.showline > .place { display: flex; justify-content: end; }
   .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
   .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
-  .colourlist > .row.showline.bare > :is(.single, .swatches) { grid-column: 4 / -1; max-width: calc(6 * var(--pill) + 5 * var(--chip-gap) + var(--pill-w)); }      /* six squares a line, the note after them */
+  .colourlist > .row.showline.bare > :is(.single, .swatches) { grid-column: 3 / -1; max-width: calc(6 * var(--pill) + 5 * var(--chip-gap) + var(--pill-w)); }      /* six squares a line, the note after them */
   .colourlist > .row.showline.bare > .place { display: none; }
   /* a group's name (Rings · Hands · Windows; On the dial · On the discs · Disc depths): grey, sentence case, at the rows'
      size, as the Shadows pane's Part Heights; a pane's number column named at its heading's end, small and grey */
@@ -42,13 +46,15 @@
   .colourlist > .row.showsub .colhead { color: var(--grey); font-size: var(--t-s); }
   .pane > .colhead { justify-self: end; margin-left: auto; color: var(--grey); font-size: var(--t-xs); }
   /* Inks: its lines on the same columns; the ink's fold in the eye's place, its part count as its name */
-  .inklist .chev { display: grid; place-items: center start; color: var(--grey); }
+  .inklist .chev { display: grid; place-items: center; color: var(--grey); }
   .inklist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
   @media (hover: hover) { .inklist .chev:hover { color: var(--ink); } }
   .inklist > .row.inkline > label { color: var(--ink); }
   .inklist > .row.inkline.open > .place.two { display: flex; align-items: center; justify-content: end; gap: var(--u3); color: var(--grey); }      /* Two inks in the number's place, its word right against it */
-  .inklist > .row.inkpart > .letter { justify-self: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the eye's place */
-  .row.bevels > .pillswitch { grid-column: 2 / -1; justify-self: end; flex-wrap: nowrap; }
+  .inklist > .row.inkpart > .letter { display: grid; place-items: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the eye's place */
+  .row.bevels { grid-template-columns: auto minmax(0, 1fr); }
+  .row.bevels > label { grid-column: 1; }
+  .row.bevels > .pillswitch { grid-column: 2; justify-self: end; flex-wrap: nowrap; }      /* its name, then its pills to the line's end, on one line */
   .inklist .pillswitch.ab > button { padding: 0 var(--u2); }      /* the pill fits the swatch column, a gap before the name */
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }
 

@@ -1,15 +1,24 @@
 # Dial Tool — changelog
 
+## beta 4.94.14 (web version) · 25 Oct 2026 — show mode's Dial tab: the eyes in the left column
+
+Okay, 25 Oct 2026, 22:02: "Eyes and icons won't gel. Hands unnecessary to iconize. Check if pushing eyes to left column work?" Tried, pictured, it works.
+
+- **The lines' eyes stand in the panel's left column**, under the panes' own eyes (their column, their `--nudge`: 1085 = 1085 measured); an ink's fold and a part's A or B there too. Each line starts with its tiny mark; the lines' gaps are a unit again (the name keeps 96).
+- **No hand marks**: the hands' lines in Colours and Hands have none ("Hands unnecessary to iconize"); the hand mark is gone from `icons.js`. Rings and windows keep theirs.
+- **Bevels on one line**: its name, its pills to the line's end.
+- Checked in the window test: the lines' eyes under the panes' eyes.
+
 ## beta 4.94.13 (web version) · 25 Oct 2026 — show mode's Dial tab, its look
 
 Okay, 25 Oct 2026, 21:36: "Ok now make this look good … swatches, alone spelled out. Grouped? Nice spacing. All colors aligned on a line like rings on main but appropriate to this wiew. Tiny marks, secondary labels, look at prescedents, don't use allcaps everywhere." Drawn once, settled in question mode, built on "Build it" (#546).
 
 - **One swatch column** on every line of Colours, Inks and Hands, as on main's ring list: five columns — the eye (an ink's fold, a part's A or B) · the kind mark (`--kind-pic`, 24) · the name · the swatch column (`--pill-w`, the pill's 79) · the height box (`--side-num`) — with half-unit gaps, so a name keeps room for "Triangle at 12" (85 measured).
 - **A lone colour spelled out**: a pill with its swatch and hex in mono, as the dial side's Colours; several colours squares from the column's left, a band's sectors six to a line, with a grey note after them ("12 sectors", "hand · cap", "frame · disc · figures"). On a Hands line a square only ("a · square only").
-- **Tiny marks**: the ring list's kind marks before rings, under an open ink too; two new marks through the icon pipeline (R33), a hand on its pivot and a window, at the kind marks' 24.
+- **Tiny marks**: the ring list's kind marks before rings, under an open ink too; a window mark through the icon pipeline (R33), at the kind marks' 24.
 - **Group names in grey, sentence case** at the rows' size, as the Shadows pane's (Rings · Hands · Windows · On the dial · On the discs · Disc depths); *Height, mm* small and grey at the Inks and Hands headings' end. No capitals.
 - **Inks**: a line named by its part count, the ink's pill on the swatch column; open, Two inks in the height's place.
-- Checked: the window test (one swatch column across the tab, no capitals, the Bevels pills inside their line); the icon check (it does not visit show mode: the two marks were weighed with `look.py` before pasting, within 6 %).
+- Checked: the window test (one swatch column across the tab, no capitals, the Bevels pills inside their line); the icon check (it does not visit show mode: the marks were weighed with `look.py` before pasting, within 6 %).
 
 ## beta 4.94.12 (web version) · 25 Oct 2026 — show mode's Dial tab: Colours · Inks · Hands
 

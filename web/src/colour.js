@@ -344,7 +344,6 @@ export const COLOUR = {
         const text = ["Hour hand", "Minute hand", "Seconds hand"][k], line = { text, colours: [this.hand_colour(h, text)] };
         if (show) {      // its eye, its colour and the cap's as a square beside it, on the hand the cap sits on (Okay: "A swatch on its hand's line")
           line.eye = { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => { this.S["ha_" + h].on = on; this.changed(); } };
-          line.mark = PICS.hand_mark;
           if (G.cap_shows(S) && k === G.top_hand(S)) { line.colours = [...line.colours, { ...cap, square: true }]; line.note = "hand · cap"; }
         }
         lines.push(line);
@@ -514,9 +513,9 @@ export const COLOUR = {
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
       const tall = (h, text) => [{ key: "height", place: "number", make: () => this.line_number(num("sh_" + h, text, 0, 3, 0.05, { scope: "global", block: true, id: `show-${h}-height` })) }];
-      if (G.cap_shows(S)) lines.push({ text: "Cap", mark: PICS.hand_mark, colours: [{ ...this.cap_colour(), id: "cap-hands", square: true }], tail: tall("cap", "Cap height") });      // squares: the hex is spelled out in Colours above (Okay: "a · square only")
+      if (G.cap_shows(S)) lines.push({ text: "Cap", colours: [{ ...this.cap_colour(), id: "cap-hands", square: true }], tail: tall("cap", "Cap height") });      // squares: the hex is spelled out in Colours above (Okay: "a · square only")
       for (const [h, text] of [["second", "Seconds"], ["minute", "Minutes"], ["hour", "Hours"]]) {      // top down, as they stand (the Shadows pane's order)
-        lines.push({ text, mark: PICS.hand_mark, colours: [{ ...this.hand_colour(h, text + " hand"), id: `hand-${h}-hands`, square: true }], tail: tall(h, text + " height"),
+        lines.push({ text, colours: [{ ...this.hand_colour(h, text + " hand"), id: `hand-${h}-hands`, square: true }], tail: tall(h, text + " height"),
           eye: { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => { this.S["ha_" + h].on = on; this.changed(); } } });
       }
       return lines;

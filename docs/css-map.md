@@ -72,7 +72,7 @@
 | `--dim` · special | `0.45` | a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured | 4f-rings ×2 |  |
 | `--dot` · special | `14px` | a swatch to pick from (a band's sectors); the Backdrop switch's sign is one | 4e-colour ×2, 6-preview | 1-tokens `:root` → `18px` |
 | `--dot-tiny` | `10px` | a colour inside a line of words: a folded pane's summary | 4e-colour ×2 |  |
-| `--eye` | `16px` | the toggle column | 1-tokens ×2, 4a-panel ×8, 4e-colour |  |
+| `--eye` | `16px` | the toggle column | 1-tokens ×2, 4a-panel ×8, 4e-colour ×2 |  |
 | `--faint` | `0.35` | how much of a switch on the preview shows at rest | 4a-panel ×2, 4f-rings, 6-preview ×4 |  |
 | `--field` | `var(--white)` | inside a control: fields, tiles, buttons | 1-tokens ×7, 3-controls ×13, 4a-panel ×2, 4b-lines-tabs, 4c-rows, 4d-hands, 4f-rings ×12, 4g-fonts ×9, 6-preview ×3 | 3-controls `.night` → `var(--night-field)`; 4f-rings `.numpop .row` → `var(--white)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)`; set by show.js |
 | `--fill` · set in 3-controls | `calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0))` |  | 3-controls ×2, 6-preview ×2 |  |
@@ -94,7 +94,7 @@
 | `--foot-value` · special | `36px` | the footer's number box: its value's width (Bevels %) | 6-preview |  |
 | `--frame-pad` · special | `8px` | inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none | 1-tokens, 4f-rings ×3, 4g-fonts ×4 |  |
 | `--gallery-lift` · special | `var(--hair)` | the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") | 4a-panel |  |
-| `--gap` | `12px` |  | 1-tokens ×10, 3-controls, 4a-panel ×7, 4b-lines-tabs ×2, 4c-rows ×2, 4e-colour, 4f-rings ×2, 4g-fonts ×3, 6-preview ×3, 7-bar ×2, 8-narrow ×2 | 8-narrow `:root` → `var(--u4)` |
+| `--gap` | `12px` |  | 1-tokens ×10, 3-controls, 4a-panel ×7, 4b-lines-tabs ×2, 4c-rows ×2, 4e-colour ×2, 4f-rings ×2, 4g-fonts ×3, 6-preview ×3, 7-bar ×2, 8-narrow ×2 | 8-narrow `:root` → `var(--u4)` |
 | `--glow` | `#FF7300` | the outline of what the pointer is on, in the preview | 6-preview |  |
 | `--glow-line` · special | `1.5px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview ×2 |  |
 | `--glow-under` · special | `4px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview |  |
@@ -172,7 +172,7 @@
 | `--night-hover` | `#34342F` |  | 3-controls, 6-preview |  |
 | `--night-rule` | `#4A4A46` |  | 3-controls ×3, 5-chosen, 6-preview ×13 |  |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
-| `--nudge` · special | `2px` | the eyes stand this much right of the margin: a pane's eye and a ring row's alike | 4a-panel, 4f-rings ×2 |  |
+| `--nudge` · special | `2px` | the eyes stand this much right of the margin: a pane's eye and a ring row's alike | 4a-panel, 4e-colour, 4f-rings ×2 |  |
 | `--num-columns` | `var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w)` | a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges | 4c-rows, 4g-fonts |  |
 | `--num-pop` | `calc(var(--num-pop-inner) + 2 * var(--num-pop-pad))` |  | 4f-rings |  |
 | `--num-pop-disc` | `var(--black)` | his #585857 square, #B1B1B1 value pill and track; the discs and knob true black (Okay, 24 Oct 2026: "Controller darks actual black now") | 1-tokens, 4f-rings ×4 |  |
@@ -396,8 +396,8 @@
 | `--track-20` | `0.02em` | tracking 20: the controller's value, a little apart | 4f-rings |  |
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×3 |  |
 | `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4f-rings, 7-bar ×2 |  |
-| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×4, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×4, 4f-rings ×9, 4g-fonts ×8, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
-| `--u2` | `var(--unit)` |  | 1-tokens, 4a-panel ×3, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×3, 4f-rings ×6, 6-preview ×17, 7-bar ×6, 8-narrow ×2 |  |
+| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×4, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×3, 4f-rings ×9, 4g-fonts ×8, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
+| `--u2` | `var(--unit)` |  | 1-tokens, 4a-panel ×3, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×4, 4f-rings ×6, 6-preview ×17, 7-bar ×6, 8-narrow ×2 |  |
 | `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour, 4f-rings ×9, 4g-fonts ×5, 4h-gallery ×3, 6-preview ×7, 7-bar |  |
 | `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×4, 3-controls ×3, 4a-panel ×6, 4b-lines-tabs ×5, 4d-hands ×2, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 7-bar, 8-narrow |  |
 | `--u5` | `calc(2.5 * var(--unit))` |  | 8-narrow ×2 |  |
