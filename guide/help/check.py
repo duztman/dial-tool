@@ -39,6 +39,9 @@ added = [l for l in labels if l not in before]
 gone = [l for l in before if l not in labels]
 missing = [l for l in labels if l.lower().replace("’", "'") not in text and l not in known]
 
+# every list a two-column grid: a name and its line, so one more of either shifts every row after it (Okay, 26 Oct 2026: the Rings rows out of line)
+bad = [i for i, dl in enumerate(re.findall(r"<dl[^>]*>(.*?)</dl>", page, flags=re.S)) if len(re.findall(r"<dt[ >]", dl)) != len(re.findall(r"<dd[ >]", dl))]
+if bad: print(f"LISTS OUT OF LINE (a <dt> without its one <dd>): lists {bad}"); sys.exit(1)
 print(f"app {version} · page checked against {checked}")
 if checked != version:
     log = (root / "docs/changelog.md").read_text()
