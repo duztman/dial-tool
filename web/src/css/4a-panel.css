@@ -34,7 +34,7 @@
   .showing .panel::-webkit-scrollbar { display: none; }
   .showing .form::-webkit-scrollbar { display: none; }
   .showing .mast { translate: 0; }
-  #app.showing.alone .mast { translate: calc(-2 * var(--panel-w) * var(--away)) 0; }      /* the eye in show mode: the title stays where it stood while the panel slides away, as on the dial side — twice the width back, as the panel both moves its column and slides (Okay, 25 Oct 2026: "Dial tool header stays on collapsed panels on show case same as main") */
+  #app.showing.alone .mast { translate: calc(-2 * var(--panel-w) * var(--away) + var(--mast-shift, 0px) * var(--away)) 0; }      /* the eye in show mode: the title stays while the panel slides away, as on the dial side — twice the width back, as the panel both moves its column and slides — and goes flush right, the panel's margin from the window's edge (--mast-shift, measured in dial_alone(); Okay, 25 Oct 2026: "on right name needs to stay flush right sadly, an exception") (Okay, 25 Oct 2026: "Dial tool header stays on collapsed panels on show case same as main") */
   .showing .panel > header { height: var(--header); }      /* main's title line, so the tabs' line falls on the undo buttons' bottom as on the dial side (Okay, 25 Oct 2026, 18:05: "main looks correct"; --header's rule "for the Show Case too"); the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
   .showing .title h1 { white-space: nowrap; }
   .showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */

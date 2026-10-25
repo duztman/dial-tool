@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.94.19 (web version) · 26 Oct 2026 — show mode's title flush right; Dramatic's spotlight still and true
+
+Okay, 25 Oct 2026, 23:45: "on right name needs to stay flush right sadly, an exception. go on to the remaining points"; #528 (24 Oct 2026): "Dramatic needs more dramatic lighting. A non animated spotlight, darker bg. Spotlight highlights bg to real color."
+
+- **Show mode's title, the panel away**: flush right, the show panel's margin (16) from the window's edge, sliding there with the panel (`--mast-shift`, measured in `dial_alone()` before the panel moves; 4a-panel.css). The dial side's title stays where it stood.
+- **Dramatic's spotlight** (`watch.js`, `POOL_*`): still on the watch's centre whatever the sun; the ground's own colour out to 45 % of its 44 mm radius (about the case's edge), its lightness × 0.82 at 70 % and × 0.57 at the rim and past it. Over a gradient backdrop: clear in the middle, 35 % black at the rim.
+- Checked: the window test (the eye's check now measures the title flush right, 16 px); the spotlight before and after on crops, two suns.
+
 ## beta 4.94.18 (web version) · 25 Oct 2026 — bracelets closed round a wrist; Links on the diver; the eye hides the bar, the title stays
 
 Okay, 25 Oct 2026, 23:29: "Eye hides bar too. Links add. Bracelets viewed ad closed. I have a sample i sent you in the last few days, a photo from an online retailer. The preview was bracelet closed. I want that for our bracelets. Not for other straps." 23:32: "Dial tool header stays on collapsed panels on show case same as main." The photo: his notes doc, 24 Oct (a steel diver on its bracelet, seen from above).

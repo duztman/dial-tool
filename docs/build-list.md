@@ -111,7 +111,7 @@ From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Oka
 | 535 | Sliders that stop short | 24 Oct 2026 | open |
 | 536 | Help page and bug reports | 24 Oct 2026 | now |
 | 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane (4.94.4) and the Light tab's sun box (4.94.9) built; the guides' foot open |
-| 528 | Dramatic lighting more dramatic |  | open |
+| 528 | Dramatic lighting more dramatic |  | built (4.94.19); the darkness to confirm |
 | 529 | Bracelets drawn half visible, round an imaginary wrist |  | in part — closed round a wrist (4.94.18); the photo's light, soft outlines and gradients open |
 | 530 | SVG imports after v1 |  | decided |
 | 531 | Hand bevels lost on the tool side |  | done (bring back); the rest open |

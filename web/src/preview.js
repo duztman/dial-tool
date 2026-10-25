@@ -24,8 +24,10 @@ export const PREVIEW = {
     this.view_end = (e) => { if (e.target === app) { this.sliding = false; back(); this.fit(); this.render(); } };
     setTimeout(() => { back(); if (this.sliding) { this.sliding = false; this.render(); } }, 1200);      // no slide (less motion asked, nothing to move): don't wait for it
     app.addEventListener("transitionend", this.view_end);
+    if (on && app.classList.contains("showing")) {      // measured before the panel moves (with less motion it moves at once). Show mode: the bar goes too (2-base.css) and the title moves flush right as the panel goes (4a-panel.css; Okay, 25 Oct 2026: "on right name needs to stay flush right sadly, an exception")
+      const r = $(".mast").getBoundingClientRect(), m = parseFloat(getComputedStyle($(".panel")).getPropertyValue("--margin")) || 16;
+      app.style.setProperty("--mast-shift", (innerWidth - m - r.right).toFixed(1) + "px"); app.classList.add("alone"); }
     app.classList.toggle("away", on);
-    if (on && app.classList.contains("showing")) app.classList.add("alone");      // show mode: the bar goes too (2-base.css) and the title stays (4a-panel.css); taken off when the slide back ends
     if (app.classList.contains("showing") && !app.classList.contains("swooping")) { const follow = () => { if (!this.sliding) return; this.fit(); requestAnimationFrame(follow); }; requestAnimationFrame(follow); }      // show mode: the canvas keeps its size while the column slides over it, so the watch is fitted frame by frame (in a swoop, the swoop moves it)
   },
 

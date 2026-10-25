@@ -785,6 +785,9 @@ export function tilePicture(key, w = 38, h = 27) {
 }
 
 // ── one drawing for the page (Dial Show Case, show mode) ──
+/** Dramatic's spotlight: its radius (mm); the ground's own colour out to POOL_FULL of it (about the case's edge), then its
+ *  lightness × POOL_MID at 70 % and × POOL_EDGE at the rim and past it */
+const POOL_R = 44, POOL_FULL = 0.45, POOL_MID = 0.82, POOL_EDGE = 0.57;
 const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 };      // 17:15: the whole watch at 120 %, centred
 /** the whole watch's frame, width and height in mm: known before anything is drawn (show mode's Fit, the swoop) */
 export const fullBox = (kind = null, size = 1, bracelet = false) => {
@@ -824,7 +827,7 @@ export function draw(o) {
   BRACELET_KIND = o.strap === "links" ? "links" : "vault";      // the diver's two bracelets
   const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
   const make = (mode) => { GLINT = mode; return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur); };
-  const R = STYLE_.ramp, vb = (x, y, w, h) => `${f(x)} ${f(y)} ${f(w)} ${f(h)}`;
+  const vb = (x, y, w, h) => `${f(x)} ${f(y)} ${f(w)} ${f(h)}`;
   const [fw, fh] = fullBox(o.key, o.size, o.strap === "bracelet" || o.strap === "links");
   const box = o.view === "full" ? [-fw / 2, -fh / 2, fw, fh] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];      // the exported picture's frame
   // two colours: a gradient at 45°, the first at the top left, the second at the bottom right of the drawing's box
@@ -832,10 +835,12 @@ export function draw(o) {
   const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f(cx - e)}" y1="${f(cy - e)}" x2="${f(cx + e)}" y2="${f(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";
   const ground = (svg, fill) => svg.replace('<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>', `${lin ? `<defs>${lin}</defs><rect x="-300" y="-300" width="600" height="600" fill="url(#floorg)"/>` : ""}<rect x="-300" y="-300" width="600" height="600" fill="${fill}"/>`);
   if (o.lighting !== "flat") {      // dramatic: the spotlight and the flare, in any view (the view is only how far in)
-    // the spotlight: on one colour its own lighter and darker tones; over a gradient, a light and a dark laid over it
-    const stops = two ? `<stop offset="0" stop-color="#fff" stop-opacity="0.24"/><stop offset="0.55" stop-color="#fff" stop-opacity="0.12"/><stop offset="1" stop-color="#000" stop-opacity="0.1"/>`
-      : `<stop offset="0" stop-color="${hsl(o.floor, R[0])}"/><stop offset="0.55" stop-color="${hsl(o.floor, R[1])}"/><stop offset="1" stop-color="${hsl(o.floor, R[2])}"/>`;
-    const pool = `<radialGradient id="pool" cx="${f(Math.cos(rad(o.L)) * 6)}" cy="${f(Math.sin(rad(o.L)) * 6)}" r="24" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
+    // the spotlight (#528; Okay, 24 Oct 2026: "A non animated spotlight, darker bg. Spotlight highlights bg to real color"):
+    // still, on the watch's centre whatever the sun; at its middle the ground's own colour, falling to POOL_EDGE of its
+    // lightness; over a gradient, clear in the middle and black at the edge
+    const stops = two ? `<stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="${POOL_FULL}" stop-color="#000" stop-opacity="0"/><stop offset="0.7" stop-color="#000" stop-opacity="${f(1 - POOL_MID)}"/><stop offset="1" stop-color="#000" stop-opacity="${f(1 - POOL_EDGE - 0.08)}"/>`
+      : `<stop offset="0" stop-color="${o.floor}"/><stop offset="${POOL_FULL}" stop-color="${o.floor}"/><stop offset="0.7" stop-color="${hsl(o.floor, POOL_MID)}"/><stop offset="1" stop-color="${hsl(o.floor, POOL_EDGE)}"/>`;
+    const pool = `<radialGradient id="pool" cx="0" cy="0" r="${POOL_R}" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
     return ground(make(o.flareOn ? "flare" : "off").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, pool), "url(#pool)").replace("__VB__", vb(...box));
   }
   return ground(make("off"), two ? "none" : o.floor).replace("__VB__", vb(...box));

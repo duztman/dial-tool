@@ -2478,11 +2478,12 @@ await shot("10-bar");
   check(bio && ground.open && ground.tiles === 20 && ground.auto && ground.adds === 2 && ground.square && ground.two && !ground.version && tiles.bezel === 2 && tiles.cases >= 4,
     `show mode's title has no version and its mark opens no bio; Backdrop opens Auto, the ten colours and the ten gradients (${ground.tiles} tiles; Ember a gradient), a + for each (#510; Okay, 25 Oct 2026: "Make the all swatches same, large size, gradents are 2x blocks of the same single swatch": a gradient as tall as a colour, wider than two: ${ground.square}); Case is picture tiles (${tiles.cases}), Field pressed`);
   { // show mode's eye (Okay, 25 Oct 2026: "Eye hides bar too"; "Dial tool header stays on collapsed panels on show case same as main")
-    const at = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { title: Math.round(r(".mast").left), bar: Math.round(r(".bar").top) }; });
+    const at = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { title: Math.round(r(".mast").left), edge: Math.round(innerWidth - r(".mast").right), bar: Math.round(r(".bar").top) }; });
     const before = await at(); await page.click("#eye-box"); await page.waitForTimeout(1500); const alone = await at(), h = await page.evaluate(() => innerHeight);
     await page.click("#eye-box"); await page.waitForTimeout(1500); const after = await at();
-    check(alone.bar >= h - 1 && alone.title === before.title && after.bar === before.bar && after.title === before.title,
-      `show mode's eye: the bar slides out (its top ${before.bar} → ${alone.bar} of ${h}) and the title stays (${before.title} → ${alone.title}); both back after (${after.bar}, ${after.title})`);
+    const edge = alone.edge;
+    check(alone.bar >= h - 1 && edge === 16 && after.bar === before.bar && after.title === before.title,
+      `show mode's eye: the bar slides out (its top ${before.bar} → ${alone.bar} of ${h}) and the title goes flush right, ${edge} px from the edge (Okay: "on right name needs to stay flush right sadly, an exception"); both back after (${after.bar}, ${after.title})`);
   }
   { // the diver's two bracelets, closed round a wrist (#529; Okay, 25 Oct 2026: "Links add. Bracelets viewed ad closed … Not for other straps")
     const was = await page.evaluate(() => [window.dial_tool.S.bezel, window.dial_tool.S.strap]);
