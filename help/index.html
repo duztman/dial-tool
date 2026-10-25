@@ -8,9 +8,9 @@
 <title>Dial Tool · Help</title>
 <meta name="description" content="Every pane and control of Dial Tool, in one sentence each.">
 <style>
-@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2?v=0f10515) format("woff2")}
-@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2?v=0f10515) format("woff2")}
-@font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2?v=0f10515) format("woff2")}
+@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2?v=43dffaf) format("woff2")}
+@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2?v=43dffaf) format("woff2")}
+@font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2?v=43dffaf) format("woff2")}
 :root{--name:9em;--spec:10em;--row-top:13.5px;--row-bottom:19.5px;--bug:#c8331b;--map-w:211px;--map-h:132px;--map-frame:7px;--map-ring:5px;--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
 *{box-sizing:border-box}html{scroll-padding-top:96px;scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -138,6 +138,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 @media (max-width:760px){.pane > figure{max-width:100%}}
 .shot .pic{position:relative;display:inline-block;vertical-align:top}.shot .pic img{display:block}      /* the numbers count on the picture alone, not its caption */
 @media (max-width:760px){.pane > figure.shot{margin-left:22px;max-width:calc(100% - 44px)}}      /* room for the numbers beside a picture */
+.pane > table.matrix{border-top:0;border-bottom:0;margin-top:0}.matrix thead th{border-bottom:1px solid var(--line)}      /* in a pane, the pane's rules frame it */
 </style>
 </head>
 <body>
@@ -173,7 +174,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <h2 id="screen"><span class="map" data-map="screen" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span>The screen</h2>
 <p class="lead">The window's eight parts, by number.</p>
 <figure class="shot">
-  <img src="img/screen.webp?v=0f10515" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
+  <img src="img/screen.webp?v=43dffaf" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
   <i style="left:23.5%;top:2.4%">①</i><i style="left:30.5%;top:9.5%">②</i><i style="left:80%;top:20%">③</i><i style="left:47.5%;top:3.1%">④</i>
   <i style="left:89.5%;top:3.1%">⑤</i><i style="left:41.5%;top:86%">⑥</i><i style="left:95%;top:89%">⑦</i><i style="left:33.5%;top:96.5%">⑧</i>
 </figure>
@@ -214,7 +215,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 
 <section class="pane">
   <h3>Dial</h3>
-  <figure><img src="img/controller-desk.webp?v=0f10515" width="440" height="325" style="--w:440px" alt="Press a row's name, here Diameter, and its controller opens over the row"><figcaption>Press a row's name, here Diameter, and its controller opens over the row. Drag the big slider, or press − and +. The number on top is ready to type over.</figcaption></figure>
+  <figure><img src="img/controller-desk.webp?v=43dffaf" width="440" height="325" style="--w:440px" alt="Press a row's name, here Diameter, and its controller opens over the row"><figcaption>Press a row's name, here Diameter, and its controller opens over the row. Drag the big slider, or press − and +. The number on top is ready to type over.</figcaption></figure>
   <dl class="rows">
     <div><dt>Plate</dt><dd>The plate's colour: the pill on the Dial heading line, with no row of its own.</dd><dd class="spec"><span>Navy, #25305A</span></dd></div>
     <div><dt>Diameter</dt><dd>The plate's diameter. Typed 5–300; past that it stops and says so.</dd><dd class="spec"><b>15–50 mm</b><span>34</span></dd></div>
@@ -236,7 +237,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <section class="pane">
   <h3>Colours</h3>
   <p>Folded, its heading line shows the dial's colours as tiny swatches.</p>
-  <figure><img src="img/colour.webp?v=0f10515" width="404" height="358" style="--w:404px" alt="Press a swatch to open its colour"><figcaption>Press a swatch to open its colour. Pick from On this dial or the Palette, or drag in the square and along the rainbow strip. You can also type RGB, CMYK or HEX.</figcaption></figure>
+  <figure><img src="img/colour.webp?v=43dffaf" width="404" height="358" style="--w:404px" alt="Press a swatch to open its colour"><figcaption>Press a swatch to open its colour. Pick from On this dial or the Palette, or drag in the square and along the rainbow strip. You can also type RGB, CMYK or HEX.</figcaption></figure>
   <dl class="rows">
     <div><dt>Colours</dt><dd>Every colour on the dial in one list: a line per ring, top first, by its name or kind (a band with more than one position: a swatch per sector); Hour hand, Minute hand, Seconds hand; Cap; Window 1–4 for each window that is on, its frame colour.</dd><dd class="spec"></dd></div>
   </dl>
@@ -273,7 +274,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <section class="pane">
   <h3>Rings, top first</h3>
   <p>The pinned pane: it stays in view while the panes under it scroll. Folded, it reads "Rings: " and the chosen ring's name, then its kind · colour · radius.</p>
-  <figure><img src="img/ringlist.webp?v=0f10515" width="468" height="247" style="--w:468px" alt="The ring list, top ring first"><figcaption>The ring list, top ring first. Press a ring to choose it. Its drawer opens with what it shows and where. The buttons on the right add, move, copy and delete rings.</figcaption></figure>
+  <figure><img src="img/ringlist.webp?v=43dffaf" width="468" height="247" style="--w:468px" alt="The ring list, top ring first"><figcaption>The ring list, top ring first. Press a ring to choose it. Its drawer opens with what it shows and where. The buttons on the right add, move, copy and delete rings.</figcaption></figure>
   <dl class="rows">
     <div><dt>Tools</dt><dd>On the heading line, for the chosen ring:<span class="row"><span><i class="ic" data-ic="tool-add-a-ring"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 3.75V12.75M3.75 8.25H12.75"></path></g></svg></i>Add a ring</span><span><i class="ic" data-ic="tool-move-up"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 13.25V3.25M4.25 7.25L8.25 3.25L12.25 7.25"></path></g></svg></i>Move up</span><span><i class="ic" data-ic="tool-move-down"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 3.25V13.25M4.25 9.25L8.25 13.25L12.25 9.25"></path></g></svg></i>Move down</span><span><i class="ic" data-ic="tool-duplicate"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><rect x="5.75" y="5.75" width="7.5" height="7.5"></rect><path d="M10.25 5.75V2.75H2.75V10.25H5.75"></path></g></svg></i>Duplicate</span><span><i class="ic" data-ic="tool-delete"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M2.75 4.75H13.75M6.25 2.25H10.25"></path><path d="M4.25 4.75L5 13.25H11.5L12.25 4.75"></path></g></svg></i>Delete</span></span> A tool that can't act is faint: Move up on the top row, Move down on the bottom one, Delete when there is one ring.</dd><dd class="spec"></dd></div>
     <div><dt>Add a ring</dt><dd>Opens the five kinds, each with its picture; the new ring goes in above the chosen one. Escape closes the menu.</dd><dd class="spec"></dd></div>
@@ -370,7 +371,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 
 <section class="pane">
   <h3>Positions</h3>
-  <figure><img src="img/positions.webp?v=0f10515" width="428" height="200" style="--w:428px" alt="Positions: the picture shows every place the ring can use"><figcaption>Positions: the picture shows every place the ring can use. Drag its outer band to move the start, and its inner band to move the span's end.</figcaption></figure>
+  <figure><img src="img/positions.webp?v=43dffaf" width="428" height="200" style="--w:428px" alt="Positions: the picture shows every place the ring can use"><figcaption>Positions: the picture shows every place the ring can use. Drag its outer band to move the start, and its inner band to move the span's end.</figcaption></figure>
   <dl class="rows">
     <div><dt>The picture</dt><dd>Every position as a mark: used ones in ink, skipped ones faint, the first a dot, the span a dotted arc. Drag in its outer band to move Start, inside it to move the span's end, in whole degrees.</dd><dd class="spec"></dd></div>
     <div><dt>Count</dt><dd>How many positions round the span: from the menu, or Custom… to type any whole number 1–360 (Enter or → takes it, Escape cancels). A new ring starts at 12 for markers and numerals, 60 for ticks, 1 for bands and text.</dd><dd class="spec"><b>1–360</b><span>12 Numerals, Markers · 4 Minute ticks</span></dd></div>
@@ -442,7 +443,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <section class="pane">
   <h3>The font sheet</h3>
   <p>Opens over the panel from the font box, or from Font in Edit one numeral. It comes back on the tab, search and filters it was left with, scrolled to the ring's font.</p>
-  <figure class="shot"><span class="pic"><img src="img/fonts.webp?v=0f10515" width="476" height="777" style="--w:476px" alt="The font sheet"><i style="left:-3.5%;top:5%">①</i><i style="left:103.5%;top:5.1%">②</i><i style="left:103.5%;top:9.6%">③</i><i style="left:-3.5%;top:10.4%">④</i><i style="left:-3.5%;top:16.6%">⑤</i><i style="left:103.5%;top:92.6%">⑥</i></span><figcaption>The font sheet. Each line shows a font's name, its numerals and stickers for what it can do. Press a line to use that font. ① Light · Dark · ② search (Find a font) · ③ the six filters: Sans · Serif · Variable · Condensed · Mono · Non-Latin · ④ Dial Tool's fonts · Installed · ⑤ a font's line (Arimo, the first in view) · ⑥ Legend (OpenType abbr.).</figcaption></figure>
+  <figure class="shot"><span class="pic"><img src="img/fonts.webp?v=43dffaf" width="476" height="777" style="--w:476px" alt="The font sheet"><i style="left:-3.5%;top:5%">①</i><i style="left:103.5%;top:5.1%">②</i><i style="left:103.5%;top:9.6%">③</i><i style="left:-3.5%;top:10.4%">④</i><i style="left:-3.5%;top:16.6%">⑤</i><i style="left:103.5%;top:92.6%">⑥</i></span><figcaption>The font sheet. Each line shows a font's name, its numerals and stickers for what it can do. Press a line to use that font. ① Light · Dark · ② search (Find a font) · ③ the six filters: Sans · Serif · Variable · Condensed · Mono · Non-Latin · ④ Dial Tool's fonts · Installed · ⑤ a font's line (Arimo, the first in view) · ⑥ Legend (OpenType abbr.).</figcaption></figure>
   <dl class="rows">
     <div><dt>Light · Dark</dt><dd>The ground the previews stand on, kept for the session.</dd><dd class="spec"></dd></div>
     <div><dt>Search</dt><dd>Find a font by name.</dd><dd class="spec"></dd></div>
@@ -525,7 +526,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
   <h3>Window at …</h3>
   <dl class="rows">
     <div><dt>Position</dt><dd>On the heading line: 3 · 6 · 9 · 12 · 4, then ···; the heading says where the window is. ··· opens Time: every place, 12 · 1:30 · 3 · 4 · 4:30 · 6 · 7:30 · 9 · 10:30, and a field for any time, where 2:15, 2.25 and 14:15 all mean a quarter past two. Set elsewhere, ··· shows the place.</dd><dd class="spec"><span>3</span></dd></div>
-    <div><dt>Complication</dt><dd>What the window shows. Each kind keeps its own shape, sizes, text, colours and font in this window; Position and Radius are shared.<span class="row"><span><i class="ic" data-ic="window-date"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 2.25H23.25M24.75 3.75V17.25M23.25 18.75H6.75M5.25 17.25V3.75"></path><path d="M23.25 2.25A1.5 1.5 0 0 1 24.75 3.75M24.75 17.25A1.5 1.5 0 0 1 23.25 18.75M6.75 18.75A1.5 1.5 0 0 1 5.25 17.25M5.25 3.75A1.5 1.5 0 0 1 6.75 2.25" stroke-width="1.625"></path><path d="M12.75 8L15.25 6V15" stroke-width="1.625"></path></svg></i>date</span><span><i class="ic" data-ic="window-day"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 4.25H26.25M27.75 5.75V15.25M26.25 16.75H3.75M2.25 15.25V5.75"></path><path d="M26.25 4.25A1.5 1.5 0 0 1 27.75 5.75M27.75 15.25A1.5 1.5 0 0 1 26.25 16.75M3.75 16.75A1.5 1.5 0 0 1 2.25 15.25M2.25 5.75A1.5 1.5 0 0 1 3.75 4.25" stroke-width="1.625"></path><path d="M10.75 14V7L15 12L19.25 7V14" stroke-width="1.5625"></path></svg></i>day</span><span><i class="ic" data-ic="window-am-pm"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.25 3.75H24.75M26.25 5.25V15.75M24.75 17.25H5.25M3.75 15.75V5.25"></path><path d="M24.75 3.75A1.5 1.5 0 0 1 26.25 5.25M26.25 15.75A1.5 1.5 0 0 1 24.75 17.25M5.25 17.25A1.5 1.5 0 0 1 3.75 15.75M3.75 5.25A1.5 1.5 0 0 1 5.25 3.75" stroke-width="1.625"></path><path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" fill="currentColor" stroke="none"></path></svg></i>am · pm</span><span><i class="ic" data-ic="window-moon-phase"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" fill="currentColor" stroke="none"></path><circle cx="15" cy="10.5" r="9.25"></circle></svg></i>moon</span></span><img src="img/windows.webp?v=0f10515" width="300" height="300" alt="A dial with four windows: the date at 12, the moon at 3, the day at 6, am · pm at 9."></dd><dd class="spec"><span>date</span></dd></div>
+    <div><dt>Complication</dt><dd>What the window shows. Each kind keeps its own shape, sizes, text, colours and font in this window; Position and Radius are shared.<span class="row"><span><i class="ic" data-ic="window-date"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 2.25H23.25M24.75 3.75V17.25M23.25 18.75H6.75M5.25 17.25V3.75"></path><path d="M23.25 2.25A1.5 1.5 0 0 1 24.75 3.75M24.75 17.25A1.5 1.5 0 0 1 23.25 18.75M6.75 18.75A1.5 1.5 0 0 1 5.25 17.25M5.25 3.75A1.5 1.5 0 0 1 6.75 2.25" stroke-width="1.625"></path><path d="M12.75 8L15.25 6V15" stroke-width="1.625"></path></svg></i>date</span><span><i class="ic" data-ic="window-day"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 4.25H26.25M27.75 5.75V15.25M26.25 16.75H3.75M2.25 15.25V5.75"></path><path d="M26.25 4.25A1.5 1.5 0 0 1 27.75 5.75M27.75 15.25A1.5 1.5 0 0 1 26.25 16.75M3.75 16.75A1.5 1.5 0 0 1 2.25 15.25M2.25 5.75A1.5 1.5 0 0 1 3.75 4.25" stroke-width="1.625"></path><path d="M10.75 14V7L15 12L19.25 7V14" stroke-width="1.5625"></path></svg></i>day</span><span><i class="ic" data-ic="window-am-pm"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.25 3.75H24.75M26.25 5.25V15.75M24.75 17.25H5.25M3.75 15.75V5.25"></path><path d="M24.75 3.75A1.5 1.5 0 0 1 26.25 5.25M26.25 15.75A1.5 1.5 0 0 1 24.75 17.25M5.25 17.25A1.5 1.5 0 0 1 3.75 15.75M3.75 5.25A1.5 1.5 0 0 1 5.25 3.75" stroke-width="1.625"></path><path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" fill="currentColor" stroke="none"></path></svg></i>am · pm</span><span><i class="ic" data-ic="window-moon-phase"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" fill="currentColor" stroke="none"></path><circle cx="15" cy="10.5" r="9.25"></circle></svg></i>moon</span></span><img src="img/windows.webp?v=43dffaf" width="300" height="300" alt="A dial with four windows: the date at 12, the moon at 3, the day at 6, am · pm at 9."></dd><dd class="spec"><span>date</span></dd></div>
     <div><dt>Big date</dt><dd>Under date: two holes, the tens and the units, each on a disc.</dd><dd class="spec"></dd></div>
     <div><dt>am · pm</dt><dd>Follows the time shown, AM · PM beside the time under the panel.</dd><dd class="spec"></dd></div>
     <div><dt>Picture</dt><dd>A moon window's picture, Arch · Phase · Line. Your own picture, from an SVG file, comes after v1.</dd><dd class="spec"><span>Arch</span></dd></div>
@@ -691,7 +692,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <section class="pane">
   <h3>Guides</h3>
   <p>The chevron beside Guides opens the list: which guides, and their colours. A press elsewhere or <kbd>Esc</kbd> closes it.</p>
-  <figure class="shot"><span class="pic"><img src="img/guides.webp?v=0f10515" width="256" height="471" style="--w:256px" alt="The Guides list"><i style="left:-3.5%;top:6.3%">①</i><i style="left:-3.5%;top:27.7%">②</i><i style="left:-3.5%;top:55.5%">③</i><i style="left:-3.5%;top:70.6%">④</i><i style="left:103.5%;top:12.6%">⑤</i><i style="left:-3.5%;top:86.8%">⑥</i><i style="left:-3.5%;top:93.2%">⑦</i><i style="left:103.5%;top:93.2%">⑧</i></span><figcaption>The Guides list. Each guide has a coloured dot and a chevron for its colour, or none. Add a line, a crosshair or a circle, and set one thickness for all of them. ① Dial · ② Rings · ③ Windows · ④ Added · ⑤ a line's colour dot + chevron (Centre hole) · ⑥ Add: Line · Crosshair · Circle · ⑦ Thickness 1 · 2 · 3 · ⑧ Reset All.</figcaption></figure>
+  <figure class="shot"><span class="pic"><img src="img/guides.webp?v=43dffaf" width="256" height="471" style="--w:256px" alt="The Guides list"><i style="left:-3.5%;top:6.3%">①</i><i style="left:-3.5%;top:27.7%">②</i><i style="left:-3.5%;top:55.5%">③</i><i style="left:-3.5%;top:70.6%">④</i><i style="left:103.5%;top:12.6%">⑤</i><i style="left:-3.5%;top:86.8%">⑥</i><i style="left:-3.5%;top:93.2%">⑦</i><i style="left:103.5%;top:93.2%">⑧</i></span><figcaption>The Guides list. Each guide has a coloured dot and a chevron for its colour, or none. Add a line, a crosshair or a circle, and set one thickness for all of them. ① Dial · ② Rings · ③ Windows · ④ Added · ⑤ a line's colour dot + chevron (Centre hole) · ⑥ Add: Line · Crosshair · Circle · ⑦ Thickness 1 · 2 · 3 · ⑧ Reset All.</figcaption></figure>
   <dl class="rows">
     <div><dt>Dial</dt><dd>Centre hole (cyan) and Centre lines (pink).</dd><dd class="spec"><span>both on</span></dd></div>
     <div><dt>Rings</dt><dd>Its menu: Selected · All · None; then a line per ring, the chosen ring's name in a pill.</dd><dd class="spec"><span>Selected</span></dd></div>
@@ -716,7 +717,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <section class="pane">
   <h3>Shadows</h3>
   <p>The pane opens upward over the panel's column, the dial in view. A press elsewhere or <kbd>Esc</kbd> closes it.</p>
-  <figure class="shot"><span class="pic"><img src="img/shadows.webp?v=0f10515" width="514" height="589" style="--w:514px" alt="The Shadows pane"><i style="left:-3.5%;top:8.1%">①</i><i style="left:103.5%;top:9.1%">②</i><i style="left:-3.5%;top:45.2%">③</i><i style="left:103.5%;top:45.2%">④</i><i style="left:-3.5%;top:91.9%">⑤</i></span><figcaption>The Shadows pane. Move the sun to set where the light comes from, and set how high each part stands above the plate. ① the sun picture · ② Angle° · Height · Strength % · ③ Part Heights (Cap · Seconds · Minutes · Hours · Plate · Disc at 3) · ④ Parts, the exploded view · ⑤ the foot: Shadows · Soft edges · Bevels % · Reset.</figcaption></figure>
+  <figure class="shot"><span class="pic"><img src="img/shadows.webp?v=43dffaf" width="514" height="589" style="--w:514px" alt="The Shadows pane"><i style="left:-3.5%;top:8.1%">①</i><i style="left:103.5%;top:9.1%">②</i><i style="left:-3.5%;top:45.2%">③</i><i style="left:103.5%;top:45.2%">④</i><i style="left:-3.5%;top:91.9%">⑤</i></span><figcaption>The Shadows pane. Move the sun to set where the light comes from, and set how high each part stands above the plate. ① the sun picture · ② Angle° · Height · Strength % · ③ Part Heights (Cap · Seconds · Minutes · Hours · Plate · Disc at 3) · ④ Parts, the exploded view · ⑤ the foot: Shadows · Soft edges · Bevels % · Reset.</figcaption></figure>
   <dl class="rows">
     <div><dt>Sun</dt><dd>Drag anywhere in the picture: round sets the angle, toward the middle sets it higher. Its rays lengthen with Strength.</dd><dd class="spec"></dd></div>
     <div><dt>Angle°</dt><dd>Where the light comes from.</dd><dd class="spec"><b>0–359°</b><span>176</span></dd></div>
@@ -745,7 +746,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 
 <section class="pane">
   <h3>The bar</h3>
-  <figure><img src="img/zoom.webp?v=0f10515" width="112" height="48" style="--w:112px" alt="Zoom out, Zoom in, and Fit to show the whole page again"><figcaption>Zoom out, Zoom in, and Fit to show the whole page again. Scrolling also zooms.</figcaption></figure>
+  <figure><img src="img/zoom.webp?v=43dffaf" width="112" height="48" style="--w:112px" alt="Zoom out, Zoom in, and Fit to show the whole page again"><figcaption>Zoom out, Zoom in, and Fit to show the whole page again. Scrolling also zooms.</figcaption></figure>
   <dl class="rows">
     <div><dt><i class="ic" data-ic="play"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true"><circle cx="17" cy="17" r="17"></circle><circle cx="17" cy="17" r="15.5"></circle><path d="M2.753 13.182A14.75 14.75 0 0 1 27.430 6.570" stroke-width="1.5"></path><path d="M31.247 20.818A14.75 14.75 0 0 1 6.570 27.430" stroke-width="1.5"></path><filter id="h-play-play-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1"></feGaussianBlur></filter><path d="M23.975 17.000L13.513 23.041L13.512 10.959Z" filter="url(#h-play-play-soft)"></path></svg></i>Play · Pause</dt><dd>Runs time; the button pulses with the beat.</dd><dd class="spec"></dd></div>
     <div><dt>Speed</dt><dd>How fast time runs: 0.1 · 0.25 · 0.5 · 1×, then smoothly on to 720×, a dot at 1×. Not part of the dial.</dd><dd class="spec"><b>0.1×–720×</b><span>1×</span></dd></div>
@@ -774,7 +775,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <section class="pane">
   <h3>Its parts, by number</h3>
 <figure class="shot">
-  <img src="img/show.webp?v=0f10515" width="1440" height="900" alt="Dial Tool in show mode: a gold Diver on a leather strap in the canvas on the left, the panel with the Watch tab open on the right, buttons in the canvas's corners, the time bar along the bottom.">
+  <img src="img/show.webp?v=43dffaf" width="1440" height="900" alt="Dial Tool in show mode: a gold Diver on a leather strap in the canvas on the left, the panel with the Watch tab open on the right, buttons in the canvas's corners, the time bar along the bottom.">
   <i style="left:90.6%;top:2.4%">①</i><i style="left:72.6%;top:9.5%">②</i><i style="left:72.6%;top:20%">③</i><i style="left:72.6%;top:89.5%">④</i><i style="left:58%;top:18%">⑤</i>
   <i style="left:15.6%;top:3.1%">⑥</i><i style="left:8.9%;top:90%">⑦</i><i style="left:68.6%;top:88%">⑧</i><i style="left:26%;top:96.5%">⑨</i>
 </figure>
@@ -862,7 +863,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <section class="pane">
   <h3>Light</h3>
   <p>The Light tab's top; it stays in view under the tabs.</p>
-  <figure><img src="img/show-light.webp?v=0f10515" width="356" height="564" style="--w:356px" alt="Light → Sun: drag the sun to set where the light comes from"><figcaption>Light → Sun: drag the sun to set where the light comes from. Nearer the middle is higher.</figcaption></figure>
+  <figure><img src="img/show-light.webp?v=43dffaf" width="356" height="564" style="--w:356px" alt="Light → Sun: drag the sun to set where the light comes from"><figcaption>Light → Sun: drag the sun to set where the light comes from. Nearer the middle is higher.</figcaption></figure>
   <dl class="rows">
     <div><dt>Style</dt><dd>Engineer · Miyazaki.</dd><dd class="spec"><span>Miyazaki</span></dd></div>
     <div><dt>Lighting</dt><dd>Dramatic · Flat. With Gradients off, Flat is drawn whatever this says.</dd><dd class="spec"><span>Dramatic</span></dd></div>
@@ -933,7 +934,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 
 <section class="pane">
   <h3>Backdrop</h3>
-  <figure><img src="img/backdrop-show.webp?v=0f10515" width="514" height="477" style="--w:514px" alt="In show mode, Backdrop opens the presets"><figcaption>In show mode, Backdrop opens the presets. Choose one colour or a gradient, or add your own with +.</figcaption></figure>
+  <figure><img src="img/backdrop-show.webp?v=43dffaf" width="514" height="477" style="--w:514px" alt="In show mode, Backdrop opens the presets"><figcaption>In show mode, Backdrop opens the presets. Choose one colour or a gradient, or add your own with +.</figcaption></figure>
   <dl class="rows">
     <div><dt>Auto</dt><dd>The paint's own ground: Stone #B9B3A6 for Engineer, Umber #877F6D for Miyazaki, following Style. Any other pick turns it off.</dd><dd class="spec"><span>off</span></dd></div>
     <div><dt>One colour</dt><dd>Stone · Umber · Paper · Bone · Sky · Sage · Olive · Brick · Slate · Night, then yours, then +.</dd><dd class="spec"></dd></div>
@@ -1011,7 +1012,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 
 <section class="pane">
   <h3>Controls</h3>
-  <figure><img src="img/controller-ipad.webp?v=0f10515" width="440" height="325" style="--w:440px" alt="On an iPad, tap a row's name or its slider and the controller opens"><figcaption>On an iPad, tap a row's name or its slider and the controller opens. The finger that opened it can slide it straight away. Nothing is chosen to type over, so no keyboard comes up until you tap the number.</figcaption></figure>
+  <figure><img src="img/controller-ipad.webp?v=43dffaf" width="440" height="325" style="--w:440px" alt="On an iPad, tap a row's name or its slider and the controller opens"><figcaption>On an iPad, tap a row's name or its slider and the controller opens. The finger that opened it can slide it straight away. Nothing is chosen to type over, so no keyboard comes up until you tap the number.</figcaption></figure>
   <dl class="rows">
     <div><dt>A slider</dt><dd>Mouse: drag it; hold it and move away from the track, up or down, to go finer. Finger: a touch opens the controller over the row; keep sliding and the value follows.</dd><dd class="spec"><b>down to 1/20 speed</b></dd></div>
     <div><dt>A row's name</dt><dd>Mouse: a press opens the controller; a drag sideways changes the value, <kbd>⇧</kbd> ten times finer. Finger: opens the controller.</dd><dd class="spec"></dd></div>
@@ -1034,7 +1035,7 @@ table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px 
 <section class="pane">
   <h3>Narrower than 860 px</h3>
   <p>An iPad upright, a phone, a narrow window.</p>
-  <figure><img src="img/ipad.webp?v=0f10515" width="1440" height="1001" alt="Dial Tool on an iPad on its side: the panel on the left, the dial on the right, the bar along the bottom"><figcaption>Dial Tool on an iPad on its side: the panel on the left, the dial on the right, the bar along the bottom.</figcaption></figure>
+  <figure><img src="img/ipad.webp?v=43dffaf" width="1440" height="1001" alt="Dial Tool on an iPad on its side: the panel on the left, the dial on the right, the bar along the bottom"><figcaption>Dial Tool on an iPad on its side: the panel on the left, the dial on the right, the bar along the bottom.</figcaption></figure>
   <dl class="rows">
     <div><dt>The panel</dt><dd>Becomes a drawer to drag up and down.</dd><dd class="spec"></dd></div>
     <div><dt>The bar</dt><dd>Keeps Fit alone, so pinch to zoom.</dd><dd class="spec"></dd></div>
