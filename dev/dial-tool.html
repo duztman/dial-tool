@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.19 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.20 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7433,7 +7433,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.19";
+var VERSION = "beta 4.94.20";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -12815,7 +12815,7 @@ ROWS.Watch = [
   pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i2) => insert_picture(i2), { show: (S) => CASE_OF_BEZEL[S.bezel] === "diver" }),
   // tiles, each insert a ring in its two colours
   hdr("Strap", { folded: false }),
-  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO", "Links"], { order: [1, 3, 2, 4], offered: (S) => CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3, 4] : [1, 3], get: (S) => S.strap === 0 ? 1 : S.strap }),
+  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO", "Links"], { free: true, order: [1, 3, 2, 4], offered: (S) => CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3, 4] : [1, 3], get: (S) => S.strap === 0 ? 1 : S.strap }),
   // 0 (an older file) reads as Leather, so a pill is always lit      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
   col("c_strap", "Leather", { show: (S) => ![2, 3, 4].includes(S.strap) }),
   // the NATO (#524; Okay, 24 Oct 2026: "Nato colors should be selectable. One solid option. Options can be free living
