@@ -138,6 +138,7 @@
   .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: max(var(--num-pop), var(--num-pop-w, 0px)); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); color: var(--ink); }      /* its ground is its twin under it (.numground) */
   .numground { position: fixed; z-index: 30; border-radius: var(--num-pop-round); background: var(--num-pop-ground); mix-blend-mode: multiply; pointer-events: none; }
   .numground.screen { mix-blend-mode: screen; }
+  .numpop.screen { color: var(--black); }      /* on a screened ground (a dark canvas, show mode, a night popup) the ground is light, so the words are black (Okay, 25 Oct 2026: "Controllers need to invert on this dark bg") */
   .numground.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   .numpop.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   /* the value: its figures centred in the grey pill, bold, in the square's grey */

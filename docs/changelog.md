@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.94.6 (web version) · 25 Oct 2026 — real ends for the heights; the controller inverts on a night popup; the fat sliders as drawn
+
+Okay, 25 Oct 2026, 17:08: "Cap height should not be thiiiiis high. All controllers and ipad actions, slides, on offs on visuals, behaviors should be checked … Controllers need to invert on this dark bg … Take a look at my sliders drawings. Compare to yours."
+
+- **The ends from a real watch**: the cap to 2 mm (was 4), a hand to 1.5 (was 3), a disc to 1 under the plate (was 2) — a hand stack under a crystal is 1–2.5 mm.
+- **A controller opened from a night popup** (the Shadows pane, the guides' list) counts as on a dark ground: its twin screens instead of multiplying, so the box is light over the night, and its words are black on it (`.numpop.screen`). The Shadows rows' controllers keep the red slider.
+- **The three fat sliders as his drawing**: the thin fill is 4 thick inside the 15 track (it had grown to the track's height) and starts 8 in from the track's end (`--shade-fill`, `--shade-fill-in`).
+- Checked in the window test: the pane's measures, the limits, the disc rows, the touch section (a finger on the rows and the controller). Not checkable here: Safari's hover on the iPad — for Okay.
+
 ## beta 4.94.5 (web version) · 25 Oct 2026 — the lit part's line says what the slider changes; the pane 498 wide everywhere
 
 Okay, 25 Oct 2026, 16:37, after sketches of other ways (one scale on every row; one lane with four thumbs; the diagram as the control — set aside: "No no no, this made it more cumbersome. Dont change our visual adjustments. Sliders we have, how can they adapt … Identify the changing bit of the sliding slider as the section of the red line and make that section dashed"), and his drawing of 16:55.

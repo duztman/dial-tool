@@ -221,8 +221,11 @@ export const GUIDES = {
       const i = ORDER.indexOf(name), above = ORDER.slice(0, i).filter((h) => shown(S, h)).at(-1), below = ORDER.slice(i + 1).filter((h) => shown(S, h))[0];
       return [below ? +(S[KEY[below]] + STEP).toFixed(2) : lo, above ? +(S[KEY[above]] - STEP).toFixed(2) : hi];
     };
-    const heights = [part("sh_cap", "Cap", 0, 4, STEP, "cap", { bounds: bounds("cap", 0, 4) }), part("sh_second", "Seconds", 0, 3, STEP, "second", { bounds: bounds("second", 0, 3) }),
-      part("sh_minute", "Minutes", 0, 3, STEP, "minute", { bounds: bounds("minute", 0, 3) }), part("sh_hour", "Hours", 0, 3, STEP, "hour", { bounds: bounds("hour", 0, 3) })];
+    // the ends from a real watch: a hand stack under the crystal is 1–2.5 mm, the cap's top the highest (Okay, 25 Oct 2026,
+    // 17:08: "Cap height should not be thiiiiis high")
+    const CAP_MAX = 2, HAND_MAX = 1.5;
+    const heights = [part("sh_cap", "Cap", 0, CAP_MAX, STEP, "cap", { bounds: bounds("cap", 0, CAP_MAX) }), part("sh_second", "Seconds", 0, HAND_MAX, STEP, "second", { bounds: bounds("second", 0, HAND_MAX) }),
+      part("sh_minute", "Minutes", 0, HAND_MAX, STEP, "minute", { bounds: bounds("minute", 0, HAND_MAX) }), part("sh_hour", "Hours", 0, HAND_MAX, STEP, "hour", { bounds: bounds("hour", 0, HAND_MAX) })];
     const plate = el("div", { className: "row side ref" }, el("label", { textContent: "Plate" }));
     this.shadow_discs = el("div", { className: "shadowdiscs" });
     this.shadow_disc_rows = [];
@@ -437,9 +440,9 @@ export const GUIDES = {
     const key = JSON.stringify(shown.map(([w, i]) => [i, w.at, w.at_deg]));
     if (this.shadow_discs.dataset.wins !== key) {
       this.shadow_discs.dataset.wins = key;
-      this.shadow_disc_rows = shown.map(([w, i]) => this.build_row({ ...num("depth", `Disc at ${w.at_deg != null ? Math.round(w.at_deg) + "°" : G.DATE_AT[w.at][0]}`, 0, 2, 0.05, { side: true, part: "disc-" + i,
+      this.shadow_disc_rows = shown.map(([w, i]) => this.build_row({ ...num("depth", `Disc at ${w.at_deg != null ? Math.round(w.at_deg) + "°" : G.DATE_AT[w.at][0]}`, 0, 1, 0.05, { side: true, part: "disc-" + i,
         get: () => this.disc_depth(G.windows_of(this.S)[i]),
-        put: (app, v) => { const W = G.windows_of(this.S)[i]; if (W) { W.depth = clamp(v, 0, 2); this.changed(); } } }), scope: "global" }));
+        put: (app, v) => { const W = G.windows_of(this.S)[i]; if (W) { W.depth = clamp(v, 0, 1); this.changed(); } } }), scope: "global" }));
       this.shadow_discs.replaceChildren(...this.shadow_disc_rows.map((r) => r.el));
     }
     for (const r of [...this.shadow_rows, ...this.shadow_disc_rows]) r.refresh(this.S);

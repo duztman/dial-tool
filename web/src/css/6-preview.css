@@ -275,10 +275,10 @@
   .shadelist .row.named > label { font-size: var(--t-s); color: var(--ink); }
   .shadelist .row.named > .lane { position: relative; display: grid; --track: var(--shade-track); --thumb: var(--shade-knob); margin-inline: var(--shade-slide-in); }      /* the slider: a fat track with a thin fill inside it, the knob a pill with the value */
   .shadelist .row.named > .lane > input[type="range"] { grid-column: 1; height: var(--shade-knob); }
-  .shadelist .row.named > .lane > input[type="range"]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--ink) var(--fill), transparent var(--fill)) center / 100% var(--track) no-repeat, var(--well); }
+  .shadelist .row.named > .lane > input[type="range"]::-webkit-slider-runnable-track { background: linear-gradient(to right, transparent var(--shade-fill-in), var(--ink) var(--shade-fill-in), var(--ink) var(--fill), transparent var(--fill)) center / 100% var(--shade-fill) no-repeat, var(--well); }      /* the thin fill (--shade-fill thick) starts a little inside the fat track's end and runs to the knob (his drawing) */
   .shadelist .row.named > .lane > input[type="range"]::-webkit-slider-thumb { background: var(--ink); }
   .shadelist .row.named > .lane > input[type="range"]::-moz-range-track { background: var(--well); }
-  .shadelist .row.named > .lane > input[type="range"]::-moz-range-progress { height: var(--track); background: var(--ink); }
+  .shadelist .row.named > .lane > input[type="range"]::-moz-range-progress { height: var(--shade-fill); background: var(--ink); }
   .shadelist .knobval { position: absolute; top: 50%; left: calc(var(--thumb) / 2 + var(--at, 0) * (100% - var(--thumb))); translate: -50% -50%; min-width: var(--thumb); height: var(--thumb); box-sizing: border-box; padding: 0 var(--u2); border-radius: var(--round-pill); background: var(--ink); color: var(--night); font-size: var(--t-xs); font-weight: 700; font-variant-numeric: tabular-nums; line-height: var(--thumb); text-align: center; pointer-events: none; }
   /* the parts: a hairline under the box, the heading line, then one line per part across both columns */
   .shadeparts { display: grid; grid-template-columns: minmax(0, 1fr) var(--stack-w); column-gap: var(--gap); align-items: stretch; margin-top: var(--shade-gap); margin-bottom: var(--shade-foot-gap); }
