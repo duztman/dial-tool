@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.94.1 (web version) · 25 Oct 2026 — faster, the same output
+
+Okay, 25 Oct 2026, 13:11: "Deeper look, what would make us and the app work faster, optimize but do not lose function." Measured first (`docs/handoff.md` §4b has the numbers), then only changes whose output is the same.
+
+- **For us**: `same.mjs` in 2 minutes instead of 4 — its three screens (mouse, finger, phone) walk at once in contexts of their own, and a snapshot reads the properties from a list made once instead of walking each element's style declaration (five times faster, byte-identical text, proved on every element). The window test is 126 s, 47 s of them sleeps that wait for the app's own animations — left as they are. The full `npm test` is about 3 minutes.
+- **For the app**: the packed engines and font are decoded by a plain loop (`Uint8Array.from` with a function was the single largest cost at start: 154 → 11 ms of a 600 ms first frame). PathKit gets our paths as numbers and gives them back as numbers (`_pk`, `_from_pk`; the SVG-text round trip cost more than Skia's own work: 2.3 ms against 0.3 for a ten-figure word) — a slider step on a heavy ring 40 % faster (the Gauge's Scale ring 40 → 22 ms, Rally 16 → 7). A stroke's round caps come back as conics, which have no place in our commands: that one path still goes through the text, as before. Coordinates are now exact to the float, not to five decimals; a file may differ from before in its fifth decimal.
+- Not changed, and why: the page's parse (~350 ms of the first frame) is the one-file build (R30) — gzip on the wire covers the download; `JSON.parse` for the big lists was tried and gave no gain above the noise; the rest of a slider step is Skia on text outlines.
+- Checked: labels, links, the moment, parity, the window test whole.
+
 ## beta 4.94 (web version) · 25 Oct 2026 — the step: app.js in parts
 
 Okay, 25 Oct 2026, 11:56: "Split app.js into how many as makes sense. Light load smooth running operation. Here and for users. Do 542 too."

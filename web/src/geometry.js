@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.94";
+export const VERSION = "beta 4.94.1";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -638,10 +638,12 @@ export function lean(S) {
 // ── the engines ──────────────────────────────────────────────
 
 let PK = null;                                     // PathKit (shape combining)
+let PK_VERB = null;                                // our command letters as PathKit's verbs (set at start)
 let HB = null;                                     // HarfBuzz (text)
 
 export function start(pathkit, harfbuzz) {
   PK = pathkit;
+  PK_VERB = { M: PK.MOVE_VERB, L: PK.LINE_VERB, C: PK.CUBIC_VERB, Z: PK.CLOSE_VERB };
   HB = harfbuzz;
 }
 
@@ -818,12 +820,32 @@ export class Path {
   }
 
   // shape combining — through PathKit, the result comes back as a plain path
+  /** this path as PathKit's (its commands handed over as numbers, not written out and read back: that round trip
+   *  cost more than the shape work itself — measured 25 Oct 2026, 2.3 ms against 0.3 for a ten-figure word). */
+  _pk() { return PK.FromCmds(this.d.map((c) => [PK_VERB[c[0]], ...c.slice(1)])); }
+  /** PathKit's path → ours, from its commands. A conic (a stroke's round cap) has no place in our commands: that path
+   *  is read from PathKit's SVG text, where Skia turns conics into quadratics, as before. */
+  static _from_pk(a) {
+    const cmds = a.toCmds();
+    if (cmds.some((c) => c[0] === PK.CONIC_VERB)) return Path.parse(a.toSVGString());
+    const p = new Path();
+    let x = 0, y = 0;
+    for (const c of cmds) {
+      const v = c[0];
+      if (v === PK.MOVE_VERB) { p.moveTo([c[1], c[2]]); x = c[1]; y = c[2]; }
+      else if (v === PK.LINE_VERB) { p.lineTo([c[1], c[2]]); x = c[1]; y = c[2]; }
+      else if (v === PK.CUBIC_VERB) { p.curveTo([c[1], c[2]], [c[3], c[4]], [c[5], c[6]]); x = c[5]; y = c[6]; }
+      else if (v === PK.QUAD_VERB) { p.curveTo([x + 2 / 3 * (c[1] - x), y + 2 / 3 * (c[2] - y)], [c[3] + 2 / 3 * (c[1] - c[3]), c[4] + 2 / 3 * (c[2] - c[4])], [c[3], c[4]]); x = c[3]; y = c[4]; }      // a quadratic, as a cubic (as parse does)
+      else if (v === PK.CLOSE_VERB) p.closePath();
+    }
+    return p;
+  }
   _combined(other, op) {
     if (empty(other)) return this.copy();
     if (empty(this)) return op === "UNION" ? other.copy() : new Path();
-    const a = PK.FromSVGString(this.svg(6)), b = PK.FromSVGString(other.svg(6));
+    const a = this._pk(), b = other._pk();
     a.op(b, PK.PathOp[op]);
-    const out = Path.parse(a.toSVGString())._wound();
+    const out = Path._from_pk(a)._wound();
     a.delete(); b.delete();
     return out;
   }
@@ -832,18 +854,18 @@ export class Path {
   difference(other) { return this._combined(other, "DIFFERENCE"); }
   removeOverlap() {
     if (empty(this)) return this;
-    const a = PK.FromSVGString(this.svg(6));
+    const a = this._pk();
     a.simplify();
-    this.d = Path.parse(a.toSVGString())._wound().d;
+    this.d = Path._from_pk(a)._wound().d;
     a.delete();
     return this;
   }
   /** the outline of a line of this width drawn along the path, round joins and ends. */
   expandStroke(width) {
-    const a = PK.FromSVGString(this.svg(6));
+    const a = this._pk();
     a.stroke({ width, join: PK.StrokeJoin.ROUND, cap: PK.StrokeCap.ROUND });
     a.simplify();
-    const out = Path.parse(a.toSVGString())._wound();
+    const out = Path._from_pk(a)._wound();
     a.delete();
     return out;
   }

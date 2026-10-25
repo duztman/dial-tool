@@ -74,7 +74,7 @@ globalThis.__DIAL = {
     harfbuzz: "${b64(require.resolve("harfbuzzjs/dist/harfbuzz.wasm"))}",
     font: "${b64(FONT)}",
   },
-  bytes(name) { return Uint8Array.from(atob(this.packed[name]), (c) => c.charCodeAt(0)); },
+  bytes(name) { const s = atob(this.packed[name]), out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; },      // a plain loop: Uint8Array.from with a function was the page's single largest cost at start (154 ms of 740, measured 25 Oct 2026)
 };
 window.addEventListener("error", (e) => { const a = document.getElementById("app"); if (a && a.textContent.startsWith("Starting")) a.innerHTML = '<p class="starting">Dial Tool couldn’t start: ' + e.message + '</p>'; });
 </script>

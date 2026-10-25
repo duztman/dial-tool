@@ -25,11 +25,12 @@ const kinds_seen = new Set();
 // in the page: every element's computed style, in the page's order
 const SNAP = (root_selector) => {
   const out = [];
+  const names = [...getComputedStyle(document.body)].filter((p) => !p.startsWith("--"));      // every property, once: the same list for every element; walking a style declaration itself costs five times as much (measured 25 Oct 2026: 1.0 s → 0.2 s a snapshot)
   const style_of = (e, pseudo) => {
     const cs = getComputedStyle(e, pseudo);
     if (pseudo && (cs.content === "none" || cs.content === "normal")) return "";
     let s = "";
-    for (const p of cs) if (!p.startsWith("--")) s += p + ":" + cs.getPropertyValue(p) + ";";
+    for (const p of names) s += p + ":" + cs.getPropertyValue(p) + ";";
     return s;
   };
   const roots = root_selector ? [...document.querySelectorAll(root_selector)].filter((e) => e.dataset.sameProbe === "1") : [document.body];
@@ -162,16 +163,16 @@ async function walk(page, screen, with_pointer) {
   await attempt("gallery dial", async () => { await page.click('.gallery a:has-text("Diver")'); await page.waitForTimeout(500); await tab(page, "Rings"); await snap(page, S("Diver from the Gallery, Rings")); await tab(page, "Dial"); await snap(page, S("Diver from the Gallery, Dial")); });
 }
 
-const mouse = await open({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
-await walk(mouse, "mouse", true);
-await mouse.context().close();
-const finger = await open({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
-await walk(finger, "finger", false);
-await finger.context().close();
-const phone = await open({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true });
-await walk(phone, "phone", false);
-await phone.context().close();
+// the three screens at once, each in a browser context of its own (they share nothing but the browser): the mouse's
+// walk, with its pointer states, is the long one, so the three together take about as long as it alone
+const t0 = Date.now();
+await Promise.all([
+  [{ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 }, "mouse", true],
+  [{ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }, "finger", false],
+  [{ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true }, "phone", false],
+].map(async ([options, screen, with_pointer]) => { const page = await open(options); await walk(page, screen, with_pointer); await page.context().close(); }));
 await browser.close();
+console.log(`looked in ${Math.round((Date.now() - t0) / 1000)} s`);
 
 const count = Object.values(states).reduce((n, rows) => n + rows.length, 0);
 if (saving) {
