@@ -2452,9 +2452,9 @@ await shot("10-bar");
       ev("pointerdown"); ev("pointerup"); const moved = [t.S.sh_from, t.S.sh_rise], fig = box.querySelector(".sunvalue .figure").textContent;
       t.set_value("global", "sh_from", was[0]); t.set_value("global", "sh_rise", was[1]);
       return { sharp: c.borderRadius === "0px" && c.outlineStyle === "solid", centred: Math.abs((d.left + d.right) / 2 - (p.left + p.right) / 2) < 0.5 && Math.abs((d.top + d.bottom) / 2 - (p.top + p.bottom) / 2) < 0.5,
-        lefts, numbox: Math.round(R(rows[0].querySelector(".numbox")).left), plain: !box.querySelector("input, button"), names, moved, fig }; });
+        lefts, numbox: Math.round(R(rows[0].querySelector(".numbox > .steps")).left), plain: !box.querySelector("input, button"), names, moved, fig }; });
     check(sb.sharp && sb.centred && sb.lefts.every((x) => x === sb.numbox) && sb.plain && sb.names.join(" · ") === "Angle ° · Height ° · Strength %" && sb.moved[0] === 90 && sb.fig === "90°",
-      `the Light tab's sun box: sharp outline, the picture centred in its space, the values flush left on the number boxes' line (${sb.lefts.join(" ")} / ${sb.numbox}), not editable, the rows under it ${sb.names.join(" · ")}; a press at the dial's east edge puts the sun at ${sb.moved.join("° · ")} and the value says ${sb.fig} (Okay, 25 Oct 2026: "Labels numbers stack flush left, not editable")`);
+      `the Light tab's sun box: sharp outline, the picture centred in its space, the values flush left on the minuses' line (${sb.lefts.join(" ")} / ${sb.numbox}; Okay, 18:01: "align with the minuses boxes from below"), not editable, the rows under it ${sb.names.join(" · ")}; a press at the dial's east edge puts the sun at ${sb.moved.join("° · ")} and the value says ${sb.fig} (Okay, 25 Oct 2026: "Labels numbers stack flush left, not editable")`);
   }
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(2400);

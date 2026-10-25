@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.94.10 (web version) · 25 Oct 2026 — the sun box's values on the minuses' line
+
+Okay, 25 Oct 2026, 18:01: "Only the stack on the right in sun box should align with the minuses boxes from below. Sun centers accordingly." The values' stack is as wide as a number box's − + (`--box-steps`), so it starts on the minus buttons' left line (1364 = 1364, measured); the picture takes the room before it, less a gap, and the dial stays centred in it. The window test's check follows.
+
 ## beta 4.94.9 (web version) · 25 Oct 2026 — the bar's view as three squares; the sun box on show mode's Light tab
 
 Okay, 25 Oct 2026, 17:31: "redesigning fit area at the end of black bar: like 3 stuck together canvas buttons on the bar, aligned with canvas brothers from edge. Two m glasses one with a plus other minus. And lastly the fit is an icon four arrows from a square's corners into center. Make them with icon rules." And: "the sun diagram takes its place under light, fits sensibly." Drawn first, in chat; the bar approved at once, the sun locked after four rounds ("Sun centres the open space. Inner sun box text all same size with the rest of ui. Faded colors. Black figures"). The dial parts' stack with ink heights and colours (show mode's Dial tab) is paused.

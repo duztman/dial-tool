@@ -29,7 +29,7 @@
 | `--black` | `#000` | pure, for what must show on any colour: the pointer label, the day's handle, the hues' strip | 1-tokens, 4e-colour ×3, 4f-rings ×3, 4g-fonts, 6-preview, 7-bar ×6, 8-narrow ×2 |  |
 | `--box-side-step` | `22px` | the number box beside a hand's box and in a quiet row (4.64): its value · each of − +; the colour list's ink-height box too | 1-tokens, 4d-hands, 4e-colour, 6-preview |  |
 | `--box-side-value` | `52px` | the number box beside a hand's box and in a quiet row (4.64): its value · each of − +; the colour list's ink-height box too | 1-tokens, 4d-hands, 4e-colour |  |
-| `--box-steps` | `var(--tile-w)` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows ×2 | 4d-hands `.row.side .numbox` → `calc(2 * var(--box-side-step))`; 4e-colour `.colourlist > .row.showline .numbox` → `calc(2 * var(--box-side-step))`; 4f-rings `.row.block .numbox` → `calc(2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)`; 6-preview `.popfoot .numbox` → `calc(2 * var(--box-side-step))` |
+| `--box-steps` | `var(--tile-w)` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows ×3 | 4d-hands `.row.side .numbox` → `calc(2 * var(--box-side-step))`; 4e-colour `.colourlist > .row.showline .numbox` → `calc(2 * var(--box-side-step))`; 4f-rings `.row.block .numbox` → `calc(2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)`; 6-preview `.popfoot .numbox` → `calc(2 * var(--box-side-step))` |
 | `--box-value` | `calc(var(--tile-w) + var(--unit))` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows ×2 | 4d-hands `.row.side .numbox` → `var(--box-side-value)`; 4e-colour `.colourlist > .row.showline .numbox` → `var(--box-side-value)`; 4f-rings `.row.block .numbox` → `calc(var(--pos-box) - 2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)`; 6-preview `.popfoot .numbox` → `var(--foot-value)` |
 | `--btn-pad` · special | `10px` | from a button's or a box's edge to its words | 1-tokens, 3-controls, 4g-fonts ×12 |  |
 | `--c` · the window's | `—` |  | 4e-colour ×2, 6-preview ×2 | set by guides.js, set by ui.js |
@@ -94,7 +94,7 @@
 | `--foot-value` · special | `36px` | the footer's number box: its value's width (Bevels %) | 6-preview |  |
 | `--frame-pad` · special | `8px` | inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none | 1-tokens, 4f-rings ×3, 4g-fonts ×4 |  |
 | `--gallery-lift` · special | `var(--hair)` | the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") | 4a-panel |  |
-| `--gap` | `12px` |  | 1-tokens ×10, 3-controls, 4a-panel ×7, 4b-lines-tabs ×2, 4c-rows, 4e-colour ×2, 4f-rings ×2, 4g-fonts ×3, 6-preview ×3, 7-bar ×2, 8-narrow ×2 | 8-narrow `:root` → `var(--u4)` |
+| `--gap` | `12px` |  | 1-tokens ×10, 3-controls, 4a-panel ×7, 4b-lines-tabs ×2, 4c-rows ×2, 4e-colour ×2, 4f-rings ×2, 4g-fonts ×3, 6-preview ×3, 7-bar ×2, 8-narrow ×2 | 8-narrow `:root` → `var(--u4)` |
 | `--glow` | `#FF7300` | the outline of what the pointer is on, in the preview | 6-preview |  |
 | `--glow-line` · special | `1.5px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview ×2 |  |
 | `--glow-under` · special | `4px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview |  |
@@ -172,7 +172,7 @@
 | `--night-rule` | `#4A4A46` |  | 3-controls ×3, 5-chosen, 6-preview ×13 |  |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
 | `--nudge` · special | `2px` | the eyes stand this much right of the margin: a pane's eye and a ring row's alike | 4a-panel, 4f-rings ×2 |  |
-| `--num-columns` | `var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w)` | a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges | 4c-rows ×2, 4g-fonts |  |
+| `--num-columns` | `var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w)` | a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges | 4c-rows, 4g-fonts |  |
 | `--num-pop` | `calc(var(--num-pop-inner) + 2 * var(--num-pop-pad))` |  | 4f-rings |  |
 | `--num-pop-disc` | `var(--black)` | his #585857 square, #B1B1B1 value pill and track; the discs and knob true black (Okay, 24 Oct 2026: "Controller darks actual black now") | 1-tokens, 4f-rings ×4 |  |
 | `--num-pop-disc-d` | `calc(var(--num-pop-small) * var(--num-pop-disc-k))` | − and + a further 15 % smaller (Okay, 24 Oct 2026, 18:31: "Buttons a bit more smaller %15") | 1-tokens, 4f-rings ×4 |  |

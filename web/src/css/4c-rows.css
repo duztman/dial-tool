@@ -118,15 +118,15 @@
 
   /* show mode's Light tab, the Sun pane's top (Okay, 25 Oct 2026, "sun locked"; guides.js, row_sunbox): one box, five
      rows high, its outline in the column's ink with sharp corners, drawn inside the box (an outline, so the columns
-     inside keep the rows' places: "box simply gets an outline with sharp corners to adapt to the environment"); laid
-     on the number row's columns — the picture over the open space before the number boxes' column, centred in it;
-     the values on that column, each name over its figure, flush left on the boxes' left line, at the rows' size,
+     inside keep the rows' places: "box simply gets an outline with sharp corners to adapt to the environment"); the
+     values at the right as wide as a number box's − +, each name over its figure, flush left on the minuses' line;
+     the picture centred in the open space before them, at the rows' size,
      names faded and figures in ink ("Labels numbers stack flush left, not editable … Faded colors. Black figures") */
   .row.sunrow { display: block; padding: var(--u2) 0; box-shadow: none; }
-  .sunbox { display: grid; grid-template-columns: var(--num-columns); height: calc(5 * var(--line)); outline: var(--hair) solid var(--ink); outline-offset: calc(-1 * var(--hair)); }
-  .sunbox > .sunpic { grid-column: 1 / 6; overflow: hidden; }
+  .sunbox { display: flex; height: calc(5 * var(--line)); outline: var(--hair) solid var(--ink); outline-offset: calc(-1 * var(--hair)); }
+  .sunbox > .sunpic { flex: 1; margin-right: var(--gap); overflow: hidden; }
       /* the picture's own colours: 6-preview.css, after the Shadows pane's, a later layer */
-  .sunbox > .sunvalues { grid-column: 7 / -1; display: flex; flex-direction: column; justify-content: space-evenly; }
+  .sunbox > .sunvalues { flex: none; width: var(--box-steps); display: flex; flex-direction: column; justify-content: space-evenly; white-space: nowrap; }      /* as wide as a number box's − +, so the stack starts on the minuses' line (Okay, 25 Oct 2026, 18:01: "the stack on the right in sun box should align with the minuses boxes from below. Sun centers accordingly") */
   .sunvalue { display: grid; }
   .sunvalue > .name { color: var(--grey); }
   .sunvalue > .figure { color: var(--ink); }
