@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.94.7 (web version) · 25 Oct 2026 — the fat sliders' thin fill starts with a round cap
+
+Okay, 25 Oct 2026, 17:16: "the white line needs round cap on start THIS ONLY". A dot of the fill's thickness at its start, the line from the dot's middle to the knob; nothing else touched.
+
 ## beta 4.94.6 (web version) · 25 Oct 2026 — real ends for the heights; the controller inverts on a night popup; the fat sliders as drawn
 
 Okay, 25 Oct 2026, 17:08: "Cap height should not be thiiiiis high. All controllers and ipad actions, slides, on offs on visuals, behaviors should be checked … Controllers need to invert on this dark bg … Take a look at my sliders drawings. Compare to yours."
