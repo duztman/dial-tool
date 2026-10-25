@@ -41,7 +41,7 @@ export function options(S, items, effects) {
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
     items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark") && HANDS.includes(x.name) ? x.name : null;
-      return { role: x.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? Math.max(0, Math.min(10, S.w_ink + ((x.role === "ring" && x.ring?.ring?.ink_d) || 0))) : 0 }; }),
+      return { role: x.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,
@@ -67,7 +67,7 @@ const angles_of = (items) => { const A = {}; for (const x of items) if (x.role =
 export function draw(tool, items) {
   const S = tool.S, g = tool.watch_g;
   const shapes = items.filter((x) => x.fill && !x.stroke);
-  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key].join("|");
+  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), G.windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(",")].join("|");      // which ink each part is printed with (#545)
   if (key !== tool.watch_key || !tool.watch_statik || tool.statik !== tool.watch_statik) {
     tool.watch_key = key; tool.watch_statik = tool.statik;
     const o = options(S, shapes, S.ui_effects), svg = WATCH.draw(o);

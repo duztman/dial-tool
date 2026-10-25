@@ -489,11 +489,21 @@ export const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.7
 
 // ── show mode's tabs (#509; the Show Case's column, re-hosted in the tool's rows). Their numbers in SECTIONS come after the dial side's (R9) ──
 ROWS["Show dial"] = [
-  hdr("Colours", { summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026); not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
+  // three panes, two ways of seeing one set of colours (#545; Okay, 25 Oct 2026, drawn and locked on a complex dial):
+  // Colours by what a part is, Inks by what a printer sees, Hands with their heights; a swatch in any of them is the
+  // same colour ("All colors editable … via different places, through inks and colors"; "colors also editable on hands
+  // pane everywhere")
+  hdr("Colours", { summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
-  hdr("Ink", { folded: false }),
-  num("w_ink", "All inks at once", 0, 10, 1, { whole: true }),      // every ring's ink together; each ring's own box in Colours keeps its step from it (#521)
-  info("How far the printed ink stands proud of the plate, every ring together; a ring's own box in Colours sets it higher or lower. 0 is flat ink.", {}),
+  hdr("Inks", { folded: false }),
+  custom("colhead", { head: true, text: "Height mm" }),
+  custom("inks"),
+  num("w_ink_all", "All inks at once", -0.3, 0.3, 0.01, { limits: [-G.INK_MOST, G.INK_MOST] }),      // every printed height moves by the same mm, each ink keeping its own (Okay, 24 Oct 2026: "adding to or subbing from each same amount")
+  hdr("Hands", { folded: false }),
+  custom("colhead", { head: true, text: "Height mm" }),
+  custom("show_hands"),
+  custom("bevel_pills"),
+  num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }),      // the hands' bevels' strength: the Shadows pane's Bevels %, one number in both places
 ];
 
 ROWS.Watch = [

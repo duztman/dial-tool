@@ -86,6 +86,20 @@ check(G.link_kind("#1.fZLRjtsgEEV_~x")?.scheme === 1 && G.link_kind("0.abc")?.sc
   check(/^[0-9A-HJKMNP-TV-Z]+$/.test(text) && same(G.un_base32(text), bytes) && same(forgiving, bytes) && G.un_base32("2U") === null, "base 32: 997 random bytes there and back; small letters, O, I, L and dashes read as meant; U is no letter of it");
 }
 
+// show mode's inks (#545): kept in the file and the session, never in a link; an older file's steps read as mm
+{
+  const S = G.fresh_settings({ w_ink: 8, rings: [{ kind: "numerals", c: [1, 0, 0, 1], ink_d: 2, ink_b: true }] });
+  delete S.version;
+  const old = G.fresh_settings({ w_ink: 8, rings: [{ kind: "numerals", c: [1, 0, 0, 1], ink_d: 2 }] });
+  check(Math.abs(old.w_ink_all - 0.07) < 1e-9 && Math.abs(old.w_inks["#FF0000"].h - 0.28) < 1e-9, `an older file's ink steps become mm: All inks 8 → +${old.w_ink_all} mm, a ring 2 steps up → its colour at ${old.w_inks["#FF0000"].h} mm`);
+  S.w_inks = { "#FF0000": { h: 0.3, two: true, b: 0.12 } }; S.w_ink_all = 0.02; S.windows[0].frame_b = true; S.windows[0].print_h = 0.1;
+  const L = G.lean(S), text = JSON.stringify(L);
+  check(!("w_inks" in L) && !("w_ink_all" in L) && !/ink_b|frame_b|print_h/.test(text), "the inks' heights and splits stay out of a link (R7, R31)");
+  const ring = { role: "ring", fill: [1, 0, 0, 1], ring: { ring: S.rings[0] } };
+  check(Math.abs(G.ink_mm(S, ring) - 0.14) < 1e-9 && Math.abs(G.ink_mm({ ...S, rings: [{ ...S.rings[0], ink_b: false }] }, { ...ring, ring: { ring: { ink_b: false } } }) - 0.32) < 1e-9,
+    "a part on B stands at B's height, on A at A's, All inks at once added to both");
+}
+
 // the key table: every key of the settings has a code, and the table only grows (its first 156 keys stay as they are)
 {
   const keys = [G.DEFAULTS, G.RING_BASE, G.HAND_BASE, G.WINDOW_BASE].flatMap((o) => Object.keys(o)).filter((k) => !k.startsWith("ui_") && k !== "version" && !G.NOT_IN_LINK(k));      // the watch's keys never travel in a link (show mode, 22 Oct 2026)

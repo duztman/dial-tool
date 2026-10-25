@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## beta 4.94.12 (web version) · 25 Oct 2026 — show mode's Dial tab: Colours · Inks · Hands
+
+Okay, 25 Oct 2026, 20:41: "finish show case's ink height color selectable thing now"; drawn in six rounds, on Rally, Moon phase and an invented complex dial, and locked ("Ok, done. Build it"). Build list #545.
+
+- **Colours**: every part by what it is — Dial, then RINGS · HANDS · WINDOWS in small capitals — each line its eye, its name and every colour it has (a band's sectors four to a line; a hand and the cap; a window's frame · disc · what is printed on it). No numbers there.
+- **Inks**: ON THE DIAL, one line per exact colour (two near-blacks are two inks: "Exact match only"), closed to start with its part count ("Closed, each says its part count"); its swatch recolours every part of it at once and its heights go with it ("recolours the whole ink"); its height in mm. Open, **Two inks** at the line's right end, its word stuck to it, and under it each part with its ink's height; on, the ink is A and B, each part an A | B pill before its name and its box its letter's height ("One thick red one thin possible via a switch on the pane"; "Just A · B"; two at most; his marks of 21:18: "a part on its letter's line", "Switch in the right place label stuck to it all the way to the right"). An ink of two parts has nothing to choose: split, its first part is A and its second B, the letters as text ("Switch stays, but on two item lists leave them text only"). A window's frame is one of the dial's inks ("Joins its colour's ink"). ON THE DISCS: each window's disc prints (figures, picture, shade, neighbours) with one height ("Frame and discs figure … all differently editable numbers get ink height"). DISC DEPTHS: each disc under the plate, the Shadows pane's number. All inks at once (mm) at the foot.
+- **Hands**: Cap · Seconds · Minutes · Hours, each its colour (the same as in Colours: "colors also editable on hands pane everywhere") and its height in mm; Bevels as three pills; Bevels % ("Bevels % slider plus the pill").
+- **mm everywhere** ("mm everywhere"): new keys `w_inks`, `w_ink_all`, and a ring's `ink_b`, a window's `frame_b`, `print_h` — the file and the session, not a link (R7, R31). An older file's steps are read once: All inks → `w_ink_all` = (steps − 6) × 0.035 mm, a ring's step → its colour's height; `w_ink`, `ink_d` kept (R8). The watch reads each printed part's height (`ink_mm`).
+- Not as drawn: an open ink's height is on each of its parts' lines (the switch takes the line's end), so open looks the same split or not. Closed, a split ink's line shows A's height.
+- **Gallery: Complex inks** (Okay, 21:25: "add your very complicated dial to the gallery so i can play with it"): the drawings' dial — navy, white figures and track, a thick red triangle and thin red tips of one red, a black and white tachymeter rail, a gold logo, a date at 3, a moon at 6. A link carries no inks (R7), so it opens with every ink at 0.21 and unsplit.
+- Checked: the window test (the tab's panes, an ink made by recolouring a ring, the split, a part's box setting B's height, a two-part ink's letters as text, the boxes on one edge, the Hands pane's swatch, height and Bevels); the link test (the inks stay out of a link; old steps read as mm; A and B heights with All inks).
+
 ## beta 4.94.11 (web version) · 25 Oct 2026 — show mode's top as main's
 
 Okay, 25 Oct 2026, 18:05, with the two tops side by side: "Show mode and main tops, missing bar and alignments check, main looks correct"; in question mode, "B: main's height".

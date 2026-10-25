@@ -2381,21 +2381,43 @@ await shot("10-bar");
   const on = await q();
   await page.click('.tabs button[data-tab="Show dial"]'); await frame();
   const plates = await page.evaluate(() => { const r = (q) => document.querySelector(q), lines = [...document.querySelectorAll("#app .colourlist .row > label")].filter((l) => l.checkVisibility()).map((l) => l.textContent);
-    return { first: lines[0], disc: lines.some((l) => /^Window \d disc$/.test(l)), plate: Boolean(r("#colour-plate")?.checkVisibility()), disc_pill: Boolean(r("#colour-disc-0")) }; });
-  check(plates.first === "Dial" && plates.plate && plates.disc && plates.disc_pill,
-    `show mode's colours start with the Dial's (the plate) and give each window's disc a line (${plates.first}; disc ${plates.disc}) (Okay, 23 Oct 2026: "Disk behind each window and plate color")`);
-  { // #521: each ring's line eye · name · colour · its own ink; each hand's eye · colour (the cap's square on its line) · bevel · height
-    const lines = await page.evaluate(() => { const t = window.dial_tool, r = (q) => document.querySelector(q), rows = [...document.querySelectorAll("#app .colourlist .row.showline")].filter((l) => l.checkVisibility());
-      const was = [t.S.w_ink, t.S.rings[0].ink_d], field = r("#ring-0-ink");
-      field.value = String(t.S.w_ink + 2); field.dispatchEvent(new Event("change")); const step = t.S.rings[0].ink_d;
-      const lefts = [...document.querySelectorAll("#app .colourlist .row.showline .numbox")].map((b) => Math.round(b.getBoundingClientRect().left));
-      const eyes = rows.filter((l) => l.querySelector(":scope > .eye")).length;
-      const hand = r("#hand-hour-bevel"), before = t.S.ha_hour.bevel; hand.click(); const flipped = t.S.ha_hour.bevel !== before; hand.click();
-      t.S.rings[0].ink_d = was[1]; t.changed();
-      return { n: rows.length, eyes, ink: Boolean(field), step, lefts: new Set(lefts).size, height: Boolean(r("#hand-hour-height")), flipped, cap_line: rows.some((l) => l.querySelector("label").textContent === "Cap"), cap_square: Boolean(r(".row.showline .swatch#colour-cap")), head: r(".row.showline .colhead")?.textContent }; });
-    await shot("12b-show-colours");
-    check(lines.eyes >= 4 && lines.ink && lines.step === 2 && lines.lefts === 1 && lines.height && lines.flipped && lines.head === "Ink height" && (lines.cap_square ? !lines.cap_line : true),
-      `show mode's Colours (#521; Okay, 24 Oct 2026: "Yes, as drawn"): ${lines.eyes} lines with an eye; a ring's own ink box sets its step from All inks (+2 → ${lines.step}); every number box in one column (${lines.lefts}); a hand's Bevel toggle and Height; the cap a square on its hand's line (${lines.cap_square})`);
+    return { first: lines[0], plate: Boolean(r("#colour-plate")?.checkVisibility()), disc: Boolean(r("#colour-window-0-disc")?.checkVisibility()) || !window.dial_tool.S.da_on }; });
+  check(plates.first === "Dial" && plates.plate && plates.disc,
+    `show mode's colours start with the Dial's (the plate) and give each window's disc its swatch (${plates.first}; disc ${plates.disc}) (Okay, 23 Oct 2026: "Disk behind each window and plate color")`);
+  { // #545: Colours · Inks · Hands, drawn and locked 25 Oct 2026 ("All colors editable … via different places, through inks and colors. Switch on off for a double color on inks")
+    const r = await page.evaluate(() => { const t = window.dial_tool, S = t.S, q = (s) => document.querySelector(s), all = (s) => [...document.querySelectorAll(s)].filter((e) => e.checkVisibility());
+      const keep = JSON.stringify([S.rings, S.w_inks, S.w_ink_all]);
+      const panes = all(".form > .pane > .fold h2").map((h) => h.textContent);
+      const subs = all(".colourlist > .row.showsub .colhead").map((e) => e.textContent);
+      const colours_boxes = all(".colourlist:not(.inklist) .row.showline.bare .numbox").length;
+      const inks = () => all(".inklist .inkline:not(.disc) .hex").map((e) => e.textContent);
+      const n0 = inks().length;
+      // a ring recoloured in Colours moves to an ink of its own
+      S.rings[0].c = [0.11, 0.62, 0.47, 1]; t.changed(); const n1 = inks().length;
+      // open it, split it, put the ring on B, set B's height
+      const line = all(".inklist .inkline").find((l) => /1C9E78/.test(l.textContent)); line.querySelector(".chev").click();
+      q(".inklist .inkline.open .toggle").click(); const two = S.w_inks["#1C9E78"]?.two === true;
+      const pill = all(".inklist .pillswitch.ab").find(Boolean); pill.lastElementChild.click(); const on_b = S.rings[0].ink_b === true;
+      const b_box = all(".inklist .inkpart input")[0]; b_box.value = "0.33"; b_box.dispatchEvent(new Event("change")); const b_h = S.w_inks["#1C9E78"]?.b;
+      const rights = new Set(all(".inklist .numbox").map((b) => Math.round(b.getBoundingClientRect().right))).size;
+      // the Hands pane: a swatch, a height and the Bevels pills
+      const bevel = q("#bevel-hour"), was = S.ha_hour.bevel; bevel.click(); const flipped = S.ha_hour.bevel !== was; bevel.click();
+      const hands = Boolean(q("#colour-hand-hour-hands")) && Boolean(q("#show-hour-height"));
+      // an ink of two parts: split, the first is A, the second B, the letters as text
+      t.ink_open.clear(); S.rings[0].c = [0.2, 0.3, 0.9, 1]; S.rings[1].c = [0.2, 0.3, 0.9, 1]; S.rings[0].ink_b = S.rings[1].ink_b = false; t.changed();
+      all(".inklist .inkline").find((l) => /334DE6/.test(l.textContent)).querySelector(".chev").click();
+      q(".inklist .inkline.open .toggle").click();
+      const pair = [S.rings[0].ink_b, S.rings[1].ink_b, all(".inklist .inkpart .letter").map((e) => e.textContent).join(""), all(".inklist .pillswitch.ab").length];
+      const head = all(".form > .pane > .colhead").map((e) => e.textContent);
+      [S.rings, S.w_inks, S.w_ink_all] = JSON.parse(keep); t.ink_open.clear(); t.changed();
+      return { pair, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head }; });
+    await shot("12b-show-dial-tab");
+    check(r.panes.join() === "Colours,Inks,Hands" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
+      `show mode's Dial tab is Colours · Inks · Hands (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands")`);
+    check(r.n1 === r.n0 + 1 && r.two && r.on_b && Math.abs(r.b_h - 0.33) < 1e-6 && r.rights === 1,
+      `Inks: one line per exact colour (${r.n0}); a ring recoloured in Colours makes an ink of its own (${r.n1}); Two inks splits it, the A | B pill puts the ring on B, B's height its own (${r.b_h} mm); every height box on one right edge (Okay: "One thick red one thin possible via a switch on the pane")`);
+    check(r.pair[0] === false && r.pair[1] === true && r.pair[2] === "AB" && r.pair[3] === 0, `an ink of two parts, split: the first on A, the second on B, the letters as text, no pills (${r.pair.join(" · ")}) (Okay: "Switch stays, but on two item lists leave them text only")`);
+    check(r.hands && r.flipped, `Hands: each hand's colour and height on its line, the Bevels pills turn its bevel (Okay: "colors also editable on hands pane everywhere"; "Bevels % slider plus the pill")`);
   }
   const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length, n.isConnected]; });
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "t", t.S.t - 600); t.set_value("global", "bezel", 1); t.set_value("global", "strap", 2); t.frame(); });

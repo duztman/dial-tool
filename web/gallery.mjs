@@ -189,6 +189,24 @@ export const DIALS = [
       { kind: "markers", name: "Hour dots", r: 15.8, count: 12, shape: "dot", w: 0.8, c: [0.98, 0.97, 0.93, 1] },
     ],
     da_on: true, da_kind: 0, da_at: 2, da_shape: 2, da_r: 8.6, da_w: 3.4, da_h: 3.4, da_frame: 0, da_clear: 0.4, da_text_c: [0.98, 0.97, 0.93, 1], da_disc_c: [0.98, 0.45, 0.38, 1] } },
+  // the complex dial of show mode's Inks drawings (#545; Okay, 25 Oct 2026, 21:25: "add your very complicated dial to the
+  // gallery so i can play with it"): six inks — white, a thick red and a thin one of the same red, black, gold — on navy,
+  // a tachymeter band of black and white sectors, a date at 3 and a moon at 6
+  { name: "Complex inks", note: "The Inks pane's drawing: navy, white figures and track, a thick red triangle and thin red tips of one red, a black and white tachymeter, a gold logo, a date at 3 and a moon at 6 (#545)", settings: {
+    dial_d: 38, c_plate: [0.09, 0.13, 0.29, 1], c_backdrop: [0.86, 0.85, 0.82, 1],
+    ...hands([0.79, 0.80, 0.82, 1], { shape: "sword", len: 9.0, w: 1.7, tail: 1.2 }, { shape: "sword", len: 14.0, w: 1.4, tail: 1.4 }, { shape: "baton", len: 15.6, w: 0.22, tail: 3.6, c: [0.82, 0.19, 0.16, 1] }, 1.3, [0.82, 0.19, 0.16, 1]),
+    rings: [
+      { kind: "numerals", name: "Tachy scale", r: 17.4, count: 12, start: 30, labels: CUSTOM, custom: "500, 400, 300, 240, 200, 170, 150, 130, 120, 110, 100, 60", size: 1.0, mode: FLIP, c: [0.96, 0.95, 0.92, 1], ...type("Barlow Condensed", "BarlowCondensed-SemiBold") },
+      { kind: "band", name: "Tachy band", r: 18.9, width: 1.0, c: [0.11, 0.11, 0.11, 1], cs: Object.fromEntries([1, 3, 5, 7, 9, 11].map((at) => [at, [0.96, 0.95, 0.92, 1]])) },
+      { kind: "ticks", name: "Minute tips", r: 16.0, count: 60, skip: 1, len: 0.5, w: 0.12, c: [0.82, 0.19, 0.16, 1] },
+      { kind: "markers", name: "Triangle at 12", r: 15.6, count: 1, shape: "wedge", len: 2.6, w: 2.8, taper: 0, c: [0.82, 0.19, 0.16, 1] },
+      { kind: "ticks", name: "Minute track", r: 15.6, count: 60, skip: 1, len: 0.9, w: 0.16, c: [0.96, 0.95, 0.92, 1] },
+      { kind: "markers", name: "Hour markers", r: 15.6, count: 12, len: 2.2, w: 0.8, c: [0.96, 0.95, 0.92, 1], skip: 1 },
+      { kind: "numerals", name: "Hours", r: 12.2, count: 12, size: 2.6, c: [0.96, 0.95, 0.92, 1], ...type("Barlow", "Barlow-Bold") },
+      { kind: "text", name: "Logo", r: 6.2, count: 1, start: 0, custom: "DIAL TOOL", size: 1.2, c: [0.85, 0.71, 0.42, 1], tracking: 160, ...type("Barlow Condensed", "BarlowCondensed-SemiBold") },
+    ],
+    da_on: true, da_kind: 0, da_at: 0, da_r: 10.2, da_w: 2.8, da_h: 2.1, da_round: 0.15, da_frame: 0.14, da_clear: 0.4, da_ink: [0.96, 0.95, 0.92, 1], da_text_c: [0.11, 0.11, 0.11, 1], da_disc_c: [1, 1, 1, 1],
+    windows: [{ on: true, kind: 3, at: 2, shape: 4, r: 7.6, w: 6.4, h: 3.8, frame: 0.14, clear: 0.5, ink: [0.85, 0.71, 0.42, 1], disc_c: [0.05, 0.08, 0.20, 1], text_c: [0.95, 0.90, 0.77, 1] }] } },
   // Okay's own watch (15 Oct 2026, 07:45: "add this 'default' face to gallery as well"; 07:48: "the purple you've been
   // working with"): last in the Gallery (#286: "Okay's watch last")
   { name: "Okay's watch", note: "Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026; the dial the tool opened with until 16 Oct)", settings: OKAYS_WATCH },

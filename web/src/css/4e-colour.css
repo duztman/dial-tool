@@ -29,6 +29,33 @@
   .colourlist > .row.showline .colhead { font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; color: var(--uiblack, var(--ink)); }      /* the number column's name, in black, small capitals as Shenanigans' names */
   .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
   .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
+  /* show mode's Dial tab (#545): Colours' lines carry colours only, every swatch a part has, so the swatches take the
+     number's room; RINGS · HANDS · WINDOWS (and the Inks' ON THE DIAL…) as small capitals on a line of their own */
+  .colourlist > .row.showline.bare { grid-template-columns: var(--eye) minmax(0, 1fr) auto; }
+  .colourlist > .row.showline.bare > .place { display: none; }
+  .colourlist > .row.showline.bare > .swatches { justify-content: end; max-width: calc(4 * var(--pill) + 3 * var(--chip-gap)); }      /* a band's sectors four to a line, so its name keeps its room */
+  .colourlist > .row.showsub { display: flex; align-items: end; min-height: var(--line); padding-bottom: var(--u2); }
+  .pane > .colhead { justify-self: end; margin-left: auto; }
+  :is(.colourlist > .row.showsub, .pane) > .colhead, .colourlist > .row.showsub .colhead { font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; color: var(--uiblack, var(--ink)); }
+  /* Inks: an ink's line is its fold · its swatch · its hex and part count · Two inks · its height; a disc's line its
+     swatches in the swatch's place. Its parts and its A and B lines stand under the hex, in the same columns */
+  .inklist > .row:is(.inkline, .inkpart) { grid-template-columns: var(--eye) calc(2 * var(--pill) + var(--chip-gap)) minmax(0, 1fr) auto var(--side-num); column-gap: var(--u2); }      /* Two inks' place only as wide as what is in it: closed, the hex and its count have the room */
+  .inklist > .row:is(.inkline, .inkpart) > * { grid-column: auto; }
+  .inklist > .row.inkline > .swatch { width: var(--pill); height: var(--pill); }
+  .inklist > .row.inkline > .swatches { flex-wrap: nowrap; padding: 0; }
+  .inklist .inkname { display: flex; align-items: baseline; gap: var(--u3); overflow: hidden; white-space: nowrap; color: var(--ink); }
+  .inklist .inkname .hex { font: var(--t-s)/1 var(--mono); }
+  .inklist .inkname .count, .inklist > .row.inkpart > label, .inklist > .row.disc > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .inklist > .row.inkline.open > .place.two { grid-column: 4 / -1; display: flex; align-items: center; justify-content: end; gap: var(--u3); color: var(--grey); }      /* Two inks at the line's right end, its word right against it */
+  .inklist .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }      /* every height box the colour list's size, the A and B lines' too */
+  .inklist .numbox > input { text-align: right; }
+  .inklist > .row > .place { display: flex; justify-content: end; }
+  .inklist .chev { display: grid; place-items: center start; color: var(--grey); }
+  .inklist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
+  @media (hover: hover) { .inklist .chev:hover { color: var(--ink); } }
+  .row.bevels > .pillswitch { grid-column: 3 / -1; justify-self: end; flex-wrap: nowrap; }
+  .inklist > .row.inkpart > .letter { justify-self: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the pill's place */
+  .inklist .pillswitch.ab > button { padding: 0 var(--u2); }      /* the pill fits the swatch column, a gap before the name */
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }
 
   /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Near black, round corners. Inside it the usual colour names are set to their night values, so

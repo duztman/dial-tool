@@ -97,6 +97,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Showcase** | Retired word (22 Oct 2026); means **show mode**. |
 | **Dial Show Case** | The standalone page at `/show-case/`, built from `web/src/watch.js`, kept as a sandbox. |
 | **Engineer** · **Miyazaki** | The watch's two paints: ink outlines and hard shadows; flat shapes cut by light, a flare. |
+| **Ink** (show mode) | One colour printed on the dial, exactly the same colour (`dial_inks`); its height in mm stands it proud of the plate (`w_inks`, default `INK_MM` 0.21). **Two inks**: one colour split into ink **A** and ink **B**, each its own height, each part on one by its A \| B pill before its name (an ink of two parts: the letters as text, first A, second B), its box that letter's height (`ink_b`, `frame_b`). **On the discs**: what a window's disc carries, its own height (`print_h`), never one of the dial's inks; the disc's colour is their baseline. **All inks at once** (`w_ink_all`): mm added to every printed height. |
 | **Sun box** | The top of show mode's Light tab Sun pane: the **sun picture** centred in an outlined box, Angle · Height · Strength as plain values beside it; the rows under it change them (`row_sunbox`). |
 | **Shenanigans** | Show mode's foot: Shadows, Flare, Blurs, Bevels on and off, as toggles. |
 
