@@ -8,6 +8,7 @@ Okay, 25 Oct 2026, 14:12: "does it make sense to create a design rules separatel
 - **`docs/css-map.md`** (generated, never edited): every token of `web/src/css/` with its value, the comment beside it, where it is used, where a part sets it again, and which `.js` sets or reads it. `web/css-map.mjs` writes it; `node css-map.mjs check` runs first in `npm test` and `npm run small`, so the map can't go stale.
 - The map's first find: `--ring-gap-in` was set and used nowhere since the audit removed `.dots` (4.93.1) — gone. The build changes by that one line; the small check is green.
 - `CLAUDE.md` (the read order, the loop's step 2), R32's page, canon §10 and the README point at the index.
+- **Sets and borrows** (Okay, 14:25: a new design "uses some of the rules it's governed by, sets few specific ones and copies an unrelated sector's one quirk"; 14:59: "ok do it"): a region's entry says only what it *sets* and what it *borrows* from a region that is not its parent; a borrowed quirk is decided in the token — the other region's token when the two must move together, a token of its own with the origin in its comment when alike now and free later; never the number copied (sectors.md §7). The map lists every token whose comment names another, so such pairs are found in one search.
 
 ## docs · 25 Oct 2026 — the docs made lean (no build change)
 

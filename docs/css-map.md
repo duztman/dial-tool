@@ -395,6 +395,8 @@
 | `--word-x` · the window's | `—` |  | 4a-panel | set by bar.js |
 | `--word-y` · the window's | `—` |  | 4a-panel | set by bar.js |
 
+**Tokens whose comment names another token** — a quirk borrowed from another region and given a token of its own (sectors.md §7), or a value derived from another's (20): `--bar-control` ← `--bar-lead-narrow`; `--bar-height` ← `--bar-lead-narrow`; `--canvas-inset` ← `--u5`; `--canvas-inset-wide` ← `--canvas-inset`, `--u5`; `--canvas-top` ← `--header`; `--list-gap` ← `--list-room`; `--pixel-ink-bar` ← `--pixel-ink`; `--select` ← `--play`; `--select-rule` ← `--play`; `--shadow-solid` ← `--shadow`; `--t-l` ← `--t-xxs`, `--t-time`; `--t-m` ← `--t-xxs`, `--t-time`; `--t-s` ← `--t-xxs`, `--t-time`; `--t-time` ← `--t-l`; `--t-xs` ← `--t-xxs`, `--t-time`; `--time-colon` ← `--time-pm`; `--time-figure` ← `--time-pm`; `--time-pm-track` ← `--time-pm`; `--time-track` ← `--time-pm`; `--tip-half` ← `--arrow`.
+
 **Set but used nowhere** (0): none.
 
 **Used but never set** (0): none.

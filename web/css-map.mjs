@@ -88,6 +88,8 @@ for (const name of names) {
   const win = js.has(name) ? [...js.get(name)].join(", ") : "";
   rows.push({ name, value, note, again: win ? [...again, win] : again, uses, kind, unused: !u && !win });
 }
+// a token whose comment names another token: a borrowed quirk given a token of its own (sectors.md §7)
+const borrowed = rows.filter(r => r.note && /(^|[^\w-])--[a-z][\w-]*/.test(r.note.replace(r.name, ""))).map(r => `\`${r.name}\` ← ${[...new Set(r.note.match(/--[a-z][\w-]*/g))].filter(n => n !== r.name).map(n => "`" + n + "`").join(", ")}`);
 const unset = rows.filter(r => r.kind === "**not set**" && !js.has(r.name)).map(r => r.name);
 const unused = rows.filter(r => r.unused && r.kind !== "**not set**").map(r => r.name);
 
@@ -106,6 +108,7 @@ for (const r of rows) {
   if (r.unused || (r.kind === "**not set**" && !js.has(r.name))) continue;
   md += `| \`${r.name}\`${r.kind && r.kind !== "**not set**" ? " · " + r.kind : (r.kind ? " · the window's" : "")} | \`${r.value.replace(/\|/g, "\\|")}\` | ${r.note.replace(/\|/g, "\\|")} | ${r.uses} | ${r.again.join("; ").replace(/\|/g, "\\|")} |\n`;
 }
+md += `\n**Tokens whose comment names another token** — a quirk borrowed from another region and given a token of its own (sectors.md §7), or a value derived from another's (${borrowed.length}): ${borrowed.join("; ") || "none"}.\n`;
 md += `\n**Set but used nowhere** (${unused.length}): ${unused.map(n => "`" + n + "`").join(", ") || "none"}.\n`;
 md += `\n**Used but never set** (${unset.length}): ${unset.map(n => "`" + n + "`").join(", ") || "none"}.\n`;
 

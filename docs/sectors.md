@@ -2,7 +2,7 @@
 
 An index, not a rule set (Okay, 25 Oct 2026: "an index to easily find what you're looking for, and insurance against agents missing info. No new bulk"). When Okay describes a change in words ("a hair more inside the Guides foot's pills"), walk the tree to the region, read its one line, then open only what it points at: the rule, the canon section, the token in `css-map.md` (generated from the stylesheet; `npm test` keeps it current), the check that guards it. Then measure (R21), change once, prove with `same.mjs` if the look must not move (R32c).
 
-Notation: **Region** `selector` — the one rule · levers → where the full word is. A region inherits every line above it. Files are `web/src/css/` unless said; `rules/` is `docs/rules/`.
+Notation: **Region** `selector` — the one rule · levers → where the full word is. A region inherits every line above it and says nothing about that; it says only what it **sets** (its own tokens, its own rule lines) and what it **borrows** (`borrows: <quirk> from <region>` — a look taken from a region that is not its parent, named so the next session knows it is deliberate). Files are `web/src/css/` unless said; `rules/` is `docs/rules/`.
 
 ## 1 · The panel (left; `.panel`, `4a-panel.css`)
 
@@ -28,14 +28,14 @@ The grid: a toggle column (`--eye`) and six columns (`--col`, `--gap`) between t
     - **Colour** `.colour`, the **swatch** → the **colour pop-out** `.colourpop` (`4e-colour.css`): draggable, doubles; `dvh` for an iPad's bars.
     - **Gallery, examples** `.gallery`, `.examples` (`4h-gallery.css`): cards by `card()` in `web/links.mjs`.
 - **Chosen** (`5-chosen.css`): what is switched on, picked or open is ink with paper words — one layer, nothing earlier undoes it · R32.
-- **Show mode's column** `.showing .panel`: the same panel, `--show-col`, `--show-margin`, tinted from the backdrop (`show.js` sets `--column`, `--column-top`, `--swatch`, `--uiblack`); **Shenanigans** `.shenanigans` at its foot · glossary-tool *Show mode*; `mode.js`.
+- **Show mode's column** `.showing .panel`: the same panel, `--show-col`, `--show-margin`, tinted from the backdrop (`show.js` sets `--column`, `--column-top`, `--swatch`, `--uiblack`); **Shenanigans** `.shenanigans` at its foot (borrows: the toggle from a hand's Bevel line, R15 *Toggle*) · glossary-tool *Show mode*; `mode.js`.
 
 ## 2 · The preview (`main`, `.preview`; `6-preview.css`)
 
 Canvas measures: `--canvas-top`, `--canvas-inset`; what sits on the canvas is `.onview` (`--control-large` high, `--on-canvas` line) · canon §6 *Grey only*.
 
 - **Top right stack** `.corner`: Guides switch `.guides` with its arrow → **guide list** `.guidelist` (one column, 240 wide, four groups, `--pop-pad`, menus as round chevron boxes); under it Case `.casebox`, X-ray · glossary-tool *Guides*, *X-ray*; #539 for the list.
-  - **A popup's foot** `.guidefoot` and the Shadows foot: on the night field, to the box's bottom (`--foot-gap`, a special) · glossary-tool *Bottom section*.
+  - **A popup's foot** `.guidefoot` and the Shadows foot: on the night field, to the box's bottom, its own pills · glossary-tool *Bottom section*; the Shadows foot borrows: the foot's shape from the guide list (#539, #526).
 - **Bottom left**: Backdrop switch, Shadows switch → **Shadows pane** `.shadelist` (lives on the body, over the panel's column: `--shade-left/right/bottom` measured by `guides.js`): the **sun picture** `.sunpic` (`--sun-w`, `--sun-h`), Angle · Height · Strength as named sliders (R15 form D), the parts' rows `.shaderows`, the **exploded view** `.stackpic` · glossary-tool *Shadows pane*; #526.
 - **Bottom right**: the eye switch (dial alone), under it show mode's iris and rays, over it the Tiny Preview's iris `.tinyopen` → `.tinywin` · glossary-tool *Eye switch*, *Tiny Preview*.
 - **Top line**: undo · redo `.undos`, its history list `.historylist`; Versions.
@@ -64,4 +64,13 @@ Phone and upright iPad: the panel is a **drawer** under the preview with its **g
 - Icons: never a stylesheet border or a scaled drawing · R33, `web/icons/`.
 - What proves a change: `node test/same.mjs` for the look (R32c); the window test's check for a position, with Okay's words in its message (CLAUDE.md, the loop, step 2); the layout check #188 (not built) will read the specials block.
 
-When a region here has no line for what Okay asks, that is the gap: add the line (and the canon or rule it points to), not a bare value.
+## 7 · A new region
+
+Three lines at most, in its place in the tree: its selector and one rule line; **sets:** its own tokens; **borrows:** each quirk taken from a region that is not its parent, by name. Nothing for what it inherits.
+
+A borrowed quirk is decided in the token, not in prose — two ways, and the choice is Okay's when it is not obvious:
+
+- **The two should always move together** → use the other region's token as it is. The map shows both regions under that token; a change to it is seen against both.
+- **Alike now, free later** → a token of its own whose comment names its origin: `--shade-foot-pad: var(--pop-pad); /* as the guide list's foot, own since 25 Oct 2026 (Okay: "…") */`. The map's *What it is for* carries the origin, so the pair can be found with one search for the other token's name.
+
+Never the number copied into a rule: a bare value is a breach of R32 and loses where it came from. When a region here has no line for what Okay asks, that is the gap: add the line (and the canon or rule it points to), not a bare value.
