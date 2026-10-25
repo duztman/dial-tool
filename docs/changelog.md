@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.94.18 (web version) · 25 Oct 2026 — bracelets closed round a wrist; Links on the diver; the eye hides the bar, the title stays
+
+Okay, 25 Oct 2026, 23:29: "Eye hides bar too. Links add. Bracelets viewed ad closed. I have a sample i sent you in the last few days, a photo from an online retailer. The preview was bracelet closed. I want that for our bracelets. Not for other straps." 23:32: "Dial tool header stays on collapsed panels on show case same as main." The photo: his notes doc, 24 Oct (a steel diver on its bracelet, seen from above).
+
+- **Bracelets closed round a wrist** (#529; `wristWrap()` in `watch.js`): the links run 1 mm flat past the end link (`WRIST_FLAT`), then over a wrist of radius 12 mm (`WRIST_R`); seen from above a point s along the bend stands at its start + 12·sin(s/12), so the rows shorten toward the wrist's horizon (13 mm past the end link) and stop there. Each row is lit by its own tilt. The ground shadow and the outline follow the same rows. Both bracelets, every view; leather and NATO unchanged. Whole watch frames a bracelet to the horizon and 6 mm of ground past it (`fullBox()`).
+- **Links on the diver** (#510): the Strap row offers Leather · NATO · Bracelet · Links (`strap` 4, appended, R9); Links is Emre's H-links bracelet (`linksBracelet`).
+- **Show mode's eye** hides the bar too: it slides out of the window with the panel (`#app.showing.alone`, 2-base.css); the title — mark, Dial Tool Show Case, Help — stays where it stood, as on the dial side (4a-panel.css: twice the panel's width back, as the panel both narrows its column and slides). The dial side's eye keeps its bar.
+- Checked: the window test (new: the eye's bar and title there and back; the diver's Bracelet and Links); both bracelets closed on crops.
+
 ## beta 4.94.17 (web version) · 25 Oct 2026 — show mode's Backdrop rebuilt; Blurs softens the shadows; the case casts from its height
 
 Okay, 25 Oct 2026, 23:10, question mode: "Backdrop on show case wonky, fix it. Make the all swatches same, large size, gradents are 2x blocks of the same single swatch with a gradient in it. Better design of the popup. Adding colors or gradients by user possible, save file carries those too"; chose Backdrop Auto and Blurs softens shadows (#510, #507).

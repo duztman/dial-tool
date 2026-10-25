@@ -20,10 +20,12 @@ export const PREVIEW = {
     this.fitted = true;
     this.sliding = true;                           // the shadows' soft edge waits for the slide (moving())
     if (this.view_end) app.removeEventListener("transitionend", this.view_end);
-    this.view_end = (e) => { if (e.target === app) { this.sliding = false; this.fit(); this.render(); } };
-    setTimeout(() => { if (this.sliding) { this.sliding = false; this.render(); } }, 1200);      // no slide (less motion asked, nothing to move): don't wait for it
+    const back = () => { if (!on) app.classList.remove("alone"); };
+    this.view_end = (e) => { if (e.target === app) { this.sliding = false; back(); this.fit(); this.render(); } };
+    setTimeout(() => { back(); if (this.sliding) { this.sliding = false; this.render(); } }, 1200);      // no slide (less motion asked, nothing to move): don't wait for it
     app.addEventListener("transitionend", this.view_end);
     app.classList.toggle("away", on);
+    if (on && app.classList.contains("showing")) app.classList.add("alone");      // show mode: the bar goes too (2-base.css) and the title stays (4a-panel.css); taken off when the slide back ends
     if (app.classList.contains("showing") && !app.classList.contains("swooping")) { const follow = () => { if (!this.sliding) return; this.fit(); requestAnimationFrame(follow); }; requestAnimationFrame(follow); }      // show mode: the canvas keeps its size while the column slides over it, so the watch is fitted frame by frame (in a swoop, the swoop moves it)
   },
 

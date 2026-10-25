@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.94.17";
+export const VERSION = "beta 4.94.18";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -196,7 +196,7 @@ export const DEFAULTS = {
   da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
   da_follows: true, da_names: 0,                   // the first window's `follows` and `names`: following the bar's date to start (#413)
   wearos_name: "",                                 // a Wear OS watch face's name (4.67, farukahmet's PR #1); "" = Dial Tool. Its package's name follows from it
-  strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather), 3 a NATO (w_nato). Never none (Okay, 22 Oct 2026)
+  strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather), 4 the diver's links bracelet (Emre's H-links; Okay, 25 Oct 2026: "Links add"), 3 a NATO (w_nato). Never none (Okay, 22 Oct 2026)
   bezel: 0,                                        // the case round the dial (watch.js, CASE_OF_BEZEL): the list only grows (R9). 0 dress, 1 diver, 2 field, 3 dress, 4 field, 5 emre01 — 2 and 4 were the pilot and sport sketches, 0 "no case": no watch is caseless now (Okay, 22 Oct 2026). Preview only (R26)
   // ── w_: the watch round the dial in show mode (22 Oct 2026, build list #509; R7). Kept in the settings file and the
   // session, never in a link (R31: these keys are not in LINK_KEYS). Lists only grow at their end (R9).

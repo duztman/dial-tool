@@ -81,7 +81,7 @@ export const MODE = {
       leaving.animate([{ transform: "translateX(0)" }, { transform: `translateX(${on ? -r.right : innerWidth - r.left}px)` }], { duration: T, easing: ease, fill: "forwards" }).finished.then(() => leaving.remove());
     }
     // the other mode's panel, waiting off its side: no slide to get there
-    app.classList.add("snap", "away"); app.classList.toggle("showing", on);
+    app.classList.add("snap", "away"); app.classList.remove("alone"); app.classList.toggle("showing", on);      // a mode change brings the bar back
     { const r = this.svg.getBoundingClientRect(); this.c = [from.x - r.left, from.y - r.top]; this.place(); }      // the canvas changed its edges: the drawing stays where it stood on the screen
     this.show_section(); this.fitted = false; this.sliding = true;
     if (!on) this.tint_panel();      // the dial side's own colours again (the still copy keeps the tint as it slides away)

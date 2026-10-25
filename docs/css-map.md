@@ -12,13 +12,13 @@
 | `--air` | `calc(4 * var(--unit))` | under an open pane | 4a-panel, 4f-rings | 4a-panel `.pinned > .pane:last-child` → `var(--u6)` |
 | `--arrow` · the window's | `—` |  | 6-preview | set by preview.js |
 | `--at` · the window's | `—` |  | 6-preview, 7-bar ×3 | set by app.js, set by bar.js, set by panel.js |
-| `--away` · set in 2-base | `1` |  | 2-base ×2, 4a-panel ×6, 6-preview ×3, 8-narrow |  |
+| `--away` · set in 2-base | `1` |  | 2-base ×3, 4a-panel ×7, 6-preview ×3, 8-narrow |  |
 | `--bar` | `#333` | the bar: 80 % black, light on dark | 7-bar ×9, 8-narrow |  |
 | `--bar-control` | `30px` | the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) | 1-tokens, 7-bar ×8 |  |
 | `--bar-day-narrow` | `48px` | on a phone the bar is two lines: the panel's controls, then the day | 8-narrow |  |
 | `--bar-field` | `#454543` | the bar: 80 % black, light on dark | 7-bar ×7 |  |
 | `--bar-h` | `0px` | set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone | 8-narrow ×3 | set by app.js, set by mode.js, set by preview.js |
-| `--bar-height` | `62px` | the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) | 2-base, 4g-fonts, 6-preview ×4, 7-bar ×3 |  |
+| `--bar-height` | `62px` | the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) | 2-base ×2, 4g-fonts, 6-preview ×4, 7-bar ×3 |  |
 | `--bar-ink` | `#F2F2EE` | the bar: 80 % black, light on dark | 3-controls, 7-bar ×3 |  |
 | `--bar-lead-narrow` | `46px` | on a phone the bar is two lines: the panel's controls, then the day | 8-narrow |  |
 | `--bar-light` | `#737373` | the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE") | 7-bar ×24, 8-narrow ×2 |  |
@@ -204,7 +204,7 @@
 | `--on-canvas` · set in 6-preview | `var(--ink)` |  | 6-preview ×8 | 6-preview `main.dark` → `var(--white)` |
 | `--p` · the window's | `—` |  | 3-controls, 4f-rings ×2 | read by panel.js, set by ui.js |
 | `--panel` | `calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap))` |  | 1-tokens ×2, 4g-fonts, 7-bar |  |
-| `--panel-w` | `calc(var(--panel) + var(--hair))` | the panel's column: its lines and its right hairline | 2-base ×2, 4a-panel ×4, 6-preview ×4 | 2-base `.showing` → `var(--show-panel-w)` |
+| `--panel-w` | `calc(var(--panel) + var(--hair))` | the panel's column: its lines and its right hairline | 2-base ×2, 4a-panel ×5, 6-preview ×4 | 2-base `.showing` → `var(--show-panel-w)` |
 | `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×6, 4b-lines-tabs, 4e-colour ×2, 4f-rings ×6, 4g-fonts, 5-chosen, 6-preview ×7, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
 | `--picked` · the window's | `—` |  | 6-preview | set by rings.js |
 | `--pill` | `calc(1em + 2 * var(--pill-gap))` | its height. The swatch is as high as the hex is set (1em) | 4e-colour |  |

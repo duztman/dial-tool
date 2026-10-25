@@ -557,12 +557,13 @@ function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   return s + `</g>`;
 }
 const barrel = (...a) => (STYLE === "engineer" ? barrelEngineer(...a) : barrelMiyazaki(...a));
-function vaultEngineer({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null }) {
-  const lv = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
+function vaultEngineer({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
   const pitch = 6.4, out = [];
   for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
     const w = Math.max(16, W - k * 0.45), mid = w * 0.36, g = 0.18, kk = 0.99;      // steeper cylinders (17:40)
-    const a = sy * y, b = sy * Math.min(span, y + pitch), top = Math.min(a, b), bot = Math.max(a, b);
+    const ya = wrap.map(y), yb = wrap.map(Math.min(span, y + pitch)); if (yb - ya < 0.12) break;      // past the wrist's horizon: hidden
+    const a = sy * ya, b = sy * yb, top = Math.min(a, b), bot = Math.max(a, b), lv = wrap.light(lv0, (y + Math.min(span, y + pitch)) / 2);
     const parts = [
       [-w / 2, -mid / 2 - g / 2, [0.6, 0.12, 0.12, 0.6]],
       [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
@@ -585,12 +586,13 @@ function vaultEngineer({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, r
   }
   return out.join("");
 }
-function vaultMiyazaki({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null }) {
-  const lv = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
+function vaultMiyazaki({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
   const pitch = 6.4, out = [];
   for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
     const w = Math.max(16, W - k * 0.45), mid = w * 0.36, g = 0.18, kk = 0.99;      // steeper cylinders (17:40)
-    const a = sy * y, b = sy * Math.min(span, y + pitch), top = Math.min(a, b), bot = Math.max(a, b);
+    const ya = wrap.map(y), yb = wrap.map(Math.min(span, y + pitch)); if (yb - ya < 0.12) break;      // past the wrist's horizon: hidden
+    const a = sy * ya, b = sy * yb, top = Math.min(a, b), bot = Math.max(a, b), lv = wrap.light(lv0, (y + Math.min(span, y + pitch)) / 2);
     const parts = [
       [-w / 2, -mid / 2 - g / 2, [0.6, 0.12, 0.12, 0.6]],
       [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
@@ -609,10 +611,10 @@ function vaultMiyazaki({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, r
   return out.join("");
 }
 const vaultBracelet = (o) => (STYLE === "engineer" ? vaultEngineer(o) : vaultMiyazaki(o));
-function linksBracelet({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22 }) {
-  const lv = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
-  const h = 4.4, g = 0.15, mid = W * 0.46, out = [`<rect x="${f(-W / 2 + 0.3)}" y="${f(Math.min(sy * y0, sy * span))}" width="${f(W - 0.6)}" height="${f(Math.abs(span - y0))}" fill="${ramp[0]}"/>`];      // the pins and the dark between the barrels: no floor shows through
-  const piece = (x0, x1, a, b) => { const top = Math.min(sy * a, sy * b), bot = Math.max(sy * a, sy * b), r = Math.min(0.9, (bot - top) * 0.3), d = rrect4(x0, top, x1, bot, [r, r, r, r]);
+function linksBracelet({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
+  const h = 4.4, g = 0.15, mid = W * 0.46, out = [`<rect x="${f(-W / 2 + 0.3)}" y="${f(Math.min(sy * wrap.map(y0), sy * wrap.map(span)))}" width="${f(W - 0.6)}" height="${f(Math.abs(wrap.map(span) - wrap.map(y0)))}" fill="${ramp[0]}"/>`];      // the pins and the dark between the barrels: no floor shows through
+  const piece = (x0, x1, a0, b0) => { const a = wrap.map(a0), b = wrap.map(b0); if (b - a < 0.12) return; const lv = wrap.light(lv0, (a0 + b0) / 2), top = Math.min(sy * a, sy * b), bot = Math.max(sy * a, sy * b), r = Math.min(0.9, (bot - top) * 0.3), d = rrect4(x0, top, x1, bot, [r, r, r, r]);
     out.push(barrel(d, x0, top, x1, bot, 0.99, ramp, lv, 1)); if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`); };
   piece(-mid / 2 + g / 2, mid / 2 - g / 2, y0, y0 + h / 2 - g);      // a half middle barrel against the end link, so no floor shows there
   for (let y = y0; y + h / 2 <= span + 0.01; y += h) {
@@ -621,6 +623,19 @@ function linksBracelet({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, r
     const c0 = y + h / 2, c1 = Math.min(span, c0 + h - g); if (c1 > c0 + 0.5) piece(-mid / 2 + g / 2, mid / 2 - g / 2, c0, c1);      // the middle one, half a step on
   }
   return out.join("");
+}
+/** a bracelet closed round a wrist (#529; Okay, 25 Oct 2026: "Bracelets viewed ad closed … The preview was bracelet closed.
+ *  I want that for our bracelets. Not for other straps"; his photo, a steel diver on its bracelet, seen from above): the
+ *  links run on flat a little past the end link, then over a wrist of radius WRIST_R; seen from above, a point s along
+ *  the bend stands at the bend's start + R·sin(s/R), so the rows shorten toward the wrist's horizon and stop there. Each
+ *  row is lit by its own tilt (its normal leans out by s/R). `map(y)`: where a point y along the bracelet is drawn;
+ *  `light(lv, y)`: the light as the row at y sees it; `span`: the length to the horizon */
+const WRIST_R = 12, WRIST_FLAT = 1;
+const FLAT_WRAP = { map: (y) => y, light: (lv) => lv };
+function wristWrap(y0) {
+  const ys = y0 + WRIST_FLAT, th = (y) => Math.max(0, Math.min(Math.PI / 2, (y - ys) / WRIST_R));
+  return { span: ys + WRIST_R * Math.PI / 2, map: (y) => (y <= ys ? y : ys + WRIST_R * Math.sin(th(y))),
+    light: (lv, y) => { const t = th(y), c = Math.cos(t), si = Math.sin(t); return [lv[0], lv[1] * c - lv[2] * si, lv[1] * si + lv[2] * c]; } };
 }
 function braceletSVG(C, L, span) {
   // the end link (18:06): one solid piece made for this case — exactly as wide as the gap between the lugs, its inner
@@ -639,8 +654,9 @@ function braceletSVG(C, L, span) {
     out += `<path d="M${arc.map((p) => `${f(p[0])} ${f(p[1])}`).join("L")}" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="0.5"/>`;      // where it meets the case
     out += INKB ? `<path d="${end}" fill="none" stroke="${INKB}" stroke-width="0.22" stroke-linejoin="round"/>` : "";
     OUTT.push(end);
-    out += (BRACELET_KIND === "links" ? linksBracelet : vaultBracelet)({ W, y0: yE, span, sy, L, H: SUN_H, ramp, ink: INKB });
-    for (let k = 0, y = yE; y + 6.4 <= span + 0.01; k++, y += 6.4) { const w = Math.max(16, W - k * 0.45); OUTT.push(`M${f(-w / 2)} ${f(sy * y)}H${f(w / 2)}V${f(sy * (y + 6.4))}H${f(-w / 2)}Z`); }
+    const wrap = wristWrap(yE), far = wrap.span;      // closed round the wrist, whatever the view (span is not used: no open bracelet)
+    out += (BRACELET_KIND === "links" ? linksBracelet : vaultBracelet)({ W, y0: yE, span: far, sy, L, H: SUN_H, ramp, ink: INKB, wrap });
+    for (let k = 0, y = yE; y + 6.4 <= far + 0.01; k++, y += 6.4) { const w = Math.max(16, W - k * 0.45), a = wrap.map(y), b = wrap.map(y + 6.4); if (b - a < 0.12) break; OUTT.push(`M${f(-w / 2)} ${f(sy * a)}H${f(w / 2)}V${f(sy * b)}H${f(-w / 2)}Z`); }
   }
   return out;
 }
@@ -771,7 +787,11 @@ export function tilePicture(key, w = 38, h = 27) {
 // ── one drawing for the page (Dial Show Case, show mode) ──
 const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 };      // 17:15: the whole watch at 120 %, centred
 /** the whole watch's frame, width and height in mm: known before anything is drawn (show mode's Fit, the swoop) */
-export const fullBox = () => [FULL.w, FULL.h];
+export const fullBox = (kind = null, size = 1, bracelet = false) => {
+  if (!bracelet || !CASES[kind]) return [FULL.w, FULL.h];
+  const C = scaleCase(CASES[kind], size), h = 2 * (C.l2l / 2 + 0.8 + WRIST_FLAT + WRIST_R + 6);      // a closed bracelet (#529): to the wrist's horizon and 6 mm of ground past it, as wide in the same share as FULL
+  return [h * FULL.w / FULL.h * 2, h];
+};
 const STYLES = {
   engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
   miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` },
@@ -805,7 +825,8 @@ export function draw(o) {
   const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
   const make = (mode) => { GLINT = mode; return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur); };
   const R = STYLE_.ramp, vb = (x, y, w, h) => `${f(x)} ${f(y)} ${f(w)} ${f(h)}`;
-  const box = o.view === "full" ? [-FULL.w / 2, -FULL.h / 2, FULL.w, FULL.h] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];      // the exported picture's frame
+  const [fw, fh] = fullBox(o.key, o.size, o.strap === "bracelet" || o.strap === "links");
+  const box = o.view === "full" ? [-fw / 2, -fh / 2, fw, fh] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];      // the exported picture's frame
   // two colours: a gradient at 45°, the first at the top left, the second at the bottom right of the drawing's box
   const e = (box[2] + box[3]) / 4, cx = box[0] + box[2] / 2, cy = box[1] + box[3] / 2;
   const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f(cx - e)}" y1="${f(cy - e)}" x2="${f(cx + e)}" y2="${f(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";

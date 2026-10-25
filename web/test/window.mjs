@@ -2477,6 +2477,22 @@ await shot("10-bar");
   await page.evaluate((g) => { const t = window.dial_tool; t.set_value("global", "c_backdrop", g[0]); t.set_value("global", "c_backdrop2", g[1]); t.ground_open(false); }, was_ground);
   check(bio && ground.open && ground.tiles === 20 && ground.auto && ground.adds === 2 && ground.square && ground.two && !ground.version && tiles.bezel === 2 && tiles.cases >= 4,
     `show mode's title has no version and its mark opens no bio; Backdrop opens Auto, the ten colours and the ten gradients (${ground.tiles} tiles; Ember a gradient), a + for each (#510; Okay, 25 Oct 2026: "Make the all swatches same, large size, gradents are 2x blocks of the same single swatch": a gradient as tall as a colour, wider than two: ${ground.square}); Case is picture tiles (${tiles.cases}), Field pressed`);
+  { // show mode's eye (Okay, 25 Oct 2026: "Eye hides bar too"; "Dial tool header stays on collapsed panels on show case same as main")
+    const at = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { title: Math.round(r(".mast").left), bar: Math.round(r(".bar").top) }; });
+    const before = await at(); await page.click("#eye-box"); await page.waitForTimeout(1500); const alone = await at(), h = await page.evaluate(() => innerHeight);
+    await page.click("#eye-box"); await page.waitForTimeout(1500); const after = await at();
+    check(alone.bar >= h - 1 && alone.title === before.title && after.bar === before.bar && after.title === before.title,
+      `show mode's eye: the bar slides out (its top ${before.bar} → ${alone.bar} of ${h}) and the title stays (${before.title} → ${alone.title}); both back after (${after.bar}, ${after.title})`);
+  }
+  { // the diver's two bracelets, closed round a wrist (#529; Okay, 25 Oct 2026: "Links add. Bracelets viewed ad closed … Not for other straps")
+    const was = await page.evaluate(() => [window.dial_tool.S.bezel, window.dial_tool.S.strap]);
+    await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 1); t.set_value("global", "strap", 4); t.changed(); });
+    await page.click('.tabs button[data-tab="Watch"]'); await frame();
+    const got = await page.evaluate(() => { const words = [...document.querySelectorAll(".panel button")].filter((b) => b.checkVisibility()).map((b) => b.textContent.trim());
+      return { links: words.includes("Links") && words.includes("Bracelet"), drawn: window.dial_tool.watch_g.innerHTML.length > 1000 }; });
+    await page.evaluate((w) => { const t = window.dial_tool; t.set_value("global", "bezel", w[0]); t.set_value("global", "strap", w[1]); }, was);
+    check(got.links && got.drawn, `the diver offers Bracelet and Links (${got.links}), the links drawn (${got.drawn})`);
+  }
   { // show mode's top as main's (Okay, 25 Oct 2026, 18:05: "Show mode and main tops, missing bar and alignments check, main looks correct"): the title line main's height, the tabs' hairline drawn, on the undo buttons' bottom
     const top = await page.evaluate(() => { const R = (q) => document.querySelector(q).getBoundingClientRect(), c = getComputedStyle(document.querySelector(".tabs"));
       return { header: Math.round(R(".panel > header").height), line: Math.round(R(".tabs").top), undo: Math.round(R("#undo").bottom), drawn: c.backgroundImage.startsWith("linear-gradient") }; });

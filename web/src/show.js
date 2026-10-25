@@ -43,7 +43,7 @@ export function options(S, items, effects) {
     items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark") && HANDS.includes(x.name) ? x.name : null;
       return { role: x.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
-    strap: S.strap === 2 && diver ? "bracelet" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
+    strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,
     leather: hex(S.c_strap), natoColours: nato_colours(S),
     insert: S.c_insert ? { top: hex(S.c_insert[0]), bottom: hex(S.c_insert[1]) } : { top: INSERTS[S.w_insert][0], bottom: INSERTS[S.w_insert][1] },
@@ -103,7 +103,7 @@ export const GRADIENTS = [["Dusk", "#3b3f58", "#b8876c"], ["Sea", "#1f4e5a", "#a
 export function fit_zoom(tool, w, h) {
   const S = tool.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, cb = WATCH.caseBox(kind, WATCH.sizeFor(kind, S.dial_d));
   if (S.w_view === 2) return Math.min(w, h) / G.page_mm(S);
-  const [bw, bh] = S.w_view === 1 ? WATCH.fullBox() : [cb.w, cb.h];      // the whole watch's frame is known before it is drawn
+  const [bw, bh] = S.w_view === 1 ? WATCH.fullBox(kind, WATCH.sizeFor(kind, S.dial_d), kind === "diver" && (S.strap === 2 || S.strap === 4)) : [cb.w, cb.h];      // the whole watch's frame is known before it is drawn
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
 }
 

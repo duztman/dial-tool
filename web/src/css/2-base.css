@@ -11,6 +11,7 @@
   #app.away { --away: 1; }
   .showing { --panel-w: var(--show-panel-w); }
   #app.showing { grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
+  #app.showing.alone { grid-template-rows: 1fr calc(var(--bar-height) * (1 - var(--away))); }      /* show mode's eye: the bar slides down out of the window with the panel (Okay, 25 Oct 2026: "Eye hides bar too"); the dial side's eye keeps its bar */
   @media (prefers-reduced-motion: reduce) { #app { transition: none; } }
   .starting { padding: var(--margin); }
   h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }
