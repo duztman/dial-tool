@@ -6,6 +6,6 @@
   .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
   .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .headtools .sign[aria-expanded="true"] .rim { stroke: var(--ink); }
-  :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); }      /* a chosen tile under the pointer: a shade lighter */
+  @media (hover: hover) { :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); } }      /* a chosen tile under the pointer: a shade lighter */
   .night .segs > button.on { border-color: var(--night-rule); }      /* in a dark popup the chosen one of a few keeps a 1 px dark-grey line, so its light fill doesn't melt into the box's lines (Okay, 18 Oct 2026, notes 2: "selected items on the three choice tiny selectors should get a 1px dark gray border when selected") */
 }

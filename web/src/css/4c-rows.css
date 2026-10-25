@@ -58,7 +58,7 @@
   .menulabel { display: flex; align-items: center; gap: var(--unit); min-width: 0; }
   .menulabel > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .labelmenu { position: relative; flex: none; display: grid; place-items: center; width: var(--menu-box); height: var(--menu-box); border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); }
-  .labelmenu:hover { border-color: var(--ink); }
+  @media (hover: hover) { .labelmenu:hover { border-color: var(--ink); } }
   .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
   .row > :is(select, .menubox, .segs, .pillswitch, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }
@@ -101,7 +101,7 @@
      height were one line, two numbers to it, from 4.46.1 to 4.56 (#265) */
   .row.haslink { position: relative; }
   .row.haslink > .linkpill { position: absolute; z-index: 1; grid-column: 1 / -1; grid-row: 1; justify-self: start; left: 0; bottom: 0; translate: 0 50%; display: grid; place-items: center; height: var(--link-pill); padding: 0 var(--u2); border: var(--hair) solid var(--row-rule); border-radius: var(--round-pill); background: var(--surface); color: var(--grey); font: 400 var(--t-pixel)/1 var(--pixel); letter-spacing: 0; }
-  .row.haslink > .linkpill:hover { border-color: var(--grey); }
+  @media (hover: hover) { .row.haslink > .linkpill:hover { border-color: var(--grey); } }
   .row.haslink > .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
   /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
 

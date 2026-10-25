@@ -1,6 +1,6 @@
 // icons/check.mjs — the icon check (R33). Opens the built page (dial-tool.html) in Chromium at 2×, visits the window's
 // states, finds every icon (an <svg> in the panel, the bars and the pop-outs: not the preview, the ruler, font samples,
-// hand details, the print sheet's page (4.75) or the Gallery), and checks it against the icon grid written in src/app.js (docs/design.md §9):
+// hand details, the print sheet's page (4.75) or the Gallery), and checks it against the icon grid written in src/icons.js (docs/design.md §9):
 //   1. one unit, one point: the viewBox is the icon's size on screen (hand tiles: twice, drawn by the geometry)
 //   2. every stroked line has one of the four widths, LINE · SLANT · CURVE · DENSE (or DENSE + 1/8: the round corners of
 //      a quiet box, drawn with box(…, DENSE, DENSE + 1 / 8)), or is a pictured width (PICTURED)
@@ -18,10 +18,10 @@ const OUT = "icons/out";
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT + "/icons", { recursive: true });
 
-// the four widths, read from app.js, so this check follows the source
-const src = fs.readFileSync("src/app.js", "utf8");
+// the four widths, read from icons.js, so this check follows the source
+const src = fs.readFileSync("src/icons.js", "utf8");
 const decl = /const (LINE = [^;]+);/.exec(src);
-if (!decl) { console.log("FAIL  app.js has no `const LINE = …` line: the icon grid is gone"); process.exit(1); }
+if (!decl) { console.log("FAIL  icons.js has no `const LINE = …` line: the icon grid is gone"); process.exit(1); }
 const W = {};
 for (const part of decl[1].split(/,\s*(?=[A-Z]+ =)/)) { const [k, v] = part.split("=").map((s) => s.trim()); W[k] = Function(...Object.keys(W), `return ${v}`)(...Object.values(W)); }
 const WIDTHS = [...["LINE", "SLANT", "CURVE", "DENSE"].map((k) => W[k]), W.DENSE + 1 / 8];      // the last: a quiet (DENSE) box's round corners, an eighth heavier, as a LINE box's CURVE corners are

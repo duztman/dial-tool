@@ -47,7 +47,7 @@
   .tab.hang::after { clip-path: polygon(var(--hair) 0, calc(100% - var(--line-r)) 0, calc(100% - var(--line-r)) calc(100% - var(--in-r)), calc(100% - var(--in-r)) calc(100% - var(--hair)), var(--in-l) calc(100% - var(--hair)), var(--hair) calc(100% - var(--in-l))); }
   .tab.hang:first-child { --cut-l: 0px; }
   .tab.hang:last-child { --cut-r: 0px; }
-  .tab:hover { --tab-fill: var(--hover); }
+  @media (hover: hover) { .tab:hover { --tab-fill: var(--hover); } }
   .tab.on { --cut-l: 0px; --cut-r: 0px; --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
   /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box darker than the
      page, under that tab alone and as wide as it, holding Show, its tick 3 smaller (Okay: "the top tab attaches

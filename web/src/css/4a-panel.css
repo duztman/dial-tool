@@ -76,19 +76,19 @@
   .unit { position: relative; z-index: 6; margin-left: auto; }      /* a layer of its own, as the mast's: its translate (level_title) makes it one, and at 0 its menu fell under the rows below (Okay, 16 Oct 2026: "Thou falls under") */
   .unitbox { position: relative; box-sizing: content-box; width: var(--ink-w, 1.1em); height: var(--ink-h, 0.6em); padding: var(--unit-pad); border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); font: 400 var(--t-xxs)/1 var(--unit-face); letter-spacing: 0; text-transform: none; }      /* the word in Dial Mono, small letters, its box round their ink (size_unit), its stems as thick as its line, one colour (#302; the pixel font in capitals until 4.44.1) */
   .unitbox > .word { position: absolute; left: calc(var(--unit-pad) + var(--word-x, 0px)); top: calc(var(--unit-pad) + var(--word-y, 0px)); line-height: 1; white-space: nowrap; }      /* its ink the padding from every side, placed by size_unit, whatever the browser does with a button's word (4.44.3) */      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
-  .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
+  @media (hover: hover) { .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); } }
   /* the way to the Gallery: a small pill right after Help, as far from it as Help from the version, at Help's size and
      on the title's baseline (placed by level_title), as high as the unit box; darker than the unit box, lighter than
      Help (Okay, 16 Oct 2026: "Do the same to Gallery pill and put it after help with equal gap. Gallery gets darker
      than mm but lighter than help"; from 15 Oct, 07:45, a pill in the middle of the room, 32 high) */
   .galleryway { flex: none; margin-left: var(--u4); }
   .gallerypill { padding: var(--gallery-lift) var(--u2) 0; border: var(--hair) solid currentColor; border-radius: var(--round-pill); color: color-mix(in srgb, var(--ink) calc(var(--faint) * 100%), transparent); white-space: nowrap; }
-  .gallerypill:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
+  @media (hover: hover) { .gallerypill:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); } }
   /* a small menu hanging under its button (the units; the kinds of ring to add): lines a row high, a hairline between them */
   :is(.unitmenu, .addmenu) { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
   :is(.unitmenu, .addmenu) button { display: flex; align-items: center; gap: var(--gap); width: 100%; height: var(--line); padding: 0 var(--u4); white-space: nowrap; }
   :is(.unitmenu, .addmenu) button + button { border-top: var(--hair) solid var(--rule); }
-  :is(.unitmenu, .addmenu) button:hover { background: var(--hover); }
+  @media (hover: hover) { :is(.unitmenu, .addmenu) button:hover { background: var(--hover); } }
   .unitmenu button { justify-content: space-between; }
   .unitmenu button.on { font-weight: 600; }
   .unitmenu button.on .quiet { color: var(--ink); }
@@ -99,7 +99,7 @@
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }
   .showing .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding-left: var(--margin); padding-right: var(--margin); border-top: 0; background: linear-gradient(var(--uiblack, var(--rule)) 0 0) 50% 0 / calc(100% - 2 * var(--margin)) var(--hair) no-repeat, var(--column-top, var(--paper)); }      /* show mode's four tabs, equal cells; the band's colour runs to the column's edges (the margins are padding here), its hairline inset by the margin as every line in the column (Okay, 21 Oct 2026, 01:53) */
   .tabs button { display: grid; justify-items: center; gap: var(--unit); padding: var(--unit) 0 var(--u4); color: var(--grey); }
-  .tabs button:hover { color: var(--ink); }
+  @media (hover: hover) { .tabs button:hover { color: var(--ink); } }
   .tabs button:focus-visible { outline-offset: calc(-1 * var(--thick)); }
   .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 calc(-1 * var(--triple)) 0 var(--ink); }
   .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
@@ -126,7 +126,7 @@
   .fold { display: grid; grid-template-columns: var(--eye) auto minmax(0, 1fr); column-gap: var(--gap); align-items: center; width: 100%; height: var(--head); text-align: left; }
   .fold .eye { display: grid; place-items: center; position: relative; left: var(--nudge); }
   .folded > .fold :is(.eye, h2) { color: var(--grey); }
-  .fold:hover :is(.eye, h2) { color: var(--ink); }
+  @media (hover: hover) { .fold:hover :is(.eye, h2) { color: var(--ink); } }
   .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
   /* a bare pane, open (the Type pane, #319; Okay, 18 Oct 2026, notes 2: "When expanded, type block header disappears and
      type block moves up"): its heading is the eye alone, in the eyes' column, beside what the pane holds, which starts

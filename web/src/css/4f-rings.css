@@ -19,21 +19,23 @@
   .listgrip.gripping::before { box-shadow: 0 0 0 var(--hair) var(--paper); }
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); cursor: pointer; }
-  .ringlist li.ring:hover { border-color: var(--grey); }
+  @media (hover: hover) { .ringlist li.ring:hover { border-color: var(--grey); } }
   .ringlist li.ring.on { background: var(--select); border-color: var(--select-rule); }
   .guided .ringlist li.ring.on { background: color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
   .ringlist li.ring.off, .ringlist li.ring.off :is(.kind, .says) { color: var(--rule); }
   .ringlist li.ring.off.on, .ringlist li.ring.off.on :is(.kind, .says) { color: var(--grey); }
   .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-pad) - var(--hair) + var(--nudge)); border-radius: var(--round-small) 0 0 var(--round-small); }
-  .ringlist .eye:hover { background: var(--veil); }
+  @media (hover: hover) { .ringlist .eye:hover { background: var(--veil); } }
   .ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
-  .ringlist li.ring:hover .grip, .ringlist li.ring.on .grip { color: var(--grey); }
+  .ringlist li.ring.on .grip { color: var(--grey); }
+  @media (hover: hover) { .ringlist li.ring:hover .grip { color: var(--grey); } }
   .ringlist li.ring.dragged { opacity: var(--dim); }
   .ringlist li.ring.dragged .grip { cursor: grabbing; }
   .ringlist .dropline { position: absolute; left: 0; right: 0; height: var(--triple); background: var(--ink); pointer-events: none; }
   .ringlist .kindicon { grid-column: 3; display: grid; place-items: center; height: 100%; color: var(--ink); }      /* the kind, pictured (#254) */
   .ringlist button.kindicon { width: 100%; padding: 0; }      /* the selected row's: it opens the kinds (4.55) */
-  .ringlist button.kindicon:hover, .ringlist button.kindicon[aria-expanded="true"] { background: var(--veil-strong); }
+  .ringlist button.kindicon[aria-expanded="true"] { background: var(--veil-strong); }
+  @media (hover: hover) { .ringlist button.kindicon:hover { background: var(--veil-strong); } }
   .ringlist li.ring.off .kindicon { color: var(--rule); }
   .ringlist .namecell { grid-column: 4 / 9; display: flex; align-items: center; min-width: 0; padding-right: var(--u3); }
   .ringlist span.name { min-width: 0; padding: 0 var(--unit) 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -41,7 +43,7 @@
   .ringlist input.name { grid-column: 4 / 9; margin-left: var(--u1); padding: 0 var(--unit); }
   .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--wait); }
   .ringlist .rename svg { opacity: var(--rename-dim); }      /* half its grey (Okay's PSD, 18 Oct 2026) */
-  .ringlist .rename:hover svg { opacity: 1; }
+  @media (hover: hover) { .ringlist .rename:hover svg { opacity: 1; } }
   /* the selected ring's size and radius, large, in Dial Mono, each centred over its button in the drawer (4.55) */
   .ringlist li.ring .namecell { grid-column: 4 / 6; }      /* every row: the name, then colour · size · radius (#504) */
   .ringlist li.ring.on .namecell { grid-column: 4 / 7; }
@@ -51,14 +53,15 @@
   .ringlist li.ring > .colour.bare.rowswatch { grid-column: 6; justify-self: end; border-color: transparent; background: none; pointer-events: none; }      /* the ring's colour, where the selected ring's line has its swatch (#504) */
   .ringlist li.ring.off .fig { color: var(--rule); }      /* a hidden ring's numbers, faint as its name */
   .ringlist li.ring.off .rowswatch { opacity: var(--rename-dim); }
-  .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
+  @media (hover: hover) { .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); } }
   /* the list's tools stand on the pane's heading line, at its right: a plus that opens the four kinds, then move up ·
      move down · duplicate · delete, all five the same outlined circle. The pane is laid on the
      columns so they can lie over the heading's right part; folded, the summary stands there instead. */
   .headtools { display: flex; align-items: center; gap: var(--foot-gap); }
   .headtools .sign { border: 0; border-radius: var(--round-pill); }      /* no border: the ring is drawn in the sign, as heavy as its lines (round_sign, app.js) */
-  .headtools .sign .rim { stroke: var(--rule); }      /* light grey, as heavy as the sign (Okay, 14 Oct 2026: "lighter gray, keep the thickness… 30 % gray") */
-  .headtools .sign:hover .rim { stroke: var(--grey); }
+  .headtools .sign .rim { stroke: var(--rule); }
+  .headtools .sign.none { opacity: var(--faint); cursor: default; pointer-events: none; }      /* nothing to do that way (up at the top, delete with one ring): faint, as the undo box with no step (R16) */      /* light grey, as heavy as the sign (Okay, 14 Oct 2026: "lighter gray, keep the thickness… 30 % gray") */
+  @media (hover: hover) { .headtools .sign:hover .rim { stroke: var(--grey); } }
   .adder { position: relative; display: grid; }
 
   /* the selected ring's line: a framed line in the list, right under the selected ring's row and joined to it by a
@@ -93,7 +96,7 @@
   .colour.bare .dot { width: var(--bare-dot); height: var(--bare-dot); border-color: var(--rule); }
   .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
   .ringline > .colour.bare { border-color: transparent; background: none; }      /* the swatch alone, filled, no box round it (Okay's PSD, 18 Oct 2026) */
-  .ringline > .colour.bare:hover { border-color: var(--rule); }
+  @media (hover: hover) { .ringline > .colour.bare:hover { border-color: var(--rule); } }
   /* the tag: what a wordless button is, under it while the pointer is on it. One for the whole tool, over everything. */
   /* more room inside, the words centred, a hairline round it (Okay, 18 Oct 2026, notes 2: "they need more inner padding
      and centeredness and 1px borders"). The arrow's square
@@ -113,7 +116,7 @@
   .valueb svg .disc { fill: var(--field); stroke: var(--rule); }
   .valueb svg .hull { fill: none; stroke: none; }
   .valueb svg .pivot { fill: var(--grey); stroke: none; }
-  .valueb:hover svg .disc { fill: var(--hover); stroke: var(--ink); }
+  @media (hover: hover) { .valueb:hover svg .disc { fill: var(--hover); stroke: var(--ink); } }
   .valueb:is([aria-expanded="true"], .dragging) { color: var(--paper); }
   /* pressed: the shape fills with ink, its outlines stay grey, the line between the centres and the pivot turn paper (Okay's drawing, 14 Oct 2026) */
   .valueb:is([aria-expanded="true"], .dragging) svg :is(.disc, .hull, .small) { fill: var(--ink); }
@@ -155,7 +158,7 @@
   .numpop .row input[type="range"]::-moz-range-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); }
   .numpop .places { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--num-pop-gap); }      /* a window's places, every one (#264), three to a line */
   .numpop .places > button { height: var(--control-large); border-radius: calc(var(--control-large) / 2); background: var(--white); color: var(--black); }
-  .numpop .places > button:hover { background: var(--num-pop-well); }
+  @media (hover: hover) { .numpop .places > button:hover { background: var(--num-pop-well); } }
   .numpop .places > button.on { background: var(--black); color: var(--white); }
   .numpop .numbox { display: contents; }      /* the row's number box: its value went to the head, its − + are the discs */
   .numpop .row .steps { display: flex; justify-content: space-between; align-items: center; gap: var(--num-pop-gap); width: 100%; }
@@ -164,10 +167,10 @@
   .numpop .row > input[type="range"] { grid-row: 1; }
   .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
   .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-disc-d); height: var(--num-pop-disc-d); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
-  .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); }
+  @media (hover: hover) { .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); } }
   .numpop .row.haslink > .linkpill.on { background: var(--white); color: var(--num-pop-disc); }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-disc-d); height: var(--num-pop-disc-d); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
-  .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
+  @media (hover: hover) { .numpop .row .steps > .step:hover { background: var(--num-pop-hover); } }
   .numpop .row .steps > .step > svg { width: calc(var(--num-pop-sign) * var(--num-pop-s) * var(--num-pop-disc-k)); height: calc(var(--num-pop-sign) * var(--num-pop-s) * var(--num-pop-disc-k)); }      /* the − and +, as the controller is scaled */
   /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
@@ -211,15 +214,16 @@
   .menubox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }      /* the browser's own list, unseen over the box */
   .menubox > input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0 var(--u1); border: 0; text-align: right; font-size: var(--t-s); }
   .menubox > .go { flex: none; display: grid; place-items: center; width: var(--pos-step); padding: 0; border: 0; border-left: var(--hair) solid var(--rule); background: var(--ink); color: var(--paper); }
-  .menubox:hover { background: var(--hover); }
+  @media (hover: hover) { .menubox:hover { background: var(--hover); } }
   /* an (i): what a setting does, in a tag (#357: "Offset and skip need tooltip details") */
   .infosign { display: grid; place-items: center; height: var(--control); padding: 0 var(--u1); color: var(--wait); }
-  .infosign:hover, .infosign:focus-visible { color: var(--ink); }
+  .infosign:focus-visible { color: var(--ink); }
+  @media (hover: hover) { .infosign:hover { color: var(--ink); } }
   /* a quiet row (R15 form B, #251): the number with its compact ±, no slider on the row — the slider stands in the controller its name or its number opens */
   .row.side.quiet > input[type="range"] { display: none; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
   .popname { cursor: ew-resize; touch-action: pan-y; }      /* a finger sliding along it scrubs (4.85); up and down still scrolls the panel */
-  .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
+  @media (hover: hover) { .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); } }
   .popname.dragging { color: var(--ink); }
 
   /* Give way to rings above (#258, 4.50.2; Okay's notes, p. 4: "what's happening should be visible here"): at the
@@ -234,7 +238,7 @@
      no frame; the chosen one in ink, lit white and reaching across the gap onto the square: joined to it (#258) */
   .givetab { height: var(--line); padding: 0 var(--name-in); border: 0; background: none; box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); color: var(--grey); text-align: left; font: inherit; }
   .givetab:first-child { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule), inset 0 var(--hair) 0 var(--row-rule); }
-  .givetab:hover { color: var(--ink); }
+  @media (hover: hover) { .givetab:hover { color: var(--ink); } }
   .givetab.on { position: relative; z-index: 1; width: calc(100% + var(--gap) + var(--hair)); background: var(--field); color: var(--ink); font-weight: 600; }
   .givebox { grid-column: 3 / -1; display: grid; gap: var(--u2); padding: var(--u2) 0 0; border: var(--hair) solid var(--row-rule); background: var(--field); }
   .givepic { display: flex; justify-content: center; padding: 0 var(--u3); }

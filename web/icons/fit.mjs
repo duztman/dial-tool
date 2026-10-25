@@ -1,4 +1,4 @@
-// icons/fit.mjs — puts a new icon drawing on the icon grid (R33, docs/design.md §9), ready to paste into src/app.js.
+// icons/fit.mjs — puts a new icon drawing on the icon grid (R33, docs/design.md §9), ready to paste into src/icons.js.
 //
 //   cd web && node icons/fit.mjs drawing.svg 16 [name]
 //
@@ -22,7 +22,7 @@ const [file, sizeArg, nameArg] = process.argv.slice(2);
 if (!file || !sizeArg) { console.log("use: node icons/fit.mjs drawing.svg <size in points> [name]"); process.exit(1); }
 const SIZE = +sizeArg, NAME = nameArg || path.basename(file, ".svg");
 const src = fs.readFileSync(file, "utf8");
-const app = fs.readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
+const app = fs.readFileSync(new URL("../src/icons.js", import.meta.url), "utf8");
 const decl = /const (LINE = [^;]+);/.exec(app)[1];
 const W = {};
 for (const part of decl.split(/,\s*(?=[A-Z]+ =)/)) { const [k, v] = part.split("=").map((s) => s.trim()); W[k] = Function(...Object.keys(W), `return ${v}`)(...Object.values(W)); }

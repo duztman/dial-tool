@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.93.2";
+export const VERSION = "beta 4.94";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -792,6 +792,12 @@ export class Path {
   _wound() {
     const parts = this.contours().map((c) => ({ c, pts: c._points() })).filter((o) => o.pts.length > 2);
     if (parts.length < 2) return this;
+    for (const o of parts) {                       // each contour's box: a probe outside it can't be inside the contour, so most pairs are settled without the crossing count (a 60-tick ring is 60 contours: 3,600 pairs a frame before, a few after)
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const [x, y] of o.pts) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      o.box = [x0, y0, x1, y1];
+    }
+    const in_box = (p, [x0, y0, x1, y1]) => p[0] >= x0 && p[0] <= x1 && p[1] >= y0 && p[1] <= y1;
     const inside = (p, pts) => {
       let hit = false;
       for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
@@ -804,7 +810,7 @@ export class Path {
     const out = new Path();
     for (const o of parts) {
       const probe = [(o.pts[0][0] + o.pts[1][0]) / 2, (o.pts[0][1] + o.pts[1][1]) / 2];
-      const depth = parts.filter((other) => other !== o && inside(probe, other.pts)).length;
+      const depth = parts.filter((other) => other !== o && in_box(probe, other.box) && inside(probe, other.pts)).length;
       const hole = depth % 2 === 1, clockwise = area(o.pts) < 0;
       out.appendPath(hole === clockwise ? o.c : o.c._reversed());
     }
@@ -1040,8 +1046,9 @@ function shaped(txt, t, size) {
     if (lang !== "default") buffer.setLanguage(lang);
     HB.shape(info.font, buffer, Object.entries(t.features || {}).map(([tag, on]) => new HB.Feature(tag, on ? 1 : 0)));
     let x = 0;
-    const p = new Path();
+    const p = new Path(), starts = [];      // where each glyph starts along the line, with the text index (UTF-16) it came from: a word's letters placed one by one (path_letters) keep their kerning
     for (const g of buffer.getGlyphInfosAndPositions()) {
+      starts.push([g.cluster, x]);
       const outline = new Path();
       for (const c of info.font.glyphToJson(g.codepoint)) {
         const v = c.values;
@@ -1057,8 +1064,25 @@ function shaped(txt, t, size) {
       p.appendPath(outline);
       x += (g.xAdvance || 0) * k + tr;
     }
-    return { path: p, width: x };
+    return { path: p, width: x, starts };
   });
+}
+
+/** where each letter of a word starts and how wide it is, from the whole word shaped once (kerning and tracking in):
+ *  per code point [start, width], or null for a letter folded into the one before it (a ligature). */
+function letter_places(txt, t, size) {
+  const { starts, width } = shaped(txt, t, size), tr = t.tracking / 1000 * size, out = [];
+  const at = new Map(starts.map(([cl, x]) => [cl, x]));      // the first glyph of a cluster is the one that stands at it
+  for (const [i, x] of starts) if (!at.has(i) || at.get(i) > x) at.set(i, x);
+  const letters = [...txt];
+  let unit = 0;
+  const xs = letters.map((ch) => { const x = at.has(unit) ? at.get(unit) : null; unit += ch.length; return x; });
+  for (let i = 0; i < letters.length; i++) {
+    if (xs[i] === null) { out.push(null); continue; }
+    let next = width; for (let j = i + 1; j < letters.length; j++) if (xs[j] !== null) { next = xs[j]; break; }
+    out.push([xs[i], Math.max(next - xs[i] - tr, 0)]);
+  }
+  return out;
 }
 
 /** text → outlines. */
@@ -1181,16 +1205,14 @@ function path_letters(txt, r, a, t, size) {
   r = Math.max(r, 1e-3);                           // at a radius of 0 the letters' angles would be NaN (c / r), and NaN reaches the file (found 25 Oct 2026); a hair of a radius keeps every number real
   const flip = ((a % 360) + 360) % 360 > 90 && ((a % 360) + 360) % 360 < 270;
   const tr = t.tracking / 1000 * size;
-  const letters = [...txt];
-  const adv = letters.map((_, i) => advance(letters.slice(0, i).join(""), t, size));   // where each letter starts
-  adv.push(advance(txt, t, size));
-  const total = adv[adv.length - 1] - tr;
+  const letters = [...txt], places = letter_places(txt, t, size);      // the word shaped once: every letter where the kerning puts it (#542a; before, each was placed by the width of the word before it, kerning lost)
+  const total = advance(txt, t, size) - tr;
   const dy = numeral_dy(t, txt, size);
   const out = [];
   letters.forEach((ch, i) => {
-    if (!ch.trim()) return;
-    const own = advance(ch, t, size) - tr;
-    const c = adv[i] + own / 2 - total / 2;        // letter centre along the word
+    if (!ch.trim() || !places[i]) return;
+    const [start, own] = places[i];
+    const c = start + own / 2 - total / 2;         // letter centre along the word
     out.push([ch, flip ? a - degrees(c / r) : a + degrees(c / r), flip, [-own / 2, dy]]);
   });
   return out;
@@ -1595,10 +1617,13 @@ export const shows_day = (S) => windows_of(S).some((w) => w.on && WINDOW_KINDS[w
 /** a day window's short names in its Names language (EN · TR · DE · FR · IT): what a Custom day left blank shows */
 export const day_short = (names) => MOMENT_NAMES[MOMENT_LANGS[names] || "en"].days;
 
+let TODAY = null;                                  // the calendar day "now", as the window tells it (set_today); the geometry never reads the clock itself (R6)
+/** the window says what day it is (once at its start, then as time passes): a dial that follows the date shows it */
+export function set_today(day) { const was = TODAY; TODAY = day; return was !== day; }
+export const day_text = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export function shown_day(S) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(S.date || "")) return S.date;      // a day as the bar writes it; anything else (a link can carry any text) is today, never NaN into the moment
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return TODAY || "2026-01-01";                    // with no day told (a test without a window): one fixed day, so the same settings always draw the same
 }
 
 /** a window as it shows now: one that follows the date (4.62) says the moment's date or weekday, and a moon window its
@@ -1674,7 +1699,6 @@ export function window_disc(S, x) {
   const w = x.w, kind = WINDOW_KINDS[w.kind], R = S.dial_d / 2, room = R - DISC_RIM;
   const centre = clock_point(w.r, window_angle(w)), turn = window_turn(w);
   const put = (p, turned = true) => (turn && turned ? p.rotate(-turn) : p).translate(...centre);
-  const shape = window_shape(w);
   if (kind === "date" || kind === "day") {
     const e = radial_extent(x.window);
     if (!e) return null;

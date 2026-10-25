@@ -8,7 +8,7 @@
   .bar .lead { flex: none; align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
   .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-light); background: none; color: var(--bar-light); }
-  .bar :is(.lead, .viewing) button:hover { background: var(--bar-field); }
+  @media (hover: hover) { .bar :is(.lead, .viewing) button:hover { background: var(--bar-field); } }
   .bar :is(.lead, .viewing) button:active { background: var(--bar-light); color: var(--bar); }
   .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-light); }
   .bar input[type="range"] { touch-action: none; }      /* a finger on the bar's sliders drags them, never the page (#309; Okay: "simple blocks are fine"); the iPad's own edge gestures stay its own */
@@ -27,7 +27,8 @@
   /* play: a round red arcade button seen from above (Okay: "imitate a arcade button, top view… 3 colors and a black
      outline"), drawn in app.js (ARCADE); no sign on it. While time runs it is pressed in. */
   .bar .lead .play { width: var(--play-size); height: var(--play-size); padding: 0; border: 0; border-radius: 50%; background: none; }
-  .bar .lead .play:is(:hover, :active) { background: none; }
+  .bar .lead .play:active { background: none; }
+  @media (hover: hover) { .bar .lead .play:hover { background: none; } }
   .bar .lead .play svg { display: block; }
   .bar .lead .play { margin-right: calc(var(--margin) - var(--u2) - var(--speed-grow)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks), less what the speed box grew toward play (03:18) — taken here, not by a negative margin on the box (R32) */
   .play .arc-out { fill: var(--black); }
@@ -40,7 +41,7 @@
   @media (prefers-reduced-motion: reduce) { .play[aria-pressed="true"] .arc-play { opacity: var(--play-tri-rest); } }      /* no pulse there (pulse()): the triangle as at rest */
   .play .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(var(--pulse, 0) * var(--play-pulse)), var(--play)); }      /* --pulse: 0 to 1, set by app.js (pulse) with each beat while time runs */
   .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
-  .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(12% + var(--pulse, 0) * var(--play-pulse)), var(--play)); }
+  @media (hover: hover) { .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(12% + var(--pulse, 0) * var(--play-pulse)), var(--play)); } }
   /* how fast: a box with its track — a black line with a knob at each end, 1X and 720X over them. --at: how far along
      the track, 0 to 1; the thumb's half-width at each end, so the knob is under the thumb's centre at 1×. */
   .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); border: var(--hair) solid var(--bar-light); }
@@ -70,7 +71,7 @@
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
   .bar .timebox { display: flex; }
   .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
-  .bar .timewell:hover { background: var(--bar-field); }
+  @media (hover: hover) { .bar .timewell:hover { background: var(--bar-field); } }
   .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
   /* AM · PM in the same face and size as the time, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am
      attached to time and same size barlow"), one width for both words. A frame,
@@ -82,7 +83,8 @@
      opens the system's date picker, an input lying unseen under the box */
   .bar .lead .timebox .datewell { position: relative; display: flex; }
   .bar .lead .timebox .date { box-sizing: content-box; display: grid; grid-template-rows: repeat(2, var(--date-line)); align-content: center; justify-items: center; height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; background: none; color: var(--bar-light); font: 600 var(--t-date)/var(--date-line) var(--date-face); font-variant-numeric: tabular-nums; letter-spacing: var(--date-track); }
-  .bar .lead .timebox .date:is(:hover, [aria-expanded="true"]) { background: var(--bar-field); }      /* lit while its popup is open (Okay, 19 Oct 2026, 23:11: "date stays on when popup's on") */
+  .bar .lead .timebox .date[aria-expanded="true"] { background: var(--bar-field); }      /* lit while its popup is open (Okay, 19 Oct 2026, 23:11: "date stays on when popup's on") */
+  @media (hover: hover) { .bar .lead .timebox .date:hover { background: var(--bar-field); } }      /* lit while its popup is open (Okay, 19 Oct 2026, 23:11: "date stays on when popup's on") */
   .bar .datepick { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; padding: 0; border: 0; background: none; color: transparent; opacity: 0; pointer-events: none; }
   /* a popup on the bar (barpop): the date's (#402, #412, #432) and, on a phone, the zoom's (#445). Okay's drawing,
      final (20 Oct 2026, 01:05: "popup drawing and final decisions made in photoshop. other than tue (font rendering)
@@ -96,7 +98,7 @@
   .bar .barpop .weekday { margin-right: calc(var(--datepop-pad) - var(--datepop-gap)); color: var(--ink); }      /* the weekday, then 8 to the day's box */
   .bar .barpop .popgroup { position: relative; display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
   .bar .barpop .popgroup .popword { display: grid; place-items: center; padding: 0; color: var(--bar-ink); font-weight: 600; }
-  .bar .barpop .popgroup:hover { background: var(--bar-field); }
+  @media (hover: hover) { .bar .barpop .popgroup:hover { background: var(--bar-field); } }
   .bar .barpop .pop-day .popword { width: var(--datepop-day); }
   .bar .barpop .pop-month .popword { width: var(--datepop-month); }
   .bar .barpop .pop-year .popword { width: var(--datepop-year); }
@@ -105,7 +107,7 @@
   .bar .barpop .popsteps { display: flex; height: 100%; margin-left: calc(var(--datepop-steps-gap) - var(--datepop-gap)); }
   .bar .barpop .popstep { display: grid; place-items: center; width: calc(var(--control) + 3 * var(--hair)); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }      /* − 27 inside, + 26: as drawn */
   .bar .barpop .popstep + .popstep { width: calc(var(--control) + var(--hair)); border-left: 0; }
-  .bar .barpop .popstep:hover { background: var(--bar-field); }
+  @media (hover: hover) { .bar .barpop .popstep:hover { background: var(--bar-field); } }
   /* the zoom's, on a phone (Okay, 20 Oct 2026, 00:34: "Zoom popup has plus minus in the tooltip with note. On mobile"):
      the note how to zoom, then − and +; its right edge on FIT's, the screen's edge being near */
   .bar .zoomwell { position: relative; display: flex; align-items: center; gap: var(--gap); }      /* the group's own gap, as before it was wrapped */
@@ -115,7 +117,7 @@
      other boxes are — the light outline, the word in the same light, the bar's field under a pointer (Okay, 19 Oct 2026,
      #414: "Why? fill with grey, worst colour") */
   .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-light); background: none; color: var(--bar-light); font-size: var(--t-s); text-transform: uppercase; }
-  .bar .lead #now:hover { background: var(--bar-field); }
+  @media (hover: hover) { .bar .lead #now:hover { background: var(--bar-field); } }
   .bar .time { width: 100%; text-align: center; }
   .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
   /* the zoom area (Okay, 18 Oct 2026, notes 2): the magnifier first, faint, nothing to press but its tag (how to zoom and
@@ -150,6 +152,6 @@
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
   .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--day-handle) / 2); }
   .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-light); }
-  .steps12 button:hover { text-decoration: underline; }
+  @media (hover: hover) { .steps12 button:hover { text-decoration: underline; } }
   .steps12 button.on { font-weight: 700; }
 }

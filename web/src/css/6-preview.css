@@ -42,7 +42,8 @@
   .tinywin.held { cursor: grabbing; }
   .tinyface > svg { display: block; }
   .tinyshut { position: absolute; top: var(--u2); left: var(--u2); display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border-radius: 50%; background: var(--paper); color: var(--ink); opacity: 0; transition: opacity var(--tiny-fade); }
-  .tinywin:hover .tinyshut, .tinywin.awake .tinyshut, .tinyshut:focus-visible { opacity: 1; }
+  .tinywin.awake .tinyshut, .tinyshut:focus-visible { opacity: 1; }
+  @media (hover: hover) { .tinywin:hover .tinyshut { opacity: 1; } }
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
@@ -104,8 +105,9 @@
   .setoffer { display: flex; align-items: center; gap: var(--unit); }
   .offerbtn { padding: var(--u1) var(--u3); border: var(--hair) solid var(--white); background: none; color: var(--white); font: inherit; cursor: pointer; }      /* its buttons, drawn for the note's dark ground */
   .offerbtn.main { background: var(--white); color: var(--ink); }
-  .undobox.none, .undobox.none:hover { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; }      /* no step that way: its outline as the others' (Okay, 21 Oct 2026, 23:34: "keep outlines as others while inactive"), its sign paler, nothing under a pointer or a finger */
-  :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
+  .undobox.none { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; }      /* no step that way: its outline as the others' (Okay, 21 Oct 2026, 23:34: "keep outlines as others while inactive"), its sign paler, nothing under a pointer or a finger */
+  @media (hover: hover) { .undobox.none:hover { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; } }      /* under the pointer as at rest */
+  .undobox.none > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { --sign-w: var(--sign-18); gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
@@ -176,10 +178,11 @@
   .gdot::before { content: ""; width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
   .guidekind.off .gdot::before { background: none; box-shadow: inset 0 0 0 var(--hair) var(--grey); }      /* hidden (None): an empty ring */
   .gchev { color: var(--grey); }
-  .gchev:hover, .gchev[aria-expanded="true"] { color: var(--ink); }
+  .gchev[aria-expanded="true"] { color: var(--ink); }
+  @media (hover: hover) { .gchev:hover { color: var(--ink); } }
   .gchev[aria-expanded="true"] svg { rotate: 180deg; }
   .guidehead .minus { display: grid; place-items: center; width: var(--guide-circle); height: var(--guide-circle); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
-  .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); }
+  @media (hover: hover) { .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); } }
   /* a heading's menu, Selected · All · None: the tool's chevron box, round here, as high as a circle */
   .gmenu { height: var(--guide-circle); border-radius: var(--round-pill); }
   .gmenu > .v { padding-left: var(--u3); }
@@ -208,7 +211,7 @@
   .guidelist.guidesheet .guidelast > .resetall { grid-column: 3; align-self: stretch; display: grid; align-items: center; }      /* Reset All in the third column, as tall as the line */
   .guidelist.guidesheet .guidelast > .ask { grid-column: 1 / -1; }
   .gword { padding: 0 0 0 var(--u2); font-size: var(--t-s); color: var(--grey); }
-  .gword:hover { color: var(--ink); }
+  @media (hover: hover) { .gword:hover { color: var(--ink); } }
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
   .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
   .guidescroll > * { margin-inline: var(--pop-pad); }
@@ -226,7 +229,7 @@
   .guidefield input { height: var(--control); padding: 0; border: 0; background: none; color: inherit; text-align: right; }
   .guidefield input:focus { color: var(--ink); outline-offset: var(--u1); }      /* typing: its ring stands off the figures */
   .dots .none { color: var(--grey); }
-  .dots .none:hover { color: var(--ink); }
+  @media (hover: hover) { .dots .none:hover { color: var(--ink); } }
   /* Thickness, on the list's own columns: name · slider · value · stepper */
   .guidelist .row { grid-template-columns: var(--guide-name) minmax(0, 1fr) var(--col) var(--col); min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidelist .row > :is(label, input[type="range"]) { grid-column: auto; }
@@ -243,7 +246,7 @@
   .guidelast > .ask { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; color: var(--ink); }
   .guidelast .answers { display: flex; gap: var(--u2); }
   .roundb { display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: none; color: var(--ink); }
-  .roundb:hover { background: var(--ink); color: var(--paper); }
+  @media (hover: hover) { .roundb:hover { background: var(--ink); color: var(--paper); } }
   .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: calc(var(--shade-right, var(--panel-w)) - var(--shade-left, var(--margin))); max-width: calc(100vw - 2 * var(--margin));
@@ -267,7 +270,7 @@
   .shadelist .row.named { display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; row-gap: var(--u1); min-height: 0; box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }      /* form D: the name over its slider, the value in the knob */
   .shadelist .three > .row.named:last-child { box-shadow: none; }
   .shadelist .row.named > label { font-size: var(--t-s); color: var(--grey); }
-  .shadelist .row.named > label:hover { color: var(--ink); }
+  @media (hover: hover) { .shadelist .row.named > label:hover { color: var(--ink); } }
   .shadelist .row.named > .lane { position: relative; display: grid; }      /* as wide as its column: squeezed to --shade-slide-top (Okay, 02:20: "squeeze sliders") */
   .shadelist .row.named > .lane > input[type="range"] { grid-column: 1; }
   .shadelist .knobval { position: absolute; top: 50%; left: calc(var(--thumb) / 2 + var(--at, 0) * (100% - var(--thumb))); translate: -50% -50%; min-width: var(--thumb); height: var(--thumb); box-sizing: border-box; padding: 0 var(--u2); border-radius: var(--round-pill); background: var(--ink); color: var(--paper); font-size: var(--t-xs); font-weight: 600; font-variant-numeric: tabular-nums; line-height: var(--thumb); text-align: center; white-space: nowrap; pointer-events: none; }      /* the value rides in the knob: a pill as wide as its figures, centred on the thumb */
@@ -277,7 +280,8 @@
   .shaderows > .row.side, .shaderows .shadowrings > .row.side { grid-template-columns: var(--side-columns); column-gap: 0; min-height: var(--line); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .shaderows > .row.side:last-child { box-shadow: none; }
   .shaderows .row.side > label { color: var(--grey); }
-  .shaderows .row.side:is(:hover, :focus-within, :has([aria-expanded="true"])) > label { color: var(--ink); }
+  .shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) > label { color: var(--ink); }
+  @media (hover: hover) { .shaderows .row.side:hover > label { color: var(--ink); } }
   .shaderows .row.ref > label { grid-column: 1 / -1; }      /* the plate: the reference, nothing to size */
   .stackpic { position: relative; border: var(--hair) solid var(--rule); border-radius: var(--round); }      /* outline only, no ground (Okay, 01:46); the sun box's corners */
   .stackpic .word { position: absolute; left: var(--u4); top: var(--u3); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* its name, as the sun box has (Okay, 02:29: "Components") */

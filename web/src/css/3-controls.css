@@ -13,15 +13,15 @@
   input[type="text"]:focus, select:focus { outline: var(--thick) solid var(--ink); outline-offset: 0; }
 
   .btn, .step, .segs > button, .plain, .sign { height: var(--control); border: var(--hair) solid var(--ink); background: var(--field); }
-  :is(.btn, .step, .segs > button):hover { background: var(--hover); }
+  @media (hover: hover) { :is(.btn, .step, .segs > button):hover { background: var(--hover); } }
   :is(.btn, .step, .segs > button, .plain, .sign):active { background: var(--ink); color: var(--paper); }
   .btn { padding: 0 var(--btn-pad); }
   .btn.main { min-width: var(--col); background: var(--ink); color: var(--paper); font-weight: 600; }
-  .btn.main:hover { background: var(--ink-hover); }
+  @media (hover: hover) { .btn.main:hover { background: var(--ink-hover); } }
   .plain, .sign { flex: none; border-color: transparent; background: none; }
   .plain { padding: 0 var(--unit); white-space: nowrap; }
   .sign { display: inline-grid; place-items: center; width: var(--control); }
-  :is(.plain, .sign):hover { background: var(--field); border-color: var(--rule); }
+  @media (hover: hover) { :is(.plain, .sign):hover { background: var(--field); border-color: var(--rule); } }
 
   .steps, .segs { display: flex; }
   /* a choice of a few words: a pill switch — a rounded outline, the words in it as pills, the chosen one ink (5-chosen).
@@ -29,7 +29,7 @@
      (Okay, 20 Oct 2026, 01:33: "Arch phase line selector exactly like this light dark selector here … universal") */
   .pillswitch { display: flex; justify-self: start; width: max-content; max-width: 100%; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
   .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
-  .pillswitch > button:hover:not(.on) { color: var(--ink); }
+  @media (hover: hover) { .pillswitch > button:hover:not(.on) { color: var(--ink); } }
   .pillswitch.many { flex-wrap: wrap; }
   /* a toggle (#525): a small track as tall as the Gallery pill, a dot travelling in it. Off: its outline, the dot at the
      left in the outline's colour, its row's name dark. On: the dot white at the right, on the filled track */
@@ -50,14 +50,14 @@
      each as wide as the others, a unit between them, as high as a large control; the chosen one ink (chosen layer) */
   .btnline { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
   .btnline > button { display: grid; place-items: center; height: var(--control-large); padding: 0; border: var(--hair) solid var(--rule); background: var(--field); }
-  .btnline > button:hover { background: var(--hover); }
+  @media (hover: hover) { .btnline > button:hover { background: var(--hover); } }
   .row > .btnline { grid-column: 3 / -1; }
   /* a line of round buttons (a window's places on its heading's line, 4.46.1: "3 6 9 12 are circular buttons now";
      4.46.2: "add 4… scale up circles"): from the controls' column to the end, a unit between them as between tiles,
      each as large as its share of the line allows. A time in the dots (2:15) is set a size smaller to fit */
   .circles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
   .circles > button { display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--field); }
-  .circles > button:hover { background: var(--hover); }
+  @media (hover: hover) { .circles > button:hover { background: var(--hover); } }
   .circles > .atmore.on { font-size: var(--t-xs); }
   .atmore:not(.on) { letter-spacing: var(--track-100); }      /* the three dots, a little apart */
   :is(.step, .segs > button) + button { border-left: 0; }
@@ -95,7 +95,7 @@
 
   /* a choice as pictures (pickt: one column wide) and OpenType switches (tile: two columns wide); the chosen one is filled */
   .pickt, .tile { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
-  :is(.pickt, .tile):hover { background: var(--hover); }
+  @media (hover: hover) { :is(.pickt, .tile):hover { background: var(--hover); } }
   .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }      /* one small space, the unit: between the tiles, both ways, and from them to the row's lines. The tiles are wider than a column for it */
   .picks.across { grid-template-columns: repeat(var(--across), minmax(0, 1fr)); }      /* a line of all its tiles, however many, equal, on the controls' column beside its name as every row's controls stand (Okay, 19 Oct 2026, 20:37: a window's four complications "EQUAL", from the controls' line) */
   .pickt { justify-items: center; align-content: start; gap: var(--u1); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
@@ -142,7 +142,7 @@
   .chips button { width: var(--chip); height: var(--chip); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); }
   .chips button.on { outline: var(--thick) solid var(--ink); outline-offset: var(--u1); }
   .chips button.add { border-color: var(--rule); background: var(--field); color: var(--ink); line-height: 1; }
-  .chips button.add:hover { background: var(--hover); border-color: var(--ink); }
+  @media (hover: hover) { .chips button.add:hover { background: var(--hover); border-color: var(--ink); } }
   .log, .link { display: block; width: 100%; margin: 0; padding: var(--u3) var(--u4); border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
   .log { min-height: var(--log-least); max-height: var(--log-most); overflow-y: auto; }
   .link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }      /* the link on one line, cut at the box's edge; Copy link copies it whole (Okay, 16 Oct 2026, #277; three lines that wrapped before) */

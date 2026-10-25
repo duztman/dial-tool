@@ -434,13 +434,13 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await page.click('button[data-tab="Dial"]'); await frame();
   const lab = await page.$('label[for="global-dial-d-Diameter"]');
   await lab.click(); await frame();
-  const opened = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Diameter" && document.activeElement.id === "global-dial-d-Diameter" && document.activeElement.closest("#value-pop") !== null; });
+  const opened = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Diameter" && document.activeElement.id === "global-dial-d-Diameter-pop" && document.activeElement.closest("#value-pop") !== null && document.querySelectorAll("#global-dial-d-Diameter").length === 1; });
   await page.keyboard.press("Escape");
   const before = await S("S.dial_d"), b = await lab.boundingBox();
   await page.mouse.move(b.x + 10, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + 30, b.y + b.height / 2, { steps: 5 }); await page.mouse.up();
   const after = await S("S.dial_d"), still = await page.$("#value-pop");
   await page.evaluate((v) => window.dial_tool.set_value("global", "dial_d", v), before);
-  check(opened && after === before + 1 && still === null, `a row's name opens its popup, the field ready (Diameter); pressed and moved 20 to the right it is 1 more (${before} → ${after}) and nothing opens`);
+  check(opened && after === before + 1 && still === null, `a row's name opens its popup, the field ready (Diameter; the controller's copy of the row ends in -pop, so the row's id stands once, #542f); pressed and moved 20 to the right it is 1 more (${before} → ${after}) and nothing opens`);
   await page.click('button[data-tab="Rings"]'); await frame();
 }
 // undo: ⌘Z takes one step back, ⇧⌘Z forward again; a drag is one step; the window's state stays (13 Oct 2026)

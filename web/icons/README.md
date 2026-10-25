@@ -3,7 +3,7 @@
 *Written 14 Oct 2026 (beta 4.36), after the icon audit. The rules are R33 (`docs/rules.md`); the why is the design
 canon, `docs/design.md` §9. This folder holds the tools that keep every icon on them.*
 
-An icon in Dial Tool is an SVG drawn in the icon block at the top of `web/src/app.js`, at the size it is shown, with
+An icon in Dial Tool is an SVG drawn in `web/src/icons.js`, at the size it is shown, with
 one of four line widths: `LINE` 1.5 (straight) · `SLANT` 1.5625 (slanted) · `CURVE` 1.625 (round) · `DENSE` 1.25
 (crowded). The widths differ so that every line *looks* equally heavy.
 
@@ -17,7 +17,7 @@ one of four line widths: `LINE` 1.5 (straight) · `SLANT` 1.5625 (slanted) · `C
    is (straight → `LINE`, slanted → `SLANT`, round → `CURVE`; a round-cornered box → `box()`), snaps straight runs
    onto quarter points and circles so their edges land on whole dots, and prints the code to paste. It also writes
    `icons/out/fit-name.svg` to look at.
-3. **Paste** the printed `icon(…)` into `app.js`: in `SIGNS` if it is a sign used in more than one place, in
+3. **Paste** the printed `icon(…)` into `icons.js`: in `SIGNS` if it is a sign used in more than one place, in
    `TOOL_ICONS` or `PICS` otherwise. A sign inside a round button goes through `round_sign()`.
 4. **Check the rules:** `node build.mjs && node icons/check.mjs` (also the last step of `npm test`). It opens the
    tool in Chromium at 2×, visits every tab, pick and pop-up, finds every icon and checks: drawn at its size · only

@@ -13,9 +13,9 @@ export function link(settings) {
  *  plate reads light (#286). G is the engines, loaded by the caller with its fonts; `settings` must name open fonts. */
 export function card(G, settings) {
   const S = G.fresh_settings(settings);      // as the dial says: a card's link carries nothing the dial doesn't (found 25 Oct 2026: every card switched the guides on, against "Defaults are all off", #485)
-  const statik = G.build_static(S), R = S.dial_d / 2 + 0.6;
+  const statik = G.build_static(S), R = S.dial_d / 2 + 0.6;      // the picture at a tenth of a millimetre: a card is about 150 px across, so nothing is lost and the page carries a third less (590 → 490 kB for the Gallery)
   const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
-  const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" || i.role === "mark" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
+  const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" || i.role === "mark" ? G.turned(i.path, i.angle) : i.path).svg(1, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
   const plate = S.c_plate, light = 0.2126 * plate[0] + 0.7152 * plate[1] + 0.0722 * plate[2] > 0.5;
   return { light, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` };
 }

@@ -194,7 +194,7 @@ alignment to these rules as well."*
   way"; "2 or 3 buttons on a selector like complications work the same. Same size buttons, gaps on the right"): the
   tiles stand on the controls' column, beside the row's name, four to a line and equal. Two or three keep a four's
   size, the room left at the right. A fifth squeezes in, the five equal; more than five is a sign to find another
-  way. `.picks` in `3-controls.css`; `--across` (app.js) is never less than four.
+  way. `.picks` in `3-controls.css`; `--across` (windows.js) is never less than four.
 
 ## 7 · Writing
 
@@ -221,7 +221,7 @@ Noted while drawing the window; none is built. Each needs Okay's word (R18).
 
 *Canon since 14 Oct 2026 (beta 4.36), from the icon audit Okay asked for ("Let this knowledge of good and proper icon
 making be canon. This pipeline for upcoming icons"). Binding through R33. Source: the icon block at the top of
-`web/src/app.js`; checks and tools: `web/icons/` (its `README.md` says how to use them).*
+`web/src/icons.js`; checks and tools: `web/icons/` (its `README.md` says how to use them).*
 
 Every screen the tool is used on is 2× (iPad, both Macs): a point is two screen dots, and Chrome puts each icon's
 corner on a dot even when the layout puts it on a fraction (measured, 14 Oct). So what decides sharpness is the grid
@@ -262,7 +262,7 @@ inside the drawing.
   draws 1 (measured, 14 Oct). Where a border is part of a sign, the sign draws it (`round_sign()`, the ring list's
   round tools).
 - **One drawing per idea.** One plus (9 long), one minus, one cross (8), one chevron (8 × 4), one copy sign, one
-  sheet, wherever they appear (`SIGNS` in `app.js`). Open shapes are drawn a little smaller than arrows and boxes
+  sheet, wherever they appear (`SIGNS` in `icons.js`). Open shapes are drawn a little smaller than arrows and boxes
   beside them, because they look larger. Round caps and joins on every line, as on the dial (Okay, 13 Oct).
 - **A quiet sign** may be drawn `DENSE`, with its box's corners an eighth heavier (`box(…, DENSE, DENSE + 1 / 8)`): the
   rename box (Okay, 11 Oct: "thin and light"; 14 Oct: "thinner lines"). Quiet is a choice per sign, Okay's, not a

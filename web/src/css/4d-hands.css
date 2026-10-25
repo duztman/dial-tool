@@ -28,7 +28,7 @@
   .picks.thumbs > .pickt { align-content: center; padding: var(--unit) 0; }
   .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
-  .pickt.own:hover { background: var(--field); }
+  @media (hover: hover) { .pickt.own:hover { background: var(--field); } }
   .row.side { position: relative; }
   .row.side .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }      /* beside a hand's box, and a quiet row: the one number box, narrower (4.64; the quiet number with a tiny ± from 4.45.1 to 4.63, #250, #317) */
   @media (min-width: 861px) {

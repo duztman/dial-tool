@@ -123,7 +123,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Blank face** | Button under Reset (#333): starting values, white plate, no windows, one hidden ring (list never empty); hands stay. Undoable. |
 | **Bottom bar** | Dark strip at the window's bottom: time (play, speed slider, time with AM · PM, Now, day slider) · view (zoom, − +, Fit). |
 | **Speed slider** | 0.1× to 720× (#283): **slow motion** steps 0.1 · 0.25 · 0.5 · 1×, then log scale. Starts at 1×. |
-| **Pinned line** | A line outside the panes, always in view (Hands: All hands · Show hands · Motion; the hand tabs). Row option `bar` in `app.js`. |
+| **Pinned line** | A line outside the panes, always in view (Hands: All hands · Show hands · Motion; the hand tabs). Row option `bar` in `rows.js`. |
 | **Half line** | Hairline between a row and a **nested row**, from the controls' column (third of six) to the right edge. |
 | **Sticker** | Font sheet: a small coloured pixel-font box naming one thing a family has (*weight*, *italic*, *4 styles*), colour per kind; legend under the list. |
 | **Detail box** | Left of a hand pane's rows: the chosen hand, large, centre marked; over the rows on a phone. A picture **tile** shows a shape in general; the detail box shows this hand. |
@@ -139,7 +139,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Bottom section** | A popup's foot, on the night field to the box's bottom (#305, #539): Guides (Add · Thickness · Reset All), Shadows (Soft edge · Bevels % · Reset). |
 | **Shadows pane** | The Shadows switch's pane (#526), opening over the panel's column so the dial stays in view: the **sun picture** (the dial as a ring, the sun outside it, dragged — round for the angle, inward for higher; its rays lengthened by Strength, thinned by distance) with Angle · Height · Strength stacked beside it, values in the knobs; the parts' rows (Cap, the hands, every ring's ink height, Plate, Date discs) with the **exploded view** beside them — one dashed axis, every part on it, gaps as their heights, the part being sized white; the foot Soft edge · Bevels % · Reset. |
 | **Special** | A value off R32's scale or tokens on purpose: a named token in the labelled block at the end of `:root` in `1-tokens.css`, with Okay's words and date; never a bare number (R32). Two groups: asked for by Okay; found off scale (#294). |
-| **Side row** | Row beside the detail box, last four columns: label · slider · number box (`side` in `app.js`). |
+| **Side row** | Row beside the detail box, last four columns: label · slider · number box (`side` in `rows.js`). |
 | **Print** (pane) | In Export: what only the printed or etched dial needs (mono print mask, mirrored, print sheet). Nothing drawn on the dial. |
 | **Nested row** | A row belonging to the one above: a question (`nest`), its settings (`tie`) or a note (`under`). Starts on the controls' column, under a **half line**. |
 | **Nested question** | A tick or menu about the row above; starts on the controls' column. |
@@ -167,7 +167,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Settings** (`S`) | One dictionary of every value, saved as JSON. Rings are a list in it (`S["rings"]`, top first); so are hands and windows. |
 | **Static geometry** | What doesn't move (plate, rings, windows); rebuilt on a geometry change, per ring by its settings. Hands turn every frame. |
 | **Imported file** | An SVG, PDF or AI file used as a marker or hand shape (R23; not built, #50). |
-| **Icon** | A small SVG in the window (section sign, tool, picture tile), drawn in the icon block at the top of `web/src/app.js` by R33 and design canon §9. Not the boxes round it. |
+| **Icon** | A small SVG in the window (section sign, tool, picture tile), drawn in `web/src/icons.js` by R33 and design canon §9. Not the boxes round it. |
 | **Icon grid** | One unit = one point, four line widths, straight lines on quarter points. |
 | **LINE · SLANT · CURVE · DENSE** | The four icon line widths (design canon §9): straight 1.5 · slanted 1.5625 · round 1.625 · crowded 1.25. |
 | **Quarter point** | A coordinate ending in .25 or .75; a 1.5 line there covers three whole dots on a 2× screen. |
@@ -193,7 +193,7 @@ If a term is used differently in conversation, ask, then update this file.
 
 | Term | Meaning |
 |---|---|
-| **Web version** | The tool (`web/`): source in `web/src/` (`app.js` the window, `geometry.js` settings, geometry and drawing, R6), built by `node build.mjs` into **one file**, `web/dial-tool.html`, fetching nothing at run time (R30). Settings keys shared with the frozen `archive/drawbot/dial.py` (R8, R30). |
+| **Web version** | The tool (`web/`): source in `web/src/` (`geometry.js` settings, geometry and drawing, R6; the window in `app.js` and its parts — `panel.js`, `rings.js`, `preview.js` … one file per part of the window, each an object of methods put on the tool), built by `node build.mjs` into **one file**, `web/dial-tool.html`, fetching nothing at run time (R30). Settings keys shared with the frozen `archive/drawbot/dial.py` (R8, R30). |
 | **Scene** | What `scene()` returns (`geometry.js`): everything to draw, bottom to top, each **item** with a **role** (plate, ring, hand, guide…). Export and every preview read it (R26). |
 | **Shape combining** | Union, difference, xor and overlap removal of paths, done by PathKit. |
 | **PathKit** | Skia's **shape combining** for the browser, pinned in `web/package.json` (R30); same engine as `skia-pathops` in the parity test. |

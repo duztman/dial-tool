@@ -4,13 +4,13 @@
      rest, a middle grey under the pointer, black while its pop-out is open (no outlines). A swatch shows its colour
      (--c) over a checkerboard, so a see-through colour looks see-through. */
   .colour { display: inline-flex; align-items: center; gap: var(--pill-gap); justify-self: start; height: var(--pill); padding: 0 var(--pill-gap);      border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--mono); }
-  .colour:hover { background: var(--rule); }
+  @media (hover: hover) { .colour:hover { background: var(--rule); } }
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
   .colour .dot { width: 1em; height: 1em; border-radius: var(--round-tiny); }      /* as large as its hex */
   .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: var(--round-tiny); vertical-align: calc(-1 * var(--hair)); }
   .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
-  .swatch:hover { border-color: var(--ink); }
+  @media (hover: hover) { .swatch:hover { border-color: var(--ink); } }
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
   .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
   .swatches .swatch { width: var(--control); height: var(--control); border-radius: var(--round-small); }
@@ -22,7 +22,8 @@
   .colourlist > .row.showline > :is(.single, .swatches) { grid-column: auto; display: flex; align-items: center; gap: var(--chip-gap); padding: 0; }
   .colourlist > .row.showline .swatch { width: var(--pill); height: var(--pill); border-radius: var(--round-small); }
   .colourlist > .row.showline > .eye { display: grid; place-items: center start; color: var(--grey); }
-  .colourlist > .row.showline > .eye[aria-pressed="true"], .colourlist > .row.showline > .eye:hover { color: var(--ink); }
+  .colourlist > .row.showline > .eye[aria-pressed="true"] { color: var(--ink); }
+  @media (hover: hover) { .colourlist > .row.showline > .eye:hover { color: var(--ink); } }
   .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .colourlist > .row.showline > .place { display: flex; justify-content: end; }
   .colourlist > .row.showline .colhead { font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; color: var(--uiblack, var(--ink)); }      /* the number column's name, in black, small capitals as Shenanigans' names */
@@ -34,7 +35,8 @@
      buttons and fields look as they do elsewhere, light on dark. Its head drags it. Rows of colours: a name, then the
      chips. Then the field of one hue, the strip of hues and (rings only) the strip of how see-through, tall enough
      for a finger. Last, one line: RGB · CMYK · HEX, the colour, the values, COPY — small, boxed, capitals. */
-  .colourpop { position: fixed; z-index: 5; display: grid; gap: var(--pop-gap); width: var(--pop-width); max-width: 100vw; max-height: 100dvh; padding: 0 var(--pop-pad) var(--pop-pad); }
+  .colourpop { position: fixed; z-index: 8;      /* over the canvas lists (Guides 7, Shadows 6): it opens last, so it stands on top; under the tags and the controller (30) */
+    display: grid; gap: var(--pop-gap); width: var(--pop-width); max-width: 100vw; max-height: 100dvh; padding: 0 var(--pop-pad) var(--pop-pad); }
   .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
   .colourpop header h2 { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   .colourpop header .sign { border-radius: var(--round-small); }

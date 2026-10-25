@@ -27,7 +27,7 @@
      way in, then the name's line on the same grey; no line between them. */
   .fontbox > .currentwrap { position: relative; padding: var(--font-head-in) var(--font-head-in) 0; background: var(--scroll); }
   .fontbox .fontrow.current { width: 100%; border: 0; background: var(--field); }
-  .fontbox .fontrow.current:hover { background: var(--field); outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); }
+  @media (hover: hover) { .fontbox .fontrow.current:hover { background: var(--field); outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); } }
   .fontbox > .currentwrap + .fontname { border-top: 0; background: var(--scroll); }
   /* the language: at the name line's right end, a small white box (Okay's drawing, 18 Oct 2026: "the red marked box has a new place"; inside the preview's cell in 4.51–4.52.2, #273) */
   .fontname .langbox { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); background: var(--field); color: var(--wait); font-size: var(--t-xxs); }
@@ -44,12 +44,12 @@
   .font-dark .fontbox .fontrow.current { background: var(--font-night); color: var(--font-night-ink); }
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
   .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
-  .partfold:hover { background: var(--hover); }
+  @media (hover: hover) { .partfold:hover { background: var(--hover); } }
   .fontbox .tile > .sticker { justify-self: start; }
   .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontname .btn { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* Lang. and Change…: three quarters of a button, and lighter (Okay, 14 Oct 2026) */
-  .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
+  @media (hover: hover) { .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); } }
   /* the font's name · the language · the text's colour · Change…. The whole line opens the font sheet, but for the
      language and the colour. The colour is a pill with its hex, before EN. */
   .fontname { position: relative; display: grid; grid-template-columns: var(--num-columns); align-items: center; padding: var(--unit) var(--frame-pad) var(--unit) 0; cursor: pointer; }
@@ -73,14 +73,16 @@
   .fontlist::-webkit-scrollbar { display: none; }
   .rail { position: absolute; top: var(--unit); bottom: var(--unit); right: calc((var(--btn-pad) - var(--scrollbar)) / 2 + var(--hair)); width: var(--scrollbar); border-radius: var(--round-pill); background: var(--ground); cursor: pointer; touch-action: none; }
   .rail i { position: absolute; top: 0; left: 0; right: 0; border-radius: var(--round-pill); background: var(--rule); }
-  .rail:hover i, .rail.held i { background: var(--grey); }
+  .rail.held i { background: var(--grey); }
+  @media (hover: hover) { .rail:hover i { background: var(--grey); } }
   .rail::after { content: ""; position: absolute; inset: 0 calc(-1 * var(--unit)); }      /* reach: a finger finds it from beside it too */
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
   /* a line: three columns of one width — the name · the numerals · the stickers (Okay, 13 Oct 2026: "X as in X = 10") */
   .fontrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: var(--unit); width: 100%; min-height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
-  .fontrow:hover { background: var(--hover); }
-  .fontrow.on, .fontrow.on:hover { background: var(--select); }
+  @media (hover: hover) { .fontrow:hover { background: var(--hover); } }
+  .fontrow.on { background: var(--select); }
+  @media (hover: hover) { .fontrow.on:hover { background: var(--select); } }
   .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
   .fontrow .sample { font-size: var(--t-sample); }
   .fontlist .fontrow .sample { position: relative; left: calc(-1 * (var(--unit) + var(--hair))); }      /* drawn a gap and a hairline to the left, all alike: most numerals' first ink then touches the name column's edge, so they don't look inset (Okay, 14 Oct 2026) */
@@ -104,13 +106,13 @@
      (the pixel font at twice its own, R32), grey like the labels beside it; switched on, it is black. */
   .sticker.ui { height: auto; border: var(--hair) solid var(--rule); background: var(--field); color: var(--grey); cursor: pointer; }
   .sticker.ui.big { padding: var(--u1) var(--unit); font-size: calc(2 * var(--t-pixel)); }
-  .sticker.ui:hover { border-color: var(--ink); color: var(--ink); }
+  @media (hover: hover) { .sticker.ui:hover { border-color: var(--ink); color: var(--ink); } }
   .features .tiles:has(> .sticker) { display: flex; flex-wrap: wrap; gap: var(--unit); }
   .partfold.none { color: var(--grey); font-weight: 400; cursor: default; }
-  .partfold.none:hover { background: none; }
+  @media (hover: hover) { .partfold.none:hover { background: none; } }
   .stickerlabel { display: flex; min-width: 0; }
   .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
-  .axisname:hover { color: var(--ink); }
+  @media (hover: hover) { .axisname:hover { color: var(--ink); } }
   /* the legend: folded to a button beside the squares; open, a window of its own over the foot of the list, two of the
      sheet's columns wide (from over the second button to the right edge), in the open button's grey. Its items one under
      the other, a hairline over each that runs across sticker and meaning; the stickers end before the third column's line,
@@ -160,7 +162,7 @@
   /* the filters (R35): six pills in the box, each as wide as its word (Okay: "Not equal pills. All pills fit word shapes like gloves"), on as few lines as the box allows, one after another as words are */
   .findtray { display: flex; flex-wrap: wrap; align-content: start; gap: var(--u1); padding: var(--u1); border: var(--hair) solid var(--grey); border-block: 0; background: var(--field); }
   .filterpill { flex: none; height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u1); border: var(--hair) solid var(--rule); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
-  .filterpill:hover { color: var(--ink); }
+  @media (hover: hover) { .filterpill:hover { color: var(--ink); } }
   .findtray.away > * { visibility: hidden; }      /* on the Installed tab: fonts found by name, no filters (R35); the box stays, so the outline and the list don't move */
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: var(--u4); padding-top: var(--u4); }      /* straight under the list: its edge is the line between them */
@@ -177,6 +179,6 @@
   .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }
   .picker .squares > .legendbutton[aria-expanded="true"] { background: var(--hover); }      /* open: the legend's grey */
   #window-font-back { justify-self: start; display: inline-flex; align-items: center; gap: var(--unit); border-color: var(--rule); background: none; color: var(--grey); opacity: var(--pixel-ink); }      /* Copy style of <the numerals ring>: a box with a copy sign and no fill, quiet; the ring's name in italic (Okay, 13–14 Oct 2026) */
-  #window-font-back:hover { opacity: 1; border-color: var(--ink); color: var(--ink); }
+  @media (hover: hover) { #window-font-back:hover { opacity: 1; border-color: var(--ink); color: var(--ink); } }
   .partfold .many { color: var(--grey); font-weight: 400; }      /* how many switches */
 }
