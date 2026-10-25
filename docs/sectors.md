@@ -29,6 +29,7 @@ The grid: a toggle column (`--eye`) and six columns (`--col`, `--gap`) between t
     - **Gallery, examples** `.gallery`, `.examples` (`4h-gallery.css`): cards by `card()` in `web/links.mjs`.
 - **Chosen** (`5-chosen.css`): what is switched on, picked or open is ink with paper words — one layer, nothing earlier undoes it · R32.
 - **Show mode's column** `.showing .panel`: the same panel, `--show-col`, `--show-margin`, tinted from the backdrop (`show.js` sets `--column`, `--column-top`, `--swatch`, `--uiblack`); **Shenanigans** `.shenanigans` at its foot (borrows: the toggle from a hand's Bevel line, R15 *Toggle*) · glossary-tool *Show mode*; `mode.js`.
+  - **Sun box** `.row.sunrow > .sunbox` (Light tab, `4c-rows.css`; its picture's colours in `6-preview.css`): five `--line`s high, an outline in `--ink`; on `--num-columns` — the picture over columns 1–5, the values `.sunvalues` on the number boxes' column; borrows the Shadows pane's `sun_picture` (centred view) · glossary-tool *Sun box*; #526.
 
 ## 2 · The preview (`main`, `.preview`; `6-preview.css`)
 
@@ -45,7 +46,7 @@ Canvas measures: `--canvas-top`, `--canvas-inset`; what sits on the canvas is `.
 
 ## 3 · The bottom bar (`.bar`; `7-bar.css`)
 
-`--bar-height` (`--bar-control` for its controls); 80 % black, light on dark (`--bar`, `--bar-ink`, `--bar-field`); the one light tone `--bar-light` (55 %); nothing on the bar is white (Okay, 15 Oct 2026) · tokens' comments. Time group `.lead` (play `.play`, speed `.speedtrack` with its humps, time in Dial Time `--time-face`, Now, day slider `.day`); view group `.viewing` (zoom, Fit). Type `--t-time` · R32a. On a phone two lines (`8-narrow.css`, `--bar-lead-narrow`, `--bar-day-narrow`).
+`--bar-height` (`--bar-control` for its controls); 80 % black, light on dark (`--bar`, `--bar-ink`, `--bar-field`); the one light tone `--bar-light` (55 %); nothing on the bar is white (Okay, 15 Oct 2026) · tokens' comments. Time group `.lead` (play `.play`, speed `.speedtrack` with its humps, time in Dial Time `--time-face`, Now, day slider `.day`); view group `.viewing`: `.zooms`, zoom out · zoom in · Fit as three joined squares — borrows the canvas switches' `--control-large` and `--round-switch` (they move together), the right edge at `--canvas-inset` (the bar's padding); a phone shows Fit alone (`8-narrow.css`). Type `--t-time` · R32a. On a phone two lines (`8-narrow.css`, `--bar-lead-narrow`, `--bar-day-narrow`).
 
 ## 4 · The controller (`.numpop` + `.numground`; `4f-rings.css`)
 

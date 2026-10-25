@@ -514,10 +514,29 @@ export const GUIDES = {
    *  2026: "Drag it"); the sliders under it follow. The rays point away from the dial, symmetrical about that line,
    *  and grow with the sun's distance (Okay: "Rays can grow on distant suns, shorter when they are close"); a sun
    *  near a corner has its rays cut by the frame ("the rays pop in and out"). Drawn once, moved by attributes. */
-  sun_picture(id) {
+  /** show mode's Light tab, the Sun pane's top (Okay, 25 Oct 2026, four drawn rounds, "sun locked"): one box, an
+   *  outline with sharp corners in the column's ink ("adapt to the environment"); the sun's picture centred in the
+   *  open space at its left ("Sun centres the open space"), larger for the sliders' absence; at its right Angle ·
+   *  Height · Strength as plain values, each name over its figure, flush left on the number boxes' line, not
+   *  editable ("Labels numbers stack flush left, not editable"), at the rows' size, names faded, figures in ink.
+   *  The sliders are the ordinary rows under it. */
+  row_sunbox(wrap, out) {
+    const sun = this.sun_picture("light", true);
+    const value = (name) => { const figure = el("span", { className: "figure" }); return { el: el("div", { className: "sunvalue" }, el("span", { className: "name", textContent: name }), figure), figure }; };
+    const values = [value("Angle"), value("Height"), value("Strength")];
+    wrap.classList.add("sunrow");
+    wrap.append(el("div", { className: "sunbox" }, sun.el, el("div", { className: "sunvalues" }, ...values.map((v) => v.el))));
+    out.refresh = (T) => {
+      sun.refresh();
+      [`${T.sh_from}°`, `${T.sh_rise}°`, `${T.sh_dark} %`].forEach((text, i) => { values[i].figure.textContent = text; });
+    };
+  },
+
+  sun_picture(id, centred = false) {      // centred: the picture's view a square round the dial, so the dial stands in the middle of its box (show mode's Light tab)
     const W = token("--sun-w", 297), H = token("--sun-h", 204), cx = 136, cy = H / 2, R = 81.5, NEAR = 12, FAR = 123;      // his drawing of 25 Oct 2026: the dial's ring r 81.5 at (136, 102) in the picture's 297 × 204; at Height 25 the sun stands 14 past the rim; a low sun goes past the box's top or bottom, as its rays do      // the picture's grid, as the stylesheet sizes its box (--sun-w × --sun-h); the sun's distance from the middle: Height 85 = NEAR, 5 = FAR
     const box = el("div", { className: "sunpic", id: id + "-sun" });
-    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
+    const VX = centred ? cx - H / 2 : 0, VW = centred ? H : W;      // the view: the whole grid, or the square centred on the dial
+    box.innerHTML = `<svg viewBox="${VX} 0 ${VW} ${H}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
     const sun = box.querySelector(".sun"), rays = box.querySelector(".rays"), fall = box.querySelector(".fall");
     for (let i = 0; i < 16; i++) rays.append(svg_el("line"));
     const where = () => { const a = this.S.sh_from * Math.PI / 180, d = FAR - (clamp(this.S.sh_rise, 5, 85) - 5) / 80 * (FAR - NEAR); return { a, d, x: cx + Math.sin(a) * d, y: cy - Math.cos(a) * d }; };      // clock angles: 0 at 12, clockwise (R2)
@@ -538,8 +557,8 @@ export const GUIDES = {
     };
     // a drag anywhere on the picture puts the sun under the finger
     const move = (e) => {
-      const r = box.getBoundingClientRect(), k = Math.max(W / r.width, H / r.height);      // the picture keeps its proportions in a box of any width (it is centred), so the press is read through that scale
-      const px = W / 2 + (e.clientX - r.left - r.width / 2) * k, py = H / 2 + (e.clientY - r.top - r.height / 2) * k;
+      const r = box.getBoundingClientRect(), k = Math.max(VW / r.width, H / r.height);      // the picture keeps its proportions in a box of any width (it is centred), so the press is read through that scale
+      const px = VX + VW / 2 + (e.clientX - r.left - r.width / 2) * k, py = H / 2 + (e.clientY - r.top - r.height / 2) * k;
       const dx = px - cx, dy = py - cy, dist = Math.hypot(dx, dy), from = ((Math.atan2(dx, -dy) * 180 / Math.PI) + 360) % 360;
       this.S.sh_from = Math.round(from);
       this.S.sh_rise = Math.round(clamp(5 + 80 * (FAR - clamp(dist, NEAR, FAR)) / (FAR - NEAR), 5, 85));

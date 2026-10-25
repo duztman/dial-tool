@@ -23,7 +23,7 @@ import { start_ink } from "./ink.js";
 import { BAD_LINK_NOTE, HISTORY, OLD_LINK_NOTE, OLD_SET_NOTE, dial_text, keep_and_shorten, step_name, unpack, unpack_set } from "./session.js";
 import { $, DEV, FINE, FINE_FREE, HELP, HOLE_LIVE_MS, KEYS, LAST, LINKED_PAIRS, NUDGE_NEUTRAL, clamp, el, fmt_time, parse_time, svg_el } from "./ui.js";
 import { SECTIONS, SHOW_SECTIONS, TAB_NAMES, TAB_ORDER } from "./rows.js";
-import { SIGNS, STEP, TOOL_ICONS, icon, section_icon } from "./icons.js";
+import { SIGNS, TOOL_ICONS, icon, section_icon } from "./icons.js";
 
 // the parts of the window: one object of methods each, put on the class below (Object.assign), so `this` in them is the tool
 import { COLOUR } from "./colour.js";
@@ -344,7 +344,6 @@ class DialTool {
     this.speed_name = el("span", { className: "humpname rider", ariaHidden: "true" });
     humps.append(this.speed_name);
     this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
-    const view = (id, title, inside, act) => { const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(inside); return b; };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
     // the day: the slider, and under it the steps a click snaps to — the twelve hours
     const steps = el("div", { className: "steps12" });
@@ -391,38 +390,23 @@ class DialTool {
     this.watchers[0].observe(this.time_slider);
     this.watchers.push(new ResizeObserver(() => this.set_speed(this.speed)));      // the slow steps' share of the track follows its width
     this.watchers.at(-1).observe(this.speed_slider);
-    // Fit: a word button padded like NOW and AM; the magnifier stands alone before it, between the zoom steps and FIT
-    // (#315, 4.51.1; Okay, 17 Oct 2026: "icon moves out of the fit box, sits in between plusminus and fit, the horizontal
-    // padding like now and am"). Inside the button at its word's left from 15 Oct to 4.51.
-    const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page" }, el("span", { textContent: "Fit" }));
-    fit_button.onclick = () => { this.fit(); this.render(); };
-    // the magnifier: first, before − + FIT, which stand together; how to zoom and move is in its tag, under the pointer
-    // (Okay, 18 Oct 2026, notes 2: "The magnifying glass moves to the left before minus, plus and fit snap together …
-    // Hovering on the mag. glass tells these details. Remove details from the left").
+    // the view, at the bar's right end: three squares stuck together, made as the canvas's switches (undo · redo), their
+    // right edge on the canvas switches' line — zoom out · zoom in · fit, each a sign, how to zoom and move in their
+    // tags (Okay, 25 Oct 2026: "like 3 stuck together canvas buttons on the bar, aligned with canvas brothers from
+    // edge. Two m glasses one with a plus other minus. And lastly the fit … four arrows from a square's corners into
+    // center"). A phone pinches: Fit alone there (8-narrow.css)
     const touch = matchMedia("(hover: none), (pointer: coarse)").matches;
-    const zoom_sign = el("span", { className: "zoomsign", tabIndex: 0, role: "note", ariaLabel: "How to zoom and move" });
-    zoom_sign.dataset.tip = touch ? "Pinch to zoom · two fingers move" : "Scroll zooms · right-drag moves · two fingers pinch and move";      // Okay, 23 Oct 2026
-    zoom_sign.innerHTML = icon(TOOL_ICONS.zoominfo);
-    // on a phone − and + are not on the bar: a tap on the magnifier opens a popup with the note and − + (#445; Okay, 20 Oct
-    // 2026, 00:34: "Zoom popup has plus minus in the tooltip with note. On mobile"), as the date's (barpop); elsewhere a
-    // tap shows the tag a moment (a finger has no hover)
-    const zstep = (sign) => el("button", { type: "button", className: "popstep", innerHTML: sign < 0 ? STEP.minus : STEP.plus, ariaLabel: sign < 0 ? "Zoom out" : "Zoom in", onclick: () => { this.zoom(sign < 0 ? 1 / 1.4 : 1.4, middle()); this.render(); } });
-    const zoom_pop = el("div", { className: "barpop zoompop", id: "zoom-pop", hidden: true },
-      el("div", { className: "popline" }, el("span", { className: "popword", textContent: zoom_sign.dataset.tip }), el("span", { className: "popsteps" }, zstep(-1), zstep(1))));
-    const zoom_away = (e) => { if (!zoom_pop.contains(e.target) && !zoom_sign.contains(e.target)) { zoom_pop.hidden = true; document.removeEventListener("pointerdown", zoom_away, true); } };
-    zoom_sign.onclick = () => {
-      if (this.pop_is_sheet()) { zoom_pop.hidden = !zoom_pop.hidden; if (!zoom_pop.hidden) document.addEventListener("pointerdown", zoom_away, true); return; }
-      this.tag_show(zoom_sign); clearTimeout(this.zoom_tip); this.zoom_tip = setTimeout(() => this.tag_hide(), 2400);
-    };
+    const square = (id, name, tip, inside, act) => { const b = el("button", { type: "button", className: "icon", id, ariaLabel: name, onclick: act }); b.dataset.tip = tip; b.innerHTML = icon(inside); return b; };
+    const zooming = touch ? "· or pinch" : "· or scroll";
+    const fit_button = square("fit", "Fit", touch ? "Fit · two fingers move" : "Fit · right-drag or two fingers move", TOOL_ICONS.fit, () => { this.fit(); this.render(); });
     const bar = el("footer", { className: "bar" },
       el("div", { className: "lead" }, this.play_button, this.speeds, time_box,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => this.to_now() })),
       this.day_box = el("div", { className: "group day" }, this.ruler, this.time_slider, steps, this.needle),
-      el("div", { className: "group viewing" }, this.status, el("span", { className: "zoomwell" }, zoom_sign,
-        zoom_pop, el("span", { className: "zooms" },
-          view("zoom-out", "Zoom out", SIGNS.minus, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
-          view("zoom-in", "Zoom in", SIGNS.plus, () => { this.zoom(1.4, middle()); this.render(); }),
-          fit_button))));
+      el("div", { className: "group viewing" }, this.status, el("span", { className: "zooms" },
+        square("zoom-out", "Zoom out", `Zoom out ${zooming}`, TOOL_ICONS.zoomout, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
+        square("zoom-in", "Zoom in", `Zoom in ${zooming}`, TOOL_ICONS.zoomin, () => { this.zoom(1.4, middle()); this.render(); }),
+        fit_button)));
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · Tiny Preview bottom right (#337) · bottom left: Backdrop, Shadows
@@ -467,7 +451,7 @@ class DialTool {
     this.closed = true;
     this.playing = false;
     this.value_pop_close();                        // a controller left open would outlive the dial it was for, standing over the new panel (found 18 Oct 2026, 4.52)
-    for (const t of ["saving", "merge_wait", "hole_timer", "guides_timer", "words_timer", "zoom_tip", "info_tip", "copied_back"]) clearTimeout(this[t]);      // nothing of this tool fires into the next one's window
+    for (const t of ["saving", "merge_wait", "hole_timer", "guides_timer", "words_timer", "info_tip", "copied_back"]) clearTimeout(this[t]);      // nothing of this tool fires into the next one's window
     for (const w of this.watchers) w.disconnect();
     for (const off of this.cleanups) off();      // a document or window listener of this tool would otherwise live on, one more per dial opened (#542i)
     if (this.menus_list) { this.menu_list_close(); this.menus_list.remove(); }      // the one list and the one tag stand on the body, outside #app: they go with their tool (found 25 Oct 2026: one more of each per dial opened)

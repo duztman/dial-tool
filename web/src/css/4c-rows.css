@@ -115,4 +115,19 @@
   /* show mode: the notes the whole width (Okay, 23 Oct 2026: "explainers span the whole width"); ticks, colour chips and
      pills stand in the first column after the names, as on the dial side ("Color swatches and pills go back") */
   .showing .body .row.note > .quiet { grid-column: 1 / -1; }
+
+  /* show mode's Light tab, the Sun pane's top (Okay, 25 Oct 2026, "sun locked"; guides.js, row_sunbox): one box, five
+     rows high, its outline in the column's ink with sharp corners, drawn inside the box (an outline, so the columns
+     inside keep the rows' places: "box simply gets an outline with sharp corners to adapt to the environment"); laid
+     on the number row's columns — the picture over the open space before the number boxes' column, centred in it;
+     the values on that column, each name over its figure, flush left on the boxes' left line, at the rows' size,
+     names faded and figures in ink ("Labels numbers stack flush left, not editable … Faded colors. Black figures") */
+  .row.sunrow { display: block; padding: var(--u2) 0; box-shadow: none; }
+  .sunbox { display: grid; grid-template-columns: var(--num-columns); height: calc(5 * var(--line)); outline: var(--hair) solid var(--ink); outline-offset: calc(-1 * var(--hair)); }
+  .sunbox > .sunpic { grid-column: 1 / 6; overflow: hidden; }
+      /* the picture's own colours: 6-preview.css, after the Shadows pane's, a later layer */
+  .sunbox > .sunvalues { grid-column: 7 / -1; display: flex; flex-direction: column; justify-content: space-evenly; }
+  .sunvalue { display: grid; }
+  .sunvalue > .name { color: var(--grey); }
+  .sunvalue > .figure { color: var(--ink); }
 }

@@ -23,7 +23,6 @@ const INKED = [
   ".numpop .places button",  // and every place, in the dots' popup
   ".steps12 button",         // the bottom bar's hours and 10:10
   "#ampm",                   // AM · PM, the time's own window
-  ".fit > span",             // Fit, beside its magnifier
   "#show-now > .word",       // the showcase's Now pill (15 Oct 2026)
   "#show-ten > .word",       // and its 10:10 pill (15 Oct 2026, 07:40)
   ".irisgo",                 // ACTIVATE SHOWCASE, beside the iris

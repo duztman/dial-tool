@@ -4,7 +4,7 @@
      the panel's square left, #190) — quiet, so they don't shout under the panel, but for the time, which sings.
      Under the preview: the day slider with its steps, no wider than on an iPad, then the view: how to zoom · − + 1 ·
      Fit 1, at the right. (Okay, 14 Oct 2026, 23:19 and 23:26, build list #190) */
-  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-light); border-top: var(--hair) solid var(--bar-rule); }
+  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--canvas-inset); background: var(--bar); color: var(--bar-light); border-top: var(--hair) solid var(--bar-rule); }
   .bar .lead { flex: none; align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
   .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-light); background: none; color: var(--bar-light); }
@@ -108,26 +108,23 @@
   .bar .barpop .popstep { display: grid; place-items: center; width: calc(var(--control) + 3 * var(--hair)); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }      /* − 27 inside, + 26: as drawn */
   .bar .barpop .popstep + .popstep { width: calc(var(--control) + var(--hair)); border-left: 0; }
   @media (hover: hover) { .bar .barpop .popstep:hover { background: var(--bar-field); } }
-  /* the zoom's, on a phone (Okay, 20 Oct 2026, 00:34: "Zoom popup has plus minus in the tooltip with note. On mobile"):
-     the note how to zoom, then − and +; its right edge on FIT's, the screen's edge being near */
-  .bar .zoomwell { position: relative; display: flex; align-items: center; gap: var(--gap); }      /* the group's own gap, as before it was wrapped */
-  .bar .barpop.zoompop { left: auto; right: 0; translate: none; }
-  .bar .zoompop .popword { color: var(--ink); padding-right: var(--u2); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); drawn as the bar's
      other boxes are — the light outline, the word in the same light, the bar's field under a pointer (Okay, 19 Oct 2026,
      #414: "Why? fill with grey, worst colour") */
   .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-light); background: none; color: var(--bar-light); font-size: var(--t-s); text-transform: uppercase; }
   @media (hover: hover) { .bar .lead #now:hover { background: var(--bar-field); } }
   .bar .time { width: 100%; text-align: center; }
-  .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
-  /* the zoom area (Okay, 18 Oct 2026, notes 2): the magnifier first, faint, nothing to press but its tag (how to zoom and
-     move, under the pointer; a tap shows it on a touch screen); then − + FIT side by side, sharing their lines — FIT a
-     word button with NOW's room either side (#315). */
-  .bar .zoomsign { display: flex; align-items: center; color: var(--bar-light); cursor: help; }
+  .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it; from its divider to the squares, the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps", when Fit too stood a margin from the edge; the squares' edge is the canvas switches' line since 25 Oct 2026 — the two gaps differ, asked) */
+  /* the view (Okay, 25 Oct 2026: "like 3 stuck together canvas buttons on the bar, aligned with canvas brothers from
+     edge"): zoom out · zoom in · fit, squares made as the canvas's switches — their size and the outer corners are the
+     switches' own tokens (--control-large, --round-switch), so the two move together; joined as undo · redo are, the
+     inner lines shared. In the bar's light, as its other boxes. Their right edge on the canvas switches' line
+     (--canvas-inset from the window's right, the .bar's padding) */
   .bar .zooms { flex: none; display: flex; }
-  .bar .zooms > .icon { flex: none; width: calc(var(--col) / 2); }
-  .bar .zooms > .fit { flex: none; padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }      /* FIT, as NOW and AM are set (Okay, 15 Oct 2026, 06:21: "is fit alright? It's looking pale") */
-  .bar .zooms > button + button { border-left-width: 0; }      /* the width alone: its style and colour stay, so a phone can give FIT its own line back (#453) */
+  .bar .zooms > button { flex: none; width: var(--control-large); height: var(--control-large); padding: 0; border-radius: 0; }
+  .bar .zooms > :first-child { border-radius: var(--round-switch) 0 0 var(--round-switch); }
+  .bar .zooms > :last-child { border-radius: 0 var(--round-switch) var(--round-switch) 0; }
+  .bar .zooms > button + button { border-left-width: 0; }      /* the width alone: its style and colour stay, so a phone can give Fit its own line back (#453) */
   .bar .status { display: none; }      /* hidden (Okay, 14 Oct 2026, 23:19); app.js still writes it */
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line

@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **ask** · **parked**. Done items move to `docs/build-list-done.md`; the DrawBot version's to `archive/drawbot/build-list-drawbot.md`.
-*Last updated 25 Oct 2026 (the docs made lean: rows here are one line each; the rows' full text, by number, is `build-list-notes.md`). Where an item came from is in its own words and dates.*
+*Last updated 25 Oct 2026, 4.94.9 (the docs made lean: rows here are one line each; the rows' full text, by number, is `build-list-notes.md`). Where an item came from is in its own words and dates.*
 
 ## v1 — settled with Okay, 21 Oct 2026
 
@@ -111,7 +111,8 @@ From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Oka
 | 522 | Paint finishes in show mode |  | after v1 |
 | 535 | Sliders that stop short | 24 Oct 2026 | open |
 | 536 | Help page and bug reports | 24 Oct 2026 | now |
-| 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane to his drawing built (4.94.4); the Light tab's picture and the guides' foot open |
+| 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane (4.94.4) and the Light tab's sun box (4.94.9) built; the guides' foot open |
+| 545 | Show mode's Dial tab: the parts' stack with ink heights and colours | 25 Oct 2026 — "The dial parts arrangement, ink heights and colors of parts combined with our main shadows diagram" | paused — drawn once (25 Oct), "Pause on the ink adaptation" |
 | 528 | Dramatic lighting more dramatic |  | open |
 | 529 | Bracelets drawn half visible, round an imaginary wrist |  | open |
 | 530 | SVG imports after v1 |  | decided |

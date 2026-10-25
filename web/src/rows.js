@@ -521,12 +521,12 @@ ROWS.Light = [
   seg("w_style", "Style", ["Engineer", "Miyazaki"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
   hdr("Sun", { folded: false }),
-  num("sh_from", "From", 0, 359, 1, { whole: true }),      // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026)
-  num("sh_rise", "Height", 5, 85, 1, { whole: true }),
-  info("One finger or the pointer moves the sun: its direction is where the light comes from; nearer the middle, higher. Two fingers zoom and move the drawing; on a trackpad, pinch and scroll.", {}),      // the Show Case's words
-  hdr("Shadows", { folded: false }),
-  num("sh_dark", "Darkness %", 0, 100, 1, { whole: true }),
+  custom("sunbox"),      // the sun's picture with the three values (guides.js, row_sunbox; Okay, 25 Oct 2026: "sun locked")
+  num("sh_from", "Angle °", 0, 359, 1, { whole: true }),      // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026); named as in the Shadows pane
+  num("sh_rise", "Height °", 5, 85, 1, { whole: true }),
+  num("sh_dark", "Strength %", 0, 100, 1, { whole: true }),      // the shadows' darkness, the Shadows pane's Strength (Okay, 25 Oct 2026: "Darkness becomes the box's Strength slider")
   chk("sh_blur", "Soft shadows"),
+  info("One finger or the pointer moves the sun: its direction is where the light comes from; nearer the middle, higher. Two fingers zoom and move the drawing; on a trackpad, pinch and scroll.", {}),      // the Show Case's words
   hdr("Flare", { folded: false, show: (S) => S.ui_effects }),
   chk("w_flare_on", "Flare", { show: (S) => S.ui_effects, head: true }),      // on its pane's heading line (Okay, 23 Oct 2026: "tick box and its label moves up … on the eye's row")
   seg("w_flare", "Kind", ["Arc", "Dot"], { show: (S) => S.ui_effects && S.w_flare_on && S.w_style === 1 }),

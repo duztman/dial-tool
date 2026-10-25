@@ -1741,9 +1741,13 @@ check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); const box = (q) => document.querySelector(q).getBoundingClientRect(), lead = document.querySelector(".bar .lead"), pad = parseFloat(getComputedStyle(lead).paddingRight);
     const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#date", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
-    return { play: w("#play"), zooms: w("#zoom-out") + w("#zoom-in"), fit: w("#fit"), fitpad: getComputedStyle(document.querySelector("#fit")).paddingLeft === getComputedStyle(document.querySelector("#now")).paddingLeft && Math.abs(box("#fit").width - (box("#fit span").width + 2 * parseFloat(getComputedStyle(document.querySelector("#fit")).paddingLeft) + parseFloat(getComputedStyle(document.querySelector("#fit")).borderLeftWidth) + parseFloat(getComputedStyle(document.querySelector("#fit")).borderRightWidth))) < 0.5, sign: box(".zoomsign").right <= box(".zooms").left && Math.abs(box("#zoom-in").right - box("#fit").left) < 0.5 && document.querySelector("#fit svg") === null, gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
-check(fits.play === 34 && fits.zooms === 54 && fits.fitpad && fits.sign && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.half[1] === 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
-  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6), then the date touching it (4.62) · NOW one equal gap apart, NOW ending on the panel's last column; at the right the magnifier first, then − + FIT side by side (notes 2, 18 Oct 2026), FIT a word with NOW's padding (#315) (${JSON.stringify(fits)})`);
+    const sq = ["#zoom-out", "#zoom-in", "#fit"].map(box), eye = box("#eye-box"), cs = (q) => getComputedStyle(document.querySelector(q));
+    const squares = sq.every((b) => b.width === 32 && b.height === 32) && sq.every((b, i) => i === 0 || Math.abs(b.left - sq[i - 1].right) < 0.5) && Math.abs(sq[2].right - eye.right) < 0.5
+      && cs("#zoom-out").borderTopLeftRadius === cs("#eye-box").borderTopLeftRadius && cs("#zoom-in").borderTopLeftRadius === "0px" && cs("#fit").borderTopRightRadius === cs("#eye-box").borderTopRightRadius
+      && ["#zoom-out", "#zoom-in", "#fit"].every((q) => document.querySelector(q + " svg")) && !document.querySelector(".zoomsign");
+    return { play: w("#play"), squares, edge: +(innerWidth - sq[2].right).toFixed(1), gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
+check(fits.play === 34 && fits.squares && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.half[1] === 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
+  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6), then the date touching it (4.62) · NOW one equal gap apart, NOW ending on the panel's last column; at the right zoom out · zoom in · fit, three 32 squares stuck together, the outer corners the canvas switches', the right edge on the eye switch's (${fits.edge} from the window) (Okay, 25 Oct 2026: "like 3 stuck together canvas buttons on the bar, aligned with canvas brothers from edge") (${JSON.stringify(fits)})`);
 { // the bar's time, second look (#306, 4.45.5): the figures tracked +0.04em, AM · PM 5.5 each side; NOW drawn as the bar's other boxes (#414)
   const look = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#time").letterSpacing, c("#ampm").paddingLeft, c("#ampm").paddingRight, c("#now").backgroundColor, c("#now").color === c("#ampm").color && c("#now").borderTopColor === c("#ampm").borderTopColor]; });
   check(look.join(" ") === "0.8px 5.5px 5.5px rgba(0, 0, 0, 0) true", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word; NOW unfilled, its outline and word AM · PM's (${look.join(" · ")}) (Okay, 19 Oct 2026, #414: "Why? fill with grey, worst colour")`);
@@ -2320,9 +2324,9 @@ await tab("Export");
 }
 const look = await page.evaluate(() => { const q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect(), c = (s) => getComputedStyle(q(s));
   return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], time: c("#time").fontFamily.startsWith('"Dial Time"') && document.fonts.check('300 17px "Dial Time"'),
-    status: c(".bar .status").display, hint: q(".zoomsign").dataset.tip, first: q(".viewing").children[1].firstElementChild === q(".zoomsign") && q(".zooms").lastElementChild === q("#fit"), ruler: Math.round(r("#time-slider").width) }; });
-check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint.includes("Scroll zooms") && look.first && look.ruler <= 518,
-  `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in Dial Time (Barlow Condensed Light, #284), no status line, the magnifier first with how to zoom in its tag, then − + FIT together (notes 2, 18 Oct 2026), the day slider no wider than an iPad's (${look.ruler})`);
+    status: c(".bar .status").display, hint: [q("#zoom-in").dataset.tip, q("#fit").dataset.tip], last: q(".zooms").lastElementChild === q("#fit"), ruler: Math.round(r("#time-slider").width) }; });
+check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint[0].includes("scroll") && look.hint[1].includes("right-drag") && look.last && look.ruler <= 518,
+  `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in Dial Time (Barlow Condensed Light, #284), no status line, how to zoom and move in the squares' tags (Okay, 25 Oct 2026: "Remove it; the tip goes on the buttons' tags"), Fit last, the day slider no wider than an iPad's (${look.ruler})`);
 { // the needle (notes 2, 18 Oct 2026: "Ruler pin does not move on bottom bar"; "1px wide and red, starts from the bottom of
   // the screen"): placed from the time, whatever has the focus; a press and a drag on the strip set the time (an iPad's own
   // range control did not scrub)
@@ -2437,6 +2441,21 @@ await shot("10-bar");
   await page.evaluate((g) => { const t = window.dial_tool; t.set_value("global", "c_backdrop", g[0]); t.set_value("global", "c_backdrop2", g[1]); t.ground_open(false); }, was_ground);
   check(bio && ground.open && ground.tiles === 20 && ground.two && !ground.version && tiles.bezel === 2 && tiles.cases >= 4,
     `show mode's title has no version and its mark opens no bio; Backdrop opens the Show Case's ten colours and ten gradients (${ground.tiles} tiles; Ember a gradient); Case is picture tiles (${tiles.cases}), Field pressed`);
+  { // the Light tab's sun box (Okay, 25 Oct 2026, four drawn rounds, "sun locked"): an outline with sharp corners, the sun's
+    // picture centred in the open space, Angle · Height · Strength as plain values flush left on the number boxes' line;
+    // the three as ordinary rows under it, Darkness named Strength; a drag in the picture moves the sun, the values follow
+    await page.click('.tabs button[data-tab="Light"]'); await frame();
+    const sb = await page.evaluate(() => { const t = window.dial_tool, R = (e) => e.getBoundingClientRect(), box = document.querySelector(".sunbox"), pic = box.querySelector(".sunpic"), d = R(box.querySelector(".dial")), p = R(pic), c = getComputedStyle(box);
+      const rows = [...document.querySelectorAll(".panel .row.num")].filter((e) => e.checkVisibility()).slice(0, 3), names = rows.map((e) => e.querySelector("label").textContent), lefts = [...box.querySelectorAll(".sunvalue")].map((e) => Math.round(R(e).left));
+      const was = [t.S.sh_from, t.S.sh_rise], cx = (d.left + d.right) / 2, cy = (d.top + d.bottom) / 2;
+      const ev = (type) => pic.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: cx + d.width / 2, clientY: cy, pointerId: 1, pointerType: "mouse", button: 0 }));
+      ev("pointerdown"); ev("pointerup"); const moved = [t.S.sh_from, t.S.sh_rise], fig = box.querySelector(".sunvalue .figure").textContent;
+      t.set_value("global", "sh_from", was[0]); t.set_value("global", "sh_rise", was[1]);
+      return { sharp: c.borderRadius === "0px" && c.outlineStyle === "solid", centred: Math.abs((d.left + d.right) / 2 - (p.left + p.right) / 2) < 0.5 && Math.abs((d.top + d.bottom) / 2 - (p.top + p.bottom) / 2) < 0.5,
+        lefts, numbox: Math.round(R(rows[0].querySelector(".numbox")).left), plain: !box.querySelector("input, button"), names, moved, fig }; });
+    check(sb.sharp && sb.centred && sb.lefts.every((x) => x === sb.numbox) && sb.plain && sb.names.join(" · ") === "Angle ° · Height ° · Strength %" && sb.moved[0] === 90 && sb.fig === "90°",
+      `the Light tab's sun box: sharp outline, the picture centred in its space, the values flush left on the number boxes' line (${sb.lefts.join(" ")} / ${sb.numbox}), not editable, the rows under it ${sb.names.join(" · ")}; a press at the dial's east edge puts the sun at ${sb.moved.join("° · ")} and the value says ${sb.fig} (Okay, 25 Oct 2026: "Labels numbers stack flush left, not editable")`);
+  }
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(2400);
   const off = await q();
@@ -2531,9 +2550,15 @@ await shot("10-bar");
   const ends = [];
   for (const name of ["Dial", "Rings", "Hands", "Date", "Export"]) { await tab(name); ends.push(await page.$eval(".pinned", (e) => { const c = getComputedStyle(e); return [c.borderBottomWidth, c.borderBottomColor, c.backgroundImage, c.backgroundSize, c.backgroundOrigin].join(" "); })); }
   const twice = await page.$eval(".pinned", (e) => 2 * parseFloat(getComputedStyle(e).paddingLeft));
-  check(ends.every((x) => x === `2px rgba(0, 0, 0, 0) linear-gradient(rgb(17, 17, 17) 0px, rgb(17, 17, 17) 0px) calc(100% - ${twice}px) 2px border-box`), `every tab's pinned part ends on the thick line, inside the margins (Okay, 07:29) (${[...new Set(ends)].join(" · ")}); FIT in capitals at 12 (${await page.$eval("#fit > span", (e) => getComputedStyle(e).textTransform + " " + getComputedStyle(e).fontSize)})`);
+  check(ends.every((x) => x === `2px rgba(0, 0, 0, 0) linear-gradient(rgb(17, 17, 17) 0px, rgb(17, 17, 17) 0px) calc(100% - ${twice}px) 2px border-box`), `every tab's pinned part ends on the thick line, inside the margins (Okay, 07:29) (${[...new Set(ends)].join(" · ")})`);
 }
 await page.setViewportSize({ width: 390, height: 844 });
+{ // a phone: Fit alone, its four corners and its own left line, its right edge on the eye switch's (Okay, 25 Oct 2026: "Fit square alone, same right edge"; #453)
+  await frame();
+  const f = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), c = getComputedStyle(document.querySelector("#fit"));
+    return { hidden: ["#zoom-out", "#zoom-in"].every((q) => r(q).width === 0), edge: +(r("#eye-box").right - r("#fit").right).toFixed(1), left: c.borderLeftWidth + " " + c.borderLeftStyle, round: c.borderTopLeftRadius === c.borderBottomRightRadius && c.borderTopLeftRadius !== "0px" }; });
+  check(f.hidden && f.edge === 0 && f.left === "1px solid" && f.round, `a phone: Fit alone, its own left line, all four corners, its right edge on the eye switch's (${JSON.stringify(f)})`);
+}
 await tab("Rings");
 await frame();
 const narrow = await page.evaluate(() => ({ wide: document.documentElement.scrollWidth, eye: document.querySelector(".form button.fold .eye").getBoundingClientRect().left, bar: document.querySelector(".bar").getBoundingClientRect().top }));

@@ -31,7 +31,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Tag** | The small label a wordless button shows on hover (`.tag`). |
 | **Reach** | The unseen touch area round a small control (R32). |
 | **Drawer** · **gripper** | On a phone the panel is the drawer under the preview; its gripper sets its height. |
-| **Bottom bar** | The dark strip at the window's bottom: time (play, **speed slider**, time with AM · PM, Now, **day slider**) · view (zoom, Fit). |
+| **Bottom bar** | The dark strip at the window's bottom: time (play, **speed slider**, time with AM · PM, Now, **day slider**) · view: **zoom out · zoom in · Fit**, three squares stuck together, made as the canvas's switches and on their right line (a phone: Fit alone). |
 | **Speed slider** | 0.1× to 720×; **slow motion** 0.1 · 0.25 · 0.5 · 1×, then log. |
 | **Play triangle** | The white triangle on the play button, flaring with each beat. |
 | **Undo step** | The dial before a change, taken once it stands still; ⌘Z, ⇧⌘Z. |
@@ -97,6 +97,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Showcase** | Retired word (22 Oct 2026); means **show mode**. |
 | **Dial Show Case** | The standalone page at `/show-case/`, built from `web/src/watch.js`, kept as a sandbox. |
 | **Engineer** · **Miyazaki** | The watch's two paints: ink outlines and hard shadows; flat shapes cut by light, a flare. |
+| **Sun box** | The top of show mode's Light tab Sun pane: the **sun picture** centred in an outlined box, Angle · Height · Strength as plain values beside it; the rows under it change them (`row_sunbox`). |
 | **Shenanigans** | Show mode's foot: Shadows, Flare, Blurs, Bevels on and off, as toggles. |
 
 ## Files, links, export

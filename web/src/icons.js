@@ -300,8 +300,13 @@ export const TOOL_ICONS = {
   versions: `<circle cx="8.25" cy="8.25" r="5.5" ${sw(CURVE)}/><path d="M8.25 8.25V5.25"/><path d="M8.25 8.25L10.5 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
-  // the bar's zoom note: the lens with an i in it, the note it opens (Okay's drawing, 23 Oct 2026, "zoom+i"), on 16
-  zoominfo: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M6.75 6.25V9.75"/><circle cx="6.75" cy="4.25" r="0.75" fill="currentColor" stroke="none"/>`,
+  // the bar's three view squares (Okay, 25 Oct 2026: "Two m glasses one with a plus other minus. And lastly the fit is
+  // an icon four arrows from a square's corners into center"): a lens with − · a lens with + · four arrows from the
+  // corners in (fit.mjs; look.py: − 2.5 %; the + crowds the lens, so its cross is DENSE; the arrows' heads meet their
+  // slanted shafts and read heavier there, so the heads are DENSE: 10 % in place, 9 % light alone — perception decides)
+  zoomout: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M4.25 6.75H9.25"/>`,
+  zoomin: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M4.25 6.75H9.25M6.75 4.25V9.25" ${sw(DENSE)}/>`,
+  fit: `<path d="M2.25 2.25L6.25 6.25M14.25 2.25L10.25 6.25M2.25 14.25L6.25 10.25M14.25 14.25L10.25 10.25" ${sw(SLANT)}/><path d="M6.25 3.75V6.25H3.75M10.25 3.75V6.25H12.75M6.25 12.75V10.25H3.75M10.25 12.75V10.25H12.75" ${sw(DENSE)}/>`,
   // an (i) beside a setting's name: what it does, in a tag (#357). A ring holding a stem and a dot; quiet by its grey
   info: `<circle cx="8.25" cy="8.25" r="6" ${sw(CURVE)}/><path d="M8.25 7.25V11.25"/><circle cx="8.25" cy="4.75" r="1" fill="currentColor" stroke="none"/>`,
   // →: take what was typed (a Custom count, #357): the up arrow turned
