@@ -1,5 +1,21 @@
 # Dial Tool — changelog
 
+## beta 4.94.5 (web version) · 25 Oct 2026 — the lit part's line says what the slider changes; the pane 498 wide everywhere
+
+Okay, 25 Oct 2026, 16:37, after sketches of other ways (one scale on every row; one lane with four thumbs; the diagram as the control — set aside: "No no no, this made it more cumbersome. Dont change our visual adjustments. Sliders we have, how can they adapt … Identify the changing bit of the sliding slider as the section of the red line and make that section dashed"), and his drawing of 16:55.
+
+- **The red line**, while a part is lit: from the part down the axis to the plate, **dashed from the part to the next part toward the plate** (the piece this row's slider changes), solid under it (the stack the slider doesn't touch). The order of the drawing: the grey parts, the red line over them (a line of the night under it knocks the grey axis out, so the dashes stand alone: "Red line is always above and knocks out the gray dashline"), the white lit part over all ("White indicator drawing is the topest of all"). For the cap: cap to seconds; for hours: the whole line; for a disc: plate to disc.
+- **The controller** of a Shadows part shows its slider in the lit red, as its row does ("Controller on ipad needs a red slider for this").
+- **The pane is 498 wide on every screen** (`--shade-w`), over the dial when the panel is narrower — on an iPad its footer's Reset was cut off at the switch's right edge ("Keep window width same, ok to go over onto the dial if need be").
+
+## beta 4.94.5 (web version) · 25 Oct 2026 — the lit part's line says what the slider changes; the pane 498 wide everywhere
+
+Okay, 25 Oct 2026, 16:37, after two sketches of other ways (one scale on every row; one lane with four thumbs; the diagram as the control — all set aside: "No no no, this made it more cumbersome. Dont change our visual adjustments. Sliders we have, how can they adapt … Identify the changing bit of the sliding slider as the section of the red line and make that section dashed"), and his drawing of 16:55.
+
+- **The red line**, while a part is lit: from the part down the axis to the plate, **dashed from the part to the next part toward the plate** (the piece this row's slider changes), solid under it (the stack this slider doesn't touch); always on top, and a line of the night under it knocks the grey axis out, so the dashes stand alone ("Red line is always above and knocks out the gray dashline"). For the cap: cap to seconds; for hours: the whole line; for a disc: plate to disc.
+- **The controller** of a Shadows part shows its slider in the lit red, as its row does ("Controller on ipad needs a red slider for this").
+- **The pane is 498 wide on every screen** (`--shade-w`), over the dial when the panel is narrower — on an iPad its footer's Reset was cut off at the switch's right edge ("Keep window width same, ok to go over onto the dial if need be").
+
 ## beta 4.94.4 (web version) · 25 Oct 2026 — the Shadows pane to Okay's drawing
 
 Okay, 25 Oct 2026, 15:55, with his drawing (`dial-tool-shadows-pane-4.93_O.pdf`, three pages): "ok new shadows popup. just the objects that have a shadow on the right side diagram. plate untouchable. all hover as now. Just made things pixel perfect and introduced some new stylings and special ui bits here. The bottom part, logically pixel perfect. This is a stellar example of one line. objects snap to edges, inbetween padding equal, black lines connect to top. font and border stylings. this needs to apply to other black popups that have this footer." Measured from the PDF (vector: every line, box and word), built to it, measured back in the window test.

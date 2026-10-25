@@ -801,7 +801,7 @@ export const PANEL = {
     if (steps && row.text && !r.el.querySelector(".linkpill")) steps.lastElementChild.before(el("span", { className: "popword", ariaHidden: "true", textContent: row.text }));
     const head = el("div", { className: "pophead" }, ...(field ? [el("div", { className: "popvalue" }, field)] : []));
     head.hidden = !field;                          // a window's places: no value, so no pill
-    const box = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
+    const box = el("div", { className: "numpop" + (row.part ? " lit" : ""), id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);      // lit: a Shadows part's controller shows its slider in the lit red, as its row does (Okay, 25 Oct 2026: "Controller on ipad needs a red slider for this")
     // as wide as the row's controls — everything right of its name, the slider and the number box — so on a wide
     // column it lies over the slider exactly (Okay, 24 Oct 2026, #514: "as wide as two columns"; "On very wide coluns,
     // controller takes over and spans exactly as wide as the slider below … slider overlapping slider"); never narrower

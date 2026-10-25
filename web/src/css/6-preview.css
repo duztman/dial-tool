@@ -248,8 +248,8 @@
   @media (hover: hover) { .roundb:hover { background: var(--ink); color: var(--paper); } }
   .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
-  .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: calc(var(--shade-right, var(--panel-w)) - var(--shade-left, var(--margin))); max-width: calc(100vw - 2 * var(--margin));
-    max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); border-radius: var(--shade-round); }      /* from the panel's margin to the switch's right edge, standing on the switch, its corners all round (Okay, 25 Oct 2026, 02:29: "ROUND CORNERS"); over the panel's column, so the dial and its shadows stay in view */
+  .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: var(--shade-w); max-width: calc(100vw - 2 * var(--margin));
+    max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); border-radius: var(--shade-round); }      /* from the panel's margin, as wide as the drawing whatever the panel's width — over the dial on an iPad (Okay, 25 Oct 2026, 16:55: "Keep window width same, ok to go over onto the dial if need be"), standing on the switch, its corners all round (Okay, 25 Oct 2026, 02:29: "ROUND CORNERS"); over the panel's column, so the dial and its shadows stay in view */
   /* the Shadows pane, to Okay's drawing of 25 Oct 2026 (#526, "pixel perfect"; dial-tool-shadows-pane-4.93_O.pdf): one
      box on top holds the sun's picture and, in a column at its right as wide as the diagram, Angle · Height · Strength
      as named sliders (R15, form D) on fat tracks with the value in the knob; under it a hairline, the heading line
@@ -305,7 +305,9 @@
   .stackpic .parts > g .dark { fill: var(--night); }
   .stackpic .parts > g.lit { stroke: var(--ink); }
   .stackpic .parts > g.lit .fill { fill: var(--ink); }
-  .stackpic .drop { stroke: var(--shade-lit); stroke-width: var(--hair); }      /* the lit part's height: a line down the axis to the plate, and the plate's hole in the same colour */
+  .stackpic .drop line { stroke: var(--shade-lit); stroke-width: var(--hair); }      /* the lit part's height: a line down the axis to the plate, and the plate's hole in the same colour */
+  .stackpic .drop .knock { stroke: var(--night); }      /* under the red: the axis knocked out, so the dashes stand on the night alone */
+  .stackpic .drop .moving { stroke-dasharray: var(--shade-dash); }      /* the piece this row changes: from the part to the next one toward the plate */
   .stackpic .drop:not(.on) { display: none; }
   .stackpic .parts > g.plate.dropped .hole { stroke: var(--shade-lit); }
   /* §popfoot — a night popup's footer (Okay's drawing, 25 Oct 2026: "logically pixel perfect … objects snap to edges,

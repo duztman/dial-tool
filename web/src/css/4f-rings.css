@@ -153,6 +153,7 @@
     --ink: var(--num-pop-disc); --well: var(--num-pop-well); --field: var(--white); --thumb: var(--num-pop-thumb); --thumb-eye: var(--num-pop-eye); --thumb-eye-edge: calc(var(--num-pop-eye) + var(--three-quarter)); --track: var(--num-pop-track); --row-rule: transparent; --surface: var(--num-pop-ground); }
   .numpop .row > * { grid-column: 1; }
   .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-pill) / 2); background: var(--white); }      /* the knob as far from the pill's ends as from its top and bottom */
+  .numpop.lit .row input[type="range"] { --ink: var(--shade-lit); }      /* a Shadows part's controller: the slider in the lit red, as its row (Okay, 25 Oct 2026) */
   .numpop .row input[type="range"]::-webkit-slider-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); }
   .numpop .row input[type="range"]::-moz-range-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); }
   .numpop .places { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--num-pop-gap); }      /* a window's places, every one (#264), three to a line */

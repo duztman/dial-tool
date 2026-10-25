@@ -183,10 +183,10 @@ export const GUIDES = {
     const open = (on) => {
       list.hidden = !on; more.setAttribute("aria-expanded", String(on));
       if (!on) return;
-      // where it stands: from the panel's margin to the switch's right edge, standing on the switch (Okay, 25 Oct 2026,
-      // 02:09: "similar to fonts left margin and organically one side full touching connection kept with button. Above button")
+      // where it stands: from the Rings tab's left edge, as wide as the drawing (--shade-w; over the dial on a narrow
+      // panel), standing on the switch (Okay, 25 Oct 2026, 02:09: "organically one side full touching connection kept
+      // with button. Above button"; 16:55: "Keep window width same, ok to go over onto the dial if need be")
       const b = box.getBoundingClientRect(), tab = $('.tabs button[data-tab="Rings"]')?.getBoundingClientRect();
-      list.style.setProperty("--shade-right", `${Math.round(b.right)}px`);
       if (tab) list.style.setProperty("--shade-left", `${Math.round(tab.left)}px`);      // its left edge on the Rings tab's (Okay, 02:20: "aligned with rings tab above")
       list.style.setProperty("--shade-bottom", `${Math.round(innerHeight - b.top)}px`);
       this.sync_shadows();
@@ -458,8 +458,8 @@ export const GUIDES = {
    *  y of each part is read from its row in the window (R21), so the picture follows the rows whatever they are. */
   stack_picture() {
     const box = el("div", { className: "stackpic", id: "shadows-stack" });
-    box.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><line class="drop"/></svg><span class="word">Parts</span>`;      // the drop line last: over every part (Okay, 25 Oct 2026: "on top of the whole diagram")
-    const svg = box.querySelector("svg"), parts = box.querySelector(".parts"), axis = box.querySelector(".axis"), drop = box.querySelector(".drop");
+    box.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><g class="drop"><line class="knock"/><line class="fixed"/><line class="moving"/></g><g class="parts top"></g></svg><span class="word">Parts</span>`;      // the order: the parts, the red drop over them, the lit part over all (Okay, 25 Oct 2026, 16:59: "White indicator drawing is the topest of all")
+    const svg = box.querySelector("svg"), parts = box.querySelector(".parts:not(.top)"), top = box.querySelector(".parts.top"), axis = box.querySelector(".axis"), drop = box.querySelector(".drop");
     const LEN = { hour: 23.5, minute: 34.5, second: 46 }, TAIL = 10;      // a hand's reach right of the axis, and left (his drawing)
     const draw = {
       cap: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="6" ry="2.5"/>`,
@@ -483,11 +483,18 @@ export const GUIDES = {
         list.push({ name, y, svg: kind === "hand" ? draw.hand(ax, y, name) : draw[kind](ax, y) });
       }
       const lit = list.find((p) => p.name === this.shade_lit);
-      const drawn = lit ? [...list.filter((p) => p !== lit), lit] : list;      // the lit part drawn last, over the rest (Okay, 25 Oct 2026: "the red line and highlighted part on top of the whole diagram")
-      parts.innerHTML = drawn.map((p) => `<g data-part="${p.name}" class="${p.name === "plate" ? "plate" : ""}${p === lit ? " lit" : ""}${lit && p.name === "plate" ? " dropped" : ""}">${p.svg}</g>`).join("");
+      const one = (p) => `<g data-part="${p.name}" class="${p.name === "plate" ? "plate" : ""}${p === lit ? " lit" : ""}${lit && p.name === "plate" ? " dropped" : ""}">${p.svg}</g>`;
+      parts.innerHTML = list.filter((p) => p !== lit).map(one).join("");
+      top.innerHTML = lit ? one(lit) : "";                // the lit part in a group of its own, over the red line
       axis.setAttribute("x1", ax); axis.setAttribute("x2", ax); axis.setAttribute("y1", first ?? 0); axis.setAttribute("y2", H - token("--shade-axis-end", 12));
+      // the lit part's height as a line down the axis to the plate (Okay's drawing, 25 Oct 2026, 16:55): the piece this
+      // row changes — from the part to the next part toward the plate — dashed, the stack under it solid; the red is
+      // always on top and knocks the grey axis out under its dashes ("knocks out the gray dashline")
       drop.classList.toggle("on", Boolean(lit && plate_y !== null));
-      if (lit && plate_y !== null) { drop.setAttribute("x1", ax); drop.setAttribute("x2", ax); drop.setAttribute("y1", lit.y); drop.setAttribute("y2", plate_y); }
+      if (lit && plate_y !== null) {
+        const i = list.indexOf(lit), toward = lit.y < plate_y ? list[i + 1] : list[i - 1], next_y = toward ? toward.y : plate_y;      // the next part between this one and the plate
+        for (const [cls, y1, y2] of [["knock", lit.y, plate_y], ["fixed", next_y, plate_y], ["moving", lit.y, next_y]]) { const l = drop.querySelector("." + cls); l.setAttribute("x1", ax); l.setAttribute("x2", ax); l.setAttribute("y1", y1); l.setAttribute("y2", y2); }
+      }
     };
     return { el: box, refresh };
   },
