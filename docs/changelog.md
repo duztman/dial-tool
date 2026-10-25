@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.94.3 (web version) · 25 Oct 2026 — the stretched tokens say so; two copied rules folded
+
+Okay, 25 Oct 2026, 15:02: "scan the system for these" (quirks borrowed between regions); 15:05: "do the cheap". The scan (tokens used by two regions, bare numbers, copied blocks, repeated composites) found 10 tokens stretched to a second region, 15 bare numbers (all #398's), 5 copied blocks (2 real), 17 repeated idioms (left: tokens for idioms would be bulk).
+
+- **Eight tokens' comments name both regions** they serve (`--scroll`, `--wait`, `--box-side-value/-step`, `--side-num`, `--bare-dot`, `--dot`, `--nudge`, `--pill-gap`), so `css-map.md` says it and the check keeps it; no prose added to `sectors.md`.
+- **Two copied rules are one**, in the controls layer: the browser's own list unseen over a chevron box (`.menubox`, `.casebox`); a gripper's groove (`.listgrip`, `.sheetgrip`). The look-check: the only difference of the change is the drawer's groove now existing on wide screens too, inside the hidden gripper.
+- **#543 noted**: `same.mjs`'s *first pane folded* states (finger, phone) and *guides list, two added* differ between two runs of the same build — the switches' words still fading when read; not a look change. Compare twice before reading a difference there.
+
 ## beta 4.94.2 (web version) · 25 Oct 2026 — sectors: the index from a thing on screen to its lever
 
 Okay, 25 Oct 2026, 14:12: "does it make sense to create a design rules separately so when i'm drawing by words, you get what to implement … an agent working on pushing and pulling css values struggles"; 14:15: "not a rule set, an index to easily find what you're looking for, and insurance against agents missing info. No new bulk to the system. Go".

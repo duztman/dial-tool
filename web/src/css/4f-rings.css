@@ -15,7 +15,6 @@
   .pinned:not(:has(.pane:not(.folded))) .listgrip { display: none; }      /* every pinned pane folded: nothing to make taller or shorter (Okay, 20 Oct 2026: "When eye closed unusable resizer disappears", #479) */
   .pinbody { overflow-y: auto; overscroll-behavior: contain; }      /* the pinned panes, made shorter by their pill: they scroll inside */
   .listgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--ink); }
-  .listgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
   .listgrip.gripping::before { box-shadow: 0 0 0 var(--hair) var(--paper); }
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); cursor: pointer; }
@@ -211,7 +210,6 @@
   .menubox > .v { flex: 1 1 0; display: grid; align-items: center; justify-content: end; padding: 0 var(--u1); }
   .menubox.words > .v { justify-content: start; min-width: 0; padding: 0 var(--u2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }      /* a choice in words reads from the left (Outer, Arabic, Smooth) */
   .menubox > .arrow { flex: none; display: grid; place-items: center; width: var(--pos-step); border-left: var(--hair) solid var(--rule); }
-  .menubox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }      /* the browser's own list, unseen over the box */
   .menubox > input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0 var(--u1); border: 0; text-align: right; font-size: var(--t-s); }
   .menubox > .go { flex: none; display: grid; place-items: center; width: var(--pos-step); padding: 0; border: 0; border-left: var(--hair) solid var(--rule); background: var(--ink); color: var(--paper); }
   @media (hover: hover) { .menubox:hover { background: var(--hover); } }

@@ -24,11 +24,11 @@
 | `--bar-light` | `#737373` | the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE") | 7-bar ×25, 8-narrow ×2 |  |
 | `--bar-quiet` | `rgba(255, 255, 255, 0.66)` | quiet words on the bar | 3-controls |  |
 | `--bar-rule` | `#5C5C58` | the bar: 80 % black, light on dark | 7-bar ×2, 8-narrow |  |
-| `--bare-dot` | `16px` | in the ring drawer every control is this high (a value button this wide too) · the colour's swatch | 4a-panel ×2, 4f-rings ×2 |  |
+| `--bare-dot` | `16px` | in the ring drawer every control is this high (a value button this wide too) · the colour's swatch; show mode's grey swatch in the header is the same dot | 4a-panel ×2, 4f-rings ×2 |  |
 | `--bio-width` | `calc(var(--panel) - 2 * var(--margin))` | the bio under Okay's mark: as wide as the panel's lines | 4a-panel |  |
 | `--black` | `#000` | pure, for what must show on any colour: the pointer label, the day's handle, the hues' strip | 1-tokens, 4e-colour ×3, 4f-rings ×2, 4g-fonts, 6-preview, 7-bar ×6, 8-narrow ×2 |  |
-| `--box-side-step` | `22px` | the number box beside a hand's box and in a quiet row (4.64): its value · each of − + | 1-tokens, 4d-hands, 4e-colour |  |
-| `--box-side-value` | `52px` | the number box beside a hand's box and in a quiet row (4.64): its value · each of − + | 1-tokens, 4d-hands, 4e-colour |  |
+| `--box-side-step` | `22px` | the number box beside a hand's box and in a quiet row (4.64): its value · each of − +; the colour list's ink-height box too | 1-tokens, 4d-hands, 4e-colour |  |
+| `--box-side-value` | `52px` | the number box beside a hand's box and in a quiet row (4.64): its value · each of − +; the colour list's ink-height box too | 1-tokens, 4d-hands, 4e-colour |  |
 | `--box-steps` | `var(--tile-w)` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows ×2 | 4d-hands `.row.side .numbox` → `calc(2 * var(--box-side-step))`; 4e-colour `.colourlist > .row.showline .numbox` → `calc(2 * var(--box-side-step))`; 4f-rings `.row.block .numbox` → `calc(2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)` |
 | `--box-value` | `calc(var(--tile-w) + var(--unit))` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows ×2 | 4d-hands `.row.side .numbox` → `var(--box-side-value)`; 4e-colour `.colourlist > .row.showline .numbox` → `var(--box-side-value)`; 4f-rings `.row.block .numbox` → `calc(var(--pos-box) - 2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)` |
 | `--btn-pad` · special | `10px` | from a button's or a box's edge to its words | 1-tokens, 3-controls, 4g-fonts ×12 |  |
@@ -70,7 +70,7 @@
 | `--day-wide` | `518px` | the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) | 7-bar |  |
 | `--details-line` · special | `17px` | the ring drawer's two lines of details, baseline to baseline (the same drawing: 16–17) | 4f-rings |  |
 | `--dim` · special | `0.45` | a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured | 4f-rings ×2 |  |
-| `--dot` · special | `14px` | a swatch to pick from (a band's sectors) | 4e-colour ×2, 6-preview | 1-tokens `:root` → `18px` |
+| `--dot` · special | `14px` | a swatch to pick from (a band's sectors); the Backdrop switch's sign is one | 4e-colour ×2, 6-preview | 1-tokens `:root` → `18px` |
 | `--dot-tiny` | `10px` | a colour inside a line of words: a folded pane's summary | 4e-colour ×2 |  |
 | `--eye` | `16px` | the toggle column | 1-tokens ×2, 4a-panel ×8, 4e-colour |  |
 | `--faint` | `0.35` | how much of a switch on the preview shows at rest | 4a-panel ×2, 4f-rings, 6-preview ×4 |  |
@@ -96,7 +96,7 @@
 | `--glow-under` · special | `4px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview |  |
 | `--grey` | `#5C5C58` | colour | 1-tokens, 2-base ×2, 3-controls ×4, 4a-panel ×3, 4b-lines-tabs, 4c-rows ×6, 4d-hands ×3, 4e-colour ×2, 4f-rings ×14, 4g-fonts ×14, 6-preview ×25, 8-narrow ×2 | 3-controls `.night` → `var(--bar-quiet)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)`; set by show.js |
 | `--grip` | `18px` | the ring list's drag handle column | 4f-rings |  |
-| `--grip-groove` | `12px` | the one line across it, as a gripper's lines are | 4f-rings, 8-narrow |  |
+| `--grip-groove` | `12px` | the one line across it, as a gripper's lines are | 3-controls |  |
 | `--grip-h` | `10px` | the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it | 4f-rings ×2, 8-narrow ×2 |  |
 | `--grip-hit` | `44px` | the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it | 4f-rings ×2, 8-narrow ×2 |  |
 | `--grip-w` | `26px` | the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it | 4f-rings, 8-narrow |  |
@@ -114,7 +114,7 @@
 | `--guide-pill-pad` · special | `var(--u2)` | a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) | 6-preview |  |
 | `--guide-row` · special | `30px` | the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) | 3-controls ×2, 6-preview ×5 | 1-tokens `:root` → `38px` |
 | `--guide-tint` | `22%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 1-tokens, 4f-rings ×2 |  |
-| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×14, 4a-panel ×11, 4b-lines-tabs ×21, 4c-rows ×10, 4d-hands ×5, 4e-colour ×4, 4f-rings ×29, 4g-fonts ×20, 6-preview ×42, 7-bar ×20, 8-narrow ×8 |  |
+| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×11, 4b-lines-tabs ×21, 4c-rows ×10, 4d-hands ×5, 4e-colour ×4, 4f-rings ×28, 4g-fonts ×20, 6-preview ×42, 7-bar ×20, 8-narrow ×7 |  |
 | `--handle` · the window's | `—` |  | 6-preview | set by hands.js, set by preview.js |
 | `--head` | `40px` | a pane's heading | 3-controls, 4a-panel ×3, 4b-lines-tabs ×2, 4e-colour, 4g-fonts ×2, 8-narrow ×2 |  |
 | `--header` | `calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair))` | the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes | 1-tokens, 4a-panel, 4g-fonts |  |
@@ -138,7 +138,7 @@
 | `--leading` | `1.4` | the panel's line spacing: its text, a tick's two lines, a tick and its note (#420) | 2-base, 4c-rows ×2, 4g-fonts |  |
 | `--legend-sticker-pad` · special | `calc(0.375 * var(--unit)) calc(0.75 * var(--unit))` | a legend sticker's padding, grown with its size | 4g-fonts |  |
 | `--line` | `34px` | a row's height | 1-tokens, 4a-panel, 4c-rows ×6, 4d-hands, 4f-rings ×3, 4g-fonts ×2, 6-preview, 8-narrow | read by rings.js |
-| `--line-button` | `36px` | in the ring drawer every control is this high (a value button this wide too) · the colour's swatch | 1-tokens, 4f-rings ×10, 4g-fonts |  |
+| `--line-button` | `36px` | in the ring drawer every control is this high (a value button this wide too) · the colour's swatch; show mode's grey swatch in the header is the same dot | 1-tokens, 4f-rings ×10, 4g-fonts |  |
 | `--line-faint` · set in 6-preview | `color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 100%), transparent)` |  | 6-preview ×3 |  |
 | `--line-on-grey` | `var(--white)` |  | 4a-panel | 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))` |
 | `--line-on-paper` | `var(--scroll)` |  | 1-tokens | 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))` |
@@ -165,7 +165,7 @@
 | `--night-hover` | `#34342F` |  | 3-controls, 6-preview |  |
 | `--night-rule` | `#4A4A46` |  | 3-controls ×3, 5-chosen, 6-preview |  |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
-| `--nudge` · special | `2px` | the eyes stand this much right of the margin | 4a-panel, 4f-rings ×2 |  |
+| `--nudge` · special | `2px` | the eyes stand this much right of the margin: a pane's eye and a ring row's alike | 4a-panel, 4f-rings ×2 |  |
 | `--num-columns` | `var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w)` | a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges | 4c-rows, 4g-fonts |  |
 | `--num-pop` | `calc(var(--num-pop-inner) + 2 * var(--num-pop-pad))` |  | 4f-rings |  |
 | `--num-pop-disc` | `var(--black)` | his #585857 square, #B1B1B1 value pill and track; the discs and knob true black (Okay, 24 Oct 2026: "Controller darks actual black now") | 1-tokens, 4f-rings ×4 |  |
@@ -196,10 +196,10 @@
 | `--p` · the window's | `—` |  | 3-controls, 4f-rings ×2 | read by panel.js, set by ui.js |
 | `--panel` | `calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap))` |  | 1-tokens ×2, 4g-fonts, 7-bar |  |
 | `--panel-w` | `calc(var(--panel) + var(--hair))` | the panel's column: its lines and its right hairline | 2-base ×2, 4a-panel ×4, 6-preview ×5 | 2-base `.showing` → `var(--show-panel-w)` |
-| `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×4, 4a-panel ×6, 4b-lines-tabs, 4e-colour ×2, 4f-rings ×7, 4g-fonts, 5-chosen, 6-preview ×8, 8-narrow ×5 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
+| `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×6, 4b-lines-tabs, 4e-colour ×2, 4f-rings ×6, 4g-fonts, 5-chosen, 6-preview ×8, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
 | `--picked` · the window's | `—` |  | 6-preview | set by rings.js |
 | `--pill` | `calc(1em + 2 * var(--pill-gap))` | its height. The swatch is as high as the hex is set (1em) | 4e-colour ×4 |  |
-| `--pill-gap` | `var(--unit)` | a colour pill: this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these | 1-tokens, 4e-colour ×2, 4g-fonts |  |
+| `--pill-gap` | `var(--unit)` | a colour pill (and the font name line beside its swatch): this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these | 1-tokens, 4e-colour ×2, 4g-fonts |  |
 | `--pixel` | `"Silkscreen", ui-monospace, Menlo, monospace` | tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) | 4c-rows, 4f-rings, 4g-fonts ×2, 7-bar, 8-narrow |  |
 | `--pixel-ink` | `0.7` | how much of the pixel font shows: full strength is too dark on black (Okay, 13 Oct 2026) | 4f-rings, 4g-fonts ×3 |  |
 | `--pixel-ink-bar` · special | `1` | the bar's 1X, 720X and the speed riding over the thumb: the pixel font at full strength in their own colours, not --pixel-ink (Okay, 15 Oct 2026, 00:18: "same color as the ball") | 7-bar, 8-narrow |  |
@@ -262,7 +262,7 @@
 | `--ruler-line` · special | `0.4` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
 | `--ruler-small` · special | `0.38` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
 | `--sans` | `system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif` |  | 1-tokens, 2-base, 4f-rings ×5, 7-bar |  |
-| `--scroll` | `#E8E8E6` | the part of the panel that scrolls: 8 % darker than the paper | 1-tokens, 4a-panel, 4g-fonts ×2 | 4a-panel `.showing .panel` → `transparent` |
+| `--scroll` | `#E8E8E6` | the part of the panel that scrolls: 8 % darker than the paper; the font box's head stands on it too | 1-tokens, 4a-panel, 4g-fonts ×2 | 4a-panel `.showing .panel` → `transparent` |
 | `--scroll-w` | `6px` | a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar | 6-preview ×2 |  |
 | `--scrollbar` | `var(--unit)` | a scrollbar drawn by the tool: slim | 4g-fonts ×2 |  |
 | `--select` | `#F6D5CB` | what is selected: a light red, the seconds hand's (--play) toward paper (Okay, 20 Oct 2026: "This blue accent gets red everywhere we see it") | 4f-rings ×2, 4g-fonts ×2, 4h-gallery ×4 | 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-select)` |
@@ -289,7 +289,7 @@
 | `--show-time` | `1000ms` | into show mode and out (swoop() in app.js): each panel's slide; the second starts when the first is halfway, the drawing moves over one and a half of it (Okay, 23 Oct 2026: "smoother, slower") | 2-base | read by mode.js |
 | `--side-columns` | `var(--side-label) minmax(0, 1fr) var(--gap) var(--side-num)` |  | 4d-hands, 4f-rings, 6-preview | 6-preview `.shaderows` → `var(--stack-name) var(--shade-slide) var(--gap) var(--side-num)` |
 | `--side-label` | `4.75em` | …and the names there: as wide as the longest allowed, "Counter Ø" at 12 (Okay's notes, p. 18, #250) | 1-tokens |  |
-| `--side-num` | `calc(var(--box-side-value) + 2 * var(--box-side-step))` | …so that column is this wide | 1-tokens, 4e-colour, 6-preview |  |
+| `--side-num` | `calc(var(--box-side-value) + 2 * var(--box-side-step))` | …so that column is this wide; the Shadows pane's rows and the colour list use the same column | 1-tokens, 4e-colour, 6-preview |  |
 | `--sign-16` · special | `16px` | a canvas switch's sign, as drawn: 18 for Guides and the case, 16 for Versions | 6-preview |  |
 | `--sign-18` · special | `18px` | a canvas switch's sign, as drawn: 18 for Guides and the case, 16 for Versions | 6-preview ×2 |  |
 | `--sign-w` · set in 6-preview | `var(--sign-18)` |  | 6-preview ×4 | 6-preview `.versionsbox` → `var(--sign-16)`; 6-preview `.guidesbox` → `var(--sign-18)`; 6-preview `.backdropbox` → `var(--dot)` |
@@ -387,7 +387,7 @@
 | `--veil-strong` | `rgba(0, 0, 0, 0.1)` | a touch of dark on a coloured row | 4f-rings ×3 |  |
 | `--view-ease` | `cubic-bezier(0.65, 0, 0.35, 1)` | slow out, slow in | 2-base, 3-controls, 6-preview ×6 | read by mode.js |
 | `--view-time` | `700ms` | slow out, slow in | 2-base |  |
-| `--wait` | `#8E8E89` | a sign that waits to be used: the rename box | 4f-rings ×3, 4g-fonts ×7 | 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)` |
+| `--wait` | `#8E8E89` | a sign that waits to be used: the rename box, the ring drawer's keys, the (i) sign; the font sheet's chosen style and its quiet buttons share it | 4f-rings ×3, 4g-fonts ×7 | 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)` |
 | `--watch-fade` | `250ms` | the watch fading in once the panels have moved into show mode, out before they move back | 6-preview | read by mode.js |
 | `--well` | `var(--ground)` |  | 3-controls ×2, 4e-colour | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--night-field, var(--ground))`; 4a-panel `.showing .form` → `var(--night-field, var(--ground))`; 4a-panel `.form` → `var(--field)`; 4f-rings `.numpop .row` → `var(--num-pop-well)`; 4g-fonts `.fontbox` → `var(--ground)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-well)`; 4g-fonts `.fontname .colour` → `var(--field)` |
 | `--white` | `#fff` | pure, for what must show on any colour: the pointer label, the day's handle, the hues' strip | 1-tokens ×4, 3-controls ×2, 4a-panel ×3, 4c-rows ×3, 4e-colour ×2, 4f-rings ×9, 4g-fonts, 6-preview ×14, 7-bar ×2, 8-narrow ×2 | set by show.js |

@@ -146,4 +146,9 @@
   .log, .link { display: block; width: 100%; margin: 0; padding: var(--u3) var(--u4); border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
   .log { min-height: var(--log-least); max-height: var(--log-most); overflow-y: auto; }
   .link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }      /* the link on one line, cut at the box's edge; Copy link copies it whole (Okay, 16 Oct 2026, #277; three lines that wrapped before) */
+
+  /* shared by two regions (sectors.md §7): the browser's own list, unseen over a chevron box (the menu box, the Case switch) */
+  :is(.menubox, .casebox) > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  /* a gripper's groove: the one line across its pill (the ring list's pill, the drawer's gripper) */
+  :is(.listgrip, .sheetgrip)::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
 }

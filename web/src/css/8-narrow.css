@@ -79,7 +79,6 @@
     .sheetgrip { display: grid; place-items: center; grid-row: 3; grid-column: 1; align-self: start; justify-self: center; z-index: 6; width: var(--grip-hit); height: var(--grip-hit); translate: 0 -50%; touch-action: none; cursor: ns-resize; }
     /* a pill, grey as the line it sits on, one groove across it; held, it is black with a white edge and the whole line goes black (Okay, 06:51) */
     .sheetgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--rule); }
-    .sheetgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
     #app.gripping .sheetgrip::before { background: var(--ink); box-shadow: 0 0 0 var(--hair) var(--white); }
     #app.gripping .sheetgrip::after { background: var(--white); }
     #app.gripping .panel { border-top-color: var(--ink); }

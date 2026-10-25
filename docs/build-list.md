@@ -165,6 +165,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 14 | Heavy dials |  | after v1 |
 | 403 | Playwright 1.56 → 1.64 |  | open |
 | 407 | The window test in sections that stand alone | 19 Oct 2026 | open |
+| 543 | `same.mjs`: the *first pane folded* and *guides list, two added* states differ between two runs of one build | 25 Oct 2026 | open |
 
 ## Later
 
