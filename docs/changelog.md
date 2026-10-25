@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.94.11 (web version) · 25 Oct 2026 — show mode's top as main's
+
+Okay, 25 Oct 2026, 18:05, with the two tops side by side: "Show mode and main tops, missing bar and alignments check, main looks correct"; in question mode, "B: main's height".
+
+- **The tabs' line is back in show mode**: the top's colour rule set the whole `background`, which took away the hairline drawn as the tabs' background picture; it sets the colour alone now.
+- **The title line is main's height** (`--header`, 43): the line falls on the undo buttons' bottom as on the dial side, as `--header`'s rule says "for the Show Case too". `--show-header` is gone.
+- Checked in the window test: show mode's title line 43 high, the line drawn, on the undo buttons' bottom.
+
 ## beta 4.94.10 (web version) · 25 Oct 2026 — the sun box's values on the minuses' line
 
 Okay, 25 Oct 2026, 18:01: "Only the stack on the right in sun box should align with the minuses boxes from below. Sun centers accordingly." The values' stack is as wide as a number box's − + (`--box-steps`), so it starts on the minus buttons' left line (1364 = 1364, measured); the picture takes the room before it, less a gap, and the dial stays centred in it. The window test's check follows.

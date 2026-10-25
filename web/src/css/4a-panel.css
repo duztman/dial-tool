@@ -34,7 +34,7 @@
   .showing .panel::-webkit-scrollbar { display: none; }
   .showing .form::-webkit-scrollbar { display: none; }
   .showing .mast { translate: 0; }
-  .showing .panel > header { height: var(--show-header); }      /* the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
+  .showing .panel > header { height: var(--header); }      /* main's title line, so the tabs' line falls on the undo buttons' bottom as on the dial side (Okay, 25 Oct 2026, 18:05: "main looks correct"; --header's rule "for the Show Case too"); the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
   .showing .title h1 { white-space: nowrap; }
   .showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
   .showing .panel > header :is(.gallerypill, .unit, .title > .quiet:not(.help)) { display: none; }      /* …no version either: hidden from users (Okay, 23 Oct 2026) */
@@ -42,7 +42,7 @@
   .greyswatch { display: none; }      /* show mode's round swatch (grey_swatch() in app.js): the panel's other look, in greys or in the backdrop's colour; dial side: none (R16) */
   .showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
   .showing main { grid-area: 1 / 1 / 2 / 3; }      /* the canvas runs on under the column, so the backdrop and the watch show through it (Okay, 23 Oct 2026: "Transparency is gone, bring that back"); the drawing is centred in the part left of it (size() in app.js) */
-  .showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* the top — title, tabs and the pinned lines — a tenth lighter than the column, as the paper stands over the scrolling grey (Okay, 21 Oct 2026, 01:43) */      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
+  .showing .panel > :is(header, .tabs, .pinned) { background-color: var(--column-top, var(--paper)); }      /* the colour alone: the tabs' hairline is their background picture (below), which a whole background here took away (Okay, 25 Oct 2026, 18:05: "missing bar") */      /* the top — title, tabs and the pinned lines — a tenth lighter than the column, as the paper stands over the scrolling grey (Okay, 21 Oct 2026, 01:43) */      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
      0.95), both ways, so it shows on whichever is under it; a backdrop changed while away turns it at once */

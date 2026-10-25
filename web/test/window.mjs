@@ -2441,6 +2441,11 @@ await shot("10-bar");
   await page.evaluate((g) => { const t = window.dial_tool; t.set_value("global", "c_backdrop", g[0]); t.set_value("global", "c_backdrop2", g[1]); t.ground_open(false); }, was_ground);
   check(bio && ground.open && ground.tiles === 20 && ground.two && !ground.version && tiles.bezel === 2 && tiles.cases >= 4,
     `show mode's title has no version and its mark opens no bio; Backdrop opens the Show Case's ten colours and ten gradients (${ground.tiles} tiles; Ember a gradient); Case is picture tiles (${tiles.cases}), Field pressed`);
+  { // show mode's top as main's (Okay, 25 Oct 2026, 18:05: "Show mode and main tops, missing bar and alignments check, main looks correct"): the title line main's height, the tabs' hairline drawn, on the undo buttons' bottom
+    const top = await page.evaluate(() => { const R = (q) => document.querySelector(q).getBoundingClientRect(), c = getComputedStyle(document.querySelector(".tabs"));
+      return { header: Math.round(R(".panel > header").height), line: Math.round(R(".tabs").top), undo: Math.round(R("#undo").bottom), drawn: c.backgroundImage.startsWith("linear-gradient") }; });
+    check(top.header === 43 && top.line === top.undo - 1 && top.drawn, `show mode's top as main's: the title line ${top.header} high, the tabs' hairline drawn (${top.drawn}) on the undo buttons' bottom (${top.line} / ${top.undo})`);
+  }
   { // the Light tab's sun box (Okay, 25 Oct 2026, four drawn rounds, "sun locked"): an outline with sharp corners, the sun's
     // picture centred in the open space, Angle · Height · Strength as plain values flush left on the number boxes' line;
     // the three as ordinary rows under it, Darkness named Strength; a drag in the picture moves the sun, the values follow
