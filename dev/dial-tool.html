@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.12 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.13 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -183,6 +183,8 @@
     --dot: 14px;                                   /* a swatch to pick from (a band's sectors); the Backdrop switch's sign is one */
     --pill-gap: var(--unit);                       /* a colour pill (and the font name line beside its swatch): this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these */
     --pill: calc(1em + 2 * var(--pill-gap));       /* its height. The swatch is as high as the hex is set (1em) */
+    --pill-w: calc(3 * var(--pill-gap) + 5.25 * var(--t-s));      /* its width with a hex: the swatch (1em), the seven monospace figures (0.6em each), its three spaces (79 measured) — the swatch column of show mode's Dial tab (#546) */
+    --kind-pic: 24px;                              /* a kind's picture, its square (KIND_PIC in icons.js): the column of the tiny marks in show mode's Dial tab */
     --pop-width: 388px; --pop-chips: 11;           /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width (the room between two: a special) */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
@@ -920,47 +922,41 @@
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
   .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
   .swatches .swatch { width: var(--control); height: var(--control); border-radius: var(--round-small); }
-  /* show mode's Colours (#521): a line is eye · name · colour · toggle · number, in the same columns on every line;
-     an empty place keeps its column. The cap's square stands after its hand's pill */
-  .colourlist > .row.showline { grid-template-columns: var(--eye) minmax(0, 1fr) calc(2 * var(--pill) + var(--chip-gap)) var(--toggle-w) var(--side-num); column-gap: var(--u2); }      /* the colour's place holds two squares: a hand's and its cap's */
-  .colourlist > .row.showline > .eye { margin-right: calc(var(--gap) - var(--u2)); }      /* the eye keeps the panel's gap before the names; the rest stand closer */
-  .colourlist > .row.showline > :first-child { grid-column: auto; }
-  .colourlist > .row.showline > :is(.single, .swatches) { grid-column: auto; display: flex; align-items: center; gap: var(--chip-gap); padding: 0; }
-  .colourlist > .row.showline .swatch { width: var(--pill); height: var(--pill); border-radius: var(--round-small); }
+  /* show mode's Dial tab (#545, its look #546; Okay, 25 Oct 2026: "All colors aligned on a line like rings on main but
+     appropriate to this view. Tiny marks, secondary labels … don't use allcaps everywhere"). Every line of Colours, Inks
+     and Hands stands on the same five columns: the eye (an ink's fold, a part's A or B) · the kind mark (the ring
+     list's) · the name · the swatch column (a lone colour a pill with its hex, several squares from its left) · the
+     height box. A Colours line has no height: its squares may run on to the line's end, six to a line. */
+  .colourlist > .row.showline { grid-template-columns: var(--eye) var(--kind-pic) minmax(0, 1fr) var(--pill-w) var(--side-num); column-gap: var(--u1); }      /* half-unit gaps: at 312 the name keeps room for "Triangle at 12" (85) */
+  .colourlist > .row.showline > * { grid-column: auto; }
   .colourlist > .row.showline > .eye { display: grid; place-items: center start; color: var(--grey); }
   .colourlist > .row.showline > .eye[aria-pressed="true"] { color: var(--ink); }
   @media (hover: hover) { .colourlist > .row.showline > .eye:hover { color: var(--ink); } }
+  .colourlist > .row.showline > .mark { display: grid; place-items: center; height: 100%; color: var(--grey); }      /* a tiny mark, quiet beside the name */
   .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .colourlist > .row.showline > :is(.colour, .single) { justify-self: start; }
+  .colourlist > .row.showline > .single { display: flex; }
+  .colourlist > .row.showline > .swatches { display: flex; flex-wrap: wrap; align-items: center; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
+  .colourlist > .row.showline .swatch { width: var(--pill); height: var(--pill); border-radius: var(--round-small); }
+  .colourlist > .row.showline .note { flex: 1 1 auto; min-width: 0; margin-left: var(--u2); color: var(--grey); font-size: var(--t-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }      /* what the squares are: "12 sectors", "hand · cap" */
   .colourlist > .row.showline > .place { display: flex; justify-content: end; }
-  .colourlist > .row.showline .colhead { font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; color: var(--uiblack, var(--ink)); }      /* the number column's name, in black, small capitals as Shenanigans' names */
-  .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
   .colourlist > .row.showline .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }
-  /* show mode's Dial tab (#545): Colours' lines carry colours only, every swatch a part has, so the swatches take the
-     number's room; RINGS · HANDS · WINDOWS (and the Inks' ON THE DIAL…) as small capitals on a line of their own */
-  .colourlist > .row.showline.bare { grid-template-columns: var(--eye) minmax(0, 1fr) auto; }
+  .colourlist > .row.showline .numbox > input { text-align: right; }      /* as a number row's */
+  .colourlist > .row.showline.bare > :is(.single, .swatches) { grid-column: 4 / -1; max-width: calc(6 * var(--pill) + 5 * var(--chip-gap) + var(--pill-w)); }      /* six squares a line, the note after them */
   .colourlist > .row.showline.bare > .place { display: none; }
-  .colourlist > .row.showline.bare > .swatches { justify-content: end; max-width: calc(4 * var(--pill) + 3 * var(--chip-gap)); }      /* a band's sectors four to a line, so its name keeps its room */
+  /* a group's name (Rings · Hands · Windows; On the dial · On the discs · Disc depths): grey, sentence case, at the rows'
+     size, as the Shadows pane's Part Heights; a pane's number column named at its heading's end, small and grey */
   .colourlist > .row.showsub { display: flex; align-items: end; min-height: var(--line); padding-bottom: var(--u2); }
-  .pane > .colhead { justify-self: end; margin-left: auto; }
-  :is(.colourlist > .row.showsub, .pane) > .colhead, .colourlist > .row.showsub .colhead { font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; color: var(--uiblack, var(--ink)); }
-  /* Inks: an ink's line is its fold · its swatch · its hex and part count · Two inks · its height; a disc's line its
-     swatches in the swatch's place. Its parts and its A and B lines stand under the hex, in the same columns */
-  .inklist > .row:is(.inkline, .inkpart) { grid-template-columns: var(--eye) calc(2 * var(--pill) + var(--chip-gap)) minmax(0, 1fr) auto var(--side-num); column-gap: var(--u2); }      /* Two inks' place only as wide as what is in it: closed, the hex and its count have the room */
-  .inklist > .row:is(.inkline, .inkpart) > * { grid-column: auto; }
-  .inklist > .row.inkline > .swatch { width: var(--pill); height: var(--pill); }
-  .inklist > .row.inkline > .swatches { flex-wrap: nowrap; padding: 0; }
-  .inklist .inkname { display: flex; align-items: baseline; gap: var(--u3); overflow: hidden; white-space: nowrap; color: var(--ink); }
-  .inklist .inkname .hex { font: var(--t-s)/1 var(--mono); }
-  .inklist .inkname .count, .inklist > .row.inkpart > label, .inklist > .row.disc > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .inklist > .row.inkline.open > .place.two { grid-column: 4 / -1; display: flex; align-items: center; justify-content: end; gap: var(--u3); color: var(--grey); }      /* Two inks at the line's right end, its word right against it */
-  .inklist .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }      /* every height box the colour list's size, the A and B lines' too */
-  .inklist .numbox > input { text-align: right; }
-  .inklist > .row > .place { display: flex; justify-content: end; }
+  .colourlist > .row.showsub .colhead { color: var(--grey); font-size: var(--t-s); }
+  .pane > .colhead { justify-self: end; margin-left: auto; color: var(--grey); font-size: var(--t-xs); }
+  /* Inks: its lines on the same columns; the ink's fold in the eye's place, its part count as its name */
   .inklist .chev { display: grid; place-items: center start; color: var(--grey); }
   .inklist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
   @media (hover: hover) { .inklist .chev:hover { color: var(--ink); } }
-  .row.bevels > .pillswitch { grid-column: 3 / -1; justify-self: end; flex-wrap: nowrap; }
-  .inklist > .row.inkpart > .letter { justify-self: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the pill's place */
+  .inklist > .row.inkline > label { color: var(--ink); }
+  .inklist > .row.inkline.open > .place.two { display: flex; align-items: center; justify-content: end; gap: var(--u3); color: var(--grey); }      /* Two inks in the number's place, its word right against it */
+  .inklist > .row.inkpart > .letter { justify-self: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the eye's place */
+  .row.bevels > .pillswitch { grid-column: 2 / -1; justify-self: end; flex-wrap: nowrap; }
   .inklist .pillswitch.ab > button { padding: 0 var(--u2); }      /* the pill fits the swatch column, a gap before the name */
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }
 
@@ -7416,7 +7412,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.12";
+var VERSION = "beta 4.94.13";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11981,6 +11977,10 @@ var PICS = {
     // less line height to the lines"): heavier (.words), tracked 0.5, the two lines 7.5 apart (were 9)
     [["ABC", 12, 8.25], ["XYZ", 12, 15.75]].map(([t, x2, y]) => `<text class="figure words" x="${x2}" y="${y}" font-size="5.5" letter-spacing="0.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join("")
   ][i2], KIND_PIC),
+  // show mode's Dial tab (#546; Okay, 25 Oct 2026: "Tiny marks … look at prescedents"): beside the ring marks above, a
+  // hand on its pivot (the Hands tab's two hands, on this grid) and a window (the Windows tab's, alone), each at KIND_PIC
+  hand_mark: icon(`<path d="M12.25 12.25V5.75M12.25 12.25L16.25 14.75"/><circle cx="12.25" cy="12.25" r="1.25" fill="currentColor" stroke="none"/>`, KIND_PIC),
+  window_mark: icon(`<rect x="7" y="8.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none"/>`, KIND_PIC),
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [
     // the baton is the shape tile's baton: same width (5)
@@ -12724,12 +12724,12 @@ ROWS["Show dial"] = [
   // not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
   hdr("Inks", { folded: false }),
-  custom("colhead", { head: true, text: "Height mm" }),
+  custom("colhead", { head: true, text: "Height, mm" }),
   custom("inks"),
   num2("w_ink_all", "All inks at once", -0.3, 0.3, 0.01, { limits: [-INK_MOST, INK_MOST] }),
   // every printed height moves by the same mm, each ink keeping its own (Okay, 24 Oct 2026: "adding to or subbing from each same amount")
   hdr("Hands", { folded: false }),
-  custom("colhead", { head: true, text: "Height mm" }),
+  custom("colhead", { head: true, text: "Height, mm" }),
   custom("show_hands"),
   custom("bevel_pills"),
   num2("sh_bevel", "Bevels %", 0, 100, 1, { whole: true })
@@ -13254,21 +13254,22 @@ var COLOUR = {
   /** lines of swatches inside a holder: lines() → [{text, colours: [{id, title, read, write}]}]. Built again only
    *  when the list itself changes (a ring added, renamed, a sector more), so an open pop-out keeps its swatch. */
   swatch_lines(holder, lines) {
-    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id), Boolean(l.eye), Boolean(l.sub), (l.tail || []).map((t) => t.key)]));
+    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id), Boolean(l.eye), Boolean(l.sub), l.mark || "", l.note || "", (l.tail || []).map((t) => t.key)]));
     const showing = list.some((l) => l.eye);
     if (holder.dataset.list !== signature) {
       holder.dataset.list = signature;
       holder.extras = [];
       holder.replaceChildren(...list.map((line) => {
         if (line.sub) return el("div", { className: "row showsub" }, el("span", { className: "colhead", textContent: line.text }));
-        const pills = showing ? 0 : line.colours.filter((c) => !c.square).length;
-        const group = el("span", { className: pills === 1 ? "single" : "swatches" });
+        const pills = line.colours.filter((c) => !c.square).length;
+        const group = el("span", { className: pills === 1 && line.colours.length === 1 ? "single" : "swatches" });
         for (const c of line.colours) {
-          const swatch = pills === 1 && !c.square ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          const swatch = pills === 1 && line.colours.length === 1 ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
           if (c.square || showing) swatch.dataset.tip = c.title;
           swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
+        if (line.note) group.append(el("span", { className: "note", textContent: line.note }));
         const name = el("label", { textContent: line.text });
         if (!showing) return el("div", { className: "row" }, name, group);
         const eye_place = line.eye ? el("button", { type: "button", className: "eye", title: line.eye.title, ariaLabel: line.eye.title, onclick: () => line.eye.write(!line.eye.read()) }) : el("i");
@@ -13277,13 +13278,15 @@ var COLOUR = {
           eye_place.innerHTML = eye(on);
           eye_place.setAttribute("aria-pressed", String(on));
         } });
-        const places = { toggle: el("span", { className: "place" }), number: el("span", { className: "place" }) };
+        const mark = el("span", { className: "mark" });
+        if (line.mark) mark.innerHTML = line.mark;
+        const number = el("span", { className: "place" });
         for (const t of line.tail || []) {
           const made = t.make();
-          places[t.place].append(made.el);
+          number.append(made.el);
           holder.extras.push(made);
         }
-        return el("div", { className: "row showline" + (line.tail ? "" : " bare") }, eye_place, name, group, places.toggle, places.number);
+        return el("div", { className: "row showline" + (line.tail ? "" : " bare") }, eye_place, mark, name, group, number);
       }));
     }
     for (const x2 of holder.extras || []) x2.refresh(this.S);
@@ -13309,7 +13312,11 @@ var COLOUR = {
       if (show) lines.push({ sub: true, text: "Rings", colours: [] });
       S.rings.forEach((ring, i2) => {
         const line = { text: ring.name || kind_of(ring), colours: this.ring_colours(i2) };
-        if (show) line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i2] || {}).on, write: (on) => this.show_ring(i2, on) };
+        if (show) {
+          line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i2] || {}).on, write: (on) => this.show_ring(i2, on) };
+          line.mark = PICS.kind(ring.kind);
+          if (line.colours.length > 1) line.note = `${line.colours.length} sectors`;
+        }
         lines.push(line);
       });
       const cap = this.cap_colour();
@@ -13321,7 +13328,11 @@ var COLOUR = {
             this.S["ha_" + h].on = on;
             this.changed();
           } };
-          if (cap_shows(S) && k === top_hand(S)) line.colours = [...line.colours, { ...cap, square: true }];
+          line.mark = PICS.hand_mark;
+          if (cap_shows(S) && k === top_hand(S)) {
+            line.colours = [...line.colours, { ...cap, square: true }];
+            line.note = "hand \xB7 cap";
+          }
         }
         lines.push(line);
       });
@@ -13329,8 +13340,10 @@ var COLOUR = {
       const wins = windows_of(S).map((w, k) => [w, k]).filter(([w]) => w.on);
       if (show && wins.length) lines.push({ sub: true, text: "Windows", colours: [] });
       for (const [w, k] of wins) {
-        if (show) lines.push({ text: window_name(w), colours: this.window_colours(k) });
-        else lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => windows_of(this.S)[k].ink, (v) => {
+        if (show) {
+          const colours = this.window_colours(k);
+          lines.push({ text: window_name(w), mark: PICS.window_mark, colours, note: colours.map((c) => c.title.split(" \xB7 ").pop()).join(" \xB7 ") });
+        } else lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => windows_of(this.S)[k].ink, (v) => {
           windows_of(this.S)[k].ink = v;
           this.changed();
         }) });
@@ -13409,12 +13422,18 @@ var COLOUR = {
       rows.push(made);
       return made.el;
     };
-    const swatch = (id, title, read, write) => {
-      const b = el("button", { type: "button", className: "swatch", id: "colour-" + id, title });
+    const swatch = (id, title, read, write, pill = false) => {
+      const b = pill ? this.colour_pill("colour-" + id, title) : el("button", { type: "button", className: "swatch", id: "colour-" + id, title });
       b.dataset.tip = title;
       b.onclick = () => this.pop_open({ read, write, label: () => title }, b, b.parentElement);
-      rows.push({ refresh: () => paint(b, read()) });
+      rows.push({ refresh: () => b.show ? b.show(read()) : paint(b, read()) });
       return b;
+    };
+    const colours = (list) => list.length === 1 ? swatch(list[0].id, list[0].title, list[0].read, list[0].write, true) : el("span", { className: "swatches" }, ...list.map((c) => swatch(c.id, c.title, c.read, c.write)));
+    const mark = (html = "") => {
+      const m = el("span", { className: "mark" });
+      m.innerHTML = html;
+      return m;
     };
     const place2 = (...kids) => el("span", { className: "place" }, ...kids);
     const all = () => +S().w_ink_all || 0;
@@ -13461,9 +13480,8 @@ var COLOUR = {
           }
         });
         chev.innerHTML = icon(SIGNS.down);
-        const label = el("label", { className: "inkname" }, el("span", { className: "hex", textContent: hex3 }));
         const count = ink.parts.length === 1 ? "1 part" : `${ink.parts.length} parts`;
-        if (!open) label.append(el("span", { className: "count", textContent: count }));
+        const label = el("label", { className: "inkname", textContent: count });
         const pair = (parts) => parts.length === 2;
         const set_b = (p, b) => {
           if (p.kind === "frame") windows_of(S())[p.i].frame_b = b;
@@ -13479,20 +13497,22 @@ var COLOUR = {
         const number = open ? null : height(`ink-${n}-h`, `${hex3} height`, () => ink_of(S(), now().hex).h + all(), (v) => {
           entry(now().hex).h = +(v - all()).toFixed(3);
         });
+        const pill = swatch(`ink-${n}`, `${hex3}: every part of this ink`, () => now().colour, write, true);
         const end = open ? el("span", { className: "place two" }, el("label", { textContent: "Two inks" }), toggle.el) : place2(number);
-        kids.push(el("div", { className: "row showline inkline" + (open ? " open" : "") }, chev, swatch(`ink-${n}`, `${hex3}: every part of this ink`, () => now().colour, write), label, ...open ? [end] : [place2(), end]));
+        kids.push(el("div", { className: "row showline inkline" + (open ? " open" : "") }, chev, mark(), label, pill, end));
         if (!open) return;
         ink.parts.forEach((p, m) => {
           const on_b = () => p.kind === "frame" ? windows_of(S())[p.i].frame_b : S().rings[p.i].ink_b;
           const letter = () => ink_of(S(), now().hex).two && on_b() ? "b" : "h";
           const name = p.name + (p.sectors > 1 ? ` \xB7 ${p.sectors} sectors` : p.sectors === 1 ? " \xB7 1 sector" : "");
-          const pill = one.two && !pair(ink.parts) ? this.ab_pill(p, n, on_b) : null;
-          if (pill) rows.push(pill);
+          const pill2 = one.two && !pair(ink.parts) ? this.ab_pill(p, n, on_b) : null;
+          if (pill2) rows.push(pill2);
           const said = one.two && pair(ink.parts) ? el("span", { className: "letter", textContent: on_b() ? "B" : "A" }) : el("i");
           const box3 = height(`ink-${n}-part-${m}`, `${name}: its ink's height`, () => ink_of(S(), now().hex)[letter()] + all(), (v) => {
             entry(now().hex)[letter()] = +(v - all()).toFixed(3);
           });
-          kids.push(el("div", { className: "row inkpart" }, el("i"), pill ? pill.el : said, el("label", { textContent: name }), el("i"), place2(box3)));
+          const kind = p.kind === "frame" ? PICS.window_mark : PICS.kind(S().rings[p.i].kind);
+          kids.push(el("div", { className: "row showline inkpart" }, said, mark(kind), el("label", { textContent: name }), pill2 ? pill2.el : el("i"), place2(box3)));
         });
       });
       const wins = windows_of(S()).map((w, k) => [w, k]).filter(([w]) => w.on);
@@ -13503,9 +13523,9 @@ var COLOUR = {
           "div",
           { className: "row showline inkline disc" },
           el("i"),
-          el("span", { className: "swatches" }, ...prints.map((c) => swatch(c.id + "-ink", c.title, c.read, c.write))),
+          mark(PICS.window_mark),
           el("label", { textContent: window_name(w) }),
-          place2(),
+          colours(prints.map((c) => ({ ...c, id: c.id + "-ink" }))),
           place2(height(`disc-${k}-print`, `${window_name(w)}: prints' height`, () => (windows_of(S())[k].print_h ?? INK_MM) + all(), (v) => {
             windows_of(S())[k].print_h = +(v - all()).toFixed(3);
           }))
@@ -13519,9 +13539,9 @@ var COLOUR = {
           "div",
           { className: "row showline inkline disc" },
           el("i"),
-          swatch(disc.id + "-depth", disc.title, disc.read, disc.write),
+          mark(PICS.window_mark),
           el("label", { textContent: window_name(w) }),
-          place2(),
+          swatch(disc.id + "-depth", disc.title, disc.read, disc.write, true),
           place2(height(`disc-${k}-depth`, `${window_name(w)}: disc's depth`, () => this.disc_depth(windows_of(S())[k]), (v) => {
             windows_of(S())[k].depth = v;
           }, 0, 1))
@@ -13539,10 +13559,6 @@ var COLOUR = {
         build();
       }
       for (const r of rows) r.refresh(this.S);
-      wrap.querySelectorAll(".inkline .hex").forEach((h, n) => {
-        const ink = dial_inks(this.S)[n];
-        if (ink) h.textContent = ink.hex;
-      });
     };
   },
   /** a part's A | B under a split ink: a pill of two words, the chosen one filled */
@@ -13568,11 +13584,12 @@ var COLOUR = {
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
       const tall = (h, text) => [{ key: "height", place: "number", make: () => this.line_number(num2("sh_" + h, text, 0, 3, 0.05, { scope: "global", block: true, id: `show-${h}-height` })) }];
-      if (cap_shows(S)) lines.push({ text: "Cap", colours: [{ ...this.cap_colour(), id: "cap-hands" }], tail: tall("cap", "Cap height") });
+      if (cap_shows(S)) lines.push({ text: "Cap", mark: PICS.hand_mark, colours: [{ ...this.cap_colour(), id: "cap-hands", square: true }], tail: tall("cap", "Cap height") });
       for (const [h, text] of [["second", "Seconds"], ["minute", "Minutes"], ["hour", "Hours"]]) {
         lines.push({
           text,
-          colours: [{ ...this.hand_colour(h, text + " hand"), id: `hand-${h}-hands` }],
+          mark: PICS.hand_mark,
+          colours: [{ ...this.hand_colour(h, text + " hand"), id: `hand-${h}-hands`, square: true }],
           tail: tall(h, text + " height"),
           eye: { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => {
             this.S["ha_" + h].on = on;
