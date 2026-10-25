@@ -4,7 +4,7 @@
 import * as G from "./geometry.js";
 import { $, KEY, clamp, drag_in, el, from_hex, has_focus, is_day, moon_look, paint, to_hex } from "./ui.js";
 import { num } from "./rows.js";
-import { SIGNS, TOOL_ICONS, eye, icon } from "./icons.js";
+import { PICS, SIGNS, TOOL_ICONS, eye, icon } from "./icons.js";
 
 export const PALETTE = ["#111111", "#FFFFFF", "#EDE8DB", "#A7A7AA", "#3A3A3C", "#0E2A47", "#12372A", "#7A1F1F", "#C8E6A0", "#E8742A"];      // the palette's first ten: black, white, cream, silver, anthracite, navy, green, burgundy, lume, orange
 
@@ -280,32 +280,35 @@ export const COLOUR = {
   /** lines of swatches inside a holder: lines() → [{text, colours: [{id, title, read, write}]}]. Built again only
    *  when the list itself changes (a ring added, renamed, a sector more), so an open pop-out keeps its swatch. */
   swatch_lines(holder, lines) {
-    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id), Boolean(l.eye), Boolean(l.sub), (l.tail || []).map((t) => t.key)]));
+    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id), Boolean(l.eye), Boolean(l.sub), l.mark || "", l.note || "", (l.tail || []).map((t) => t.key)]));
     const showing = list.some((l) => l.eye);      // show mode: each line eye · name · colour · its own extras (#521)
     if (holder.dataset.list !== signature) {
       holder.dataset.list = signature;
       holder.extras = [];
       holder.replaceChildren(...list.map((line) => {
         if (line.sub) return el("div", { className: "row showsub" }, el("span", { className: "colhead", textContent: line.text }));      // a group's name, in small capitals: RINGS · HANDS · WINDOWS (#545)
-        const pills = showing ? 0 : line.colours.filter((c) => !c.square).length;      // show mode: every colour a square, so the names keep their room beside the line's eye, toggle and number
-        const group = el("span", { className: pills === 1 ? "single" : "swatches" });
+        // one colour: a pill with its hex, like a colour row (show mode too: "swatches, alone spelled out", #546). Many (a
+        // band's sectors), or one marked square (the cap beside its hand, a Hands line): squares.
+        const pills = line.colours.filter((c) => !c.square).length;
+        const group = el("span", { className: pills === 1 && line.colours.length === 1 ? "single" : "swatches" });
         for (const c of line.colours) {
-          // one colour: a pill with its hex, like a colour row. Many (a band's sectors), or one beside a pill (the cap
-          // on its hand's line): squares.
-          const swatch = pills === 1 && !c.square ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          const swatch = pills === 1 && line.colours.length === 1 ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
           if (c.square || showing) swatch.dataset.tip = c.title;
           swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
+        if (line.note) group.append(el("span", { className: "note", textContent: line.note }));      // what the squares are, in grey: "12 sectors", "hand · cap"
         const name = el("label", { textContent: line.text });
         if (!showing) return el("div", { className: "row" }, name, group);
-        // show mode's line: the eye (or its empty place), the name, the colour(s), then a toggle's place and a number's
-        // place, so every line's parts stand in the same columns
+        // show mode's line (#546): the eye (or its empty place), the part's kind mark, the name, the colour(s) on the one
+        // swatch column every line of the tab shares (as main's ring list), then the number's place
         const eye_place = line.eye ? el("button", { type: "button", className: "eye", title: line.eye.title, ariaLabel: line.eye.title, onclick: () => line.eye.write(!line.eye.read()) }) : el("i");      // an <i>: an empty first span would be hidden (4c-rows)
         if (line.eye) holder.extras.push({ refresh: () => { const on = Boolean(line.eye.read()); eye_place.innerHTML = eye(on); eye_place.setAttribute("aria-pressed", String(on)); } });
-        const places = { toggle: el("span", { className: "place" }), number: el("span", { className: "place" }) };
-        for (const t of line.tail || []) { const made = t.make(); places[t.place].append(made.el); holder.extras.push(made); }
-        return el("div", { className: "row showline" + (line.tail ? "" : " bare") }, eye_place, name, group, places.toggle, places.number);      // bare: colours only (show mode's Colours, #545), the swatches take the toggle's and the number's room
+        const mark = el("span", { className: "mark" });
+        if (line.mark) mark.innerHTML = line.mark;
+        const number = el("span", { className: "place" });
+        for (const t of line.tail || []) { const made = t.make(); number.append(made.el); holder.extras.push(made); }
+        return el("div", { className: "row showline" + (line.tail ? "" : " bare") }, eye_place, mark, name, group, number);      // bare: colours only (Colours), the swatches may run on into the number's room
       }));
     }
     for (const x of holder.extras || []) x.refresh(this.S);
@@ -328,7 +331,11 @@ export const COLOUR = {
       if (show) lines.push({ sub: true, text: "Rings", colours: [] });
       S.rings.forEach((ring, i) => {
         const line = { text: ring.name || G.kind_of(ring), colours: this.ring_colours(i) };
-        if (show) line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i] || {}).on, write: (on) => this.show_ring(i, on) };
+        if (show) {
+          line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i] || {}).on, write: (on) => this.show_ring(i, on) };
+          line.mark = PICS.kind(ring.kind);      // the ring list's kind mark
+          if (line.colours.length > 1) line.note = `${line.colours.length} sectors`;
+        }
         lines.push(line);
       });
       const cap = this.cap_colour();
@@ -337,7 +344,8 @@ export const COLOUR = {
         const text = ["Hour hand", "Minute hand", "Seconds hand"][k], line = { text, colours: [this.hand_colour(h, text)] };
         if (show) {      // its eye, its colour and the cap's as a square beside it, on the hand the cap sits on (Okay: "A swatch on its hand's line")
           line.eye = { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => { this.S["ha_" + h].on = on; this.changed(); } };
-          if (G.cap_shows(S) && k === G.top_hand(S)) line.colours = [...line.colours, { ...cap, square: true }];
+          line.mark = PICS.hand_mark;
+          if (G.cap_shows(S) && k === G.top_hand(S)) { line.colours = [...line.colours, { ...cap, square: true }]; line.note = "hand · cap"; }
         }
         lines.push(line);
       });
@@ -345,7 +353,7 @@ export const COLOUR = {
       const wins = G.windows_of(S).map((w, k) => [w, k]).filter(([w]) => w.on);
       if (show && wins.length) lines.push({ sub: true, text: "Windows", colours: [] });
       for (const [w, k] of wins) {
-        if (show) lines.push({ text: G.window_name(w), colours: this.window_colours(k) });      // frame · disc · what is printed on it, one line (the drawing of 25 Oct 2026)
+        if (show) { const colours = this.window_colours(k); lines.push({ text: G.window_name(w), mark: PICS.window_mark, colours, note: colours.map((c) => c.title.split(" · ").pop()).join(" · ") }); }      // frame · disc · what is printed on it, one line, the squares named in grey (#546)
         else lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => G.windows_of(this.S)[k].ink, (v) => { G.windows_of(this.S)[k].ink = v; this.changed(); }) });
       }
       return lines;
@@ -396,20 +404,23 @@ export const COLOUR = {
     let rows = [];
     const sub = (text) => el("div", { className: "row showsub" }, el("span", { className: "colhead", textContent: text }));
     const height = (id, text, get, put, lo = 0, hi = G.INK_MOST) => { const made = this.line_number(num(id, text, lo, hi, 0.01, { block: true, id, get, put: (app, v) => { put(clamp(v, lo, hi)); this.changed(); } })); rows.push(made); return made.el; };
-    const swatch = (id, title, read, write) => {
-      const b = el("button", { type: "button", className: "swatch", id: "colour-" + id, title });
+    // a colour: one alone is a pill with its hex spelled out; several are squares (#546: "swatches, alone spelled out")
+    const swatch = (id, title, read, write, pill = false) => {
+      const b = pill ? this.colour_pill("colour-" + id, title) : el("button", { type: "button", className: "swatch", id: "colour-" + id, title });
       b.dataset.tip = title;
       b.onclick = () => this.pop_open({ read, write, label: () => title }, b, b.parentElement);
-      rows.push({ refresh: () => paint(b, read()) });
+      rows.push({ refresh: () => (b.show ? b.show(read()) : paint(b, read())) });
       return b;
     };
+    const colours = (list) => (list.length === 1 ? swatch(list[0].id, list[0].title, list[0].read, list[0].write, true) : el("span", { className: "swatches" }, ...list.map((c) => swatch(c.id, c.title, c.read, c.write))));
+    const mark = (html = "") => { const m = el("span", { className: "mark" }); m.innerHTML = html; return m; };
     const place = (...kids) => el("span", { className: "place" }, ...kids);
     const all = () => +S().w_ink_all || 0;
     const entry = (hex) => { const inks = S().w_inks = S().w_inks || {}; return (inks[hex] = inks[hex] || {}); };
     const build = () => {
       rows = [];
       const inks = G.dial_inks(S()), kids = [];
-      kids.push(sub("On the dial"));
+      kids.push(sub("On the dial"));      // the groups' names in grey, as the Shadows pane's (#546: "don't use allcaps everywhere")
       inks.forEach((ink, n) => {
         const hex = ink.hex, open = this.ink_open.has(hex), one = G.ink_of(S(), hex);
         const now = () => G.dial_inks(S())[n] || ink;      // the ink at this place now: its colour moves while a pop-out drags it
@@ -429,9 +440,8 @@ export const COLOUR = {
         const chev = el("button", { type: "button", className: "eye chev" + (open ? " open" : ""), title: open ? "Close this ink" : "Open this ink: its parts", ariaLabel: open ? "Close this ink" : "Open this ink", ariaExpanded: String(open),
           onclick: () => { if (this.ink_open.has(hex)) this.ink_open.delete(hex); else this.ink_open.add(hex); wrap.dataset.list = ""; this.changed(); } });
         chev.innerHTML = icon(SIGNS.down);
-        const label = el("label", { className: "inkname" }, el("span", { className: "hex", textContent: hex }));
         const count = ink.parts.length === 1 ? "1 part" : `${ink.parts.length} parts`;
-        if (!open) label.append(el("span", { className: "count", textContent: count }));
+        const label = el("label", { className: "inkname", textContent: count });      // the line named by its part count, the ink's own colour in the swatch column (Okay: "Its part count")
         // an ink of two parts has nothing to choose: split, its first part is A and its second B (Okay, 25 Oct 2026, 21:23:
         // "Switch stays, but on two item lists leave them text only")
         const pair = (parts) => parts.length === 2;
@@ -443,8 +453,9 @@ export const COLOUR = {
         // (Okay, 25 Oct 2026, 21:18, his marks: "a part on its letter's line"; "Switch in the right place label stuck to it
         // all the way to the right")
         const number = open ? null : height(`ink-${n}-h`, `${hex} height`, () => G.ink_of(S(), now().hex).h + all(), (v) => { entry(now().hex).h = +(v - all()).toFixed(3); });
+        const pill = swatch(`ink-${n}`, `${hex}: every part of this ink`, () => now().colour, write, true);
         const end = open ? el("span", { className: "place two" }, el("label", { textContent: "Two inks" }), toggle.el) : place(number);
-        kids.push(el("div", { className: "row showline inkline" + (open ? " open" : "") }, chev, swatch(`ink-${n}`, `${hex}: every part of this ink`, () => now().colour, write), label, ...(open ? [end] : [place(), end])));
+        kids.push(el("div", { className: "row showline inkline" + (open ? " open" : "") }, chev, mark(), label, pill, end));      // open: Two inks in the number's place, its word against it
         if (!open) return;
         ink.parts.forEach((p, m) => {
           const on_b = () => (p.kind === "frame" ? G.windows_of(S())[p.i].frame_b : S().rings[p.i].ink_b);
@@ -452,9 +463,10 @@ export const COLOUR = {
           const name = p.name + (p.sectors > 1 ? ` · ${p.sectors} sectors` : p.sectors === 1 ? " · 1 sector" : "");
           const pill = one.two && !pair(ink.parts) ? this.ab_pill(p, n, on_b) : null;
           if (pill) rows.push(pill);
-          const said = one.two && pair(ink.parts) ? el("span", { className: "letter", textContent: on_b() ? "B" : "A" }) : el("i");      // two parts: the letter alone, as text
+          const said = one.two && pair(ink.parts) ? el("span", { className: "letter", textContent: on_b() ? "B" : "A" }) : el("i");      // two parts: the letter alone, as text, in the eye's column
           const box = height(`ink-${n}-part-${m}`, `${name}: its ink's height`, () => G.ink_of(S(), now().hex)[letter()] + all(), (v) => { entry(now().hex)[letter()] = +(v - all()).toFixed(3); });
-          kids.push(el("div", { className: "row inkpart" }, el("i"), pill ? pill.el : said, el("label", { textContent: name }), el("i"), place(box)));
+          const kind = p.kind === "frame" ? PICS.window_mark : PICS.kind(S().rings[p.i].kind);
+          kids.push(el("div", { className: "row showline inkpart" }, said, mark(kind), el("label", { textContent: name }), pill ? pill.el : el("i"), place(box)));
         });
       });
       // what is printed on the discs, one height a window
@@ -462,7 +474,7 @@ export const COLOUR = {
       if (wins.length) kids.push(sub("On the discs"));
       for (const [w, k] of wins) {
         const prints = this.window_prints(k);
-        kids.push(el("div", { className: "row showline inkline disc" }, el("i"), el("span", { className: "swatches" }, ...prints.map((c) => swatch(c.id + "-ink", c.title, c.read, c.write))), el("label", { textContent: G.window_name(w) }), place(),
+        kids.push(el("div", { className: "row showline inkline disc" }, el("i"), mark(PICS.window_mark), el("label", { textContent: G.window_name(w) }), colours(prints.map((c) => ({ ...c, id: c.id + "-ink" }))),
           place(height(`disc-${k}-print`, `${G.window_name(w)}: prints' height`, () => (G.windows_of(S())[k].print_h ?? G.INK_MM) + all(), (v) => { G.windows_of(S())[k].print_h = +(v - all()).toFixed(3); }))));
       }
       // each disc's depth under the plate: the Shadows pane's number (one number, both places)
@@ -470,7 +482,7 @@ export const COLOUR = {
       if (discs.length) kids.push(sub("Disc depths"));
       for (const [w, k] of discs) {
         const disc = this.window_colours(k)[1];
-        kids.push(el("div", { className: "row showline inkline disc" }, el("i"), swatch(disc.id + "-depth", disc.title, disc.read, disc.write), el("label", { textContent: G.window_name(w) }), place(),
+        kids.push(el("div", { className: "row showline inkline disc" }, el("i"), mark(PICS.window_mark), el("label", { textContent: G.window_name(w) }), swatch(disc.id + "-depth", disc.title, disc.read, disc.write, true),
           place(height(`disc-${k}-depth`, `${G.window_name(w)}: disc's depth`, () => this.disc_depth(G.windows_of(S())[k]), (v) => { G.windows_of(S())[k].depth = v; }, 0, 1))));
       }
       wrap.replaceChildren(...kids);
@@ -482,7 +494,7 @@ export const COLOUR = {
         G.windows_of(this.S).map((w, k) => [w.on, w.kind, w.at, w.at_deg, w.neighbours, w.look, w.ampm_form, G.disc_of(this.S, k) ? 1 : 0])]);
       if (wrap.dataset.list !== sig) { wrap.dataset.list = sig; build(); }
       for (const r of rows) r.refresh(this.S);
-      wrap.querySelectorAll(".inkline .hex").forEach((h, n) => { const ink = G.dial_inks(this.S)[n]; if (ink) h.textContent = ink.hex; });
+
     };
   },
 
@@ -502,9 +514,9 @@ export const COLOUR = {
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
       const tall = (h, text) => [{ key: "height", place: "number", make: () => this.line_number(num("sh_" + h, text, 0, 3, 0.05, { scope: "global", block: true, id: `show-${h}-height` })) }];
-      if (G.cap_shows(S)) lines.push({ text: "Cap", colours: [{ ...this.cap_colour(), id: "cap-hands" }], tail: tall("cap", "Cap height") });
+      if (G.cap_shows(S)) lines.push({ text: "Cap", mark: PICS.hand_mark, colours: [{ ...this.cap_colour(), id: "cap-hands", square: true }], tail: tall("cap", "Cap height") });      // squares: the hex is spelled out in Colours above (Okay: "a · square only")
       for (const [h, text] of [["second", "Seconds"], ["minute", "Minutes"], ["hour", "Hours"]]) {      // top down, as they stand (the Shadows pane's order)
-        lines.push({ text, colours: [{ ...this.hand_colour(h, text + " hand"), id: `hand-${h}-hands` }], tail: tall(h, text + " height"),
+        lines.push({ text, mark: PICS.hand_mark, colours: [{ ...this.hand_colour(h, text + " hand"), id: `hand-${h}-hands`, square: true }], tail: tall(h, text + " height"),
           eye: { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => { this.S["ha_" + h].on = on; this.changed(); } } });
       }
       return lines;

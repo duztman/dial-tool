@@ -154,6 +154,10 @@ export const PICS = {
     // less line height to the lines"): heavier (.words), tracked 0.5, the two lines 7.5 apart (were 9)
     [["ABC", 12, 8.25], ["XYZ", 12, 15.75]].map(([t, x, y]) => `<text class="figure words" x="${x}" y="${y}" font-size="5.5" letter-spacing="0.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
   ][i], KIND_PIC),
+  // show mode's Dial tab (#546; Okay, 25 Oct 2026: "Tiny marks … look at prescedents"): beside the ring marks above, a
+  // hand on its pivot (the Hands tab's two hands, on this grid) and a window (the Windows tab's, alone), each at KIND_PIC
+  hand_mark: icon(`<path d="M12.25 12.25V5.75M12.25 12.25L16.25 14.75"/><circle cx="12.25" cy="12.25" r="1.25" fill="currentColor" stroke="none"/>`, KIND_PIC),
+  window_mark: icon(`<rect x="7" y="8.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none"/>`, KIND_PIC),
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [                                        // the baton is the shape tile's baton: same width (5)
     `<rect x="16.5" y="4" width="5" height="19" ${solid}/>`,

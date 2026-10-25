@@ -148,6 +148,8 @@
     --dot: 14px;                                   /* a swatch to pick from (a band's sectors); the Backdrop switch's sign is one */
     --pill-gap: var(--unit);                       /* a colour pill (and the font name line beside its swatch): this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these */
     --pill: calc(1em + 2 * var(--pill-gap));       /* its height. The swatch is as high as the hex is set (1em) */
+    --pill-w: calc(3 * var(--pill-gap) + 5.25 * var(--t-s));      /* its width with a hex: the swatch (1em), the seven monospace figures (0.6em each), its three spaces (79 measured) — the swatch column of show mode's Dial tab (#546) */
+    --kind-pic: 24px;                              /* a kind's picture, its square (KIND_PIC in icons.js): the column of the tiny marks in show mode's Dial tab */
     --pop-width: 388px; --pop-chips: 11;           /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width (the room between two: a special) */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */

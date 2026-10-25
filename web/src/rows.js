@@ -496,11 +496,11 @@ ROWS["Show dial"] = [
   hdr("Colours", { summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
   hdr("Inks", { folded: false }),
-  custom("colhead", { head: true, text: "Height mm" }),
+  custom("colhead", { head: true, text: "Height, mm" }),
   custom("inks"),
   num("w_ink_all", "All inks at once", -0.3, 0.3, 0.01, { limits: [-G.INK_MOST, G.INK_MOST] }),      // every printed height moves by the same mm, each ink keeping its own (Okay, 24 Oct 2026: "adding to or subbing from each same amount")
   hdr("Hands", { folded: false }),
-  custom("colhead", { head: true, text: "Height mm" }),
+  custom("colhead", { head: true, text: "Height, mm" }),
   custom("show_hands"),
   custom("bevel_pills"),
   num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }),      // the hands' bevels' strength: the Shadows pane's Bevels %, one number in both places

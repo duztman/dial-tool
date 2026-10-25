@@ -2409,14 +2409,20 @@ await shot("10-bar");
       q(".inklist .inkline.open .toggle").click();
       const pair = [S.rings[0].ink_b, S.rings[1].ink_b, all(".inklist .inkpart .letter").map((e) => e.textContent).join(""), all(".inklist .pillswitch.ab").length];
       const head = all(".form > .pane > .colhead").map((e) => e.textContent);
+      // #546: every colour on one swatch column, across Colours, Inks and Hands; the Bevels pills inside the line
+      const lefts = new Set(all(".colourlist > .row.showline").map((l) => l.querySelector(":scope > .colour, :scope > .single, :scope > .swatches, :scope > .swatch")).filter(Boolean).map((e) => Math.round(e.getBoundingClientRect().left))).size;
+      const pills = q(".row.bevels > .pillswitch")?.getBoundingClientRect(), bevel_line = q(".row.bevels")?.getBoundingClientRect();
+      const inside = pills && bevel_line ? pills.right <= bevel_line.right + 0.5 : false;
+      const caps = all(".colourlist > .row.showsub .colhead, .form > .pane > .colhead").some((e) => getComputedStyle(e).textTransform === "uppercase");
       [S.rings, S.w_inks, S.w_ink_all] = JSON.parse(keep); t.ink_open.clear(); t.changed();
-      return { pair, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head }; });
+      return { lefts, inside, caps, pair, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head }; });
     await shot("12b-show-dial-tab");
     check(r.panes.join() === "Colours,Inks,Hands" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
       `show mode's Dial tab is Colours · Inks · Hands (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands")`);
     check(r.n1 === r.n0 + 1 && r.two && r.on_b && Math.abs(r.b_h - 0.33) < 1e-6 && r.rights === 1,
       `Inks: one line per exact colour (${r.n0}); a ring recoloured in Colours makes an ink of its own (${r.n1}); Two inks splits it, the A | B pill puts the ring on B, B's height its own (${r.b_h} mm); every height box on one right edge (Okay: "One thick red one thin possible via a switch on the pane")`);
     check(r.pair[0] === false && r.pair[1] === true && r.pair[2] === "AB" && r.pair[3] === 0, `an ink of two parts, split: the first on A, the second on B, the letters as text, no pills (${r.pair.join(" · ")}) (Okay: "Switch stays, but on two item lists leave them text only")`);
+    check(r.lefts === 1 && r.inside && !r.caps, `every colour of the tab on one swatch column (${r.lefts}), the group names not in capitals, the Bevels pills inside their line (Okay: "All colors aligned on a line like rings on main … don't use allcaps everywhere")`);
     check(r.hands && r.flipped, `Hands: each hand's colour and height on its line, the Bevels pills turn its bevel (Okay: "colors also editable on hands pane everywhere"; "Bevels % slider plus the pill")`);
   }
   const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length, n.isConnected]; });
