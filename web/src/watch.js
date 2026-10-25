@@ -17,6 +17,7 @@ export function attach(pk) { PK = pk; }
 
 // ── state of one drawing: set by draw(), read everywhere ──
 let STYLE = "miyazaki";
+let SOFT = false;      // Blurs (sh_blur, show mode): every shadow with the dial side's one soft edge (#507)
 let GLINT = "plain", INK_K = 6, INK_N = 0, HAND_BEVEL = false, FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OP = 0.3, FLARE_KIND = "arc", GRADIENTS = true, HEIGHTS = {};
 let BRACELET_KIND = "vault";      // which bracelet the diver wears: vault (Oyster) or links (Emre's)
 let DIAL_IN = true, OUTLINE_ON = true, NO_LINES = false;      // NO_LINES: the Engineer's parts without their lines (main's case)      // OUTLINE_ON false: the effects switch is off (Okay: "turn off shenanigans") — no silhouette outline, which is a PathKit union per drawing      // false: the watch round a dial drawn by someone else (Dial Tool's edit mode) — no dial, no glass, nothing over the opening
@@ -152,6 +153,12 @@ function scaleCase(C, k) {
 
 // ── the Engineer's marks: ink lines, filled shapes with one dark line of shading inside, flat facets in three tones ──
 /** how long the shadows get: never longer than a 20° sun throws them (Okay, 23 Oct 2026: "Dial shadows move unnecessarily far, they'd have a limit") — the case's crescent stops there too */
+/** the soft edge: the dial side's 0.07 mm (guides.js, Okay, 23 Oct 2026: "sharpen it just a little"), one value for every shadow;
+ *  in user space, so the region never cuts a thin hand's shadow */
+const SOFT_DEF = `<filter id="shsoft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600"><feGaussianBlur stdDeviation="0.07"/></filter>`;
+const soft_edge = () => (SOFT ? ` filter="url(#shsoft)"` : "");
+/** a case's height as a share of its width (#507; agreed in question mode: Dress 0.22, Field 0.28, Diver 0.32) */
+const CASE_H = { dress: 0.22, field: 0.28, diver: 0.32 };
 const LOW_SUN = 20, longer = (h) => Math.tan(rad(40)) / Math.tan(rad(Math.max(LOW_SUN, h)));
 const LW = 0.22;                                         // every dark outline this wide; no line on a drawing thinner
 const strokeInk = (d, sw = LW, extra = "") => NO_LINES ? "" : `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
@@ -265,7 +272,7 @@ function dialSVG(C, v, L) {
     return `<path d="${x.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x.hand ? ` data-hs="${x.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`; }).join("");
   const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? handBevel(x, A, L) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
   const firstHand = items.findIndex((x) => x.hand || x.role === "cap");
-  body.splice(firstHand, 0, handsShadow);
+  body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;
 }
 
@@ -675,7 +682,7 @@ function contact(C, L, strap, span, soft) {
   const area = OUTL_S.map((d) => `<path d="${d}"/>`).join("");      // the strap as drawn: the shadow stays on it, never beside it (22 Oct 2026)
   const id = "ct" + (BLOB_N++);
   CLIPS.push(`<clipPath id="${id}">${area}</clipPath>`);
-  let h = `<g clip-path="url(#${id})"><g fill="#000" opacity="${f(SH_OP)}">${silhouette(C).map(([d, kk]) => sweep(d, [off[0] * 1.6 * kk, off[1] * 1.6 * kk])).join("")}</g></g>`;      // the parts swept, as the ground shadow (22 Oct 2026)
+  let h = `<g clip-path="url(#${id})"><g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>${silhouette(C).map(([d, kk]) => sweep(d, [off[0] * 1.6 * kk, off[1] * 1.6 * kk])).join("")}</g></g>`;      // the parts swept, as the ground shadow (22 Oct 2026)
   for (const sy of [-1, 1]) {
     const tip = C.l2l / 2;
     if (!leather) h += `<path d="M${f(-w / 2)} ${f(sy * (tip - 2.6))}H${f(w / 2)}" stroke="#000" stroke-opacity="0.2" stroke-width="0.8"/><path d="M${f(-w / 2)} ${f(sy * (tip - 2.2))}H${f(w / 2)}" stroke="#fff" stroke-opacity="0.12" stroke-width="0.4"/>`;      // the nylon over the bar: a soft ridge
@@ -704,13 +711,18 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   const strapSVG = strap === "bracelet" ? braceletSVG(C, L, open ? C.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C, L, strap.split("-")[1], open, span) : natoSVG(C, L, strap.split("-")[1], open, span);
   // shadow: everything's silhouette shifted away from the light, flat; the case casts further than the strap
   const off = (d) => [-Math.cos(rad(L)) * d, -Math.sin(rad(L)) * d];
-  const k = longer(h), vCase = off(2.4 * k), vStrap = off(0.8 * k);      // a low sun casts longer
+  // the case casts from its real height (#507; Okay, 25 Oct 2026: "Case heights are cheap and they matter"): a share of
+  // its width, after the published cases (Calatrava 5196 7.4 of 37, the 1939 cushion 11.7 of 40, the SPB143 13.2 of 40.5);
+  // a case with no share keeps 2.0 mm (2.4 mm of shadow at a 40° sun). The shadow: the height over the sun's tangent,
+  // never past a 20° sun (LOW_SUN)
+  const k = longer(h), H = CASE_H[key] ? CASE_H[key] * C.od : 2.4 * Math.tan(rad(40));
+  const vCase = off(H / Math.tan(rad(Math.max(LOW_SUN, h)))), vStrap = off(0.8 * k);      // a low sun casts longer
   // the shadow (Okay, 22 Oct 2026): every part's footprint swept along the light (sweep()), the strap as drawn (OUTL_S),
   // black at one opacity, painted once as a group — it darkens whatever it falls on and never doubles where parts overlap
-  const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}">` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
+  const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
   OUTL_C = []; OUTT = OUTL_C; const caseStr = caseSVG(C, v, L);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
-<defs>${"__CLIPS__"}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath>${TEXTURES}</defs>
+<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath>${TEXTURES}</defs>
 <defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
@@ -780,7 +792,7 @@ export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map
 export function draw(o) {
   use(o.style || "miyazaki"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
-  GRADIENTS = o.gradients !== false; HEIGHTS = o.heights || {}; HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;
+  SOFT = Boolean(o.blurs); GRADIENTS = o.gradients !== false; HEIGHTS = o.heights || {}; HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;
   // a colour that is one of the engine's own keeps that entry's three tones; any other gets three made from it
   const own = (tabs, c, k) => tabs.flatMap((t) => Object.entries(t).filter(([n]) => n !== "custom").flatMap(([, v]) => (typeof v[0] === "string" ? [v] : v))).find((T) => T[1] === c) || tones(c, k);
   METALS.custom = own([METALS], o.metal, [1.35, 0.81]);

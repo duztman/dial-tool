@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.94.16";
+export const VERSION = "beta 4.94.17";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -215,6 +215,8 @@ export const DEFAULTS = {
   w_flare_on: true, w_flare: 0,      // the flare on the case's edge; its kind: 0 an arc along the edge, 1 a dot
   w_fl_size: 100, w_fl_tint: 45, w_fl_bright: 100,      // the flare: size %, how close to the case's colour %, brightness %
   w_glass_fat: 100, w_glass_len: 100, w_glass_op: 100,      // the shine on the glass: width %, length %, opacity %
+  w_grounds: [],         // show mode's backdrops of your own (#510; Okay, 25 Oct 2026: "Adding colors or gradients by user possible, save file carries those too"): each [colour] or [first, second], colours as c_backdrop's; added at the end
+  w_ground_auto: false,  // Backdrop › Auto: the ground follows the paint's own (Engineer Stone, Miyazaki Umber; watch.js presets().floor), as the Show Case's opener did; picking any other backdrop turns it off
   c_backdrop2: null,     // a second backdrop colour: a gradient at 45°, the backdrop's colour at the top left, this at the bottom right; null = one colour
   out_watch_px: 3000,    // the watch's PNG or PDF, pixels along its longer side
   ui_show: false,        // show mode on (the panel on the right with the show tabs, the watch round the dial)
@@ -300,7 +302,7 @@ export const GUIDE_MORE = ["line", "crosshair", "circle"];
 export const CASE_OF_BEZEL = ["dress", "diver", "field", "dress", "field", "emre01"];
 export const BEZEL_OF_CASE = { dress: 3, diver: 1, field: 2, emre01: 5 };
 export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit",
-  "w_style", "w_lighting", "w_view", "w_metal", "c_metal", "w_nato", "c_nato", "w_insert", "c_insert", "w_ink", "w_inks", "w_ink_all", "w_flare_on", "w_bevels", "w_flare", "w_fl_size", "w_fl_tint", "w_fl_bright", "w_glass_fat", "w_glass_len", "w_glass_op", "c_backdrop2", "out_watch_px", "ui_show", "ui_show_section", "ui_edit_section", "ui_effects", "ui_grey_panel", "ui_case"];
+  "w_style", "w_lighting", "w_view", "w_metal", "c_metal", "w_nato", "c_nato", "w_insert", "c_insert", "w_ink", "w_inks", "w_ink_all", "w_flare_on", "w_bevels", "w_flare", "w_fl_size", "w_fl_tint", "w_fl_bright", "w_glass_fat", "w_glass_len", "w_glass_op", "c_backdrop2", "w_grounds", "w_ground_auto", "out_watch_px", "ui_show", "ui_show_section", "ui_edit_section", "ui_effects", "ui_grey_panel", "ui_case"];
 /** a set of files (#171): its tick's key, its words, the kind export() writes, and what it writes it as — the colour
  *  files plain (not a mask, not mirrored), the masks as said; the print sheet as Print says. */
 export const FILE_SET = [

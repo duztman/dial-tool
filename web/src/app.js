@@ -17,6 +17,7 @@
 import * as G from "./geometry.js";
 
 import { attach as attach_watch } from "./watch.js";
+import { auto_ground } from "./show.js";      // Backdrop › Auto follows the paint (#510)
 
 import { OPENER } from "./opener.js";
 import { start_ink } from "./ink.js";
@@ -198,6 +199,7 @@ class DialTool {
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") { if (this.fitted) this.fit(); }
       if (key === "date") this.sync_time();      // the bar's stacked date (4.62)
+      if (key === "w_style" && T.w_ground_auto) { T.c_backdrop = auto_ground(T); T.c_backdrop2 = null; this.ground_sync?.(); }      // Backdrop › Auto follows the paint (#510)
       if ((key === "bezel" || key === "ui_case") && this.case_sync) this.case_sync();
       if (key === "dial_hole") {                  // its guide shows while it is being sized, whatever the guides are set to (#267)
         this.hole_at = performance.now();

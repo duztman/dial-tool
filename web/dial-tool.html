@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.16 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.17 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -254,6 +254,8 @@
     --t-pixel-legend: calc(1.5 * var(--t-pixel));  /* the pixel font at 12, neither 8 nor 16: the font sheet's legend, its title and stickers (Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen"; on a 2× screen its dots still fall on the screen's) */
     --legend-sticker-pad: calc(0.375 * var(--unit)) calc(0.75 * var(--unit));      /* a legend sticker's padding, grown with its size */
     --pixel-ink-bar: 1;                            /* the bar's 1X, 720X and the speed riding over the thumb: the pixel font at full strength in their own colours, not --pixel-ink (Okay, 15 Oct 2026, 00:18: "same color as the ball") */
+    --ground-cols: 8;                              /* show mode's Backdrop: squares to a row across the Shadows pane's width; a gradient takes two (#510) */
+    --ground-chip: calc((var(--shade-w) - 2 * var(--shade-pad) - (var(--ground-cols) - 1) * var(--pop-chip-gap)) / var(--ground-cols));      /* one square: what the row leaves after its gaps */
     --pop-chip-gap: 12px;                          /* between two colours in the colour pop-out's rows (Okay, 12 Oct 2026: "×3 gaps") */
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what the room above adds over the old u3 + 4 − half a thumb, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
@@ -1892,19 +1894,27 @@
      these, remove bg, same as main"; on the dial side the fill is the backdrop's own colour and so not seen) */
   .showing :is(.guidesbox, .guidesmore, .backdropbox, .casebox, .versionsbox) { background: none; }
 
-  /* show mode's Backdrop (ground_pop() in app.js; the Show Case's background popup): the Shadows list's night part, opening
-     upward from its switch; one colour on the left, a gradient on the right, ten tiles each in rows of five, and under each
-     its own colour — the chosen one ringed in ink */
-  .groundpop { width: calc(2 * var(--pop-pad) + 10 * var(--chip) + 8 * var(--u1) + var(--pop-gap) + 2 * var(--hair)); padding-bottom: var(--pop-pad); }
-  .groundsides { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pop-gap); }
-  .groundside { display: grid; gap: var(--u2); align-content: start; }
-  .groundside .guidehead { grid-template-columns: 1fr; }
-  .groundtiles { display: grid; grid-template-columns: repeat(5, var(--chip)); gap: var(--u1); }
-  .groundtile { width: var(--chip); height: var(--chip); padding: var(--thick); border: var(--hair) solid transparent; border-radius: var(--round-small); background: none; }
-  .groundtile i { display: block; width: 100%; height: 100%; border-radius: var(--round-tiny); box-shadow: inset 0 0 0 var(--hair) var(--chip-rule); }
-  .groundtile.on { border-color: var(--ink); }
-  .groundpick { justify-self: start; }
-  .gradpick { display: flex; gap: var(--u1); justify-self: start; }
+  /* show mode's Backdrop (ground_pop() in preview.js; #510, Okay, 25 Oct 2026: "Make the all swatches same, large size,
+     gradents are 2x blocks of the same single swatch with a gradient in it. Better design of the popup"): the Shadows
+     pane's night box — its width, its room all round, its heading lines and its footer (§popfoot); under each heading one
+     grid of --ground-cols large squares, a gradient two of them side by side; the chosen one ringed in ink as the colour
+     pop-out's palette (.chips) */
+  .groundscroll { display: grid; gap: var(--u3); padding-bottom: var(--shade-pad); }
+  .groundscroll .guidehead { grid-template-columns: 1fr; }
+  .groundscroll .groundtiles + .guidehead { margin-top: var(--u3); }
+  .groundtiles { display: grid; grid-template-columns: repeat(var(--ground-cols), var(--ground-chip)); grid-auto-rows: var(--ground-chip); gap: var(--pop-chip-gap); }      /* every row one square high: a gradient's two squares and the gap between them, as tall as one */
+  .groundtile { min-width: 0; padding: 0; border: 0; border-radius: var(--round-small); background: none; }
+  .groundtile.wide { grid-column: span 2; }
+  .groundtile i { display: grid; place-items: center; width: 100%; height: 100%; border-radius: var(--round-small); box-shadow: inset 0 0 0 var(--hair) var(--chip-rule); font-style: normal; }
+  .groundtile.on { outline: var(--thick) solid var(--ink); outline-offset: var(--u1); }
+  .groundtile.auto i { font-size: var(--t-s); color: var(--white); text-shadow: 0 0 var(--u1) rgb(0 0 0 / 0.5); }
+  .groundtile.add { border: var(--hair) solid var(--rule); background: var(--field); color: var(--ink); font-size: var(--t-m); line-height: 1; }
+  .groundtile.add:disabled { opacity: 0.35; }
+  @media (hover: hover) { .groundtile.add:not(:disabled):hover { background: var(--hover); border-color: var(--ink); } }
+  .groundfoot .footname { font-size: var(--t-m); color: var(--grey); }
+  .groundfoot .cell.lead .footname { font-weight: 600; color: var(--ink); }
+  .gradpick { display: flex; gap: var(--u1); }
+  .gradpick .groundpick .dot { margin: 0; }      /* an end of the gradient: its dot alone in the pill */
   :is(.groundpick.on, .gradpick.on .groundpick) { box-shadow: 0 0 0 var(--hair) var(--ink); }
 }
 
@@ -7421,7 +7431,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.16";
+var VERSION = "beta 4.94.17";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7836,6 +7846,10 @@ var DEFAULTS = {
   w_glass_len: 100,
   w_glass_op: 100,
   // the shine on the glass: width %, length %, opacity %
+  w_grounds: [],
+  // show mode's backdrops of your own (#510; Okay, 25 Oct 2026: "Adding colors or gradients by user possible, save file carries those too"): each [colour] or [first, second], colours as c_backdrop's; added at the end
+  w_ground_auto: false,
+  // Backdrop › Auto: the ground follows the paint's own (Engineer Stone, Miyazaki Umber; watch.js presets().floor), as the Show Case's opener did; picking any other backdrop turns it off
   c_backdrop2: null,
   // a second backdrop colour: a gradient at 45°, the backdrop's colour at the top left, this at the bottom right; null = one colour
   out_watch_px: 3e3,
@@ -8011,6 +8025,8 @@ var NOT_GEOMETRY = [
   "w_glass_len",
   "w_glass_op",
   "c_backdrop2",
+  "w_grounds",
+  "w_ground_auto",
   "out_watch_px",
   "ui_show",
   "ui_show_section",
@@ -10034,6 +10050,7 @@ function attach(pk) {
   PK2 = pk;
 }
 var STYLE = "miyazaki";
+var SOFT = false;
 var GLINT = "plain";
 var INK_K = 6;
 var INK_N = 0;
@@ -10249,6 +10266,9 @@ function scaleCase(C2, k) {
   for (const key of ["od", "l2l", "lugw", "lugT", "flare", "bands", "opening", "dial", "crown", "insert", "cushion", "cushionBevel"]) if (key in C2) out[key] = s(C2[key]);
   return out;
 }
+var SOFT_DEF = `<filter id="shsoft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600"><feGaussianBlur stdDeviation="0.07"/></filter>`;
+var soft_edge = () => SOFT ? ` filter="url(#shsoft)"` : "";
+var CASE_H = { dress: 0.22, field: 0.28, diver: 0.32 };
 var LOW_SUN = 20;
 var longer = (h) => Math.tan(rad(40)) / Math.tan(rad(Math.max(LOW_SUN, h)));
 var LW = 0.22;
@@ -10389,7 +10409,7 @@ function dialSVG(C2, v, L) {
   }).join("");
   const body = items.map((x2) => `<path d="${x2.p}" fill="${col2(x2)}" fill-opacity="${x2.a}"${x2.hand ? ` data-h="${x2.hand}" transform="rotate(${-A[x2.hand]})"` : ""}/>` + (x2.hand ? handBevel(x2, A, L) : x2.role !== "plate" && x2.role !== "cap" ? inkRelief(x2, s, L) : ""));
   const firstHand = items.findIndex((x2) => x2.hand || x2.role === "cap");
-  body.splice(firstHand, 0, handsShadow);
+  body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;
 }
 var CASES = {
@@ -10892,7 +10912,7 @@ function contact(C2, L, strap, span, soft) {
   const area = OUTL_S.map((d) => `<path d="${d}"/>`).join("");
   const id = "ct" + BLOB_N++;
   CLIPS.push(`<clipPath id="${id}">${area}</clipPath>`);
-  let h = `<g clip-path="url(#${id})"><g fill="#000" opacity="${f(SH_OP)}">${silhouette(C2).map(([d, kk]) => sweep(d, [off[0] * 1.6 * kk, off[1] * 1.6 * kk])).join("")}</g></g>`;
+  let h = `<g clip-path="url(#${id})"><g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>${silhouette(C2).map(([d, kk]) => sweep(d, [off[0] * 1.6 * kk, off[1] * 1.6 * kk])).join("")}</g></g>`;
   for (const sy of [-1, 1]) {
     const tip = C2.l2l / 2;
     if (!leather) h += `<path d="M${f(-w / 2)} ${f(sy * (tip - 2.6))}H${f(w / 2)}" stroke="#000" stroke-opacity="0.2" stroke-width="0.8"/><path d="M${f(-w / 2)} ${f(sy * (tip - 2.2))}H${f(w / 2)}" stroke="#fff" stroke-opacity="0.12" stroke-width="0.4"/>`;
@@ -10924,13 +10944,14 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   OUTT = OUTL_S;
   const strapSVG = strap === "bracelet" ? braceletSVG(C2, L, open ? C2.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C2, L, strap.split("-")[1], open, span) : natoSVG(C2, L, strap.split("-")[1], open, span);
   const off = (d) => [-Math.cos(rad(L)) * d, -Math.sin(rad(L)) * d];
-  const k = longer(h), vCase = off(2.4 * k), vStrap = off(0.8 * k);
-  const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}">` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C2).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
+  const k = longer(h), H2 = CASE_H[key] ? CASE_H[key] * C2.od : 2.4 * Math.tan(rad(40));
+  const vCase = off(H2 / Math.tan(rad(Math.max(LOW_SUN, h)))), vStrap = off(0.8 * k);
+  const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C2).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
   OUTL_C = [];
   OUTT = OUTL_C;
   const caseStr = caseSVG(C2, v, L);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
-<defs>${"__CLIPS__"}<clipPath id="dial-${key}"><path d="${circle2(C2.opening)}"/></clipPath>${TEXTURES}</defs>
+<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle2(C2.opening)}"/></clipPath>${TEXTURES}</defs>
 <defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
@@ -11019,6 +11040,7 @@ function draw(o) {
   const STYLE_ = STYLES[STYLE];
   OUTLINE_ON = o.outline !== false;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
+  SOFT = Boolean(o.blurs);
   GRADIENTS = o.gradients !== false;
   HEIGHTS = o.heights || {};
   HANDS_A = o.A;
@@ -11053,84 +11075,6 @@ function draw(o) {
     return ground(make(o.flareOn ? "flare" : "off").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, pool), "url(#pool)").replace("__VB__", vb(...box3));
   }
   return ground(make("off"), two ? "none" : o.floor).replace("__VB__", vb(...box3));
-}
-
-// src/opener.js
-var OPENER = { "da_w": 3.85, "da_round": 0.8, "da_frame": 0.3, "da_clear": 0, "dial_d": 34, "c_plate": [0.1451, 0.1882, 0.3529, 1], "c_backdrop": [0.5922, 0.4471, 0.3569, 1], "rings": [{ "kind": 2, "name": "Numerals", "c": [0.9373, 0.9137, 0.8627, 1], "r": 13.83, "every": 3, "size": 4.8, "family": "Barlow", "ps": "Barlow-SemiBold", "anchor": 3 }, { "kind": 1, "name": "Markers", "c": [0.9373, 0.9137, 0.8627, 1], "r": 16.2, "every": 3, "invert": true, "len": 2.4 }, { "name": "Minute ticks", "c": [0.9373, 0.9137, 0.8627, 1], "r": 16.2, "count": 4, "skip": 1, "len": 1.95, "w": 0.2 }], "ha_hour": { "fit": false, "len": 8.25, "w": 1.43, "tail": 0.99, "tip": 0, "feature_at": 18, "c": [0.6549, 0.6549, 0.6667, 1], "hub": 2.4 }, "ha_minute": { "fit": false, "len": 13.8, "tail": 1.584, "tip": 3.3, "feature_at": 18, "c": [0.4, 0.4, 0.4, 1], "hub": 2 }, "ha_second": { "fit": false, "len": 13.8, "w": 0.15, "tail": 3.3, "c": [0.8, 0.2196, 0.102, 1] }, "da_on": true, "da_r": 11.5, "da_h": 2.5, "da_size": 100, "da_ink": [0.8, 0.2196, 0.102, 1], "windows": [{ "at": 4 }, { "at": 2 }, { "at": 3 }], "da_family": "Barlow", "da_ps": "Barlow-Bold", "da_tracking": 55, "bezel": 1, "sh_on": false, "sh_from": 176, "sh_rise": 53, "sh_hour": 0.05, "sh_disc": 0.1 };
-
-// src/ink.js
-var INKED = [
-  ".circles button",
-  // a window's places: 3 · 6 · 9 · 12 · ··· (4.46.1)
-  ".numpop .places button",
-  // and every place, in the dots' popup
-  ".steps12 button",
-  // the bottom bar's hours and 10:10
-  "#ampm",
-  // AM · PM, the time's own window
-  "#show-now > .word",
-  // the showcase's Now pill (15 Oct 2026)
-  "#show-ten > .word",
-  // and its 10:10 pill (15 Oct 2026, 07:40)
-  ".irisgo",
-  // ACTIVATE SHOWCASE, beside the iris
-  "#now"
-  // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
-].join(", ");
-var canvas = document.createElement("canvas");
-var pen = canvas.getContext("2d");
-var known = /* @__PURE__ */ new Map();
-function offset2(text, style) {
-  const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-  const track2 = parseFloat(style.letterSpacing) || 0;
-  const key = font + "|" + track2 + "|" + text;
-  if (!known.has(key)) {
-    pen.font = font;
-    const m = pen.measureText(text);
-    const ink_x = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
-    const ink_y = (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
-    const box_y = (m.fontBoundingBoxDescent - m.fontBoundingBoxAscent) / 2;
-    const dot = 1 / (window.devicePixelRatio || 1);
-    const snap = (v) => Math.round(v / dot) * dot;
-    known.set(key, [snap(m.width / 2 - ink_x + track2 / 2), snap(box_y - ink_y)]);
-  }
-  return known.get(key);
-}
-function centre(box3) {
-  let span = box3.firstElementChild;
-  if (!(span && span.classList.contains("ink") && box3.childNodes.length === 1)) {
-    if (box3.children.length || !box3.textContent.trim()) return;
-    span = document.createElement("span");
-    span.className = "ink";
-    span.textContent = box3.textContent;
-    box3.replaceChildren(span);
-  }
-  const [dx, dy] = offset2(span.textContent, getComputedStyle(span));
-  span.style.setProperty("--ink-dx", dx + "px");
-  span.style.setProperty("--ink-dy", dy + "px");
-}
-function centre_all(root = document) {
-  for (const box3 of root.querySelectorAll(INKED)) centre(box3);
-}
-function start_ink(root = document.body) {
-  centre_all(root);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
-    known.clear();
-    centre_all(root);
-  });
-  new MutationObserver((changes) => {
-    const boxes = /* @__PURE__ */ new Set();
-    for (const c of changes) {
-      const node = c.target.nodeType === 1 ? c.target : c.target.parentElement;
-      const box3 = node && node.closest(INKED);
-      if (box3) boxes.add(box3);
-      for (const added of c.addedNodes) if (added.nodeType === 1) {
-        if (added.matches(INKED)) boxes.add(added);
-        for (const inner of added.querySelectorAll(INKED)) boxes.add(inner);
-      }
-    }
-    boxes.forEach(centre);
-  }).observe(root, { childList: true, subtree: true, characterData: true });
 }
 
 // src/show.js
@@ -11199,6 +11143,7 @@ function options(S, items, effects) {
   };
 }
 var rgba = (h) => [1, 3, 5].map((i2) => parseInt(h.slice(i2, i2 + 2), 16) / 255).concat(1);
+var auto_ground = (S) => rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").floor);
 var metal_colour = (S) => rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
 var angles_of = (items) => {
   const A = {};
@@ -11357,6 +11302,84 @@ ${xref}
 %%EOF
 `);
   save(name + ".pdf", new Blob(parts, { type: "application/pdf" }), "application/pdf");
+}
+
+// src/opener.js
+var OPENER = { "da_w": 3.85, "da_round": 0.8, "da_frame": 0.3, "da_clear": 0, "dial_d": 34, "c_plate": [0.1451, 0.1882, 0.3529, 1], "c_backdrop": [0.5922, 0.4471, 0.3569, 1], "rings": [{ "kind": 2, "name": "Numerals", "c": [0.9373, 0.9137, 0.8627, 1], "r": 13.83, "every": 3, "size": 4.8, "family": "Barlow", "ps": "Barlow-SemiBold", "anchor": 3 }, { "kind": 1, "name": "Markers", "c": [0.9373, 0.9137, 0.8627, 1], "r": 16.2, "every": 3, "invert": true, "len": 2.4 }, { "name": "Minute ticks", "c": [0.9373, 0.9137, 0.8627, 1], "r": 16.2, "count": 4, "skip": 1, "len": 1.95, "w": 0.2 }], "ha_hour": { "fit": false, "len": 8.25, "w": 1.43, "tail": 0.99, "tip": 0, "feature_at": 18, "c": [0.6549, 0.6549, 0.6667, 1], "hub": 2.4 }, "ha_minute": { "fit": false, "len": 13.8, "tail": 1.584, "tip": 3.3, "feature_at": 18, "c": [0.4, 0.4, 0.4, 1], "hub": 2 }, "ha_second": { "fit": false, "len": 13.8, "w": 0.15, "tail": 3.3, "c": [0.8, 0.2196, 0.102, 1] }, "da_on": true, "da_r": 11.5, "da_h": 2.5, "da_size": 100, "da_ink": [0.8, 0.2196, 0.102, 1], "windows": [{ "at": 4 }, { "at": 2 }, { "at": 3 }], "da_family": "Barlow", "da_ps": "Barlow-Bold", "da_tracking": 55, "bezel": 1, "sh_on": false, "sh_from": 176, "sh_rise": 53, "sh_hour": 0.05, "sh_disc": 0.1 };
+
+// src/ink.js
+var INKED = [
+  ".circles button",
+  // a window's places: 3 · 6 · 9 · 12 · ··· (4.46.1)
+  ".numpop .places button",
+  // and every place, in the dots' popup
+  ".steps12 button",
+  // the bottom bar's hours and 10:10
+  "#ampm",
+  // AM · PM, the time's own window
+  "#show-now > .word",
+  // the showcase's Now pill (15 Oct 2026)
+  "#show-ten > .word",
+  // and its 10:10 pill (15 Oct 2026, 07:40)
+  ".irisgo",
+  // ACTIVATE SHOWCASE, beside the iris
+  "#now"
+  // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
+].join(", ");
+var canvas = document.createElement("canvas");
+var pen = canvas.getContext("2d");
+var known = /* @__PURE__ */ new Map();
+function offset2(text, style) {
+  const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  const track2 = parseFloat(style.letterSpacing) || 0;
+  const key = font + "|" + track2 + "|" + text;
+  if (!known.has(key)) {
+    pen.font = font;
+    const m = pen.measureText(text);
+    const ink_x = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
+    const ink_y = (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
+    const box_y = (m.fontBoundingBoxDescent - m.fontBoundingBoxAscent) / 2;
+    const dot = 1 / (window.devicePixelRatio || 1);
+    const snap = (v) => Math.round(v / dot) * dot;
+    known.set(key, [snap(m.width / 2 - ink_x + track2 / 2), snap(box_y - ink_y)]);
+  }
+  return known.get(key);
+}
+function centre(box3) {
+  let span = box3.firstElementChild;
+  if (!(span && span.classList.contains("ink") && box3.childNodes.length === 1)) {
+    if (box3.children.length || !box3.textContent.trim()) return;
+    span = document.createElement("span");
+    span.className = "ink";
+    span.textContent = box3.textContent;
+    box3.replaceChildren(span);
+  }
+  const [dx, dy] = offset2(span.textContent, getComputedStyle(span));
+  span.style.setProperty("--ink-dx", dx + "px");
+  span.style.setProperty("--ink-dy", dy + "px");
+}
+function centre_all(root = document) {
+  for (const box3 of root.querySelectorAll(INKED)) centre(box3);
+}
+function start_ink(root = document.body) {
+  centre_all(root);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+    known.clear();
+    centre_all(root);
+  });
+  new MutationObserver((changes) => {
+    const boxes = /* @__PURE__ */ new Set();
+    for (const c of changes) {
+      const node = c.target.nodeType === 1 ? c.target : c.target.parentElement;
+      const box3 = node && node.closest(INKED);
+      if (box3) boxes.add(box3);
+      for (const added of c.addedNodes) if (added.nodeType === 1) {
+        if (added.matches(INKED)) boxes.add(added);
+        for (const inner of added.querySelectorAll(INKED)) boxes.add(inner);
+      }
+    }
+    boxes.forEach(centre);
+  }).observe(root, { childList: true, subtree: true, characterData: true });
 }
 
 // src/ui.js
@@ -17203,25 +17226,72 @@ var PREVIEW = {
     const pop2 = el("div", { className: "guidelist shadelist night groundpop", id: "ground-pop", hidden: true });
     const S = () => this.S, hex3 = (c) => c ? to_hex(c) : null, syncs = [];
     const grad = () => S().c_backdrop2 ? [S().c_backdrop, S().c_backdrop2] : this.ground_grad || GRADIENTS2[8].slice(1).map((h) => from_hex(h));
-    const set = (a, b) => {
+    const set = (a, b, auto = false) => {
+      this.set_value("global", "w_ground_auto", auto);
       this.set_value("global", "c_backdrop", a);
       this.set_value("global", "c_backdrop2", b);
       if (b) this.ground_grad = [a, b];
       this.ground_sync();
     };
-    const tile = (name, look, on, act) => {
-      const b = el("button", { type: "button", className: "groundtile", title: name, ariaLabel: name }, el("i"));
+    const same = (a, b) => hex3(a) === hex3(b);
+    const now_is = (a, b) => !S().w_ground_auto && same(S().c_backdrop, a) && (b ? same(S().c_backdrop2, b) : !S().c_backdrop2);
+    const tile = (name, look, on, act, wide = false) => {
+      const b = el("button", { type: "button", className: "groundtile" + (wide ? " wide" : ""), title: name, ariaLabel: name }, el("i"));
       b.firstChild.style.background = look;
       b.onclick = act;
       syncs.push(() => b.classList.toggle("on", on()));
       return b;
     };
-    const side = (title, tiles, pick2) => el("div", { className: "groundside" }, el("div", { className: "guidehead" }, el("span", { className: "name", textContent: title })), el("div", { className: "groundtiles" }, ...tiles), pick2);
+    const head = (word) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: word }));
+    const mine = (two) => (S().w_grounds || []).filter((g) => g.length === 2 === two);
+    const kept = (two) => (S().w_grounds || []).some((g) => two ? S().c_backdrop2 && g.length === 2 && same(g[0], S().c_backdrop) && same(g[1], S().c_backdrop2) : !S().c_backdrop2 && g.length === 1 && same(g[0], S().c_backdrop));
+    const plus = (two) => {
+      const b = el("button", { type: "button", className: "groundtile add" + (two ? " wide" : ""), id: two ? "ground-add-gradient" : "ground-add" });
+      b.onclick = () => {
+        const now = S().c_backdrop2 ? [S().c_backdrop, S().c_backdrop2] : [S().c_backdrop], list = (S().w_grounds || []).slice();
+        if (Boolean(S().c_backdrop2) !== two) return;
+        const at = list.findIndex((g) => g.length === now.length && g.every((c, k) => same(c, now[k])));
+        if (at >= 0) list.splice(at, 1);
+        else list.push(now.map((c) => c.slice()));
+        this.set_value("global", "w_grounds", list);
+        this.ground_fill();
+      };
+      syncs.push(() => {
+        const k = kept(two), can = Boolean(S().c_backdrop2) === two;
+        b.textContent = k ? "\u2212" : "+";
+        b.disabled = !can;
+        b.title = b.ariaLabel = !can ? two ? "Pick a gradient to add it" : "Pick a colour to add it" : k ? "Take this backdrop out of yours" : two ? "Add this gradient to yours" : "Add this colour to yours";
+      });
+      return b;
+    };
+    const solids = el("div", { className: "groundtiles", id: "ground-colours" }), gradients = el("div", { className: "groundtiles", id: "ground-gradients" });
+    const auto_tile = tile("Auto", "", () => Boolean(S().w_ground_auto), () => set(auto_ground(S()), null, true));
+    auto_tile.classList.add("auto");
+    auto_tile.firstChild.textContent = "Auto";
+    syncs.push(() => {
+      auto_tile.firstChild.style.background = hex3(auto_ground(S()));
+    });
+    const add_one = plus(false), add_two = plus(true);
+    this.ground_fill = () => {
+      syncs.length = base;
+      solids.replaceChildren(
+        auto_tile,
+        ...GROUNDS.map(([n, c]) => tile(n, c, () => now_is(from_hex(c)), () => set(from_hex(c), null))),
+        ...mine(false).map(([c], i2) => tile(`Yours ${i2 + 1} \xB7 ${hex3(c).toUpperCase()}`, hex3(c), () => now_is(c), () => set(c.slice(), null))),
+        add_one
+      );
+      gradients.replaceChildren(
+        ...GRADIENTS2.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => now_is(from_hex(a), from_hex(b)), () => set(from_hex(a), from_hex(b)), true)),
+        ...mine(true).map(([a, b], i2) => tile(`Yours ${i2 + 1}`, `linear-gradient(135deg, ${hex3(a)}, ${hex3(b)})`, () => now_is(a, b), () => set(a.slice(), b.slice()), true)),
+        add_two
+      );
+      this.ground_sync();
+    };
     const one_dot = el("i", { className: "dot" }), one_hex = el("span", { className: "hex" });
     const one = el("button", { type: "button", className: "colour groundpick", id: "ground-one", title: "The backdrop's colour" }, one_dot, one_hex);
     one.onclick = () => this.pop_open({ read: () => S().c_backdrop, write: (v) => set(v, null), label: () => "Backdrop" }, one);
     const ends = [0, 1].map((k) => {
-      const d = el("button", { type: "button", className: "colour groundpick gdot", id: `ground-end-${k}`, title: k ? "The gradient's second colour" : "The gradient's first colour" }, el("i", { className: "dot" }));
+      const d = el("button", { type: "button", className: "colour groundpick groundend", id: `ground-end-${k}`, title: k ? "The gradient's second colour" : "The gradient's first colour" }, el("i", { className: "dot" }));
       d.onclick = () => this.pop_open({ read: () => grad()[k], write: (v) => {
         const g = grad().slice();
         g[k] = v;
@@ -17233,23 +17303,23 @@ var PREVIEW = {
     syncs.push(() => {
       paint(one_dot, S().c_backdrop);
       one_hex.textContent = hex3(S().c_backdrop).toUpperCase();
-      one.classList.toggle("on", !S().c_backdrop2);
+      one.classList.toggle("on", !S().c_backdrop2 && !S().w_ground_auto);
       grad().forEach((c, k) => paint(ends[k].firstChild, c));
       both.classList.toggle("on", Boolean(S().c_backdrop2));
     });
-    pop2.append(el(
-      "div",
-      { className: "groundsides" },
-      side("One colour", GROUNDS.map(([n, c]) => tile(n, c, () => !S().c_backdrop2 && hex3(S().c_backdrop) === c, () => set(from_hex(c), null))), one),
-      side("Gradient", GRADIENTS2.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => hex3(S().c_backdrop) === a && hex3(S().c_backdrop2) === b, () => set(from_hex(a), from_hex(b)))), both)
-    ));
+    const base = syncs.length;
+    const cell = (cls, word, ...what) => el("div", { className: "cell " + cls }, el("span", { className: "footname", textContent: word }), ...what);
+    pop2.append(
+      el("div", { className: "shadescroll groundscroll" }, head("One colour"), solids, head("Gradient"), gradients),
+      el("div", { className: "popfoot groundfoot" }, cell("lead", "Colour", one), cell("", "Gradient", both), el("div", { className: "cell" }))
+    );
     this.ground_sync = () => {
       for (const f2 of syncs) f2();
     };
     this.ground_open = (on) => {
+      if (on) this.ground_fill();
       pop2.hidden = !on;
       $("#backdrop").setAttribute("aria-expanded", String(on));
-      if (on) this.ground_sync();
     };
     return pop2;
   },
@@ -23684,6 +23754,11 @@ var DialTool = class _DialTool {
         if (this.fitted) this.fit();
       }
       if (key === "date") this.sync_time();
+      if (key === "w_style" && T.w_ground_auto) {
+        T.c_backdrop = auto_ground(T);
+        T.c_backdrop2 = null;
+        this.ground_sync?.();
+      }
       if ((key === "bezel" || key === "ui_case") && this.case_sync) this.case_sync();
       if (key === "dial_hole") {
         this.hole_at = performance.now();

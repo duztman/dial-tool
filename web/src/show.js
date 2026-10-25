@@ -57,6 +57,8 @@ export function options(S, items, effects) {
 }
 
 const rgba = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).concat(1);
+/** Backdrop › Auto (#510): the paint's own ground (watch.js presets().floor — Engineer Stone, Miyazaki Umber), as a colour */
+export const auto_ground = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "miyazaki").floor);
 /** the metal's preset colour, for the Case colour row when none of your own is set */
 export const metal_colour = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
 

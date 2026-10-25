@@ -70,27 +70,61 @@ export const PREVIEW = {
    *  gradients/preset colors"): two sides, one colour and a gradient, ten presets each, and under each its own colour — one
    *  pill, or two for the gradient's ends — which opens the colour pop-out. A gradient is c_backdrop to c_backdrop2 */
   ground_pop() {
+    // show mode's Backdrop (#510; Okay, 25 Oct 2026: "Make the all swatches same, large size, gradents are 2x blocks of the
+    // same single swatch with a gradient in it. Better design of the popup. Adding colors or gradients by user possible,
+    // save file carries those too"): the Shadows pane's night box and width; one grid of large squares — Auto, the ten
+    // colours, yours, then + (the colour pop-out's palette: + adds the backdrop in hand, − takes it out) — and the
+    // gradients as two squares each, the same way; the footer (§popfoot) holds the colour in hand and the gradient's ends
     const pop = el("div", { className: "guidelist shadelist night groundpop", id: "ground-pop", hidden: true });
     const S = () => this.S, hex = (c) => (c ? to_hex(c) : null), syncs = [];
     const grad = () => (S().c_backdrop2 ? [S().c_backdrop, S().c_backdrop2] : this.ground_grad || SHOW.GRADIENTS[8].slice(1).map((h) => from_hex(h)));      // the gradient last used, kept while one colour is shown
-    const set = (a, b) => { this.set_value("global", "c_backdrop", a); this.set_value("global", "c_backdrop2", b); if (b) this.ground_grad = [a, b]; this.ground_sync(); };
-    const tile = (name, look, on, act) => { const b = el("button", { type: "button", className: "groundtile", title: name, ariaLabel: name }, el("i")); b.firstChild.style.background = look; b.onclick = act; syncs.push(() => b.classList.toggle("on", on())); return b; };
-    const side = (title, tiles, pick) => el("div", { className: "groundside" }, el("div", { className: "guidehead" }, el("span", { className: "name", textContent: title })), el("div", { className: "groundtiles" }, ...tiles), pick);
+    const set = (a, b, auto = false) => { this.set_value("global", "w_ground_auto", auto); this.set_value("global", "c_backdrop", a); this.set_value("global", "c_backdrop2", b); if (b) this.ground_grad = [a, b]; this.ground_sync(); };
+    const same = (a, b) => hex(a) === hex(b);
+    const now_is = (a, b) => !S().w_ground_auto && same(S().c_backdrop, a) && (b ? same(S().c_backdrop2, b) : !S().c_backdrop2);
+    const tile = (name, look, on, act, wide = false) => { const b = el("button", { type: "button", className: "groundtile" + (wide ? " wide" : ""), title: name, ariaLabel: name }, el("i")); b.firstChild.style.background = look; b.onclick = act; syncs.push(() => b.classList.toggle("on", on())); return b; };
+    const head = (word) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: word }));
+    // yours, kept in the file and the session (w_grounds): each [colour] or [first, second]
+    const mine = (two) => (S().w_grounds || []).filter((g) => (g.length === 2) === two);
+    const kept = (two) => (S().w_grounds || []).some((g) => (two ? S().c_backdrop2 && g.length === 2 && same(g[0], S().c_backdrop) && same(g[1], S().c_backdrop2) : !S().c_backdrop2 && g.length === 1 && same(g[0], S().c_backdrop)));
+    const plus = (two) => { const b = el("button", { type: "button", className: "groundtile add" + (two ? " wide" : ""), id: two ? "ground-add-gradient" : "ground-add" });
+      b.onclick = () => { const now = S().c_backdrop2 ? [S().c_backdrop, S().c_backdrop2] : [S().c_backdrop], list = (S().w_grounds || []).slice();
+        if (Boolean(S().c_backdrop2) !== two) return;      // + adds what is in hand of its own kind: a colour to the colours, a gradient to the gradients
+        const at = list.findIndex((g) => g.length === now.length && g.every((c, k) => same(c, now[k])));
+        if (at >= 0) list.splice(at, 1); else list.push(now.map((c) => c.slice()));
+        this.set_value("global", "w_grounds", list); this.ground_fill(); };
+      syncs.push(() => { const k = kept(two), can = Boolean(S().c_backdrop2) === two; b.textContent = k ? "−" : "+"; b.disabled = !can;
+        b.title = b.ariaLabel = !can ? (two ? "Pick a gradient to add it" : "Pick a colour to add it") : k ? "Take this backdrop out of yours" : two ? "Add this gradient to yours" : "Add this colour to yours"; });
+      return b; };
+    const solids = el("div", { className: "groundtiles", id: "ground-colours" }), gradients = el("div", { className: "groundtiles", id: "ground-gradients" });
+    const auto_tile = tile("Auto", "", () => Boolean(S().w_ground_auto), () => set(SHOW.auto_ground(S()), null, true));
+    auto_tile.classList.add("auto"); auto_tile.firstChild.textContent = "Auto";
+    syncs.push(() => { auto_tile.firstChild.style.background = hex(SHOW.auto_ground(S())); });
+    const add_one = plus(false), add_two = plus(true);
+    this.ground_fill = () => {      // the grids again: yours change with + and −
+      syncs.length = base;
+      solids.replaceChildren(auto_tile, ...SHOW.GROUNDS.map(([n, c]) => tile(n, c, () => now_is(from_hex(c)), () => set(from_hex(c), null))),
+        ...mine(false).map(([c], i) => tile(`Yours ${i + 1} · ${hex(c).toUpperCase()}`, hex(c), () => now_is(c), () => set(c.slice(), null))), add_one);
+      gradients.replaceChildren(...SHOW.GRADIENTS.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => now_is(from_hex(a), from_hex(b)), () => set(from_hex(a), from_hex(b)), true)),
+        ...mine(true).map(([a, b], i) => tile(`Yours ${i + 1}`, `linear-gradient(135deg, ${hex(a)}, ${hex(b)})`, () => now_is(a, b), () => set(a.slice(), b.slice()), true)), add_two);
+      this.ground_sync();
+    };
+    // the footer: the colour in hand (its dot and hex) and the gradient's two ends, each a cell
     const one_dot = el("i", { className: "dot" }), one_hex = el("span", { className: "hex" });
     const one = el("button", { type: "button", className: "colour groundpick", id: "ground-one", title: "The backdrop's colour" }, one_dot, one_hex);
     one.onclick = () => this.pop_open({ read: () => S().c_backdrop, write: (v) => set(v, null), label: () => "Backdrop" }, one);
-    const ends = [0, 1].map((k) => { const d = el("button", { type: "button", className: "colour groundpick gdot", id: `ground-end-${k}`, title: k ? "The gradient's second colour" : "The gradient's first colour" }, el("i", { className: "dot" }));
+    const ends = [0, 1].map((k) => { const d = el("button", { type: "button", className: "colour groundpick groundend", id: `ground-end-${k}`, title: k ? "The gradient's second colour" : "The gradient's first colour" }, el("i", { className: "dot" }));
       d.onclick = () => this.pop_open({ read: () => grad()[k], write: (v) => { const g = grad().slice(); g[k] = v; set(g[0], g[1]); }, label: () => (k ? "Gradient · second" : "Gradient · first") }, d); return d; });
     const both = el("span", { className: "gradpick" }, ...ends);
     syncs.push(() => {
-      paint(one_dot, S().c_backdrop); one_hex.textContent = hex(S().c_backdrop).toUpperCase(); one.classList.toggle("on", !S().c_backdrop2);
+      paint(one_dot, S().c_backdrop); one_hex.textContent = hex(S().c_backdrop).toUpperCase(); one.classList.toggle("on", !S().c_backdrop2 && !S().w_ground_auto);
       grad().forEach((c, k) => paint(ends[k].firstChild, c)); both.classList.toggle("on", Boolean(S().c_backdrop2));
     });
-    pop.append(el("div", { className: "groundsides" },
-      side("One colour", SHOW.GROUNDS.map(([n, c]) => tile(n, c, () => !S().c_backdrop2 && hex(S().c_backdrop) === c, () => set(from_hex(c), null))), one),
-      side("Gradient", SHOW.GRADIENTS.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => hex(S().c_backdrop) === a && hex(S().c_backdrop2) === b, () => set(from_hex(a), from_hex(b)))), both)));
+    const base = syncs.length;
+    const cell = (cls, word, ...what) => el("div", { className: "cell " + cls }, el("span", { className: "footname", textContent: word }), ...what);
+    pop.append(el("div", { className: "shadescroll groundscroll" }, head("One colour"), solids, head("Gradient"), gradients),
+      el("div", { className: "popfoot groundfoot" }, cell("lead", "Colour", one), cell("", "Gradient", both), el("div", { className: "cell" })));
     this.ground_sync = () => { for (const f of syncs) f(); };
-    this.ground_open = (on) => { pop.hidden = !on; $("#backdrop").setAttribute("aria-expanded", String(on)); if (on) this.ground_sync(); };
+    this.ground_open = (on) => { if (on) this.ground_fill(); pop.hidden = !on; $("#backdrop").setAttribute("aria-expanded", String(on)); };
     return pop;
   },
 

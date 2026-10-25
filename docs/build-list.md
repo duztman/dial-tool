@@ -95,10 +95,9 @@ The Show Case was built to be put into Dial Tool; its export stays. "Showcase UI
 | 489 | Dial Show Case into Dial Tool | 22 Oct 2026 | in v1 |
 | 506 | Phase 1, shadows |  | verify |
 | 509 | Phase 3 — show mode |  | built |
-| 510 | Phase 4 — clean-up and the rest of show mode | 23 Oct 2026 — "We messed up the buttons but I'll help you fix them later" | next |
-| 507 | Phase 1 leftovers |  | open |
+| 510 | Phase 4 — clean-up and the rest of show mode | 23 Oct 2026 — "We messed up the buttons but I'll help you fix them later" | in part — the Backdrop done (4.94.17); the buttons' looks with Okay; the eye hiding the bar and the links bracelet, asked |
+| 507 | Phase 1 leftovers |  | in part — Blurs and case heights done (4.94.17); the strap's rise band open |
 | 511 | The mode change flashes a misplaced dial | 23 Oct 2026 | Sunday 25 Oct |
-| 512 | The dial's shadows reach where no real light could | 23 Oct 2026 | Sunday 25 Oct |
 
 ### L · Before v1, Okay's notes of 24 Oct 2026 ("New crucial items before launch")
 

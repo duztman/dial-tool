@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 4.94.17 (web version) · 25 Oct 2026 — show mode's Backdrop rebuilt; Blurs softens the shadows; the case casts from its height
+
+Okay, 25 Oct 2026, 23:10, question mode: "Backdrop on show case wonky, fix it. Make the all swatches same, large size, gradents are 2x blocks of the same single swatch with a gradient in it. Better design of the popup. Adding colors or gradients by user possible, save file carries those too"; chose Backdrop Auto and Blurs softens shadows (#510, #507).
+
+- **The Backdrop popup** (`ground_pop()` in `preview.js`): the Shadows pane's night box, its width (498) and room (25), its heading lines and its footer (§popfoot). One grid of eight large squares to a line (`--ground-cols` 8, `--ground-chip` what the row leaves after its gaps, 45 px); a gradient two squares side by side, as tall as one. Colours: **Auto**, the ten, yours, then **+**; Gradients: the ten, yours, then **+**. The + is the colour pop-out's palette: it adds what is in hand of its kind, and turns to − when that is already yours. The footer: *Colour* (dot and hex) and *Gradient* (its two ends, each a dot in a pill; the guides' dot class they borrowed drew them broken).
+- **Yours** are `w_grounds` (each [colour] or [first, second]): in the settings file and the session, never in a link (R31).
+- **Auto** (`w_ground_auto`): the paint's own ground (Engineer Stone #B9B3A6, Miyazaki Umber #877F6D), following the Style row; any other pick turns it off. Off to start.
+- **Blurs** (the Shenanigans switch, the Light tab's Soft shadows, one key `sh_blur`) now softens every shadow of the watch — the ground's, the case's on the strap, the hands' on the dial — with the dial side's one edge, 0.07 mm (`shsoft` in `watch.js`, in user space so a thin hand's shadow is never cut).
+- **The case casts from its own height** (#507; Okay, 23:21: "Case heights are cheap and they matter. Simply. Do"; 23:22: "Case height comes with case and is uneditable"): a share of its width — Dress 0.22 (8.1 mm on the 37 mm Calatrava), Field 0.28 (11.2 on 40), Diver 0.32 (13.0 on 40.5) — after the published cases; Emre keeps 2.0 mm. The ground shadow is that height over the sun's tangent, never past a 20° sun (`CASE_H` in `watch.js`). No control: it comes with the case.
+- Checked: the window test's Backdrop check (Auto, twenty tiles, a + each, a gradient as tall as a colour and wider than two); the popup at rest and in use on crops.
+
 ## beta 4.94.16 (web version) · 25 Oct 2026 — show mode's Dial tab: small swatches
 
 Okay, 25 Oct 2026, 22:50, with a crop of the tab: "these swatches are big. i dont think they are up to code. ui on left either uses small swatches or labelled code, do the same."
