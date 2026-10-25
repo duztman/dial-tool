@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.18 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.19 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -516,7 +516,7 @@
   .showing .panel::-webkit-scrollbar { display: none; }
   .showing .form::-webkit-scrollbar { display: none; }
   .showing .mast { translate: 0; }
-  #app.showing.alone .mast { translate: calc(-2 * var(--panel-w) * var(--away)) 0; }      /* the eye in show mode: the title stays where it stood while the panel slides away, as on the dial side — twice the width back, as the panel both moves its column and slides (Okay, 25 Oct 2026: "Dial tool header stays on collapsed panels on show case same as main") */
+  #app.showing.alone .mast { translate: calc(-2 * var(--panel-w) * var(--away) + var(--mast-shift, 0px) * var(--away)) 0; }      /* the eye in show mode: the title stays while the panel slides away, as on the dial side — twice the width back, as the panel both moves its column and slides — and goes flush right, the panel's margin from the window's edge (--mast-shift, measured in dial_alone(); Okay, 25 Oct 2026: "on right name needs to stay flush right sadly, an exception") (Okay, 25 Oct 2026: "Dial tool header stays on collapsed panels on show case same as main") */
   .showing .panel > header { height: var(--header); }      /* main's title line, so the tabs' line falls on the undo buttons' bottom as on the dial side (Okay, 25 Oct 2026, 18:05: "main looks correct"; --header's rule "for the Show Case too"); the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
   .showing .title h1 { white-space: nowrap; }
   .showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
@@ -7433,7 +7433,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.18";
+var VERSION = "beta 4.94.19";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11030,6 +11030,10 @@ function tilePicture(key, w = 38, h = 27) {
   const s = Math.min(w / (b.w * m), h / (b.h * m));
   return TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="currentColor" stroke="none"><path fill-rule="evenodd" d="${d} ${circle2(C2.opening)}"/></svg>`;
 }
+var POOL_R = 44;
+var POOL_FULL = 0.45;
+var POOL_MID = 0.82;
+var POOL_EDGE = 0.57;
 var DETAIL = 31;
 var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
 var fullBox = (kind = null, size = 1, bracelet = false) => {
@@ -11092,15 +11096,15 @@ function draw(o) {
     GLINT = mode;
     return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur);
   };
-  const R = STYLE_.ramp, vb = (x2, y, w, h) => `${f(x2)} ${f(y)} ${f(w)} ${f(h)}`;
+  const vb = (x2, y, w, h) => `${f(x2)} ${f(y)} ${f(w)} ${f(h)}`;
   const [fw, fh] = fullBox(o.key, o.size, o.strap === "bracelet" || o.strap === "links");
   const box3 = o.view === "full" ? [-fw / 2, -fh / 2, fw, fh] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];
   const e = (box3[2] + box3[3]) / 4, cx = box3[0] + box3[2] / 2, cy = box3[1] + box3[3] / 2;
   const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f(cx - e)}" y1="${f(cy - e)}" x2="${f(cx + e)}" y2="${f(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";
   const ground = (svg, fill) => svg.replace('<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>', `${lin ? `<defs>${lin}</defs><rect x="-300" y="-300" width="600" height="600" fill="url(#floorg)"/>` : ""}<rect x="-300" y="-300" width="600" height="600" fill="${fill}"/>`);
   if (o.lighting !== "flat") {
-    const stops = two ? `<stop offset="0" stop-color="#fff" stop-opacity="0.24"/><stop offset="0.55" stop-color="#fff" stop-opacity="0.12"/><stop offset="1" stop-color="#000" stop-opacity="0.1"/>` : `<stop offset="0" stop-color="${hsl(o.floor, R[0])}"/><stop offset="0.55" stop-color="${hsl(o.floor, R[1])}"/><stop offset="1" stop-color="${hsl(o.floor, R[2])}"/>`;
-    const pool = `<radialGradient id="pool" cx="${f(Math.cos(rad(o.L)) * 6)}" cy="${f(Math.sin(rad(o.L)) * 6)}" r="24" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
+    const stops = two ? `<stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="${POOL_FULL}" stop-color="#000" stop-opacity="0"/><stop offset="0.7" stop-color="#000" stop-opacity="${f(1 - POOL_MID)}"/><stop offset="1" stop-color="#000" stop-opacity="${f(1 - POOL_EDGE - 0.08)}"/>` : `<stop offset="0" stop-color="${o.floor}"/><stop offset="${POOL_FULL}" stop-color="${o.floor}"/><stop offset="0.7" stop-color="${hsl(o.floor, POOL_MID)}"/><stop offset="1" stop-color="${hsl(o.floor, POOL_EDGE)}"/>`;
+    const pool = `<radialGradient id="pool" cx="0" cy="0" r="${POOL_R}" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
     return ground(make(o.flareOn ? "flare" : "off").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, pool), "url(#pool)").replace("__VB__", vb(...box3));
   }
   return ground(make("off"), two ? "none" : o.floor).replace("__VB__", vb(...box3));
@@ -17199,8 +17203,12 @@ var PREVIEW = {
       }
     }, 1200);
     app.addEventListener("transitionend", this.view_end);
+    if (on && app.classList.contains("showing")) {
+      const r = $(".mast").getBoundingClientRect(), m = parseFloat(getComputedStyle($(".panel")).getPropertyValue("--margin")) || 16;
+      app.style.setProperty("--mast-shift", (innerWidth - m - r.right).toFixed(1) + "px");
+      app.classList.add("alone");
+    }
     app.classList.toggle("away", on);
-    if (on && app.classList.contains("showing")) app.classList.add("alone");
     if (app.classList.contains("showing") && !app.classList.contains("swooping")) {
       const follow = () => {
         if (!this.sliding) return;
