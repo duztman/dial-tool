@@ -381,10 +381,11 @@ export const PANEL = {
       // not immediately allow me to scrub, it should. Like click and drag adjusters we have. The popup is just for
       // accuracy, does not dictate start of the movement"): the controller's slider follows the finger (value_pop_scrub)
       if (!row.inpop) {
+        const anchor = row.named ? slider : field;      // what the controller hangs on: the field — or, in a named slider (form D), whose field is not on the row, the slider itself (found 25 Oct 2026: sync_rows put the controller away as soon as the finger moved, its field "not connected")
         slider.addEventListener("touchstart", (e) => {
           e.preventDefault();      // the slider itself doesn't move
           const t = e.touches[0];
-          if (!(this.value_pop && this.value_pop.button === field)) this.value_pop_open(field, row, { x: t.clientX, y: t.clientY });
+          if (!(this.value_pop && this.value_pop.button === anchor)) this.value_pop_open(anchor, row, { x: t.clientX, y: t.clientY });
           this.value_pop_scrub(t.clientX, true);
         }, { passive: false });
         slider.addEventListener("touchmove", (e) => { if (!this.value_pop) return; e.preventDefault(); this.value_pop_scrub(e.touches[0].clientX); }, { passive: false });

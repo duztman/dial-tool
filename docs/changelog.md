@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.94.8 (web version) · 25 Oct 2026 — a finger on a named slider keeps its controller
+
+Okay, 25 Oct 2026, 17:21: "these new sliders up top are dismissing prematurely with controller. Check for ipad." Reproduced with a simulated finger: the controller opened on the touch and went away on the first move. A named slider (form D) has no number box on its row, so the field the controller hung on was not in the window, and `sync_rows` — run by the value's change — took a controller whose button is "not connected" for one whose row had gone. The controller of a named slider now hangs on the slider itself. A check with a simulated finger (named slider and a part's row alike) guards it.
+
 ## beta 4.94.7 (web version) · 25 Oct 2026 — the fat sliders' thin fill starts with a round cap
 
 Okay, 25 Oct 2026, 17:16: "the white line needs round cap on start THIS ONLY". A dot of the fill's thickness at its start, the line from the dot's middle to the knob; nothing else touched.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.94.7 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.94.8 · built 2026-10-25 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7376,7 +7376,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.94.7";
+var VERSION = "beta 4.94.8";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -14648,10 +14648,11 @@ var PANEL = {
       const slider = el("input", { type: "range", min: row.lo, max: row.hi, step: row.step, id: id + "-slider" });
       const field = el("input", { type: "text", id, inputMode: "decimal", title: "1.2 sets \xB7 +0.5 adds \xB7 x0.5 multiplies \xB7 /2 divides" });
       if (!row.inpop) {
+        const anchor = row.named ? slider : field;
         slider.addEventListener("touchstart", (e) => {
           e.preventDefault();
           const t = e.touches[0];
-          if (!(this.value_pop && this.value_pop.button === field)) this.value_pop_open(field, row, { x: t.clientX, y: t.clientY });
+          if (!(this.value_pop && this.value_pop.button === anchor)) this.value_pop_open(anchor, row, { x: t.clientX, y: t.clientY });
           this.value_pop_scrub(t.clientX, true);
         }, { passive: false });
         slider.addEventListener("touchmove", (e) => {

@@ -2679,6 +2679,26 @@ check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't 
   check(scrub[0] && scrub[1], `under a finger a slider opens the controller and the same finger, sliding on, changes the value at once (${scrub[2]} → ${scrub[3]})`);
 }
 await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
+{ // a finger on a named slider (the Shadows pane's Angle · Height · Strength, R15 form D): the controller opens and stays while the finger slides, the value following (Okay, 25 Oct 2026, 17:21: "these new sliders up top are dismissing prematurely with controller"); as a part's row does
+  await pad.evaluate(() => { const l = document.querySelector("#shadow-list"); if (!l || l.hidden) document.querySelector("#shadows-more").click(); }); await pad.waitForTimeout(300);
+  const cdp = await touch.newCDPSession(pad);
+  const finger = async (type, x, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+  const seen = async (sel) => {
+    const b = await pad.$eval(sel, (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width * 0.4, r.top + r.height / 2]; });
+    const was = await pad.evaluate(() => [window.dial_tool.S.sh_rise, window.dial_tool.S.sh_cap]);
+    const open = () => pad.evaluate(() => !!document.querySelector("#value-pop:not(.fading)"));
+    await finger("touchStart", b[0], b[1]); await pad.waitForTimeout(100); const a = await open();
+    await finger("touchMove", b[0] + 30, b[1]); await pad.waitForTimeout(200); const c = await open();
+    await finger("touchEnd", 0, 0); await pad.waitForTimeout(100);
+    const now = await pad.evaluate(() => [window.dial_tool.S.sh_rise, window.dial_tool.S.sh_cap]);
+    await pad.evaluate((v) => { const t = window.dial_tool; t.set_value("global", "sh_rise", v[0]); t.set_value("global", "sh_cap", v[1]); t.value_pop_close(); }, was);
+    return { opened: a, stayed: c, moved: now.join() !== was.join() };
+  };
+  const named = await seen('#shadow-list .three .row.named:nth-child(2) input[type="range"]'), row = await seen('#shadow-list .shaderows .row[data-part="cap"] input[type="range"]');
+  await pad.evaluate(() => document.querySelector("#shadows-more").click()); await pad.waitForTimeout(200);
+  check(named.opened && named.stayed && named.moved && row.opened && row.stayed && row.moved,
+    `a finger on a named slider opens the controller and it stays while the finger slides, the value following (${JSON.stringify(named)}), as on a part's row (${JSON.stringify(row)})`);
+}
 await touch.close();
 
 { // the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "implemented in our ways and design … all these handles should be in guide color"): radius on the dotted line, size on the far edge, start and span round the outside; dragged, they set the ring as its rows do
