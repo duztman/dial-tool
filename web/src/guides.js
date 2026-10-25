@@ -200,34 +200,51 @@ export const GUIDES = {
     // height, the same number as show mode's Colours) · Dial, the reference · Date discs under the plate — each with a
     // small side-view drawing, white while it is being sized; the foot: Soft edge · Bevels % · Reset
     const sun = this.sun_picture("shadows");
-    // the top: the sun's picture at the left; Angle · Height · Strength stacked at its right, each name over its slider,
-    // the value riding in the knob (R15, form D; Okay, 25 Oct 2026, 01:34: "numbers on the buttons since we have nowhere
-    // else to write"). The parts: the rows at the left, as the Hands tab's side rows; the exploded view at the right
-    // (01:46: "the whole diagram box moves rightmost of the columns")
-    const light = [row(num("sh_from", "Angle", 0, 359, 1, { whole: true, named: true, suffix: "°" })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true, named: true })),
-      row(num("sh_dark", "Strength", 0, 100, 1, { whole: true, named: true, suffix: " %" }))];
+    // the top box (Okay's drawing, 25 Oct 2026, "pixel perfect"): the sun's picture at the left; Angle · Height · Strength
+    // stacked in a column at its right, each name over its slider, the value riding in the knob (R15, form D; Okay,
+    // 25 Oct 2026, 01:34: "numbers on the buttons since we have nowhere else to write")
+    const light = [row(num("sh_from", "Angle°", 0, 359, 1, { whole: true, named: true })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true, named: true })),
+      row(num("sh_dark", "Strength %", 0, 100, 1, { whole: true, named: true }))];
     const top = el("div", { className: "suntop" }, sun.el, el("div", { className: "three" }, ...light.map((r) => r.el)));
+    // the parts, one line each (Okay's drawing: "a stellar example of one line" — each part of the diagram stands on its
+    // row's line): Cap · Seconds · Minutes · Hours · Plate (the reference, nothing to size: "plate untouchable") · a row
+    // per window that shows a disc, under the plate (built in sync_shadows as the windows change). The rings' ink
+    // heights are show mode's Colours alone (Okay, 25 Oct 2026: "Ink heights only on show case. Remove from the tool side")
     const part = (key, text, lo, hi, step, name, o = {}) => row(num(key, text, lo, hi, step, { side: true, part: name, ...o }));
-    const heights = [part("sh_cap", "Cap", 0, 4, 0.05, "cap"), part("sh_second", "Seconds", 0, 3, 0.05, "second"), part("sh_minute", "Minutes", 0, 3, 0.05, "minute"), part("sh_hour", "Hours", 0, 3, 0.05, "hour")];
-    this.shadow_rings = el("div", { className: "shadowrings" });      // the rings, a line each: their ink stands in steps 0–10, the same number as show mode's Colours (#521)
-    const plate = el("div", { className: "row side ref" }, el("label", { textContent: "Plate" }));      // the reference: everything stands over or under it
-    const under = [part("sh_disc", "Date discs", 0, 2, 0.05, "disc")];
-    const soft = row(chk("sh_blur", "Soft edge")), bevel = row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, block: true }));      // the hands' bevels' strength; each hand's own Bevel tick turns its bevel on
-    this.shadow_rows = [...light, ...heights, ...under, soft, bevel];
-    this.shadow_ring_rows = [];
+    // the heights keep their order — cap over seconds over minutes over hours, the plate at 0 (Okay, 25 Oct 2026:
+    // "seconds hand cant go below minutes and so on. Limit every value to their obvious limits"): each row's slider
+    // runs between its neighbours' heights, a step clear of each (a hidden hand does not count), and a value at an
+    // end flashes LIMIT (panel.js, `bounds`)
+    const STEP = 0.05, ORDER = ["cap", "second", "minute", "hour"], KEY = { cap: "sh_cap", second: "sh_second", minute: "sh_minute", hour: "sh_hour" };
+    const shown = (S, h) => h === "cap" || (S.ha_on && S["ha_" + h] && S["ha_" + h].on);
+    const bounds = (name, lo, hi) => (S) => {
+      const i = ORDER.indexOf(name), above = ORDER.slice(0, i).filter((h) => shown(S, h)).at(-1), below = ORDER.slice(i + 1).filter((h) => shown(S, h))[0];
+      return [below ? +(S[KEY[below]] + STEP).toFixed(2) : lo, above ? +(S[KEY[above]] - STEP).toFixed(2) : hi];
+    };
+    const heights = [part("sh_cap", "Cap", 0, 4, STEP, "cap", { bounds: bounds("cap", 0, 4) }), part("sh_second", "Seconds", 0, 3, STEP, "second", { bounds: bounds("second", 0, 3) }),
+      part("sh_minute", "Minutes", 0, 3, STEP, "minute", { bounds: bounds("minute", 0, 3) }), part("sh_hour", "Hours", 0, 3, STEP, "hour", { bounds: bounds("hour", 0, 3) })];
+    const plate = el("div", { className: "row side ref" }, el("label", { textContent: "Plate" }));
+    this.shadow_discs = el("div", { className: "shadowdiscs" });
+    this.shadow_disc_rows = [];
+    // the foot: Shadows (the switch itself, mirrored) · Soft edges · Bevels % · Reset, in the footer's cells
+    const on = row(chk("sh_on", "Shadows", { id: "shadows-on" })), soft = row(chk("sh_blur", "Soft edges")), bevel = row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, block: true }));      // the hands' bevels' strength; each hand's own Bevel tick turns its bevel on
+    this.shadow_rows = [...light, ...heights, on, soft, bevel];
     const reset = el("button", { type: "button", className: "gword", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(G.DEFAULTS[key]);
+      for (const w of G.windows_of(this.S)) w.depth = G.WINDOW_BASE.depth;      // every disc back to the shared depth
       this.sync_rows();
       this.render();
     } });
-    const rows = el("div", { className: "shaderows" }, ...heights.map((r) => r.el), this.shadow_rings, plate, ...under.map((r) => r.el));
+    const rows = el("div", { className: "shaderows" }, ...heights.map((r) => r.el), plate, this.shadow_discs);
+    const col = el("div", { className: "shadecol" }, el("div", { className: "shadehead", textContent: "Part Heights" }), rows);
     this.shadow_stack = this.stack_picture();
-    const parts = el("div", { className: "shadeparts" }, rows, this.shadow_stack.el);
+    const parts = el("div", { className: "shadeparts" }, col, this.shadow_stack.el);
     // a row pointed at, focused or with its controller open lights its part in the picture
     const lit = (e) => { const r = e.target.closest(".row"); this.shade_light(r && r.dataset.part && (e.type === "pointerover" || e.type === "focusin") ? r.dataset.part : null); };
     for (const kind of ["pointerover", "pointerout", "focusin", "focusout"]) rows.addEventListener(kind, lit);
-    const scroll = el("div", { className: "shadescroll" }, top, el("div", { className: "shadedivide" }), parts);
-    list.append(scroll, el("div", { className: "guidefoot shadefoot" }, soft.el, bevel.el, reset));
+    const scroll = el("div", { className: "shadescroll" }, top, parts);
+    const cell = (cls, ...kids) => el("div", { className: "cell " + cls }, ...kids);
+    list.append(scroll, el("div", { className: "popfoot shadefoot" }, cell("lead", on.el), cell("", soft.el), cell("", bevel.el), cell("", reset)));
     this.shadow_sun = sun;
     const box = el("div", { className: "shadows" }, this.shadows_tick, more);
     $("#shadow-list")?.remove();      // the preview is built again on a mode change: one pane only
@@ -326,8 +343,13 @@ export const GUIDES = {
     const plate_at = items.findIndex((x) => x.role === "plate");
     const discs = items.map((x, i) => ({ x, i })).filter(({ x }) => x.role === "date disc");
     if (discs.length && plate_at >= 0) {
-      const s = surface("discs", nodes[plate_at], discs.map(({ i }) => [this.slots[i].d, 0]), -S.sh_disc);
-      s.cast(this.slots[plate_at].d, 0, S.sh_disc, S.c_plate);
+      // each window's disc at its own depth (`depth`; null = the shared sh_disc), so a window's row sizes its own
+      const wins = G.windows_of(S);
+      for (const n of new Set(discs.map(({ x }) => x.window))) {
+        const z = this.disc_depth(wins[n]), mine = discs.filter(({ x }) => x.window === n);
+        const s = surface("discs-" + n, nodes[plate_at], mine.map(({ i }) => [this.slots[i].d, 0]), -z);
+        s.cast(this.slots[plate_at].d, 0, z, S.c_plate);
+      }
     }
     // the plate's face, with everything printed on it: drawn after the last thing before the hands
     if (plate_at >= 0 && hands.length) {
@@ -409,48 +431,63 @@ export const GUIDES = {
     this.shadows_tick.setAttribute("aria-pressed", String(on));
     this.shadows_tick.title = on ? "Shadows are on: press to hide them" : "Shadows are off: press to show them";
     if ($("#shadow-list").hidden) return;
-    // a line per ring shown, built again when the rings change: its ink height, the same number as show mode's Colours (#521)
-    const rings = JSON.stringify(this.S.rings.map((r) => [r.name, r.on]));      // a ring is shown or hidden by `on` (RING_BASE); there is no `show` key (found 25 Oct 2026: hidden rings had a line too)
-    if (this.shadow_rings.dataset.rings !== rings) {
-      this.shadow_rings.dataset.rings = rings;
-      this.shadow_ring_rows = this.S.rings.map((ring, i) => [ring, i]).filter(([ring]) => ring.on).map(([ring, i]) => this.build_row({ ...num("ink", ring.name || G.kind_of(ring), 0, 10, 1, { whole: true, side: true, part: `ring-${i}`, id: `shadow-ring-${i}`,
-        get: () => { const R = this.S.rings[i]; return R ? clamp(this.S.w_ink + (R.ink_d || 0), 0, 10) : 0; },
-        put: (app, v) => { const R = this.S.rings[i]; if (!R) return; R.ink_d = clamp(v, 0, 10) - this.S.w_ink; this.changed(); } }), scope: "global" }));
-      this.shadow_rings.replaceChildren(...this.shadow_ring_rows.map((r) => r.el));
+    // a row per window that shows a disc, built again as the windows change: its depth under the plate
+    const wins = G.windows_of(this.S), angle = (w) => w.at_deg != null ? w.at_deg : G.DATE_AT[w.at][1];
+    const shown = wins.map((w, i) => [w, i]).filter(([w, i]) => w.on && G.disc_of(this.S, i)).sort((a, b) => angle(a[0]) - angle(b[0]));      // round the dial from 12
+    const key = JSON.stringify(shown.map(([w, i]) => [i, w.at, w.at_deg]));
+    if (this.shadow_discs.dataset.wins !== key) {
+      this.shadow_discs.dataset.wins = key;
+      this.shadow_disc_rows = shown.map(([w, i]) => this.build_row({ ...num("depth", `Disc at ${w.at_deg != null ? Math.round(w.at_deg) + "°" : G.DATE_AT[w.at][0]}`, 0, 2, 0.05, { side: true, part: "disc-" + i,
+        get: () => this.disc_depth(G.windows_of(this.S)[i]),
+        put: (app, v) => { const W = G.windows_of(this.S)[i]; if (W) { W.depth = clamp(v, 0, 2); this.changed(); } } }), scope: "global" }));
+      this.shadow_discs.replaceChildren(...this.shadow_disc_rows.map((r) => r.el));
     }
-    for (const r of [...this.shadow_rows, ...this.shadow_ring_rows]) r.refresh(this.S);
+    for (const r of [...this.shadow_rows, ...this.shadow_disc_rows]) r.refresh(this.S);
     this.shadow_sun.refresh();
     this.shadow_stack.refresh();
   },
 
-  /** the parts exploded (#526; Okay, 25 Oct 2026, 01:46: "Exploded perspective's centre point should be regarded by all
-   *  components … distances between exploded components vaguely proportional"): one axis, every part centred on it —
-   *  the cap a small disc; a hand its pipe on the axis, the hand out to the right, its tail left, the seconds thinnest
-   *  and longest; a ring a thin ellipse at its radius; the plate wider, with its hole and a window; the date discs
-   *  dashed under it. Each stands at its height: y follows the height, and parts never closer than a gap, so the order
-   *  always reads; the stack is centred in the frame by its extent. The part being sized is white. */
+  /** a window's disc under the plate: its own depth, or the shared one (R7: `depth` starts null = sh_disc) */
+  disc_depth(w) { return w && w.depth != null ? w.depth : this.S.sh_disc; },
+
+  /** the parts, one line each (Okay's drawing, 25 Oct 2026, #526): one dashed axis down the box from the rows' first
+   *  line; every part centred on it, standing on its own row's line — the cap a small disc; a hand its pipe on the
+   *  axis, the hand out to the right (the seconds longest and thinnest), a little tail left; the plate wide, with its
+   *  hole and a window; a date disc a flat ring under it. The part being sized (its row under the pointer) is white,
+   *  and a line in the lit colour drops from it down the axis to the plate's hole, which turns that colour too. The
+   *  y of each part is read from its row in the window (R21), so the picture follows the rows whatever they are. */
   stack_picture() {
-    const W = 120, H = 306, AX = W / 2, MM = 70, GAP = 24, STEP = 0.01, ROUND = 0.42;      // ROUND: an ellipse's height to its width      // px per mm; the least between two parts; an ink step as mm (ten steps, a tenth of a millimetre: the inks lie close over the plate, under every hand)
     const box = el("div", { className: "stackpic", id: "shadows-stack" });
-    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><line class="axis"/><g class="parts"></g></svg><span class="word">Components</span>`;
-    const parts = box.querySelector(".parts"), axis = box.querySelector(".axis");
+    box.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><line class="drop"/></svg><span class="word">Parts</span>`;      // the drop line last: over every part (Okay, 25 Oct 2026: "on top of the whole diagram")
+    const svg = box.querySelector("svg"), parts = box.querySelector(".parts"), axis = box.querySelector(".axis"), drop = box.querySelector(".drop");
+    const LEN = { hour: 23.5, minute: 34.5, second: 46 }, TAIL = 10;      // a hand's reach right of the axis, and left (his drawing)
+    const draw = {
+      cap: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="6" ry="2.5"/>`,
+      hand: (ax, y, h) => `<line x1="${ax - TAIL}" y1="${y}" x2="${ax + LEN[h]}" y2="${y}"/><ellipse class="fill" cx="${ax}" cy="${y}" rx="2.5" ry="1.4"/>`,
+      plate: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="55.6" ry="18.7"/><rect class="dark" x="${ax + 21}" y="${y - 2.5}" width="10" height="5" rx="1"/><circle class="hole dark" cx="${ax}" cy="${y}" r="1.5"/>`,
+      disc: (ax, y) => `<path class="fill" fill-rule="evenodd" d="M${ax - 25.9} ${y}a25.9 8.7 0 1 0 51.8 0a25.9 8.7 0 1 0 -51.8 0M${ax - 18.5} ${y}a18.5 6.2 0 1 0 37 0a18.5 6.2 0 1 0 -37 0Z"/>`,
+    };
     const refresh = () => {
-      const S = this.S, hands = ["hour", "minute", "second"].filter((h) => S.ha_on && S["ha_" + h] && S["ha_" + h].on);      // the hands shown: `on` (HAND_BASE), as the dial draws them
-      const list = [{ name: "cap", z: Math.max(S.sh_cap, ...hands.map((h) => S["sh_" + h])) + 0.01, draw: (y) => `<ellipse cx="${AX}" cy="${y}" rx="6" ry="2.5" class="fill"/>` }];
-      for (const h of hands) { const len = { hour: 32, minute: 40, second: 46 }[h], w = { hour: 3.5, minute: 2.5, second: 1.25 }[h]; list.push({ name: h, z: S["sh_" + h], draw: (y) => `<circle cx="${AX}" cy="${y}" r="2.5"/><line x1="${AX}" y1="${y}" x2="${AX + len}" y2="${y}" stroke-width="${w}"/><line x1="${AX}" y1="${y}" x2="${AX - 10}" y2="${y}" stroke-width="${w}"/>` }); }
-      // the rings: rounder ellipses, spread evenly from the smallest to the frame's width (Okay, 01:58: "rounder ellipses, proportionally more space between rings so they fit the horizontal gap perfectly")
-      const shown = S.rings.map((R, i) => [R, i]).filter(([R]) => R.on);
-      shown.forEach(([R, i], n) => { const r = clamp(S.w_ink + (R.ink_d || 0), 0, 10), rx = 18 + (AX - 10 - 18) * (n / Math.max(1, shown.length - 1)); list.push({ name: `ring-${i}`, z: r * STEP, draw: (y) => `<ellipse cx="${AX}" cy="${y}" rx="${rx.toFixed(1)}" ry="${(rx * ROUND).toFixed(1)}"/>` }); });
-      list.push({ name: "plate", z: 0, draw: (y) => `<ellipse cx="${AX}" cy="${y}" rx="${AX - 4}" ry="${((AX - 4) * ROUND).toFixed(1)}" stroke-width="1.5"/><circle cx="${AX}" cy="${y}" r="1.5"/><rect x="${AX + 22}" y="${y - 2.5}" width="8" height="5" rx="1"/>` });
-      list.push({ name: "disc", z: -S.sh_disc - 0.3, draw: (y) => `<ellipse cx="${AX}" cy="${y}" rx="30" ry="${(30 * ROUND).toFixed(1)}" stroke-dasharray="2 2"/>` });
-      list.sort((a, b) => b.z - a.z);      // top first
-      // y from the height, then pushed apart so no two are closer than GAP, from the plate upward and downward
-      const at = list.map((p) => -p.z * MM), i0 = list.findIndex((p) => p.name === "plate");
-      for (let i = i0 - 1; i >= 0; i--) at[i] = Math.min(at[i], at[i + 1] - GAP);
-      for (let i = i0 + 1; i < list.length; i++) at[i] = Math.max(at[i], at[i - 1] + GAP);
-      const top = at[0] - 6, bottom = at.at(-1) + 30 * ROUND + 2, shift = H / 2 - (top + bottom) / 2;      // the stack centred in the frame by its extent
-      parts.innerHTML = list.map((p, i) => `<g data-part="${p.name}"${p.name === this.shade_lit ? ' class="lit"' : ""}>${p.draw((at[i] + shift).toFixed(1))}</g>`).join("");
-      axis.setAttribute("x1", AX); axis.setAttribute("x2", AX); axis.setAttribute("y1", (top + shift).toFixed(1)); axis.setAttribute("y2", (bottom + shift).toFixed(1));
+      const b = svg.getBoundingClientRect(), W = Math.round(b.width), H = Math.round(b.height), ax = W / 2;      // the svg's own box, inside the frame's line
+      if (!W || !H) return;
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", W); svg.setAttribute("height", H);
+      const list = [], rows = document.querySelectorAll("#shadow-list .shaderows > .row, #shadow-list .shadowdiscs > .row");
+      let first = null, plate_y = null;
+      for (const r of rows) {
+        if (r.hidden) continue;
+        const rr = r.getBoundingClientRect(), y = +(rr.top + rr.height / 2 - b.top).toFixed(1);
+        if (first === null) first = +(rr.top - b.top).toFixed(1);
+        const name = r.dataset.part || (r.classList.contains("ref") ? "plate" : "");
+        if (name === "plate") plate_y = y;
+        const kind = name === "plate" ? "plate" : name === "cap" ? "cap" : name.startsWith("disc") ? "disc" : "hand";
+        list.push({ name, y, svg: kind === "hand" ? draw.hand(ax, y, name) : draw[kind](ax, y) });
+      }
+      const lit = list.find((p) => p.name === this.shade_lit);
+      const drawn = lit ? [...list.filter((p) => p !== lit), lit] : list;      // the lit part drawn last, over the rest (Okay, 25 Oct 2026: "the red line and highlighted part on top of the whole diagram")
+      parts.innerHTML = drawn.map((p) => `<g data-part="${p.name}" class="${p.name === "plate" ? "plate" : ""}${p === lit ? " lit" : ""}${lit && p.name === "plate" ? " dropped" : ""}">${p.svg}</g>`).join("");
+      axis.setAttribute("x1", ax); axis.setAttribute("x2", ax); axis.setAttribute("y1", first ?? 0); axis.setAttribute("y2", H - token("--shade-axis-end", 12));
+      drop.classList.toggle("on", Boolean(lit && plate_y !== null));
+      if (lit && plate_y !== null) { drop.setAttribute("x1", ax); drop.setAttribute("x2", ax); drop.setAttribute("y1", lit.y); drop.setAttribute("y2", plate_y); }
     };
     return { el: box, refresh };
   },
@@ -458,7 +495,7 @@ export const GUIDES = {
   shade_light(name) {
     if (name === this.shade_lit) return;
     this.shade_lit = name || null;
-    for (const g of document.querySelectorAll("#shadows-stack .parts > g")) g.classList.toggle("lit", g.dataset.part === this.shade_lit);
+    this.shadow_stack.refresh();
   },
 
   /** the sun's picture (#526; Okay's drawing, 24 Oct 2026): the dial as a ring, the sun outside it with rays, a faint
@@ -468,9 +505,9 @@ export const GUIDES = {
    *  and grow with the sun's distance (Okay: "Rays can grow on distant suns, shorter when they are close"); a sun
    *  near a corner has its rays cut by the frame ("the rays pop in and out"). Drawn once, moved by attributes. */
   sun_picture(id) {
-    const W = token("--sun-w", 224), H = token("--sun-h", 204), cx = W / 2, cy = H / 2, R = 56, NEAR = 16, FAR = 100;      // the picture's grid, as the stylesheet sizes its box (--sun-w × --sun-h); the sun's distance from the middle: Height 85 = NEAR, 5 = FAR
+    const W = token("--sun-w", 297), H = token("--sun-h", 204), cx = 136, cy = H / 2, R = 81.5, NEAR = 12, FAR = 123;      // his drawing of 25 Oct 2026: the dial's ring r 81.5 at (136, 102) in the picture's 297 × 204; at Height 25 the sun stands 14 past the rim; a low sun goes past the box's top or bottom, as its rays do      // the picture's grid, as the stylesheet sizes its box (--sun-w × --sun-h); the sun's distance from the middle: Height 85 = NEAR, 5 = FAR
     const box = el("div", { className: "sunpic", id: id + "-sun" });
-    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="3"/><circle class="fall" r="7"/><g class="sun"><circle r="8"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
     const sun = box.querySelector(".sun"), rays = box.querySelector(".rays"), fall = box.querySelector(".fall");
     for (let i = 0; i < 16; i++) rays.append(svg_el("line"));
     const where = () => { const a = this.S.sh_from * Math.PI / 180, d = FAR - (clamp(this.S.sh_rise, 5, 85) - 5) / 80 * (FAR - NEAR); return { a, d, x: cx + Math.sin(a) * d, y: cy - Math.cos(a) * d }; };      // clock angles: 0 at 12, clockwise (R2)
@@ -487,7 +524,7 @@ export const GUIDES = {
         line.style.display = facing > 1 - hide ? "none" : "";
         for (const [k, v] of [["x1", 12 * Math.sin(t)], ["y1", -12 * Math.cos(t)], ["x2", (12 + len) * Math.sin(t)], ["y2", -(12 + len) * Math.cos(t)]]) line.setAttribute(k, v.toFixed(1));
       });
-      fall.setAttribute("cx", (cx - Math.sin(a) * (R - 2)).toFixed(1)); fall.setAttribute("cy", (cy + Math.cos(a) * (R - 2)).toFixed(1));
+      fall.setAttribute("cx", (cx - Math.sin(a) * (R - 3)).toFixed(1)); fall.setAttribute("cy", (cy + Math.cos(a) * (R - 3)).toFixed(1));
     };
     // a drag anywhere on the picture puts the sun under the finger
     const move = (e) => {

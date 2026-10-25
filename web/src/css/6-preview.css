@@ -249,53 +249,84 @@
   .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: calc(var(--shade-right, var(--panel-w)) - var(--shade-left, var(--margin))); max-width: calc(100vw - 2 * var(--margin));
-    max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); }      /* from the panel's margin to the switch's right edge, standing on the switch (its corners all round: Okay, 02:29, "ROUND CORNERS") */      /* over the panel's column, so the dial and its shadows stay in view (Okay, 25 Oct 2026, 02:02: "This has to open on the left so we'd see the shadow on the dials"); from the switch's foot up to the canvas's top */
-  /* the Shadows pane (#526; Okay's drawing, 24 Oct 2026; his marks of 25 Oct 2026, 01:27–01:47): the sun's picture at
-     the left with Angle · Height · Strength stacked at its right; a line across; the parts' rows at the left and the
-     exploded view at the right, as the Hands tab has its box and side rows; one foot. The panel's width and columns. */
+    max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); border-radius: var(--shade-round); }      /* from the panel's margin to the switch's right edge, standing on the switch, its corners all round (Okay, 25 Oct 2026, 02:29: "ROUND CORNERS"); over the panel's column, so the dial and its shadows stay in view */
+  /* the Shadows pane, to Okay's drawing of 25 Oct 2026 (#526, "pixel perfect"; dial-tool-shadows-pane-4.93_O.pdf): one
+     box on top holds the sun's picture and, in a column at its right as wide as the diagram, Angle · Height · Strength
+     as named sliders (R15, form D) on fat tracks with the value in the knob; under it a hairline, the heading line
+     (Part Heights · Parts), and the parts' rows at the left with the diagram at the right — one line per part: each
+     part of the diagram stands on its row's line. The foot: the popup's footer, §popfoot below. The room inside the
+     pane is --shade-pad all round; the rows' column and the diagram's are the panel's measures (--stack-w). */
   .shadelist { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
-  .shadescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--margin) var(--margin) var(--u2); touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
+  .shadescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--shade-pad) var(--shade-pad) 0; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
   .shadelist > *, .shadescroll > * { margin-inline: 0; }      /* the scroll carries the room at the sides */
-  .suntop { display: grid; grid-template-columns: minmax(0, 1fr) var(--shade-slide-top); column-gap: var(--gap); align-items: stretch; }      /* the sun box wide, up to the sliders' column (Okay, 02:29: "WIDE … WIDER UNTIL"); the sliders at the right edge */
-  .sunpic { position: relative; height: var(--sun-h); border: var(--hair) solid var(--rule); border-radius: var(--round); background: var(--field); overflow: hidden; touch-action: none; cursor: grab; user-select: none; }
+  /* the top box: the picture at the left, the three sliders' column at the right, a hairline of the night between */
+  .suntop { display: grid; grid-template-columns: minmax(0, 1fr) var(--stack-w); height: var(--sun-h); border-radius: var(--round); background: var(--field); overflow: hidden; }
+  .sunpic { position: relative; min-width: 0; touch-action: none; cursor: grab; user-select: none; }
   .sunpic.held { cursor: grabbing; }
   .sunpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .sunpic .dial, .sunpic .hole { fill: none; stroke: var(--grey); stroke-width: var(--hair); }
-  .sunpic .fall { fill: none; stroke: var(--grey); stroke-width: var(--hair); stroke-dasharray: 2 2; }      /* where the shadows fall: the far side of the dial */
+  .sunpic .dial, .sunpic .hole { fill: none; stroke: var(--night-rule); stroke-width: var(--hair); }
+  .sunpic .fall { fill: none; stroke: var(--night-rule); stroke-width: var(--sun-dot); stroke-linecap: round; stroke-dasharray: 0 var(--sun-dot-gap); }      /* where the shadows fall: the far side of the dial, as a ring of dots */
   .sunpic .sun > circle { fill: var(--ink); }
   .sunpic .rays line { stroke: var(--ink); stroke-width: var(--sun-ray); stroke-linecap: round; }
-  .sunpic .word { position: absolute; left: var(--u4); top: var(--u3); font-size: var(--t-s); color: var(--grey); pointer-events: none; }
-  .shadelist .three { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); }
-  .shadelist .row.named { display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; row-gap: var(--u1); min-height: 0; box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }      /* form D: the name over its slider, the value in the knob */
+  .sunpic .word { position: absolute; left: var(--shade-word-x); top: var(--shade-word-y); font-size: var(--t-s); font-weight: 600; color: var(--ink); pointer-events: none; }
+  .shadelist .three { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); margin: var(--u2) 0; border-left: var(--hair) solid var(--night); }      /* the column: a hairline of the night at its left, the box's unit over and under it; the three thirds divided by the same line */
+  .shadelist .row.named { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; align-content: start; row-gap: var(--shade-named-gap); min-height: 0; padding: var(--shade-named-top) var(--shade-named-right) 0 var(--shade-named-left); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--night); }
   .shadelist .three > .row.named:last-child { box-shadow: none; }
-  .shadelist .row.named > label { font-size: var(--t-s); color: var(--grey); }
-  @media (hover: hover) { .shadelist .row.named > label:hover { color: var(--ink); } }
-  .shadelist .row.named > .lane { position: relative; display: grid; }      /* as wide as its column: squeezed to --shade-slide-top (Okay, 02:20: "squeeze sliders") */
-  .shadelist .row.named > .lane > input[type="range"] { grid-column: 1; }
-  .shadelist .knobval { position: absolute; top: 50%; left: calc(var(--thumb) / 2 + var(--at, 0) * (100% - var(--thumb))); translate: -50% -50%; min-width: var(--thumb); height: var(--thumb); box-sizing: border-box; padding: 0 var(--u2); border-radius: var(--round-pill); background: var(--ink); color: var(--paper); font-size: var(--t-xs); font-weight: 600; font-variant-numeric: tabular-nums; line-height: var(--thumb); text-align: center; white-space: nowrap; pointer-events: none; }      /* the value rides in the knob: a pill as wide as its figures, centred on the thumb */
-  .shadedivide { height: var(--hair); margin: var(--margin) 0; background: var(--ink); }      /* the line between the sun and the parts: the inner box's room over and under it, in ink (Okay: "single pixelled line, contrasty") */
-  .shadeparts { display: grid; grid-template-columns: auto minmax(var(--stack-w), 1fr); column-gap: var(--gap); align-items: stretch; }      /* the rows as wide as they need, the diagram takes the rest */
-  .shaderows { --side-columns: var(--stack-name) var(--shade-slide) var(--gap) var(--side-num); display: grid; align-content: start; }      /* the sliders squeezed to one length */      /* names as long as "Minute ticks" (the Hands tab's are shorter) */
-  .shaderows > .row.side, .shaderows .shadowrings > .row.side { grid-template-columns: var(--side-columns); column-gap: 0; min-height: var(--line); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
-  .shaderows > .row.side:last-child { box-shadow: none; }
-  .shaderows .row.side > label { color: var(--grey); }
+  .shadelist .row.named > label { font-size: var(--t-s); color: var(--ink); }
+  .shadelist .row.named > .lane { position: relative; display: grid; --track: var(--shade-track); --thumb: var(--shade-knob); margin-inline: var(--shade-slide-in); }      /* the slider: a fat track with a thin fill inside it, the knob a pill with the value */
+  .shadelist .row.named > .lane > input[type="range"] { grid-column: 1; height: var(--shade-knob); }
+  .shadelist .row.named > .lane > input[type="range"]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--ink) var(--fill), transparent var(--fill)) center / 100% var(--track) no-repeat, var(--well); }
+  .shadelist .row.named > .lane > input[type="range"]::-webkit-slider-thumb { background: var(--ink); }
+  .shadelist .row.named > .lane > input[type="range"]::-moz-range-track { background: var(--well); }
+  .shadelist .row.named > .lane > input[type="range"]::-moz-range-progress { height: var(--track); background: var(--ink); }
+  .shadelist .knobval { position: absolute; top: 50%; left: calc(var(--thumb) / 2 + var(--at, 0) * (100% - var(--thumb))); translate: -50% -50%; min-width: var(--thumb); height: var(--thumb); box-sizing: border-box; padding: 0 var(--u2); border-radius: var(--round-pill); background: var(--ink); color: var(--night); font-size: var(--t-xs); font-weight: 700; font-variant-numeric: tabular-nums; line-height: var(--thumb); text-align: center; pointer-events: none; }
+  /* the parts: a hairline under the box, the heading line, then one line per part across both columns */
+  .shadeparts { display: grid; grid-template-columns: minmax(0, 1fr) var(--stack-w); column-gap: var(--gap); align-items: stretch; margin-top: var(--shade-gap); margin-bottom: var(--shade-foot-gap); }
+  .shadecol { display: grid; align-content: start; grid-template-rows: var(--line) auto; border-top: var(--hair) solid var(--night-rule); }
+  .shadehead { display: flex; align-items: center; font-size: var(--t-s); font-weight: 600; color: var(--night-rule); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--night-rule); }
+  .shaderows { --side-columns: var(--stack-name) var(--shade-slide) var(--gap) var(--side-num); display: grid; align-content: start; grid-auto-rows: var(--line); padding-bottom: var(--shade-under); }      /* the column ends --shade-under past the last line, and the diagram's box with it */
+  .shadowdiscs { display: contents; }      /* the sliders squeezed to one length; the names' column as wide as "Date discs" */
+  .shaderows .row.side { grid-template-columns: var(--side-columns); column-gap: 0; min-height: var(--line); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--night-rule); }
+  .shaderows .row.side > label { color: var(--night-grey); }
+  .shaderows .row.side > label.limit { color: var(--shade-lit); font-weight: 600; }      /* LIMIT, for a moment, where the name was (Okay, 25 Oct 2026) */
   .shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) > label { color: var(--ink); }
-  @media (hover: hover) { .shaderows .row.side:hover > label { color: var(--ink); } }
-  .shaderows .row.ref > label { grid-column: 1 / -1; }      /* the plate: the reference, nothing to size */
-  .stackpic { position: relative; border: var(--hair) solid var(--rule); border-radius: var(--round); }      /* outline only, no ground (Okay, 01:46); the sun box's corners */
-  .stackpic .word { position: absolute; left: var(--u4); top: var(--u3); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* its name, as the sun box has (Okay, 02:29: "Components") */
+  .shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"] { --ink: var(--shade-lit); }
+  @media (hover: hover) {
+    .shaderows .row.side:hover > label { color: var(--ink); }
+    .shaderows .row.side:hover input[type="range"] { --ink: var(--shade-lit); }      /* under the pointer the slider's fill and knob turn the lit colour, as its part in the diagram (Okay's drawing, 25 Oct 2026) */
+  }
+  .shaderows .row.ref > label { grid-column: 1 / -1; }      /* the plate: the reference, nothing to size (Okay: "plate untouchable") */
+  .stackpic { position: relative; border: var(--hair) solid var(--night-rule); border-radius: var(--round); }      /* outline only, no ground (Okay, 01:46); it stands from the hairline over the heading to --shade-pad under the last row */
+  .stackpic .word { position: absolute; left: var(--shade-word-x); top: 0; height: var(--line); line-height: var(--line); font-size: var(--t-s); font-weight: 600; color: var(--night-rule); pointer-events: none; }
   .stackpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .stackpic .axis { stroke: var(--grey); stroke-width: var(--hair); stroke-dasharray: 3 3; }      /* the centre line every part hangs on (Okay, 01:58: "A dashed line marks the center line") */
-  .stackpic .parts > g { fill: none; stroke: var(--grey); stroke-width: var(--stack-line); stroke-linecap: round; }
-  .stackpic .parts > g .fill { fill: var(--grey); stroke: none; }
+  .stackpic .axis { stroke: var(--night-rule); stroke-width: var(--hair); stroke-dasharray: 3 3; }      /* the centre line every part hangs on, from the rows' first line down (Okay, 01:58: "A dashed line marks the center line") */
+  .stackpic .parts > g { fill: none; stroke: var(--night-rule); stroke-width: var(--hair); stroke-linecap: round; }
+  .stackpic .parts > g .fill { fill: var(--night-rule); stroke: none; }
+  .stackpic .parts > g .dark { fill: var(--night); }
   .stackpic .parts > g.lit { stroke: var(--ink); }
   .stackpic .parts > g.lit .fill { fill: var(--ink); }
-  .shadelist .shadefoot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; column-gap: var(--u4); align-items: center; min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--margin); background: var(--field); }      /* Soft edge · Bevels % · Reset on one line */
-  .shadelist .shadefoot > .row { display: contents; }
-  .shadelist .shadefoot > .row > label.check { grid-column: 1; color: var(--ink); }
-  .shadelist .shadefoot > .row.block > label { grid-column: 2; justify-self: end; color: var(--grey); }
-  .shadelist .shadefoot > .row.block > .numbox { grid-column: 3; }
-  .shadelist .shadefoot > .gword { grid-column: 4; }
+  .stackpic .drop { stroke: var(--shade-lit); stroke-width: var(--hair); }      /* the lit part's height: a line down the axis to the plate, and the plate's hole in the same colour */
+  .stackpic .drop:not(.on) { display: none; }
+  .stackpic .parts > g.plate.dropped .hole { stroke: var(--shade-lit); }
+  /* §popfoot — a night popup's footer (Okay's drawing, 25 Oct 2026: "logically pixel perfect … objects snap to edges,
+     in-between padding equal, black lines connect to top"): a band of the field colour across the whole popup, its
+     bottom corners the popup's; cells divided by hairlines of the night that run the band's full height; each cell
+     holds its content with --foot-in at both sides, the first and last with the popup's own room at the outer edge;
+     the last cell takes what is left (three cells of content and a fourth: grid-template-columns). For every night popup with a foot (the Shadows pane; the guides' list next). */
+  .popfoot { display: grid; grid-auto-flow: column; grid-auto-columns: max-content; grid-template-columns: repeat(3, max-content) minmax(0, 1fr); align-items: stretch; min-height: var(--foot-h); margin-inline: 0; background: var(--field); border-radius: 0 0 var(--shade-round) var(--shade-round); }
+  .popfoot > .cell { display: flex; align-items: center; gap: var(--u2); padding: 0 var(--foot-in); }
+  .popfoot > .cell + .cell { border-left: var(--hair) solid var(--night); }
+  .popfoot > .cell:first-child { padding-left: var(--shade-pad); }
+  .popfoot > .cell:last-child { padding-right: var(--shade-pad); }
+  .popfoot .row { display: contents; }
+  .popfoot .row > label { font-size: var(--t-m); color: var(--ink); }
+  .popfoot .row > label.check { gap: 0; }
+  .popfoot input[type="checkbox"] { margin-right: var(--foot-tick-gap); }
+  .popfoot .row.block > label { color: var(--ink); }
+  .popfoot .cell.lead label { font-weight: 600; }
+  .popfoot .cell.lead input[type="checkbox"] { border-width: var(--thick); }
+  .popfoot .numbox { --box-value: var(--foot-value); --box-steps: calc(2 * var(--box-side-step)); }      /* the value narrow, − + as a side row's */
+  .popfoot .gword { height: var(--control); padding: 0 calc(var(--foot-in) - var(--hair)); border: var(--hair) solid var(--night-rule); border-radius: var(--round-small); font-size: var(--t-s); color: var(--ink); }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }

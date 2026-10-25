@@ -6,7 +6,7 @@ import * as G from "./geometry.js";
 
 import { OPENER } from "./opener.js";
 import { BIG, SIGNS, STEP, TOOL_ICONS, eye, icon, pic } from "./icons.js";
-import { $, HOLE_LIVE_MS, KEY, POP_FADE_MS, POP_LINGER_MS, SHEET, WORDS_MS, clamp, css_colour, decimals, el, filled, fmt, is_length, label_of, paint, parse_number, round_step, to_hex } from "./ui.js";
+import { $, HOLE_LIVE_MS, KEY, POP_FADE_MS, POP_LINGER_MS, SHEET, WORDS_MS, clamp, css_colour, decimals, el, filled, fmt, is_length, label_of, paint, parse_number, round_step, to_hex, token } from "./ui.js";
 import { ROWS, SECTIONS, SVG_LATER, TILE_WORDS, chevron_box, menu_arrow } from "./rows.js";
 
 export const PANEL = {
@@ -340,7 +340,11 @@ export const PANEL = {
     const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") + (row.side ? " side" : "") + (row.under ? " under" : "") });      // under: a note about the controls above, on their column
     const tied = () => { if (row.tie) out.el.classList.add("tied"); };      // tie: this row belongs to the one above it, no line between them
     const out = { row, el: wrap, refresh: () => {} };
-    const set = (v) => (row.put ? row.put(this, v) : this.set_value(row.scope, row.key, v));      // put: a row that stands for another setting (the big date tick)
+    // bounds: a number's live ends, from the dial as it is (the Shadows pane's heights keep their order: the cap over the
+    // seconds hand over the minutes… — Okay, 25 Oct 2026: "seconds hand cant go below minutes and so on"); the slider
+    // stops there, and a value at or past an end flashes LIMIT in the row's name
+    const bound = (v) => { if (!row.bounds) return v; const [lo, hi] = row.bounds(this.S); if (v <= lo || v >= hi) out.flash_limit?.(); return clamp(v, lo, hi); };
+    const set = (v) => { v = bound(v); return row.put ? row.put(this, v) : this.set_value(row.scope, row.key, v); };      // put: a row that stands for another setting (the big date tick)
     const id = (row.id || `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-")) + (row.inpop ? "-pop" : "");      // id: when two rows would share one; the controller's copy of a row ends in -pop, so no id stands twice in the page (#542f)
     const active = (e) => document.activeElement === e;
 
@@ -422,6 +426,10 @@ export const PANEL = {
         return b;
       };
       const label = el("label", { htmlFor: id, textContent: row.text });
+      if (row.bounds) {                            // LIMIT in red where the name stands, for a moment (Okay, 25 Oct 2026: "flash LIMIT instead of the slider's label on the left in red letters")
+        let back = 0;
+        out.flash_limit = () => { label.textContent = "LIMIT"; label.classList.add("limit"); clearTimeout(back); back = setTimeout(() => { label.textContent = row.text; label.classList.remove("limit"); }, token("--limit-flash-ms", 900)); };
+      }
       slider.ariaLabel = row.text;                 // the label is the field's; the slider says its name itself (#244, 4.47.2)
       if (row.short) { label.textContent = ""; label.title = row.text; label.append(el("span", { className: "whole", textContent: row.text }), el("span", { className: "short", textContent: row.short })); }      // two wordings; the stylesheet shows the one there is room for
       let lead = label, menu = null;
@@ -480,6 +488,7 @@ export const PANEL = {
         if (out.knob) { out.knob.textContent = shown(v); const f = (v - +slider.min) / Math.max(1e-9, +slider.max - +slider.min); out.knob.style.setProperty("--at", clamp(f, 0, 1).toFixed(4)); }      // form D: the value in the knob, moved with it
         if (out.link) { const on = Boolean(T[out.link.dataset.link]); out.link.classList.toggle("on", on); out.link.textContent = on ? (row.inpop ? "LINK\n+ED" : "LINKED") : "LINK"; out.link.setAttribute("aria-pressed", String(on)); out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height"; }      // in the controller's disc, linked: two lines (4.86, Okay: "LINK / +ED")
         if (row.top) { const top = Math.max(row.top(this.S), v); if (+slider.max !== top) slider.max = top; }      // top: the slider's end follows the dial (a numeral's Size runs to the dial's diameter, #535)
+        if (row.bounds) { const [lo, hi] = row.bounds(this.S); if (+slider.min !== lo) slider.min = lo; if (+slider.max !== hi) slider.max = hi; }      // bounds: both ends follow the dial
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
         if (v < +slider.min) slider.min = v;
         slider.step = String(unit_step() / per());      // the slider moves in the shown unit's round steps too (#76)

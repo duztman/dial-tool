@@ -75,8 +75,10 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Eye switch** | Square switch at the bottom right, drawn as an eye: the **dial alone**; under it show mode's switch (the **rays**), over it the Tiny Preview's iris. |
 | **Dial alone** | Panel away, the dial fills the preview. |
 | **Tiny Preview** | A small draggable window showing the dial at its own size (96 px to the inch). |
-| **Shadows pane** | The Shadows switch's pane over the panel's column: the **sun picture** with Angle · Height · Strength, the parts' rows with the **exploded view**, a foot. |
-| **Bottom section** | A popup's foot on the night field (Guides, Shadows). |
+| **Shadows pane** | The Shadows switch's pane over the panel's column: the **sun picture** with Angle · Height · Strength in one box; then one line per part — the rows at the left, the **diagram** (`.stackpic`) at the right, each part on its row's line; the **footer** in cells. |
+| **Footer** (of a night popup) | `.popfoot`: a band of the field colour, cells divided by hairlines of the night, content 13 in from each line, the last cell to the edge (the Shadows pane; Okay's drawing, 25 Oct 2026). |
+| **LIMIT** | What a number row's name says, in red, for a moment, when its value reaches an end its neighbours set (`bounds`; the Shadows pane's heights). |
+| **Bottom section** | A popup's foot on the night field: the Guides list's; the Shadows pane's is the **footer**. |
 | **Colour pop-out** | What a swatch opens: *On this dial* · *Palette* · field and hues · RGB / CMYK / HEX. |
 | **Colour pill** | A button with swatch and hex that opens the pop-out. |
 | **Palette** | The pop-out's second row: ten colours plus added ones; kept by the browser. |

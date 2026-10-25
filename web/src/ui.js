@@ -109,7 +109,7 @@ export function parse_number(text, current, per = 0) {
 }
 
 /** is this row a length (kept in mm, shown in the chosen unit)? Decided by its key, where the scale tick decides it too. */
-export const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
+export const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc", "depth"], nudge: ["dr"] };
 
 /** a row's label: its own words, or, with a menu beside it, the chosen item's word before the last of its own
  *  ("Centre radius" → "Baseline radius"). */
