@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.94.15 (web version) · 25 Oct 2026 — show mode's Dial tab: show or hide is a dot
+
+Okay, 25 Oct 2026, 22:13: "Eyes doing different functions, make the second levels something else?"; in question mode, "A · dot", "Show mode's Dial tab only"; 22:14: "Build" (#547).
+
+- **A line's show/hide is a dot** in the panel's left column: filled, the part shows on the watch; a ring, it is hidden, and its line greys (mark, name and colours, as a hidden ring's in main's list). Two drawings through the icon pipeline (R33: the ring weighed within 6 %), `SHOWN` and `shown_dot()` in `icons.js`. The eye is the panes' fold alone. Main's ring list keeps its eyes.
+- Checked in the window test: the dot, its ring, the hidden line greyed.
+
 ## beta 4.94.14 (web version) · 25 Oct 2026 — show mode's Dial tab: the eyes in the left column
 
 Okay, 25 Oct 2026, 22:02: "Eyes and icons won't gel. Hands unnecessary to iconize. Check if pushing eyes to left column work?" Tried, pictured, it works.

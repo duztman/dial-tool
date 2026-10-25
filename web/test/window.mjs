@@ -2417,8 +2417,12 @@ await shot("10-bar");
       // the lines' eyes under the panes' own (Okay, 22:02: "Check if pushing eyes to left column work")
       const head_eye = Math.round(q(".form > .pane .fold .eye").getBoundingClientRect().left), eyes_at = new Set(all(".colourlist > .row.showline > .eye").map((e) => Math.round(e.getBoundingClientRect().left)));
       const eyes_left = eyes_at.size === 1 && eyes_at.has(head_eye);
+      // #547: a line's show/hide is a dot, not the panes' eye; hidden, the line greys
+      const seen = q(".colourlist > .row.showline > .eye.seen"), was_on = seen.getAttribute("aria-pressed") === "true", eye_drawn = Boolean(seen.querySelector("path"));
+      seen.click(); const greyed = seen.closest(".row").classList.contains("off") !== !was_on || seen.closest(".row").classList.contains("off"); seen.click();
+      const dots = !eye_drawn && Boolean(seen.querySelector("circle")) && greyed;
       [S.rings, S.w_inks, S.w_ink_all] = JSON.parse(keep); t.ink_open.clear(); t.changed();
-      return { eyes_left, lefts, inside, caps, pair, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head }; });
+      return { dots, eyes_left, lefts, inside, caps, pair, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head }; });
     await shot("12b-show-dial-tab");
     check(r.panes.join() === "Colours,Inks,Hands" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
       `show mode's Dial tab is Colours · Inks · Hands (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands")`);
@@ -2426,6 +2430,7 @@ await shot("10-bar");
       `Inks: one line per exact colour (${r.n0}); a ring recoloured in Colours makes an ink of its own (${r.n1}); Two inks splits it, the A | B pill puts the ring on B, B's height its own (${r.b_h} mm); every height box on one right edge (Okay: "One thick red one thin possible via a switch on the pane")`);
     check(r.pair[0] === false && r.pair[1] === true && r.pair[2] === "AB" && r.pair[3] === 0, `an ink of two parts, split: the first on A, the second on B, the letters as text, no pills (${r.pair.join(" · ")}) (Okay: "Switch stays, but on two item lists leave them text only")`);
     check(r.lefts === 1 && r.inside && !r.caps && r.eyes_left, `every colour of the tab on one swatch column (${r.lefts}), the group names not in capitals, the Bevels pills inside their line, the lines' eyes under the panes' eyes (Okay: "All colors aligned on a line like rings on main … don't use allcaps everywhere")`);
+    check(r.dots, `a line's show/hide is a dot, filled shown, a ring hidden, the hidden line greyed; the eye only the panes' fold (Okay: "Eyes doing different functions, make the second levels something else?"; "A · dot")`);
     check(r.hands && r.flipped, `Hands: each hand's colour and height on its line, the Bevels pills turn its bevel (Okay: "colors also editable on hands pane everywhere"; "Bevels % slider plus the pill")`);
   }
   const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length, n.isConnected]; });

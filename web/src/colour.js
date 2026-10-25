@@ -4,7 +4,7 @@
 import * as G from "./geometry.js";
 import { $, KEY, clamp, drag_in, el, from_hex, has_focus, is_day, moon_look, paint, to_hex } from "./ui.js";
 import { num } from "./rows.js";
-import { PICS, SIGNS, TOOL_ICONS, eye, icon } from "./icons.js";
+import { PICS, SIGNS, TOOL_ICONS, icon, shown_dot } from "./icons.js";
 
 export const PALETTE = ["#111111", "#FFFFFF", "#EDE8DB", "#A7A7AA", "#3A3A3C", "#0E2A47", "#12372A", "#7A1F1F", "#C8E6A0", "#E8742A"];      // the palette's first ten: black, white, cream, silver, anthracite, navy, green, burgundy, lume, orange
 
@@ -302,13 +302,15 @@ export const COLOUR = {
         if (!showing) return el("div", { className: "row" }, name, group);
         // show mode's line (#546): the eye (or its empty place), the part's kind mark, the name, the colour(s) on the one
         // swatch column every line of the tab shares (as main's ring list), then the number's place
-        const eye_place = line.eye ? el("button", { type: "button", className: "eye", title: line.eye.title, ariaLabel: line.eye.title, onclick: () => line.eye.write(!line.eye.read()) }) : el("i");      // an <i>: an empty first span would be hidden (4c-rows)
-        if (line.eye) holder.extras.push({ refresh: () => { const on = Boolean(line.eye.read()); eye_place.innerHTML = eye(on); eye_place.setAttribute("aria-pressed", String(on)); } });
+        // a part shown on the watch or not: a dot (#547: the eye is the panes' fold), filled shown, a ring hidden
+        const eye_place = line.eye ? el("button", { type: "button", className: "eye seen", title: line.eye.title, ariaLabel: line.eye.title, onclick: () => line.eye.write(!line.eye.read()) }) : el("i");      // an <i>: an empty first span would be hidden (4c-rows)
         const mark = el("span", { className: "mark" });
         if (line.mark) mark.innerHTML = line.mark;
         const number = el("span", { className: "place" });
         for (const t of line.tail || []) { const made = t.make(); number.append(made.el); holder.extras.push(made); }
-        return el("div", { className: "row showline" + (line.tail ? "" : " bare") }, eye_place, mark, name, group, number);      // bare: colours only (Colours), the swatches may run on into the number's room
+        const row = el("div", { className: "row showline" + (line.tail ? "" : " bare") }, eye_place, mark, name, group, number);      // bare: colours only (Colours), the swatches may run on into the number's room
+        if (line.eye) holder.extras.push({ refresh: () => { const on = Boolean(line.eye.read()); eye_place.innerHTML = shown_dot(on); eye_place.setAttribute("aria-pressed", String(on)); row.classList.toggle("off", !on); } });      // hidden: the line greys
+        return row;
       }));
     }
     for (const x of holder.extras || []) x.refresh(this.S);

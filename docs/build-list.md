@@ -112,7 +112,6 @@ From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Oka
 | 535 | Sliders that stop short | 24 Oct 2026 | open |
 | 536 | Help page and bug reports | 24 Oct 2026 | now |
 | 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane (4.94.4) and the Light tab's sun box (4.94.9) built; the guides' foot open |
-| 547 | Show mode's Dial tab: a line's show/hide as a dot (filled shown, ring hidden), the eye only the panes' fold | 25 Oct 2026 — "Eyes doing different functions" | settled 22:15 — build on his word |
 | 528 | Dramatic lighting more dramatic |  | open |
 | 529 | Bracelets drawn half visible, round an imaginary wrist |  | open |
 | 530 | SVG imports after v1 |  | decided |

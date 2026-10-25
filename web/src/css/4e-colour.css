@@ -28,6 +28,7 @@
   .colourlist > .row.showline > .eye { display: grid; place-items: center; color: var(--grey); }
   .colourlist > .row.showline > .eye[aria-pressed="true"] { color: var(--ink); }
   @media (hover: hover) { .colourlist > .row.showline > .eye:hover { color: var(--ink); } }
+  .colourlist > .row.showline.off > :is(.mark, label, .single, .swatches) { color: var(--rule); opacity: 0.5; }      /* a part hidden on the watch: its line greys, as a hidden ring's in main's list (#547) */
   .colourlist > .row.showline > .mark { display: grid; place-items: center; height: 100%; color: var(--grey); }      /* a tiny mark, quiet beside the name */
   .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .colourlist > .row.showline > :is(.colour, .single) { justify-self: start; }

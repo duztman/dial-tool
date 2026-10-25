@@ -110,6 +110,13 @@ export const EYE = {                                      // the left column's s
 };
 
 export const eye = (open) => icon(EYE[open ? "open" : "closed"]);
+// show mode's Dial tab: a part shown or hidden on the watch, a dot, so the eye stays the panes' fold (#547; Okay, 25 Oct
+// 2026: "Eyes doing different functions, make the second levels something else?"; "A · dot"): filled shown, a ring hidden
+export const SHOWN = {
+  on: `<circle cx="8.25" cy="8.25" r="4" fill="currentColor" stroke="none"/>`,
+  off: `<circle cx="8.25" cy="8.25" r="3.5" ${sw(CURVE)}/>`,
+};
+export const shown_dot = (on) => icon(SHOWN[on ? "on" : "off"]);
 
 export const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
 

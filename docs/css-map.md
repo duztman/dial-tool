@@ -261,7 +261,7 @@
 | `--round-tiny` | `3px` | …and a sticker's corners, a small swatch's | 4e-colour ×2, 4g-fonts, 6-preview |  |
 | `--row-end` | `calc(var(--frame-pad) - var(--hair) + var(--ringline-inner))` | the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons | 1-tokens, 4f-rings |  |
 | `--row-rule` | `var(--line-on-paper)` |  | 4c-rows ×8, 4e-colour, 4f-rings ×4, 6-preview ×4 | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))`; 4a-panel `.form` → `var(--line-on-grey)`; 4f-rings `.numpop .row` → `transparent` |
-| `--rule` | `#B9B9B4` | colour | 1-tokens ×2, 3-controls ×11, 4a-panel ×10, 4b-lines-tabs ×2, 4c-rows, 4d-hands ×2, 4e-colour, 4f-rings ×19, 4g-fonts ×15, 6-preview, 8-narrow ×2 | 3-controls `.night` → `var(--night-rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)`; set by show.js |
+| `--rule` | `#B9B9B4` | colour | 1-tokens ×2, 3-controls ×11, 4a-panel ×10, 4b-lines-tabs ×2, 4c-rows, 4d-hands ×2, 4e-colour ×2, 4f-rings ×19, 4g-fonts ×15, 6-preview, 8-narrow ×2 | 3-controls `.night` → `var(--night-rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)`; set by show.js |
 | `--rule-light` | `#D4D4CF` | colour | 4g-fonts ×2 | 4a-panel `.showing .panel` → `var(--rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)` |
 | `--ruler` | `22px` | the day's ruler: its height, the hours' names under it, the handle's width | 7-bar ×7 |  |
 | `--ruler-half` · special | `0.6` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
