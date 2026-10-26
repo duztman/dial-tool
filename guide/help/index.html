@@ -102,7 +102,7 @@ h2 > .ic{margin-right:.35em}
 .maps .to{margin-top:calc(var(--mw) * .3125 - 6px);line-height:0;color:var(--ink)}      /* in → out (Okay, 26 Oct 2026: "Arrow between these two thumbs to show transition"), level with the pictures' middle */
 .maps .to svg{width:24px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}      /* the Show Case's way in and way out side by side, each smaller (Okay, 26 Oct 2026: "side by side left old right new … If too narrow, smaller thumbs for this, special") */
 .maps .map{width:auto}
-.map svg{display:block;width:100%;height:auto;aspect-ratio:16/10;box-shadow:0 0 0 1px var(--frame)}      /* a 1 px frame drawn outside the picture, so it takes no room from it and leaves no gap (Okay, 26 Oct 2026: "One pixel border. Square. Fits perfectly around without gaps") */
+.map > svg{display:block;width:100%;height:auto;aspect-ratio:16/10;box-shadow:0 0 0 1px var(--frame)}      /* a 1 px frame drawn outside the picture, so it takes no room from it and leaves no gap (Okay, 26 Oct 2026: "One pixel border. Square. Fits perfectly around without gaps") */
 .map .where{display:block;margin-top:var(--x);font-size:var(--small);line-height:1.35;color:var(--grey);text-wrap:pretty}
 .map .backdrop{fill:#cdc9c1}.map .panel{fill:#faf9f6}.map .pin{fill:#ebe8e2}.map .row{fill:none;stroke:#d6d2c9;stroke-width:.6}
 .map .line{stroke:#d6d2c9;stroke-width:1.2;stroke-linecap:round}.map .title{stroke:#a9a59c;stroke-width:1.6;stroke-linecap:round}.map .rule{stroke:var(--ink);stroke-width:.6}
