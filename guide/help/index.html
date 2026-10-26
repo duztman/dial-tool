@@ -126,7 +126,8 @@ dt{color:var(--grey)}
 /* a row whose pictures come four to a line takes the spec column too, so the four stand in one line; its starting value
    moves under its name (Okay, 26 Oct 2026: "4 images should line up, the right column word can go under the titles on the left") */
 .rows > .wide > dd{grid-column:2 / -1;padding-right:0}
-.rows > .wide .strip{display:grid;grid-template-columns:repeat(4, 1fr);column-gap:var(--x)}      /* the four on one pitch, whatever their captions' lengths */
+.rows > .wide .strip{display:grid;grid-template-columns:repeat(4, 1fr);column-gap:var(--x)}
+.rows > .wide .strip figure{align-items:stretch}.rows > .wide .strip img{width:100%;max-width:none}      /* the four grow to fill their columns (Okay, 26 Oct 2026: "Squares can grow like so") */      /* the four on one pitch, whatever their captions' lengths */
 dt .dspec{display:block;margin-top:4px;font-size:var(--small);line-height:1.4;font-variant-numeric:tabular-nums}
 dt .dspec b{display:block;color:var(--ink)}dt .dspec span{display:block}
 dd .sub{display:block;margin-top:4px;font-size:var(--small);color:var(--grey)}
@@ -236,6 +237,12 @@ h2 .ic[data-ic="iris"]{margin-inline:0 .35em}h2 .ic[data-ic="iris"] svg{clip-pat
 .box.screen figure{width:min(1400px, 100vw - 48px, (100vh - 110px) * 1.6)}
 .box.screen img{width:100%;aspect-ratio:16/10;max-height:none;min-width:0;background:var(--hair)}
 main img{cursor:zoom-in}
+/* a picture that opens larger says so (Okay, 26 Oct 2026: "All embiggenable images get this arrow in a rounded square in
+   correct thickness color and placement next to bigables"): at the right end of its caption line, or of a line of its own */
+.big{display:flex;align-items:flex-start;gap:var(--x)}.big > :first-child{flex:1;min-width:0}
+.big.tag{margin-top:4px;font-size:var(--small)}.big .grow{flex:none;width:1em;height:1em;margin-top:.2em;color:var(--grey)}
+.big .grow svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+main img:hover ~ * .grow,main figure:hover .grow{color:var(--ink)}
 .box .step{position:absolute;top:50%;width:48px;height:48px;margin-top:-24px;border:0;border-radius:50%;background:transparent;color:var(--paper);font:300 44px/1 Inter,sans-serif;cursor:pointer}
 .box .step:hover{background:rgba(255,255,255,.12)}.box .back{left:12px}.box .on{right:12px}
 .box figcaption{margin-top:var(--x);color:var(--paper)}.box figcaption span{color:var(--hair)}
@@ -588,7 +595,7 @@ form.report button:disabled{opacity:.4;cursor:default}
     <div><dt>First number · Step</dt><dd>For Numbers: the first label, then what each adds. Step runs −100 to 100.</dd><dd class="spec"><b>−1000–1000</b><span>starts 0 · step 5</span></dd></div>
     <div><dt>Digits</dt><dd>Pads each number with zeros to this many digits.</dd><dd class="spec"><b>0–4</b><span>starts 0</span></dd></div>
     <div><dt>Start again after</dt><dd>After this many positions the count starts over. Zero counts on. With 12, from 5 by 5: 5 to 60, then 5 again.</dd><dd class="spec"><b>0–60</b></dd></div>
-    <div class="wide"><dt>Placement<span class="dspec"><span>starts upright</span></span></dt><dd>How each numeral stands.<div class="strip"><figure><img src="img/v-place-upright.webp" width="144" height="144" style="width:144px" alt="upright"><figcaption>upright</figcaption></figure><figure><img src="img/v-place-radial.webp" width="144" height="144" style="width:144px" alt="radial"><figcaption>radial</figcaption></figure><figure><img src="img/v-place-radial-auto-flip.webp" width="144" height="144" style="width:144px" alt="auto-flip"><figcaption>auto-flip</figcaption></figure><figure><img src="img/v-place-on-path.webp" width="144" height="144" style="width:144px" alt="on path"><figcaption>on path</figcaption></figure></div></dd></div>
+    <div class="wide"><dt>Placement<span class="dspec"><span>starts upright</span></span></dt><dd>How each numeral stands.<div class="strip"><figure><img src="img/v-place-upright.webp" width="144" height="144" alt="upright"><figcaption>upright</figcaption></figure><figure><img src="img/v-place-radial.webp" width="144" height="144" alt="radial"><figcaption>radial</figcaption></figure><figure><img src="img/v-place-radial-auto-flip.webp" width="144" height="144" alt="auto-flip"><figcaption>auto-flip</figcaption></figure><figure><img src="img/v-place-on-path.webp" width="144" height="144" alt="on path"><figcaption>on path</figcaption></figure></div></dd></div>
   </dl>
 </section>
 
@@ -730,7 +737,7 @@ form.report button:disabled{opacity:.4;cursor:default}
   <p>Where the window sits, and what it shows. Its heading says where it is.</p>
   <dl class="rows">
     <div><dt>Position</dt><dd>On the heading line: 3, 6, 9, 12, 4, then ···. The ··· opens every place (12, 1:30, 3, 4, 4:30, 6, 7:30, 9, 10:30) and a field for any time: 2:15, 2.25 and 14:15 all mean a quarter past two.</dd><dd class="spec"><span>starts 3</span></dd></div>
-    <div class="wide"><dt>Complication</dt><dd>What the window shows. Position and Radius are shared; everything else belongs to the kind.<div class="strip"><figure><img src="img/v-window-date.webp" width="288" height="144" style="width:144px" alt="date"><figcaption>date</figcaption></figure><figure><img src="img/v-window-day.webp" width="288" height="144" style="width:144px" alt="day"><figcaption>day</figcaption></figure><figure><img src="img/v-window-ampm.webp" width="288" height="144" style="width:144px" alt="am · pm"><figcaption>am · pm</figcaption></figure><figure><img src="img/v-window-moonphase.webp" width="288" height="144" style="width:144px" alt="moon"><figcaption>moon</figcaption></figure></div></dd></div>
+    <div class="wide"><dt>Complication</dt><dd>What the window shows. Position and Radius are shared; everything else belongs to the kind.<div class="strip"><figure><img src="img/v-window-date.webp" width="288" height="144" alt="date"><figcaption>date</figcaption></figure><figure><img src="img/v-window-day.webp" width="288" height="144" alt="day"><figcaption>day</figcaption></figure><figure><img src="img/v-window-ampm.webp" width="288" height="144" alt="am · pm"><figcaption>am · pm</figcaption></figure><figure><img src="img/v-window-moonphase.webp" width="288" height="144" alt="moon"><figcaption>moon</figcaption></figure></div></dd></div>
     <div><dt>Big date</dt><dd>Under date: two holes, tens and units, each on its own disc.<div class="strip"><figure><img src="img/v-wbig-date.webp" width="144" height="72" style="width:144px" alt="date"><figcaption>date</figcaption></figure><figure><img src="img/v-wbig-big.webp" width="144" height="72" style="width:144px" alt="Big date"><figcaption>Big date</figcaption></figure></div></dd><dd class="spec"></dd></div>
     <div><dt>am · pm</dt><dd>Follows the time shown, AM · PM beside the time under the panel.</dd><dd class="spec"></dd></div>
     <div><dt>Picture</dt><dd>A moon window's picture: Arch, Phase or Line.</dd><dd class="spec"><span>starts Arch</span></dd></div>
@@ -1085,7 +1092,7 @@ form.report button:disabled{opacity:.4;cursor:default}
   <h3>Watch</h3>
   <dl class="rows">
     <div><dt>View</dt><dd>What Fit frames, and what is exported. Detail: lug tip to lug tip. Whole watch: everything, a bracelet to the wrist's horizon and 6 mm of ground. Dial: as on the dial side.</dd><dd class="spec"><span>starts Detail</span></dd></div>
-    <div class="wide"><dt>Case<span class="dspec"><span>starts Diver</span></span></dt><dd>Dress, Field, Diver, Emre. The same setting as the dial side's Case.<div class="strip watches"><figure><img src="img/v-case-dress.webp" width="112" height="112" style="width:112px" alt="Dress"><figcaption>Dress</figcaption></figure><figure><img src="img/v-case-field.webp" width="112" height="112" style="width:112px" alt="Field"><figcaption>Field</figcaption></figure><figure><img src="img/v-case-diver.webp" width="112" height="112" style="width:112px" alt="Diver"><figcaption>Diver</figcaption></figure><figure><img src="img/v-case-emre01.webp" width="112" height="112" style="width:112px" alt="Emre"><figcaption>Emre</figcaption></figure></div></dd></div>
+    <div class="wide"><dt>Case<span class="dspec"><span>starts Diver</span></span></dt><dd>Dress, Field, Diver, Emre. The same setting as the dial side's Case.<div class="strip watches"><figure><img src="img/v-case-dress.webp" width="112" height="112" alt="Dress"><figcaption>Dress</figcaption></figure><figure><img src="img/v-case-field.webp" width="112" height="112" alt="Field"><figcaption>Field</figcaption></figure><figure><img src="img/v-case-diver.webp" width="112" height="112" alt="Diver"><figcaption>Diver</figcaption></figure><figure><img src="img/v-case-emre01.webp" width="112" height="112" alt="Emre"><figcaption>Emre</figcaption></figure></div></dd></div>
     <div><dt>Metal</dt><dd>Fe, Au, Al, CuSn, Ti, Black: the metal's own colour.</dd><dd class="spec"><span>starts Au</span></dd></div>
     <div><dt>Case colour</dt><dd>Your own. Unset, it shows the metal's.</dd><dd class="spec"></dd></div>
     <div><dt>Insert</dt><dd>The Diver's bezel in two colours: Black, Blue, Green, Pepsi, Batman, Coke, Root beer, Sprite.</dd><dd class="spec"><span>starts Black</span></dd></div>
@@ -1095,7 +1102,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 <section class="pane">
   <h3>Strap</h3>
   <dl class="rows">
-    <div class="wide"><dt>Strap<span class="dspec"><span>starts Leather</span></span></dt><dd>Leather, NATO, Bracelet, Links. Bracelet and Links (Emre's H-links) are for the Diver only.<div class="strip watches"><figure><img src="img/v-strap-leather-crop.webp" data-full="img/v-strap-leather.webp" width="112" height="112" style="width:112px" alt="leather"><figcaption>leather</figcaption></figure><figure><img src="img/v-strap-nato-crop.webp" data-full="img/v-strap-nato.webp" width="112" height="112" style="width:112px" alt="NATO"><figcaption>NATO</figcaption></figure><figure><img src="img/v-strap-bracelet-crop.webp" data-full="img/v-strap-bracelet.webp" width="112" height="112" style="width:112px" alt="bracelet"><figcaption>bracelet</figcaption></figure><figure><img src="img/v-strap-links-crop.webp" data-full="img/v-strap-links.webp" width="112" height="112" style="width:112px" alt="links"><figcaption>links</figcaption></figure></div></dd></div>
+    <div class="wide"><dt>Strap<span class="dspec"><span>starts Leather</span></span></dt><dd>Leather, NATO, Bracelet, Links. Bracelet and Links (Emre's H-links) are for the Diver only.<div class="strip watches"><figure><img src="img/v-strap-leather-crop.webp" data-full="img/v-strap-leather.webp" width="112" height="112" alt="leather"><figcaption>leather</figcaption></figure><figure><img src="img/v-strap-nato-crop.webp" data-full="img/v-strap-nato.webp" width="112" height="112" alt="NATO"><figcaption>NATO</figcaption></figure><figure><img src="img/v-strap-bracelet-crop.webp" data-full="img/v-strap-bracelet.webp" width="112" height="112" alt="bracelet"><figcaption>bracelet</figcaption></figure><figure><img src="img/v-strap-links-crop.webp" data-full="img/v-strap-links.webp" width="112" height="112" alt="links"><figcaption>links</figcaption></figure></div></dd></div>
     <div><dt>Leather</dt><dd>Its colour.</dd><dd class="spec"></dd></div>
     <div><dt>Pattern</dt><dd>A NATO's: Bond, Regimental, Khaki, Black · grey, Olive, Grey, Solid. A pattern brings back its own colours.</dd><dd class="spec"><span>starts Regimental</span></dd></div>
     <div><dt>Stripes 1–3</dt><dd>Each stripe's colour, starting from the pattern's. A change makes them yours.</dd><dd class="spec"></dd></div>
@@ -1108,7 +1115,7 @@ form.report button:disabled{opacity:.4;cursor:default}
   <p>Style and Lighting stay in view under the tabs.</p>
   <figure><img src="img/show-light.webp" width="356" height="564" style="--w:356px" alt="Light → Sun: drag the sun to set where the light comes from"><figcaption>Drag the sun to where the light comes from. Nearer the middle is higher.</figcaption></figure>
   <dl class="rows">
-    <div class="wide"><dt>Style<span class="dspec"><span>starts Miyazaki</span></span></dt><dd>Engineer or Miyazaki.<div class="strip watches"><figure><img src="img/v-style-10.webp" width="112" height="112" style="width:112px" alt="Miyazaki · Dramatic"><figcaption>Miyazaki · Dramatic</figcaption></figure><figure><img src="img/v-style-00.webp" width="112" height="112" style="width:112px" alt="Engineer · Dramatic"><figcaption>Engineer · Dramatic</figcaption></figure><figure><img src="img/v-style-11.webp" width="112" height="112" style="width:112px" alt="Miyazaki · Flat"><figcaption>Miyazaki · Flat</figcaption></figure><figure><img src="img/v-style-01.webp" width="112" height="112" style="width:112px" alt="Engineer · Flat"><figcaption>Engineer · Flat</figcaption></figure></div></dd></div>
+    <div class="wide"><dt>Style<span class="dspec"><span>starts Miyazaki</span></span></dt><dd>Engineer or Miyazaki.<div class="strip watches"><figure><img src="img/v-style-10.webp" width="112" height="112" alt="Miyazaki · Dramatic"><figcaption>Miyazaki<br>Dramatic</figcaption></figure><figure><img src="img/v-style-00.webp" width="112" height="112" alt="Engineer · Dramatic"><figcaption>Engineer<br>Dramatic</figcaption></figure><figure><img src="img/v-style-11.webp" width="112" height="112" alt="Miyazaki · Flat"><figcaption>Miyazaki<br>Flat</figcaption></figure><figure><img src="img/v-style-01.webp" width="112" height="112" alt="Engineer · Flat"><figcaption>Engineer<br>Flat</figcaption></figure></div></dd></div>
     <div><dt>Lighting</dt><dd>Dramatic or Flat. With Gradients off, it is Flat whatever this says.</dd><dd class="spec"><span>starts Dramatic</span></dd></div>
   </dl>
 </section>
@@ -1404,6 +1411,13 @@ form.report button:disabled{opacity:.4;cursor:default}
     ? () => { const h = el.closest(".summary").previousElementSibling.textContent.trim(), w = el.querySelector(".where");
         return [el.dataset.map === "show-watch" ? "img/show.webp" : "img/where-" + el.dataset.map + ".webp", "The tool's window, " + h, "<b>" + h + "</b> <span>· " + (w ? w.textContent : "") + "</span>", true]; }
     : () => { const f = el.closest("figure"), c = f && f.querySelector("figcaption"); return [el.dataset.full || el.currentSrc || el.src, el.alt, c ? c.textContent : el.alt, false]; });
+  const GROW = '<span class="grow" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="3.5"/><path d="M6 10L11 5M7.5 5H11V8.5"/></svg></span>';
+  document.querySelectorAll("main img").forEach((i) => {
+    const f = i.closest("figure"), c = f && f.querySelector(":scope > figcaption");
+    if (c) { c.classList.add("big"); c.innerHTML = "<span>" + c.innerHTML + "</span>" + GROW; return; }
+    const line = document.createElement("div"); line.className = "big tag"; line.innerHTML = "<span></span>" + GROW;
+    (f || i).after(line);
+  });
   let at = -1;
   const show = (n) => { at = (n + items.length) % items.length; const [src, alt, words, screen] = items[at]();
     img.src = src; img.alt = alt; cap.innerHTML = words; box.classList.toggle("screen", screen); box.classList.add("open"); };
