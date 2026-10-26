@@ -20,7 +20,7 @@
              red   — numbers on a picture, Report a bug
              paper is the ground; --rule (grey) and --hair (light grey) draw lines and frames; --frame boxes a map.
    SIZES     26 a section's title · 19 the text, a summary · 15 notes, captions, specs.
-   WEIGHT    400; titles (a section's, a pane's) 500.
+   WEIGHT    400; titles (a section's, a pane's, the menu's groups, Dial Tool · Help) 500.
    SPACE     one unit, --x. Prose: x before, 2x after (margins collapse: 2x between two, x under a line).
              A title has space before it and none after; what follows sits x/2 under it, so a title holds to its text.
              Tables are economical: a row has x/2 under its hairline and x under its words.
@@ -61,10 +61,10 @@ kbd{display:inline-block;min-width:1.8em;padding:0 6px;margin:1px;border:1px sol
 .top,.wrap{display:grid;grid-template-columns:var(--nav) minmax(0,1fr);gap:var(--nav-gap);max-width:var(--page);margin:0 auto;padding-inline:var(--gut)}
 .top{align-items:baseline;padding-block:var(--x) calc(var(--x) * 2);
   background:linear-gradient(var(--hair),var(--hair)) no-repeat var(--gut) 100% / calc(100% - 2 * var(--gut)) 1px}
-.brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:var(--big);text-decoration:none;white-space:nowrap}
+.brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:var(--big);font-weight:500;text-decoration:none;white-space:nowrap}
 .brand .ic{margin:0;align-self:center}.brand .ic svg{width:.8em;height:.8em;vertical-align:0}
 .page{display:flex;align-items:baseline;gap:16px;line-height:1}
-.page .title{font-size:var(--big);color:var(--grey)}
+.page .title{font-size:var(--big);font-weight:500;color:var(--grey)}
 .page .ver{margin-left:auto;font-size:var(--small);color:var(--grey)}
 .page .bug{font-size:var(--small);color:var(--red);text-decoration:none;border:1px solid var(--red);border-radius:99px;padding:5px 12px;line-height:1}
 .page .bug:hover{background:var(--red);color:var(--paper)}
@@ -73,7 +73,7 @@ kbd{display:inline-block;min-width:1.8em;padding:0 6px;margin:1px;border:1px sol
 nav{position:sticky;top:calc(var(--bar) + var(--x) * 2);align-self:start;max-height:calc(100vh - var(--bar) - var(--x) * 4);max-height:calc(100dvh - var(--bar) - var(--x) * 4);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--hair) transparent;padding-right:var(--x);font-size:var(--small);line-height:1.55}
 nav .grp{position:relative;padding-left:30px;margin:0 0 calc(var(--x) * 2)}
 nav .grp:last-child{margin-bottom:0}
-nav b{display:flex;align-items:center;margin:0}
+nav b{display:flex;align-items:center;margin:0;font-weight:500}
 nav a,nav b{padding:3px 0;border-bottom:1px solid var(--hair)}
 nav a{display:block;color:var(--grey);text-decoration:none}nav a:hover,nav a.on{color:var(--ink)}
 nav a[href="#report"]{color:var(--red)}
@@ -166,6 +166,12 @@ dd .strip{margin-bottom:0}
 .ic{display:inline;margin-right:.25em}
 .ic svg{display:inline;width:auto;height:var(--h,.8em);vertical-align:var(--v,-.04em);overflow:visible}
 .ic svg *{vector-effect:non-scaling-stroke}
+/* one line weight per text (Okay, 26 Oct 2026: "Title, help and icon gain weight to visibly match the eyes on the left. All in
+   sync … very close to our higher weight on the text itself"): an icon draws its lines at the stem of the words beside it —
+   in prose the app's own widths (1.5 px, Inter Regular's stem at 19 px is 1.7), in a title 2 px (Inter Medium's at 19 px,
+   the menu eye's line); measured on the rendered type */
+:is(h2, .brand) .ic:not([data-ic="iris"]) svg :is(path, circle, rect, line, polyline){stroke-width:2px}
+.brand .ic svg path{stroke-width:1.5px}
 .ic[data-ic="iris"]{margin-inline:.4em .55em}.ic[data-ic="iris"] svg{overflow:visible;clip-path:circle(.8em at 50% 50%)}      /* its rays grow past its box and fade (Okay, 26 Oct 2026: "it had lovely lines of rays growing … Bring back that icon"), stopped by a circle so they never reach the words round it */
 .ic svg .hub{fill:currentColor}.ic .figure{font-family:Inter,sans-serif}
 /* FIT: made by fit.cjs, not by hand */
@@ -269,10 +275,10 @@ form.report button:disabled{opacity:.4;cursor:default}
 </header></div>
 <div class="wrap">
 <nav aria-label="Contents">
-  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>Start</b><a href="#idea">Dial Tool, in short</a><a href="#first">A first dial</a><a href="#gallery">Gallery</a></div>
-  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>Tabs</b><a href="#dial">Dial</a><a href="#rings">Rings</a><a href="#hands">Hands</a><a href="#date">Windows</a><a href="#export">Export</a></div>
-  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>Around the dial</b><a href="#canvas">Around the preview</a><a href="#show">Show Case</a></div>
-  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55"/></svg>More</b><a href="#keys">Keys and touch</a><a href="#how">How do I…</a><a href="#words">Words</a><a href="#report">Report a bug</a></div>
+  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55M1.75 9.25L.7 7.7M14.75 9.25L15.8 7.7"/></svg>Start</b><a href="#idea">Dial Tool, in short</a><a href="#first">A first dial</a><a href="#gallery">Gallery</a></div>
+  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55M1.75 9.25L.7 7.7M14.75 9.25L15.8 7.7"/></svg>Tabs</b><a href="#dial">Dial</a><a href="#rings">Rings</a><a href="#hands">Hands</a><a href="#date">Windows</a><a href="#export">Export</a></div>
+  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55M1.75 9.25L.7 7.7M14.75 9.25L15.8 7.7"/></svg>Around the dial</b><a href="#canvas">Around the preview</a><a href="#show">Show Case</a></div>
+  <div class="grp"><b><svg class="eye" viewBox="0 0 16.5 16.5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 9.25C3.75 5.85 6.05 4.55 8.25 4.55S12.75 5.85 14.75 9.25C12.75 12.65 10.45 13.95 8.25 13.95S3.75 12.65 1.75 9.25Z"/><circle cx="8.25" cy="9.25" r="2.25" fill="currentColor" stroke="none"/><path d="M8.25 4.55V1.85M4.95 5.25L3.95 2.95M11.55 5.25L12.55 2.95M2.75 7.25L1.35 5.55M13.75 7.25L15.15 5.55M1.75 9.25L.7 7.7M14.75 9.25L15.8 7.7"/></svg>More</b><a href="#keys">Keys and touch</a><a href="#how">How do I…</a><a href="#words">Words</a><a href="#report">Report a bug</a></div>
 </nav>
 <main>
 <header class="intro">
