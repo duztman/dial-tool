@@ -17,6 +17,7 @@ Pictures (R36): on Okay's Mac, `~/Desktop/dial-maker/screenshots/`, one folder p
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| v1.0 beta | 27 Oct 2026 | web | [`377009b`](https://github.com/duztman/dial-tool/tree/377009b9d17e5a78923e7ee5ed78fecffa1dd334) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/377009b9d17e5a78923e7ee5ed78fecffa1dd334/web/dial-tool.html) | beta 4.94.20 released and renamed v1.0 beta; the help page's round of 27 Oct |
 | 4.93 | 25 Oct 2026 | web | [`9735539`](https://github.com/duztman/dial-tool/tree/973553925bac793adb56e7f918b8c28eb39abca2) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/973553925bac793adb56e7f918b8c28eb39abca2/web/dial-tool.html) | the Guides list in one column, the Shadows pane |
 | 4.92 | 23 Oct 2026 | web | [`7fe1dba`](https://github.com/duztman/dial-tool/tree/7fe1dba255d6fbbe3088626f1dc5a60419b2d0ab) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7fe1dba255d6fbbe3088626f1dc5a60419b2d0ab/web/dial-tool.html) | beta 4.92: the Show Case merged as show mode |
 | 4.91 | 21 Oct 2026 | web | [`58d9dc8`](https://github.com/duztman/dial-tool/tree/58d9dc8537a95422d2c687033b68f96df8f2fc02) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/58d9dc8537a95422d2c687033b68f96df8f2fc02/web/dial-tool.html) | a numerals ring is a cap-height band, resized from its outer, middle or inner circle (#488) |
