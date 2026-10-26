@@ -29,6 +29,17 @@ const WEB = path.join(__dirname, "../../web");
   });
   console.log("parts (% of the window: x y w h)", JSON.stringify(parts));
 
+  // 1b · show mode, the same way (Okay, 26 Oct 2026: "add a round numbered what is where for show case screenshot as well"):
+  // the whole window on the Watch tab, its parts measured for the page's numbers
+  await page.evaluate(() => window.dial_tool.show_mode(true, true)); await frame(); await page.waitForTimeout(1500); await page.mouse.move(700, 880); await frame();
+  await page.screenshot({ path: path.join(OUT, "show.png") });
+  const show_parts = await page.evaluate(() => {
+    const at = (q) => { const e = document.querySelector(q); if (!e) return null; const r = e.getBoundingClientRect(); return [r.x / innerWidth, r.y / innerHeight, r.width / innerWidth, r.height / innerHeight].map((v) => +(v * 100).toFixed(1)); };
+    return { title: at(".mast"), swatch: at("#grey-panel"), tabs: at(".tabs"), panes: at(".panel .form"), shen: at(".shenanigans"), topleft: at(".undos"), bottomleft: at(".backdrops"), bottomright: at(".eyes"), bar: at(".bar") };
+  });
+  console.log("show parts (% of the window: x y w h)", JSON.stringify(show_parts));
+  await page.evaluate(() => window.dial_tool.show_mode(false, true)); await frame();
+
   // 5 · the hand shapes: the app's own row of thumbs
   await tab("Hands");
   await page.screenshot({ path: path.join(OUT, "hands.png"), clip: pad(await box(".thumbs"), 4) });

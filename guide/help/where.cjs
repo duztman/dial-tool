@@ -16,7 +16,7 @@ const WHERE = {
   hands: [['button[data-tab="Hands"]'], ["panel"]], date: [['button[data-tab="Date"]'], ["panel"]],
   export: [['button[data-tab="Export"]'], ["panel"]],
   canvas: [[".undos"], [".corner"], [".backdrops", ".shadows"], [".eyes"], [".bar"]],
-  show: [["#iris-box"]],
+  show: [["#iris-box"]], gallery: [["#to-gallery"]], bar: [[".bar"]],
 };
 const TAB = { dial: "Dial", rings: "Rings", hands: "Hands", date: "Date", export: "Export" };
 

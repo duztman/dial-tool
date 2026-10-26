@@ -12,7 +12,7 @@ const WANT = {
   dial: 'button[data-tab="Dial"]', rings: 'button[data-tab="Rings"]', hands: 'button[data-tab="Hands"]', windows: 'button[data-tab="Date"]', export: 'button[data-tab="Export"]',
   mark: ".mast", undo: "#undo", redo: "#redo", history: "#history-more", versions: "#versions",
   guides: "#guides", case: "#case", xray: "#xray", backdrop: "#backdrop", shadows: "#shadows",
-  tiny: "#tiny-open", eye: "#eye-box", iris: "#iris-box", play: "#play", zoom: ".zoomwell", fit: "#fit",
+  tiny: "#tiny-open", eye: "#eye-box", iris: "#iris-box", play: "#play", zoom: "#zoom-out", zoomin: "#zoom-in", fit: "#fit",      // the bar's view: three squares (4.94.9)
 };
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });

@@ -1,5 +1,7 @@
 # Help page — additions, waiting
 
+*26 Oct 2026: the page rewritten against beta 4.94.20 — every pane and row, the Gallery's twenty cards, How do I… in six groups, Words grown to 64, show mode with its numbered picture. What is below is what still waits.*
+
 *Started 24 Oct 2026. Okay: "Keep them inside a text doc, we'll check when full." Nothing here is on the page yet. Each line names where in the code it was read (`web/src/app.js` unless said), so it can be checked before it moves to `index.html`. Written against beta 4.92.7.*
 
 ## Sorted, 24 Oct 2026

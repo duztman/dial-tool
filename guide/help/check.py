@@ -2,7 +2,7 @@
 #   python3 guide/help/check.py          report
 #   python3 guide/help/check.py --done   after the page is revised: record this app version and its labels as checked
 #
-# It reads every row label in web/src/app.js (the ROWS block: hdr, num, chk, seg, pick, pop, txt, col) and
+# It reads every row label in web/src/rows.js (the ROWS block: hdr, num, chk, seg, pick, pop, txt, col) and
 #  1. compares them with labels.txt, the labels at the last check: labels added and gone since;
 #  2. looks for each label in the page's text: a label the page never names is listed, unless known.txt says why;
 #  3. compares the app's VERSION with the version the page was checked against (<meta name="checked">), and lists
@@ -12,7 +12,7 @@ from pathlib import Path
 
 here = Path(__file__).parent
 root = here.parent.parent
-app = (root / "web/src/app.js").read_text()
+app = (root / "web/src/rows.js").read_text()      # the panel's rows (app.js is in parts since 4.94, #69)
 page = (here / "index.html").read_text()
 version = re.search(r'VERSION = "([^"]+)"', (root / "web/src/geometry.js").read_text())[1]
 checked = re.search(r'<meta name="checked" content="([^"]+)"', page)
@@ -39,6 +39,15 @@ added = [l for l in labels if l not in before]
 gone = [l for l in before if l not in labels]
 missing = [l for l in labels if l.lower().replace("’", "'") not in text and l not in known]
 
+# every list a two-column grid: a name and its line, so one more of either shifts every row after it (Okay, 26 Oct 2026: the Rings rows out of line)
+def out_of_line(attrs, dl):
+    if 'class="rows two"' in attrs:      # a pane without the spec column: a name and its line
+        return any(len(re.findall(r"<dt[ >]", r)) != 1 or len(re.findall(r"<dd[ >]", r)) != 1 for r in re.findall(r"<div>(.*?)</div>\s*(?=<div>|$)", dl.strip(), flags=re.S))
+    if 'class="rows"' in attrs:      # the grid's rows: each a name, its line and its spec, three cells (Okay, 26 Oct 2026: "One grid to rule everything")
+        return any(len(re.findall(r"<dt[ >]", r)) != 1 or len(re.findall(r"<dd[ >]", r)) != 2 for r in re.findall(r"<div>(.*?)</div>\s*(?=<div>|$)", dl.strip(), flags=re.S))
+    return len(re.findall(r"<dt[ >]", dl)) != len(re.findall(r"<dd[ >]", dl))
+bad = [i for i, (attrs, dl) in enumerate(re.findall(r"<dl([^>]*)>(.*?)</dl>", page, flags=re.S)) if out_of_line(attrs, dl)]
+if bad: print(f"LISTS OUT OF LINE (a <dt> without its one <dd>): lists {bad}"); sys.exit(1)
 print(f"app {version} · page checked against {checked}")
 if checked != version:
     log = (root / "docs/changelog.md").read_text()
