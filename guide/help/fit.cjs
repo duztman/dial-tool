@@ -21,6 +21,7 @@ const FIX = {
   play: { h: CAP, why: "a filled disc looks larger than a drawn ring of the same size: no overshoot" },
   "hand-disc": { h: CAP, why: "a filled disc, as play" },
   "shape-dot": { h: CAP, why: "a filled disc, as play" },
+  iris: { box: true, h: CAP * 1.3, why: "its rays run far out and fade under a mask: measure the box the app shows" },
 };
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
@@ -48,6 +49,7 @@ const FIX = {
     else if (a < 0.6) H = CAP * 1.3;
     else if (a > 1.6) H = Math.min(CAP * 0.85, 1.6 / a);
     else H = CAP * 1.1;
+    if (FIX[k] && FIX[k].box) [x, y, w, h] = box;
     if (FIX[k]) H = FIX[k].h;
     const v = (FIX[k] && FIX[k].mid !== undefined ? FIX[k].mid : CAP / 2) - H / 2;
     css += `.ic[data-ic="${k}"]{--h:${r(H)}em;--v:${r(v)}em}\n`;
