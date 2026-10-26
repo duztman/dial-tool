@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## help page · 26 Oct 2026 — Watch notes on the grid, with their sign; every word readable
+
+Okay, 26 Oct 2026, 03:09: "Watch's placed well into the grid. Watches multiply overall, and receive an icon; triangle with watch hands inside. Should be able to read all the word when showing weekdays and such. Content visible. Arabic japanese and stuff too." In question mode: more Watch notes; the icon, then "Watch ·".
+
+- The grid's widths in px (`--name` 171, `--spec` 190: 9 and 10 of the text's 19 px), so a note in smaller type stands on the text's column.
+- The Watch sign: a rounded triangle with a watch's two hands at 10:10 in it, before "Watch ·".
+- The cautions moved out of their rows into Watch notes at their pane's foot: what stays out of a link (Scale everything with it, Weight %, a watch face's name), what comes after v1 (a background, a hand or a picture of your own), what replaces the dial (Reset, Blank face, Edit this dial), what a link may not keep.
+- Labels and Placement show the quarter from 12 to 3 (every word, Eastern Arabic and Chinese too); those and the windows drawn at twice the size they show.
+
 ## help page · 26 Oct 2026 — the pictures in the help's greys; the disc hand; the windows' choices
 
 Okay, 26 Oct 2026, 03:04: "a neutral gray was the help's main. Replace the blue. All other details are fine. Disc hands are drawn with a mistake floating marker, bigger transparent disc for previews. Windows might like some of these squares too. Dates weekdays, am pm. Do not overdo but illustrate."
