@@ -1,5 +1,18 @@
 # Dial Tool — changelog
 
+## help page · 26 Oct 2026, evening — the release audit: summary first, one voice, one grid
+
+Okay, 26 Oct 2026, 17:32: "We are auditing the help document. The software is locked, we are going to release … Are there redundant things? Icons section necessary? … Better information hierarchy. Start sections with summary, then go into detail bit by bit as necessary. Prose. Economical, with a heart … Three colors, three font sizes. No bolds, italics … x for before, 2x for after. Hr Lines can get the two grays only … Japanese zen and good plenty white space." Built in rounds on the private preview page, each on his word.
+
+- **Structure**: 17 sections to 14, about 14,250 words to 11,000. Signs went (every icon now stands in the sentence about its control); The idea and The screen became *Dial Tool, in short*; the two Gallery sections one; Keys and pointer with iPad and desktop *Keys and touch*; How do I… one line a task with a link to its section; Words the trade's terms only (64 to 36); no reference to the guide.
+- **Every section** opens with a summary of the panes below it (19 px grey, beside its map), then the panes in the app's order and words. Long panes split under the app's pane names; numbered pictures (the window, the Show Case, the font sheet, Guides, Shadows, the bar) number their rows to match. `check.py`: all 154 row labels named.
+- **The look** (`index.html`'s stylesheet, twelve modules): ink · grey · red; 26 · 19 · 15 px; weight 400, titles 500; one unit `--x` (12 px): prose x before, 2x after, a title none after (its text x/2 under it), table rows x/2 and x; rules in two greys only; the page 1100 px wide at most.
+- **Icons in prose** fitted like letters by `fit.cjs`: each icon's drawing measured, its viewBox cut to it, its height and baseline set in em from Inter's cap height; four set by hand, each with its reason.
+- **The menu**: its hairlines; the eye beside the active group, a dot beside the active entry; one line for jumping and marking (a jump lands a section's rule on the menu's first line, and that section is marked); it scrolls inside the visible screen.
+- **The maps**: a caricature of the window on one grid (one inset, the top buttons and the panel's title on one row, stacks at one pitch), every small button a dot, the target in ink, a 3 px red box centred on it; a 1 px square frame; a caption under each. The Show Case's way in and way out side by side, an arrow between. A Gallery map.
+- **Pictures**: the windows and the hands shot from the app itself (`variants.mjs` loads each as a settings file); the windows each on their own day, the figures at 56 %, a grey disc and frame; the hands on a bare plate without the seconds hand, the pivot centred; the straps as square crops. Every picture opens whole in the lightbox, ‹ › and the arrow keys stepping through them.
+- **Show Case**, the public name, throughout; show mode stays the internal word.
+
 ## help page · 26 Oct 2026 — the bar, piece by piece; one stylesheet, one grid
 
 Okay, 26 Oct 2026, 03:25: "The black bar and its screenshots, buttons like start stop am date etc. and pieces not screenshotted and explained thorougly. The design needs better adherence to columns, discrepancies exist. Check the css, it might be too bloated … Dial crops elegant, kudos. However some like numbers placement auto rotate etc better show all dial."
