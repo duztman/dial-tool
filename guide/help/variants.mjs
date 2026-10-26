@@ -64,9 +64,9 @@ SETS.give = [["nothing", "nothing", 0, 0], ["skip", "Skip where", 2, 0], ["knock
 // between inks and dial floor"): the disc a light grey under the white frame and marks, so the hole's edge shows; the
 // figures at 56 % of the hole, with room round them; each picture on its own day, so the dates differ; no neighbours
 // peeking at the hole's edge, no hands across the window (they have no picture of their own); the full day name drawn nearer the centre, clear of the ticks
-const DISC = [0.76, 0.76, 0.76, 1];
+const DISC = [0.76, 0.76, 0.76, 1], FRAME = [0.55, 0.55, 0.55, 1];      // a window's frame a grey of its own, between the plate and the disc (Okay, 26 Oct 2026: "Window borders another tone of gray instead of white")
 const win = (set, date = "2026-10-17") => { const S = base(); S.da_on = true; S.da_size = 56; S.da_disc_c = DISC; S.date = date; S.da_neighbours = false; S.ha_on = false;
-  (S.windows || []).forEach((w) => { w.disc_c = DISC; }); Object.assign(S, set); return S; };
+  S.da_ink = FRAME; (S.windows || []).forEach((w) => { w.disc_c = DISC; w.ink = FRAME; }); Object.assign(S, set); return S; };
 SETS.window = [["date", "2026-10-17"], ["day", "2026-10-29"], ["am · pm", "2026-10-17"], ["moon phase", "2026-10-21"]].map(([k, d]) => [k.replace(/[^a-z]+/g, ""), k === "moon phase" ? "moon" : k, win({ da_kind: G.WINDOW_KINDS.indexOf(k) }, d)]);      // zoomed on the window, as the other window strips (Okay, 26 Oct 2026: "Should be able to read all the word")
 SETS.wbig = [["date", "date", win({ da_kind: 0 }, "2026-10-08")], ["big", "Big date", win({ da_kind: 4 }, "2026-10-26")]];
 SETS.wwritten = [["short", "Short", win({ da_kind: 1, da_day_form: 0 }, "2026-10-24")], ["full", "Full", win({ da_kind: 1, da_day_form: 1, da_w: 8.6, da_r: 9.9 }, "2026-10-24")]];
