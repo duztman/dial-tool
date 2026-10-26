@@ -54,7 +54,9 @@ def bbox(t):
     x, y = DOTS[t]; return (X(x) - R_DOT, y - R_DOT, X(x) + R_DOT, y + R_DOT)
 
 def box(targets):
-    bs = [bbox(t) for t in targets]
+    return box_round([bbox(t) for t in targets])
+
+def box_round(bs):
     l, t, r, b = min(x[0] for x in bs), min(x[1] for x in bs), max(x[2] for x in bs), max(x[3] for x in bs)
     p = max(1, min(PAD, l - 1.5, t - 1.5, W - 1.5 - r, H - 1.5 - b))      # the same room on all four sides: less only where an edge is nearer, so the box stays centred
     return f'<rect x="{l - p:.2f}" y="{t - p:.2f}" width="{r - l + 2 * p:.2f}" height="{b - t + 2 * p:.2f}" rx="{min(p + 1.5, 4):.2f}" class="mark"/>'
@@ -81,27 +83,35 @@ def small_map(name):
             f'{dots}{boxes}</svg>')
 
 WHERE_CAP = '<span class="where">The red box is where this sits on the screen. Press for the larger view.</span>'
-CAPS = {"show-watch": '<span class="where">The Show Case itself: the panel on the right, the watch on its own ground. Press for the larger view.</span>'}
+CAPS = {"show": '<span class="where">In: the switch at the preview’s bottom right.</span>',
+        "show-watch": '<span class="where">Out: the same switch, at the watch’s bottom right.</span>'}
 
 def show_map():
-    # show mode, simply (Okay, 26 Oct 2026: "add a second: the panel and bg changed version with a simple silhouette watch
-    # with case and bracelet"): the canvas on its own ground at left, the panel on the right, the bar along the foot
-    px = X(66)                                     # the panel's left edge, as shoot.cjs measures show mode
-    tabs = "".join(f'<circle cx="{px + 8 + i * 13.2:.1f}" cy="10.2" r="{R_TAB}" class="tab"/>' for i in range(4))
+    # the Show Case, simply (Okay, 26 Oct 2026: "add a second: the panel and bg changed version with a simple silhouette
+    # watch with case and bracelet"; "Show the exit from show case as well on the thumb"): the canvas on its own ground at
+    # left, the panel on the right (from 74.1 %, as measured on the app), the bar along the foot; the way out boxed
+    px = X(74.1)
+    tabs = "".join(f'<circle cx="{px + 6.5 + i * 9.6:.1f}" cy="10.2" r="{R_TAB}" class="tab"/>' for i in range(4))
     cx, cy = px / 2, 46.6
-    links = "".join(f'<rect x="{cx - 9}" y="{y:.1f}" width="18" height="5" rx="1" class="link"/>' for y in [cy - 31, cy - 25.5, cy + 20.5, cy + 26])
+    dot = lambda x, y, on=False: f'<circle cx="{x:.1f}" cy="{y}" r="{R_DOT}" class="{"dot on" if on else "dot"}"/>'
+    dots = "".join(dot(X(x), 3.1) for x in (2, 4.2, 6.4, 11)) + dot(X(4.3), 90) + dot(X(72.2), 85.8) + dot(X(72.2), 90, True)
+    shen = "".join(dot(px + 6 + i * 6.8, 89.6) for i in range(6))
+    out = box_round([(X(72.2) - R_DOT, 90 - R_DOT, X(72.2) + R_DOT, 90 + R_DOT)])
+    seams = "".join(f'<path d="M{cx - 9} {y:.1f}H{cx + 9}" class="seam"/>' for y in (cy - 33, cy - 28, cy - 23, cy + 23, cy + 28, cy + 33, cy + 38))
     return (f'<svg viewBox="0 0 {W} {H}" aria-hidden="true">'
             f'<rect width="{W}" height="{H}" class="ground"/>'
             f'<circle cx="{cx}" cy="{cy}" r="42" class="spot"/>'
             f'<rect x="{px}" width="{W - px}" height="{BAR_Y}" class="panel"/>'
             f'<path d="M{px + 4} 2.3H{px + 22}" class="title"/><path d="M{px + 3} 14.2H{W - 3}" class="rule"/>{tabs}'
             f'<rect x="{px + 3}" y="15" width="{W - px - 6}" height="31.4" class="pin"/>'
-            + "".join(f'<path d="M{px + 5} {y}H{W - 5}" class="line"/>' for y in (20, 26, 32, 38, 52, 58, 64)) +
-            f'<rect x="{cx - 9}" y="4" width="18" height="{BAR_Y - 8}" class="band"/>{links}'
+            + "".join(f'<path d="M{px + 5} {y}H{W - 5}" class="line"/>' for y in (20, 26, 32, 38, 52, 58, 64, 70)) +
+            f'<path d="M{px + 3} 85H{W - 3}" class="rule"/>{shen}'
+            f'<rect x="{cx - 9}" y="4" width="18" height="{BAR_Y - 8}" class="band"/>{seams}'
             f'<rect x="{cx - 14}" y="{cy - 20}" width="28" height="40" rx="4" class="lugs"/>'
             f'<circle cx="{cx}" cy="{cy}" r="17" class="case"/><circle cx="{cx}" cy="{cy}" r="12.5" class="face"/>'
             f'<path d="M{cx} {cy}L{cx - 5.5} {cy - 3.5}M{cx} {cy}L{cx + 8.5} {cy - 5}" class="hands"/>'
-            f'<rect y="{BAR_Y}" width="{W}" height="{H - BAR_Y}" class="bar"/><path d="M{X(33)} 96.6H{X(60)}" class="ruler"/></svg>')
+            f'<rect y="{BAR_Y}" width="{W}" height="{H - BAR_Y}" class="bar"/><path d="M{X(33)} 96.6H{X(60)}" class="ruler"/>'
+            f'{dots}{out}</svg>')
 
 text = page.read_text()
 text = re.sub(r'<i class="ic" data-ic="([a-z0-9-]+)">.*?</i>', lambda m: f'<i class="ic" data-ic="{m[1]}">{icon(m[1])}</i>', text, flags=re.S)
