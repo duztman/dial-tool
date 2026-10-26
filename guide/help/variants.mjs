@@ -30,8 +30,9 @@ const alone = (S, keep) => { S.rings = S.rings.filter((r) => keep.includes(r.nam
 
 // each set: [file word, caption, settings]
 const SETS = {};
-// Hands › Shape: the hour and minute hands in each shape (the file shape, a picture of one's own, is not built)
-SETS.hand = G.HAND_SHAPES.map((shape, i) => [shape, shape, (() => { if (shape === "file") return null; const S = base(); S.ha_hour = { ...S.ha_hour, shape: i }; S.ha_minute = { ...S.ha_minute, shape: i };
+// Hands › Shape: the hour and minute hands in each shape on a bare plate, no marks or windows (Okay, 26 Oct 2026: "Just to
+// show varieties of hands. Simplify"); the file shape, a picture of one's own, is not built
+SETS.hand = G.HAND_SHAPES.map((shape, i) => [shape, shape, (() => { if (shape === "file") return null; const S = base(); S.rings.forEach((r) => { r.on = false; }); S.da_on = false; S.ha_hour = { ...S.ha_hour, shape: i }; S.ha_minute = { ...S.ha_minute, shape: i };
   if (shape === "disc") { S.ha_hour = { ...S.ha_hour, disc_d: 2 * S.ha_hour.len, c: [0.86, 0.86, 0.86, 0.45], mark_as: 1, mark_c: [1, 1, 1, 1], mark_len: 2.4, mark_w: 0.8 }; S.ha_minute = { ...S.ha_minute, shape: 0 }; }      // a disc hand: one disc, as wide as its length reaches, see-through so the dial shows, its marker painted at its edge (Okay: "bigger transparent disc for previews")
   return S; })()]).filter((x) => x[2]);
 // Rings › kinds: one ring of each kind, alone on the plate
@@ -57,18 +58,24 @@ SETS.from = G.FROM.map((f, i) => [f, f[0].toUpperCase() + f.slice(1), (() => { c
 SETS.give = [["nothing", "nothing", 0, 0], ["skip", "Skip where", 2, 0], ["knock", "Knock out", 0, 2]].map(([w, c, skip, knock]) => [w, c, (() => { const S = base(); S.da_on = false; S.ha_on = false;
   S.rings = [{ ...ring(S, "Numerals") }, { ...G.RING_BASE, kind: 0, name: "ticks", c: INK_GREY, r: 16, count: 60, len: 6.5, w: 0.3, skip, knock, clear: 0.45 }]; return S; })()]);
 // Windows: a few of their choices, zoomed on the window at 3 (Okay, 26 Oct 2026: "Dates weekdays, am pm. Do not overdo but illustrate")
-const win = (set) => { const S = base(); S.da_on = true; S.da_size = 62; Object.assign(S, set); return S; };      // the text at the code's own 62 % (the First dial prints its date larger, and a word would overflow)
-SETS.window = ["date", "day", "am · pm", "moon phase"].map((k) => [k.replace(/[^a-z]+/g, ""), k === "moon phase" ? "moon" : k, win({ da_kind: G.WINDOW_KINDS.indexOf(k) })]);      // zoomed on the window, as the other window strips (Okay, 26 Oct 2026: "Should be able to read all the word")
-SETS.wbig = [["date", "date", win({ da_kind: 0 })], ["big", "Big date", win({ da_kind: 4 })]];
-SETS.wwritten = [["short", "Short", win({ da_kind: 1, da_day_form: 0 })], ["full", "Full", win({ da_kind: 1, da_day_form: 1, da_w: 8.6 })]];
-SETS.wnames = ["EN", "TR", "DE"].map((n, i) => [n.toLowerCase(), n, win({ da_kind: 1, da_names: ["EN", "TR", "DE", "FR", "IT"].indexOf(n) })]);
+// the windows (Okay, 26 Oct 2026: "better number spacing, number varieties (not just one) better color separation
+// between inks and dial floor"): the disc a light grey under the white frame and marks, so the hole's edge shows; the
+// figures at 56 % of the hole, with room round them; each picture on its own day, so the dates differ; no neighbours
+// peeking at the hole's edge, no hands across the window (they have no picture of their own); the full day name drawn nearer the centre, clear of the ticks
+const DISC = [0.76, 0.76, 0.76, 1];
+const win = (set, date = "2026-10-17") => { const S = base(); S.da_on = true; S.da_size = 56; S.da_disc_c = DISC; S.date = date; S.da_neighbours = false; S.ha_on = false;
+  (S.windows || []).forEach((w) => { w.disc_c = DISC; }); Object.assign(S, set); return S; };
+SETS.window = [["date", "2026-10-17"], ["day", "2026-10-29"], ["am · pm", "2026-10-17"], ["moon phase", "2026-10-21"]].map(([k, d]) => [k.replace(/[^a-z]+/g, ""), k === "moon phase" ? "moon" : k, win({ da_kind: G.WINDOW_KINDS.indexOf(k) }, d)]);      // zoomed on the window, as the other window strips (Okay, 26 Oct 2026: "Should be able to read all the word")
+SETS.wbig = [["date", "date", win({ da_kind: 0 }, "2026-10-08")], ["big", "Big date", win({ da_kind: 4 }, "2026-10-26")]];
+SETS.wwritten = [["short", "Short", win({ da_kind: 1, da_day_form: 0 }, "2026-10-24")], ["full", "Full", win({ da_kind: 1, da_day_form: 1, da_w: 8.6, da_r: 9.9 }, "2026-10-24")]];
+SETS.wnames = ["EN", "TR", "DE"].map((n, i) => [n.toLowerCase(), n, win({ da_kind: 1, da_names: ["EN", "TR", "DE", "FR", "IT"].indexOf(n) }, "2026-10-30")]);
 SETS.wshows = [["disc", "Disc", win({ da_kind: 2, da_ampm_form: 0 })], ["words", "Words", win({ da_kind: 2, da_ampm_form: 1 })]];
 SETS.wshape = [["rectangle", "rectangle", 1, 0], ["circle", "circle", 2, 0], ["polygon", "polygon", 3, 0], ["arch", "arch · moon", 4, 3], ["half", "half · am · pm", 6, 2]]
-  .map(([w, c, shape, kind]) => [w, c, win({ da_kind: kind, da_shape: shape })]);
+  .map(([w, c, shape, kind], i) => [w, c, win({ da_kind: kind, da_shape: shape }, ["2026-10-12", "2026-10-03", "2026-10-21", "2026-10-21", "2026-10-21"][i])]);
 const WIN_VIEW = (r) => `viewBox="${r - 6} -3 12 6"`;      // the window at 3, 12 × 6 mm round it
 const pictures = [];
 const zoom = (svg, r) => svg.replace(/viewBox="[^"]+"/, `viewBox="${-r} ${-r} ${2 * r} ${2 * r}"`);
-for (const [set, list] of Object.entries(SETS)) for (const [word, caption, S] of list) pictures.push({ file: `v-${set}-${word}`, caption, svg: set.startsWith("w") ? card(G, S).picture.replace(/viewBox="[^"]+"/, WIN_VIEW(S.da_r)) : set === "labels" ? card(G, S).picture.replace(/viewBox="[^"]+"/, 'viewBox="-7 -17.5 24.5 24.5"') : set === "hand" ? zoom(card(G, S).picture, 13) : set === "kind" && word === "text" ? zoom(card(G, S).picture, 9) : set === "give" ? card(G, S).picture.replace(/viewBox="[^"]+"/, 'viewBox="6 -5.5 11 11"') : card(G, S).picture, size: set.startsWith("w") || set === "labels" || set === "place" ? 288 : 192, h: set.startsWith("w") ? 144 : set === "labels" || set === "place" ? 288 : 192 });      // the labels: the quarter from 12 to 3, so every word reads; the placements whole, where turning shows (Okay, 26 Oct 2026: "some like numbers placement auto rotate etc better show all dial") (Okay, 26 Oct 2026: "Should be able to read all the word … Arabic japanese and stuff too"); those and the windows at twice the size they show      // the hands: their middle, where the shapes differ; Give way: round the 3, where the ticks meet the figure
+for (const [set, list] of Object.entries(SETS)) for (const [word, caption, S] of list) pictures.push({ file: `v-${set}-${word}`, caption, svg: set.startsWith("w") ? card(G, S).picture.replace(/viewBox="[^"]+"/, WIN_VIEW(S.da_r)) : set === "labels" ? card(G, S).picture.replace(/viewBox="[^"]+"/, 'viewBox="-7 -17.5 24.5 24.5"') : set === "hand" ? zoom(card(G, S).picture, 11.8) : set === "kind" && word === "text" ? zoom(card(G, S).picture, 9) : set === "give" ? card(G, S).picture.replace(/viewBox="[^"]+"/, 'viewBox="6 -5.5 11 11"') : card(G, S).picture, size: set.startsWith("w") || set === "labels" || set === "place" ? 288 : 192, h: set.startsWith("w") ? 144 : set === "labels" || set === "place" ? 288 : 192 });      // the labels: the quarter from 12 to 3, so every word reads; the placements whole, where turning shows (Okay, 26 Oct 2026: "some like numbers placement auto rotate etc better show all dial") (Okay, 26 Oct 2026: "Should be able to read all the word … Arabic japanese and stuff too"); those and the windows at twice the size they show      // the hands: their middle, a square inside the plate, where the shapes differ; Give way: round the 3, where the ticks meet the figure
 // Export › Print: the colour file and its Mono print mask
 { const S = G.fresh_settings(base());
   pictures.push({ file: "v-print-colour", caption: "colour", svg: card(G, base()).picture, size: 192 });
@@ -102,5 +109,5 @@ for (const [k, c] of [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"]
 for (const [st, l, c] of [[1, 0, "Miyazaki · Dramatic"], [0, 0, "Engineer · Dramatic"], [1, 1, "Miyazaki · Flat"], [0, 1, "Engineer · Flat"]]) await shoot(`v-style-${st}${l}`, c, { bezel: 1, strap: 1, w_view: 0, w_style: st, w_lighting: l });
 for (const [st, c] of [[1, "leather"], [3, "NATO"], [2, "bracelet"], [4, "links"]]) await shoot(`v-strap-${c.toLowerCase()}`, c, { bezel: 1, strap: st, w_view: 1, w_style: 1, w_lighting: 0 });
 await browser.close();
-fs.writeFileSync("/tmp/claude-0/help/variants.json", JSON.stringify({ pictures: pictures.map(({ file, caption }) => ({ file, caption })), shots }, null, 1));
+fs.mkdirSync("/tmp/claude-0/help", { recursive: true }); fs.writeFileSync("/tmp/claude-0/help/variants.json", JSON.stringify({ pictures: pictures.map(({ file, caption }) => ({ file, caption })), shots }, null, 1));
 console.log(pictures.length, "dial pictures ·", shots.length, "watch pictures");
