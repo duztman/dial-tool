@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## v1.0 beta · 27 Oct 2026 — beta 4.94.20 released and renamed
+
+Okay, 27 Oct 2026, 01:34: "Ok now publish dev on main and call this a v1.0 beta version from now on." The app is beta 4.94.20 with its version renamed `v1.0 beta` (`VERSION` in `geometry.js`; `tools/release.sh` reads and writes the new form, its row in `docs/versions.md` reads `v1.0 beta`). Counting goes on from it: v1.0.1 beta for a small push, v1.1 beta for a step (R19).
+
+The help page's round of the same night, from his marked-up PDF: a pane's title and its first sentence on one line, grey after a middle dot; 1.5× the room above sub-headings; no line starts with a middle dot; icons in prose a hair smaller and lower; cropped tiles filled grey; every lightbox picture sharp (`-full` copies); numbered Positions, ring list and Sun; On this dial and the light's effects marked by red pills; the Show Case's switch shot from the app; the controller under On an iPad; Versions' second card in Bodoni; mono at the text's x-height; Words' icons after their terms; The canvas and The time bar in the menu; the bug form without a tester code, its reports rows in the Google Sheet "Dial Tool bug reports" through `guide/help/report-sheet.gs`.
+
 ## help page · 26 Oct 2026, evening — the release audit: summary first, one voice, one grid
 
 Okay, 26 Oct 2026, 17:32: "We are auditing the help document. The software is locked, we are going to release … Are there redundant things? Icons section necessary? … Better information hierarchy. Start sections with summary, then go into detail bit by bit as necessary. Prose. Economical, with a heart … Three colors, three font sizes. No bolds, italics … x for before, 2x for after. Hr Lines can get the two grays only … Japanese zen and good plenty white space." Built in rounds on the private preview page, each on his word.
