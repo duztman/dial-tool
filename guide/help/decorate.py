@@ -81,7 +81,7 @@ def small_map(name):
             f'{dots}{boxes}</svg>')
 
 WHERE_CAP = '<span class="where">The red box is where this sits on the screen. Press for the larger view.</span>'
-CAPS = {"show-watch": '<span class="where">Show mode itself: the panel on the right, the watch on its own ground. Press for the larger view.</span>'}
+CAPS = {"show-watch": '<span class="where">The Show Case itself: the panel on the right, the watch on its own ground. Press for the larger view.</span>'}
 
 def show_map():
     # show mode, simply (Okay, 26 Oct 2026: "add a second: the panel and bg changed version with a simple silhouette watch

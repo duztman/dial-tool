@@ -94,7 +94,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | Term | Meaning |
 |---|---|
 | **Show mode** · **edit mode** | The tool's two modes: edit mode is the tool as it is; show mode (from the iris switch, ACTIVATE SHOWCASE) slides the panel out and the show column in — the whole watch, tabs Dial · Watch · Light · Export, **Shenanigans** at its foot. |
-| **Showcase** | Retired word (22 Oct 2026); means **show mode**. |
+| **Show Case** | The public name of **show mode**: what a reader sees, in the app's title line ("Dial Tool Show Case") and on the help page (Okay, 26 Oct 2026: "Show mode is an internal term, public facing name is show case"). **Showcase**, one word, is retired (22 Oct 2026). |
 | **Dial Show Case** | The standalone page at `/show-case/`, built from `web/src/watch.js`, kept as a sandbox. |
 | **Engineer** · **Miyazaki** | The watch's two paints: ink outlines and hard shadows; flat shapes cut by light, a flare. |
 | **Shown dot** (show mode) | A line's show or hide in show mode's Dial tab: a filled dot shown, a ring hidden (`shown_dot`); the eye is a pane's fold. |
