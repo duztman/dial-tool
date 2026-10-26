@@ -91,7 +91,7 @@ h2 > .ic{margin-right:.35em}
 .summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:calc(var(--x) * 4);align-items:start;margin:var(--x) 0 calc(var(--x) * 4)}
 .summary .lead{margin:0;color:var(--grey)}
 .map{display:block;width:var(--map-w);line-height:0;cursor:zoom-in}
-.map svg{width:100%;height:auto;aspect-ratio:16/10;border:6px solid var(--frame);border-radius:8px;overflow:hidden}
+.map svg{display:block;width:100%;height:auto;aspect-ratio:16/10;box-shadow:0 0 0 1px var(--frame)}      /* a 1 px frame drawn outside the picture, so it takes no room from it and leaves no gap (Okay, 26 Oct 2026: "One pixel border. Square. Fits perfectly around without gaps") */
 .map .where{display:block;margin-top:var(--x);font-size:var(--small);line-height:1.35;color:var(--grey);text-wrap:pretty}
 .map .backdrop{fill:var(--hair)}.map .panel{fill:var(--paper);stroke:var(--hair);stroke-width:.6}.map .pane{fill:var(--hair)}.map .tab{fill:none;stroke:var(--grey);stroke-width:.8}.map .bar{fill:var(--ink)}
 .map .dial{fill:var(--ink)}.map .ticks{stroke:var(--paper);stroke-width:1.6}.map .hands{stroke:var(--paper);stroke-width:2.6;stroke-linecap:round}.map .cap{fill:var(--paper)}

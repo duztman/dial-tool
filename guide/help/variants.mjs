@@ -30,9 +30,11 @@ const alone = (S, keep) => { S.rings = S.rings.filter((r) => keep.includes(r.nam
 
 // each set: [file word, caption, settings]
 const SETS = {};
-// Hands › Shape: the hour and minute hands in each shape on a bare plate, no marks or windows (Okay, 26 Oct 2026: "Just to
-// show varieties of hands. Simplify"); the file shape, a picture of one's own, is not built
-SETS.hand = G.HAND_SHAPES.map((shape, i) => [shape, shape, (() => { if (shape === "file") return null; const S = base(); S.rings.forEach((r) => { r.on = false; }); S.da_on = false; S.ha_hour = { ...S.ha_hour, shape: i }; S.ha_minute = { ...S.ha_minute, shape: i };
+// Hands › Shape: the hour and minute hands in each shape on a bare plate, no marks, windows or seconds hand (Okay, 26 Oct
+// 2026: "Just to show varieties of hands. Simplify"; "some are dangerously touching the corners, better spacing. You can
+// crop out the second if it's consistent. Center the center"): the pivot in the middle of a 26 mm square, the minute
+// tip 2.5 mm inside it, the plate 38 mm so the square is all plate. The file shape, a picture of one's own, is not built
+SETS.hand = G.HAND_SHAPES.map((shape, i) => [shape, shape, (() => { if (shape === "file") return null; const S = base(); S.rings.forEach((r) => { r.on = false; }); S.da_on = false; S.dial_d = 38; S.ha_second = { ...S.ha_second, on: false }; S.ha_hour = { ...S.ha_hour, shape: i }; S.ha_minute = { ...S.ha_minute, shape: i };
   if (shape === "disc") { S.ha_hour = { ...S.ha_hour, disc_d: 2 * S.ha_hour.len, c: [0.86, 0.86, 0.86, 0.45], mark_as: 1, mark_c: [1, 1, 1, 1], mark_len: 2.4, mark_w: 0.8 }; S.ha_minute = { ...S.ha_minute, shape: 0 }; }      // a disc hand: one disc, as wide as its length reaches, see-through so the dial shows, its marker painted at its edge (Okay: "bigger transparent disc for previews")
   return S; })()]).filter((x) => x[2]);
 // Rings › kinds: one ring of each kind, alone on the plate
@@ -75,7 +77,10 @@ SETS.wshape = [["rectangle", "rectangle", 1, 0], ["circle", "circle", 2, 0], ["p
 const WIN_VIEW = (r) => `viewBox="${r - 6} -3 12 6"`;      // the window at 3, 12 × 6 mm round it
 const pictures = [];
 const zoom = (svg, r) => svg.replace(/viewBox="[^"]+"/, `viewBox="${-r} ${-r} ${2 * r} ${2 * r}"`);
-for (const [set, list] of Object.entries(SETS)) for (const [word, caption, S] of list) pictures.push({ file: `v-${set}-${word}`, caption, svg: set.startsWith("w") ? card(G, S).picture.replace(/viewBox="[^"]+"/, WIN_VIEW(S.da_r)) : set === "labels" ? card(G, S).picture.replace(/viewBox="[^"]+"/, 'viewBox="-7 -17.5 24.5 24.5"') : set === "hand" ? zoom(card(G, S).picture, 11.8) : set === "kind" && word === "text" ? zoom(card(G, S).picture, 9) : set === "give" ? card(G, S).picture.replace(/viewBox="[^"]+"/, 'viewBox="6 -5.5 11 11"') : card(G, S).picture, size: set.startsWith("w") || set === "labels" || set === "place" ? 288 : 192, h: set.startsWith("w") ? 144 : set === "labels" || set === "place" ? 288 : 192 });      // the labels: the quarter from 12 to 3, so every word reads; the placements whole, where turning shows (Okay, 26 Oct 2026: "some like numbers placement auto rotate etc better show all dial") (Okay, 26 Oct 2026: "Should be able to read all the word … Arabic japanese and stuff too"); those and the windows at twice the size they show      // the hands: their middle, a square inside the plate, where the shapes differ; Give way: round the 3, where the ticks meet the figure
+const from_app = [];
+const PAPER = [0.953, 0.945, 0.925, 1];      // the help page's ground behind the plate's edge
+for (const [set, list] of Object.entries(SETS)) for (const [word, caption, S] of list) if (set === "hand" || set.startsWith("w")) from_app.push({ file: `v-${set}-${word}`, caption, S: { ...S, c_backdrop: PAPER, guides: false }, mm: set === "hand" ? [-13, -13, 26, 26] : [S.da_r - 6, -3, 12, 6], px: set === "hand" ? [192, 192] : [288, 144] });
+  else pictures.push({ file: `v-${set}-${word}`, caption, svg: set.startsWith("w") ? card(G, S).picture.replace(/viewBox="[^"]+"/, WIN_VIEW(S.da_r)) : set === "labels" ? card(G, S).picture.replace(/viewBox="[^"]+"/, 'viewBox="-7 -17.5 24.5 24.5"') : set === "hand" ? zoom(card(G, S).picture, 11.8) : set === "kind" && word === "text" ? zoom(card(G, S).picture, 9) : set === "give" ? card(G, S).picture.replace(/viewBox="[^"]+"/, 'viewBox="6 -5.5 11 11"') : card(G, S).picture, size: set.startsWith("w") || set === "labels" || set === "place" ? 288 : 192, h: set.startsWith("w") ? 144 : set === "labels" || set === "place" ? 288 : 192 });      // the labels: the quarter from 12 to 3, so every word reads; the placements whole, where turning shows (Okay, 26 Oct 2026: "some like numbers placement auto rotate etc better show all dial") (Okay, 26 Oct 2026: "Should be able to read all the word … Arabic japanese and stuff too"); those and the windows at twice the size they show      // the hands: their middle, a square inside the plate, where the shapes differ; Give way: round the 3, where the ticks meet the figure
 // Export › Print: the colour file and its Mono print mask
 { const S = G.fresh_settings(base());
   pictures.push({ file: "v-print-colour", caption: "colour", svg: card(G, base()).picture, size: 192 });
@@ -96,6 +101,26 @@ const shots = [];
 const watch = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce", acceptDownloads: true });
 await watch.route("https://duztman.github.io/dial-tool/fonts/**", (r) => r.fulfill({ path: path.join(WEB.pathname, "fonts", decodeURIComponent(r.request().url().split("/fonts/")[1])), headers: { "access-control-allow-origin": "*" } }));
 await watch.goto(new URL("dial-tool.html", WEB).href); await watch.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+// the app's own drawing of each: its settings loaded as a settings file, the dial alone, the view set so the picture's
+// millimetres fill the shot (z px a mm; c the dial's centre in the preview), at twice the size it shows
+const sharp = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, reducedMotion: "reduce" });
+await sharp.route("https://duztman.github.io/dial-tool/fonts/**", (r) => r.fulfill({ path: path.join(WEB.pathname, "fonts", decodeURIComponent(r.request().url().split("/fonts/")[1])), headers: { "access-control-allow-origin": "*" } }));
+await sharp.goto(new URL("dial-tool.html", WEB).href); await sharp.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+const frames = () => sharp.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+for (const p of from_app) {
+  await sharp.evaluate((S) => { const t = window.dial_tool; t.statik = null; t.load_text(JSON.stringify(S), "help.json"); }, p.S);
+  await sharp.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  await sharp.evaluate(() => document.fonts.ready); await frames();
+  if (!(await sharp.evaluate(() => document.querySelector("#app").classList.contains("away")))) { await sharp.keyboard.press("e"); await sharp.waitForTimeout(1300); }
+  await sharp.mouse.move(5, 5); await sharp.waitForTimeout(400);
+  const clip = await sharp.evaluate(([mm, px]) => {
+    const t = window.dial_tool, svg = t.dial.ownerSVGElement, R = svg.getBoundingClientRect(), [W, H] = [px[0] / 2, px[1] / 2];
+    t.z = W / mm[2]; t.c = [R.width / 2 - (mm[0] + mm[2] / 2) * t.z, R.height / 2 + (mm[1] + mm[3] / 2) * t.z]; t.fitted = false; t.place(); t.render();
+    return { x: R.x + R.width / 2 - W / 2, y: R.y + R.height / 2 - H / 2, width: W, height: H };
+  }, [p.mm, p.px]);
+  await frames();
+  await sharp.screenshot({ path: OUT + p.file + ".png", clip }); save(OUT + p.file + ".png");
+}
 await req(new URL("../guide/help/grey.cjs", WEB).pathname)(watch);      // the help's greys, as every picture of the window
 await watch.evaluate(() => { window.dial_tool.show_mode(true, true); [...document.querySelectorAll("button[data-tab]")].find((b) => b.dataset.tab === "Show export").click(); });
 const shoot = async (file, caption, set) => {
@@ -109,5 +134,5 @@ for (const [k, c] of [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"]
 for (const [st, l, c] of [[1, 0, "Miyazaki · Dramatic"], [0, 0, "Engineer · Dramatic"], [1, 1, "Miyazaki · Flat"], [0, 1, "Engineer · Flat"]]) await shoot(`v-style-${st}${l}`, c, { bezel: 1, strap: 1, w_view: 0, w_style: st, w_lighting: l });
 for (const [st, c] of [[1, "leather"], [3, "NATO"], [2, "bracelet"], [4, "links"]]) await shoot(`v-strap-${c.toLowerCase()}`, c, { bezel: 1, strap: st, w_view: 1, w_style: 1, w_lighting: 0 });
 await browser.close();
-fs.mkdirSync("/tmp/claude-0/help", { recursive: true }); fs.writeFileSync("/tmp/claude-0/help/variants.json", JSON.stringify({ pictures: pictures.map(({ file, caption }) => ({ file, caption })), shots }, null, 1));
-console.log(pictures.length, "dial pictures ·", shots.length, "watch pictures");
+fs.mkdirSync("/tmp/claude-0/help", { recursive: true }); fs.writeFileSync("/tmp/claude-0/help/variants.json", JSON.stringify({ pictures: [...pictures, ...from_app].map(({ file, caption }) => ({ file, caption })), shots }, null, 1));
+console.log(pictures.length, "dial pictures ·", from_app.length, "from the app ·", shots.length, "watch pictures");
