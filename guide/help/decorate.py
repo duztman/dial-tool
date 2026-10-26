@@ -53,11 +53,12 @@ WHERE = {      # what each section boxes: dots by name, "tab:x", "dial", "panel"
   "idea": [["dial"]], "screen": [], "first": [["panel"]], "gallery": [["gallery"]],
   "dial": [["tab:dial"]], "rings": [["tab:rings"]], "hands": [["tab:hands"]], "date": [["tab:date"]], "export": [["tab:export"]],
   "canvas": [["undo", "redo", "steps", "versions"], ["guides", "case", "xray"], ["backdrop", "shadows"], ["tiny", "eye", "iris"]],
-  "show": [["iris"]],
+  "show": [["iris"]], "bar": [["bar"]],
 }
 
 def bbox(t):
     if t == "dial": cx, cy, r = DIAL; return (cx - r, cy - r, cx + r, cy + r)
+    if t == "bar": return (1.5, BAR_Y, W - 1.5, H - 1.5)
     if t == "panel": return (M - 2, ROW - 3, PANEL_W - M + 2, BAR_Y - M + 2)
     if t.startswith("tab:"): x = TABS[t[4:]]; return (x - R_TAB, TAB_Y - R_TAB, x + R_TAB, TAB_Y + R_TAB)
     x, y = DOTS[t]; return (x - R_DOT, y - R_DOT, x + R_DOT, y + R_DOT)
