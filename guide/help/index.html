@@ -8,196 +8,183 @@
 <title>Dial Tool · Help</title>
 <meta name="description" content="Every pane and control of Dial Tool, in one sentence each.">
 <style>
-/* Dial Tool · Help — one stylesheet, one grid (Okay, 26 Oct 2026: "One grid to rule everything. Keep it simple. No many font
-   sizes, 3 is the limit"; "The design needs better adherence to columns … Check the css, it might be too bloated").
-   THE GRID: a name column (--name), the text column, and in a pane of sizes the spec column (--spec). Names and headings
-   stand on the name column; everything that is content — a pane's text, its notes, pictures, strips, cards, grids, the
-   form — starts on the text column. THE SIZES: 26 a section's heading, 19 the text, 15 the small things.
-   THE RULES: a section's ink rule under its heading; an ink rule where a pane begins and where a section's panes end;
-   a row's hairline, nearer the row it opens (--row-top under the rule, --row-bottom over the next). */
+/* Dial Tool · Help — one stylesheet.
+   Okay, 26 Oct 2026: "Three colors, three font sizes. No bolds, italics. Color change or size change. Hierarchy clearly
+   visible through design"; "Paragraph top-bottom paddings, and all vertical spacings: x for before, 2x for after. Hr lines
+   can get the two grays only"; "Japanese zen and good plenty white space"; the section's picture "part of the summary, not
+   the title". Chosen 26 Oct: ink · grey · red; rows keep their hairlines.
+
+   COLOURS   ink   — titles, a pane's name, what a row says
+             grey  — a row's name, a section's summary, notes, captions
+             red   — numbers on a picture, step numbers, Report a bug
+             paper is the ground; --rule (grey) and --hair (light grey) are for lines only.
+   SIZES     26 a section's title and its summary · 19 the text · 15 notes, captions, specs. Weight 400 throughout.
+   SPACE     one unit, --x. A block has x before it and 2x after (margins collapse, so 2x between two blocks, x under a line).
+             A row: x under its hairline, 2x under its words. A pane: 2x before, 4x after. A section: 4x before, 8x after.
+   GRID      a name column (--name), the text column, and in a pane of sizes the spec column (--spec). */
 @font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2) format("woff2")}
-@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2) format("woff2")}
-@font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2) format("woff2")}
 :root{
-  --paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--bug:#c8331b;--well:#ebe9e3;
+  --paper:#f3f1ec;--ink:#1b1a18;--grey:#77736b;--red:#c8331b;--rule:#a9a59c;--hair:#dcd8cf;
   --big:26px;--text:19px;--small:15px;
+  --x:12px;
   --name:171px;--spec:190px;--text-w:569px;--main:calc(var(--name) + var(--text-w) + var(--spec));
-  --row-top:13.5px;--row-bottom:19.5px;--gut:16px;--nav:190px;--nav-gap:48px;
-  --map-w:211px;--map-h:132px;--map-frame:7px;--map-ring:5px}
+  --gut:16px;--nav:190px;--nav-gap:48px;--map-w:300px}
 *{box-sizing:border-box}
 html{scroll-padding-top:96px;scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--paper);color:var(--ink);font:var(--text)/1.321 Inter,ui-sans-serif,system-ui,sans-serif}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 var(--text)/1.35 Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:-.015em}
+b,strong,h1,h2,h3,h4,th,dt,em,i{font-weight:400;font-style:normal}
 a{color:inherit}
+p{margin:var(--x) 0 calc(var(--x) * 2)}
 code{font:var(--small) ui-monospace,Menlo,monospace}
-kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;font:500 var(--small)/1.4 Inter,ui-sans-serif,system-ui,sans-serif;text-align:center;background:var(--well)}
+kbd{display:inline-block;min-width:1.8em;padding:0 6px;margin:1px;border:1px solid var(--hair);border-radius:5px;font:var(--small)/1.4 Inter,ui-sans-serif,system-ui,sans-serif;text-align:center}
 
 /* the frame: the top bar, the menu, the column of sections */
 .topbar{position:sticky;top:0;z-index:10;background:var(--paper);padding-top:env(safe-area-inset-top,0px)}
-.top{display:grid;grid-template-columns:var(--nav) 1fr;gap:var(--nav-gap);align-items:baseline;max-width:1200px;margin:0 auto;padding:18px var(--gut);
-  background:linear-gradient(var(--line),var(--line)) no-repeat var(--gut) 100% / calc(min(100%, var(--nav) + var(--nav-gap) + var(--main) + 2 * var(--gut)) - 2 * var(--gut)) 1px}
-.brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:var(--big);font-weight:600;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
+.top{display:grid;grid-template-columns:var(--nav) 1fr;gap:var(--nav-gap);align-items:baseline;max-width:1200px;margin:0 auto;padding:var(--x) var(--gut) calc(var(--x) * 2);
+  background:linear-gradient(var(--hair),var(--hair)) no-repeat var(--gut) 100% / calc(min(100%, var(--nav) + var(--nav-gap) + var(--main) + 2 * var(--gut)) - 2 * var(--gut)) 1px}
+.brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:var(--big);text-decoration:none;white-space:nowrap}
 .brand .ic{margin:0;align-self:center}.brand .ic svg{width:1em;height:1em}
 .page{display:flex;align-items:baseline;gap:16px;line-height:1;max-width:var(--main)}
-.page .title{font-size:var(--big);font-weight:600;letter-spacing:-.01em}
-.page .ver{margin-left:auto;font-size:var(--small);color:var(--mute)}
-.page .bug{font-size:var(--small);font-weight:600;color:var(--bug);text-decoration:none;border:1.5px solid var(--bug);border-radius:99px;padding:5px 12px;line-height:1}
-.page .bug:hover{background:var(--bug);color:#fff}
-.wrap{display:grid;grid-template-columns:var(--nav) 1fr;gap:var(--nav-gap);max-width:1200px;margin:0 auto;padding:28px var(--gut) 80px;letter-spacing:-.015em}
-nav{position:sticky;top:104px;align-self:start;font-size:var(--small);line-height:1.55}
-nav .grp{position:relative;padding-left:36px;margin-bottom:18px}
-nav a,nav b{border-bottom:1px solid var(--line);padding:3px 0}
-nav a{display:block;color:var(--mute);text-decoration:none}nav a:hover{color:var(--ink)}
-nav a.on{color:var(--ink);font-weight:600}
-nav a[href="#report"]{color:var(--bug)}
-nav b{display:flex;align-items:center;margin:0 0 2px;font-weight:600}
-nav .eye{position:absolute;left:4px;width:18px;height:18px;color:var(--mute);opacity:0;transition:opacity .2s}
+.page .title{font-size:var(--big);color:var(--grey)}
+.page .ver{margin-left:auto;font-size:var(--small);color:var(--grey)}
+.page .bug{font-size:var(--small);color:var(--red);text-decoration:none;border:1px solid var(--red);border-radius:99px;padding:5px 12px;line-height:1}
+.page .bug:hover{background:var(--red);color:var(--paper)}
+.wrap{display:grid;grid-template-columns:var(--nav) 1fr;gap:var(--nav-gap);max-width:1200px;margin:0 auto;padding:calc(var(--x) * 2) var(--gut) calc(var(--x) * 8)}
+nav{position:sticky;top:96px;align-self:start;font-size:var(--small);line-height:1.55}
+nav .grp{position:relative;padding-left:30px;margin:0 0 calc(var(--x) * 2)}
+nav b{display:flex;align-items:center;margin:0 0 4px}
+nav a{display:block;padding:2px 0;color:var(--grey);text-decoration:none}nav a:hover,nav a.on{color:var(--ink)}
+nav a[href="#report"]{color:var(--red)}
+nav .eye{position:absolute;left:2px;width:18px;height:18px;color:var(--grey);opacity:0;transition:opacity .2s}
 nav .grp.on .eye{opacity:1}
 main{max-width:var(--main);min-width:0}
-footer{margin-top:64px;font-size:var(--small);color:var(--mute)}
+.intro p{margin-top:0;color:var(--grey)}
+footer{margin-top:calc(var(--x) * 8);font-size:var(--small);color:var(--grey)}
 
-/* a section: its heading, its small map, its lead */
-h2{clear:both;position:relative;margin:56px 0 4px;padding-bottom:8px;font-size:var(--big);font-weight:600}
-h2::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--ink)}
-h2:has(.map)::after{right:calc(var(--map-ring) + var(--map-frame) * 2 + var(--map-w))}
-h2 > .ic{margin-right:10px}h2 .ic svg{width:1.3em;height:1.3em}
-p.lead{margin:18px 0 6px;color:var(--mute)}
-h2:has(.map) + .lead{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-h2:has(.map) + .lead + *{clear:both}
-.map{float:right;position:relative;margin:var(--map-ring) var(--map-ring) 21px 29px;line-height:0;cursor:zoom-in}
-.map::before{content:"";position:absolute;inset:calc(var(--map-ring) * -1);background:var(--line);border-radius:2px}
-.map svg{position:relative;width:var(--map-w);height:var(--map-h);border:var(--map-frame) solid var(--ink);box-sizing:content-box}
-.map .backdrop{fill:#d1d1d1}.map .panel{fill:#f7f6f3}.map .pane{fill:#ecebe7}.map .tab{fill:none;stroke:var(--ink);stroke-width:.8}.map .bar{fill:#2e2d2b}
-.map .dial{fill:#333}.map .ticks{stroke:#f0f0f0;stroke-width:1.6}.map .hands{stroke:#dbdbdb;stroke-width:2.6;stroke-linecap:round}.map .cap{fill:#f5f5f5}
-.map .b1,.map .b2,.map .b3{fill:none;stroke-width:1.3;vector-effect:non-scaling-stroke}.map .b1{stroke:#111}.map .b2{stroke:#d0341c}.map .b3{stroke:#fff}
-.map .soft{fill:#000;opacity:.06}.map .frame{display:none}
+/* a section: its title over a grey rule, then the summary — a few words in big grey, and where it is on the screen */
+h2{margin:calc(var(--x) * 8) 0 0;padding-bottom:var(--x);font-size:var(--big);line-height:1.2;border-bottom:1px solid var(--rule)}
+h2 > .ic{margin-right:10px}h2 .ic svg{width:1.1em;height:1.1em}
+.summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:calc(var(--x) * 2);align-items:start;margin:var(--x) 0 calc(var(--x) * 4)}
+.summary .lead{margin:0;font-size:var(--big);line-height:1.25;color:var(--grey)}
+p.lead{font-size:var(--big);line-height:1.25;color:var(--grey)}
+.map{display:block;line-height:0;cursor:zoom-in}
+.map svg{width:var(--map-w);height:auto;aspect-ratio:16/10;border:1px solid var(--hair);border-radius:6px;overflow:hidden}
+.map .backdrop{fill:var(--hair)}.map .panel{fill:var(--paper);stroke:var(--hair);stroke-width:.6}.map .pane{fill:var(--hair)}.map .tab{fill:none;stroke:var(--grey);stroke-width:.8}.map .bar{fill:var(--ink)}
+.map .dial{fill:var(--ink)}.map .ticks{stroke:var(--paper);stroke-width:1.6}.map .hands{stroke:var(--paper);stroke-width:2.6;stroke-linecap:round}.map .cap{fill:var(--paper)}
+.map .b1,.map .b3,.map .soft,.map .frame{display:none}
+.map .b2{fill:none;stroke:var(--red);stroke-width:1.5;vector-effect:non-scaling-stroke}
 
-/* the grid: a pane opens with an ink rule; its name on the name column, everything else on the text column */
-.pane{margin:0;border-top:1px solid var(--ink)}
-.pane:first-of-type{margin-top:42px}
-:where(:not(.pane)) + .pane{margin-top:32px}                       /* a section's first pane, after its heading, lead or picture */
-h2 + .pane{margin-top:0;border-top:0}                       /* straight under the heading, the heading's rule opens it */
-.pane:has(+ :not(.pane)),.pane:last-child{border-bottom:1px solid var(--ink)}      /* …and its last: an ink rule where the panes end */
-h3{margin:0;padding:var(--row-top) 0 6px;font-size:var(--text);font-weight:600}
-main > :is(p:not(.lead),figure,.signs,form,ol,ul),
-.pane > :where(p,figure,.strip,.cards,.signs,form){margin:0 0 var(--row-bottom) var(--name)}
-main > p:not(.lead){margin-top:12px}
-.pane > p{color:var(--mute)}
-/* a pane's heading and what opens it share a line: the heading on the name column, the line on the text column */
-.pane{display:grid;grid-template-columns:var(--name) minmax(0,1fr)}
+/* a pane: its name, then what it holds; 2x before, 4x after */
+.pane{display:grid;grid-template-columns:var(--name) minmax(0,1fr);margin:calc(var(--x) * 2) 0 calc(var(--x) * 4)}
+.summary + .pane,h2 + .pane{margin-top:0}
 .pane > *{grid-column:1/-1}
-.pane > h3{grid-column:1;padding-right:16px}
-/* …and when the pane opens with a picture, the signs or the cards, they too start on the heading's line */
-.pane > h3 + :is(p,figure,.signs,.cards){grid-column:2;margin:0 0 var(--row-bottom);padding-top:var(--row-top)}
-.pane > h3 + figure{max-width:100%}
-.pane > h3 + .cards{padding-top:0}                          /* a card opens with its own room */
-.pane > h3 + figure.shot:has(> img){width:100%}
-.pane > p.watch{color:var(--mute)}
-/* rows: a name, its line, and in a pane of sizes the spec (the range in ink over "starts …") */
-dl{display:grid;grid-template-columns:var(--name) minmax(0,1fr);margin:0;border-top:1px solid var(--line)}
+h3,.pane > h3{grid-column:1;margin:0;padding:var(--x) 16px calc(var(--x) * 2) 0;font-size:var(--text)}
+.pane > :where(p,figure,.strip,.cards,.signs,form){grid-column:2;margin:var(--x) 0 calc(var(--x) * 2)}
+.pane > h3 + :where(p,figure,.signs,.cards,.strip){padding-top:0}
+.pane > p:not(.watch){color:var(--ink)}
+main > :is(p:not(.lead),figure,.signs,form,ol,ul){margin-left:var(--name)}
+/* rows: a hairline over each; x under the line, 2x under the words */
+dl{display:grid;grid-template-columns:var(--name) minmax(0,1fr);margin:0}
 dl.rows{grid-template-columns:var(--name) minmax(0,1fr) var(--spec)}
 dl.rows.two{grid-template-columns:var(--name) minmax(0,1fr)}
 .rows > div{display:contents}
-dt,dd{margin:0;padding:var(--row-top) 16px var(--row-bottom) 0;border-bottom:1px solid var(--line)}
-dt{font-weight:500}
-.rows > div:last-child > *{border-bottom:0}
-.rows dd.spec{padding-right:0;padding-top:calc(var(--row-top) + 3px);font-size:var(--small);line-height:1.4;font-variant-numeric:tabular-nums}
-.rows dd.spec b{display:block;font-weight:400}.rows dd.spec span{display:block;color:var(--mute)}
-dl + .watch{margin-top:var(--row-top)}
-/* a note: the Watch sign (a triangle with a watch's hands at 10:10), then its words */
-.watch{font-size:var(--small);color:var(--mute)}
-.watch::before{content:"Watch · ";padding-left:1.45em;color:var(--ink);font-weight:600;background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%231b1a18' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M8 1.6 15 14.2H1Z'/><path d='M8 10.9 5.7 8.9M8 10.9l2.9-2.9'/></svg>") no-repeat 0 .08em / 1.15em 1.15em}
-/* the matrix: a pane on the name column, the kinds sharing the text and spec columns */
-table.matrix{width:100%;border-collapse:collapse;table-layout:fixed}
+dt,dd{margin:0;padding:var(--x) 16px calc(var(--x) * 2) 0;border-top:1px solid var(--hair)}
+dt{color:var(--grey)}
+.rows dd.spec{padding-right:0;padding-top:calc(var(--x) + 3px);font-size:var(--small);line-height:1.4;font-variant-numeric:tabular-nums}
+.rows dd.spec b{display:block}.rows dd.spec span{display:block;color:var(--grey)}
+/* a note: the Watch sign, its word in ink, the note in small grey */
+.watch{font-size:var(--small);color:var(--grey)}
+.watch::before{content:"Watch ";padding-left:1.45em;color:var(--ink);background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%231b1a18' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M8 1.6 15 14.2H1Z'/><path d='M8 10.9 5.7 8.9M8 10.9l2.9-2.9'/></svg>") no-repeat 0 .08em / 1.15em 1.15em}
+/* the matrix: which panes each kind shows */
+table.matrix{grid-column:1/-1;width:100%;border-collapse:collapse;table-layout:fixed}
 .matrix col.name{width:var(--name)}
-.matrix th,.matrix td{padding:var(--row-top) 4px var(--row-bottom);border-bottom:1px solid var(--line);text-align:center;font-weight:400}
-.matrix th:first-child{text-align:left;padding-left:0}
-.matrix thead th{font-size:var(--small);vertical-align:bottom}
-.matrix thead .ic{display:block;margin:0 auto 4px}.matrix thead .ic svg{height:1.3em}
-.matrix tbody tr:last-child > *{border-bottom:0}
-.matrix td.y::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ink)}
-/* How do I…: the tasks two to a line on the text column, each its steps numbered */
+.matrix th,.matrix td{padding:var(--x) 4px calc(var(--x) * 2);border-top:1px solid var(--hair);text-align:center}
+.matrix th:first-child{text-align:left;padding-left:0;color:var(--grey)}
+.matrix thead th{border-top:0;font-size:var(--small);color:var(--grey);vertical-align:bottom}
+.matrix thead .ic{display:block;margin:0 auto 4px;color:var(--ink)}.matrix thead .ic svg{height:1.3em}
+.matrix td.y::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ink)}
+/* How do I…: two tasks to a line, steps numbered in red */
 .cards{display:grid;grid-template-columns:1fr 1fr}
-.card{padding:var(--row-top) 16px var(--row-bottom) 0;border-top:1px solid var(--line)}
-.card:nth-child(-n+2){border-top:0}
-.card h4{margin:0 0 6px;font-size:var(--text);font-weight:500}
-.card ol{margin:0;padding:0;list-style:none;counter-reset:s}
+.card{padding:var(--x) 16px calc(var(--x) * 2) 0;border-top:1px solid var(--hair)}
+.card h4{margin:0 0 4px;font-size:var(--text)}
+.card ol{margin:0;padding:0;list-style:none;counter-reset:s;color:var(--grey)}
 .card li{position:relative;margin:0;padding-left:1.4em;counter-increment:s}
-.card li::before{content:counter(s);position:absolute;left:0;top:2px;color:var(--bug);font-weight:600;font-size:var(--small)}
+.card li::before{content:counter(s);position:absolute;left:0;top:2px;color:var(--red);font-size:var(--small)}
 
-/* pictures: at their true size, never past the column; numbered ones with their numbers in the margins */
-figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
-.pane > figure,main > figure{width:fit-content;max-width:calc(100% - var(--name))}
+/* pictures: at their true size, never past the column */
+figure{margin:var(--x) 0 calc(var(--x) * 2)}
+figure img{display:block;width:100%;height:auto;border:1px solid var(--hair);border-radius:6px}
+.pane > figure{width:fit-content;max-width:100%}
+main > figure{width:fit-content;max-width:calc(100% - var(--name))}
 .pane > figure img,main > figure img{max-width:var(--w,100%)}
-/* the window, whole: as wide as the text and spec columns, its numbers on it */
-.pane > figure.shot:has(> img),main > figure.shot:has(> img){width:calc(100% - var(--name));max-width:none}
-figcaption{margin-top:6px;font-size:var(--small);color:var(--mute)}
+.pane > figure.shot:has(> img){width:100%}
+main > figure.shot:has(> img){width:calc(100% - var(--name))}
+figcaption{margin-top:var(--x);font-size:var(--small);color:var(--grey)}
 .shot{position:relative}.shot .pic{position:relative;display:inline-block;vertical-align:top}.shot .pic img{display:block}
 .shot.over{padding-top:16px}
-.shot i,.n{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-weight:600;color:var(--bug)}
-.shot i{position:absolute;transform:translate(-50%,-50%);font-style:normal;font-size:var(--small);line-height:1;padding:.183em 0;border-radius:50%;background:var(--paper)}
+.shot i,.n{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:var(--red)}
+.shot i{position:absolute;transform:translate(-50%,-50%);font-size:var(--small);line-height:1;padding:.183em 0;border-radius:50%;background:var(--paper)}
 .n{margin-right:6px;font-size:var(--small);line-height:1;vertical-align:1px}
 dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}
 dd img{display:block;max-width:100%;height:auto;margin-top:8px}
-/* what a choice does: a strip of small pictures, each over its word */
-.strip{display:flex;flex-wrap:wrap;gap:12px 14px;margin:10px 0 2px}
-.pane > .strip{margin:0 0 var(--row-bottom) var(--name)}
+/* what a choice does: small pictures, each over its word */
+.strip{display:flex;flex-wrap:wrap;gap:var(--x) 14px;margin:var(--x) 0 0}
 .strip figure{margin:0;display:flex;flex-direction:column;align-items:flex-start}
 .strip img{display:block;height:auto;max-width:none;margin:0;border:0;border-radius:0}
 .strip.watches img{border-radius:4px}
 .strip figcaption{margin-top:4px;line-height:1.2}
-/* the app's own signs */
+/* the app's own icons, inline */
 .ic{display:inline-flex;vertical-align:-.2em;margin-right:4px}.ic svg{width:auto;height:1.15em;overflow:hidden}
-.ic svg .hub{fill:currentColor}.ic .figure{font-family:Inter,sans-serif;font-weight:700}
+.ic svg .hub{fill:currentColor}.ic .figure{font-family:Inter,sans-serif}
 dt .ic{margin-right:8px}
-.row{display:block;margin:6px 0 0}.row span{white-space:nowrap;margin-right:.55em}.row span:last-child{margin-right:0}.row .ic{margin-right:3px}.row .ic svg{height:1.3em}
+.row{display:block;margin:6px 0 0}.row span{white-space:nowrap;margin-right:.7em}.row span:last-child{margin-right:0}.row .ic{margin-right:3px}.row .ic svg{height:1.3em}
 .signs{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:2px}
-.signs figure{margin:0;padding:14px 6px 10px;text-align:center;background:var(--well);border-radius:4px}
+.signs figure{margin:0;padding:14px 6px 10px;text-align:center;border:1px solid var(--hair);border-radius:4px}
 .signs .ic{margin:0}.signs .ic svg{height:34px;max-width:76px}
-.signs figcaption{margin-top:8px;line-height:1.25;color:var(--ink)}
+.signs figcaption{margin-top:8px;line-height:1.25}
 
-/* a picture made large: the lightbox (the page's script opens it) */
+/* a picture made large: the lightbox */
 .box{position:fixed;inset:0;z-index:20;display:none;place-items:center;padding:24px;background:rgba(96,93,87,.8);cursor:zoom-out}
 .box.open{display:grid}
 .box figure{margin:0;width:min(1400px, 100vw - 48px, (100vh - 110px) * 1.6);display:flex;flex-direction:column}
-.box img{display:block;width:100%;height:auto;aspect-ratio:16/10;background:#d1d1d1;border:0;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
-.box figcaption{margin-top:12px;color:#111}.box figcaption b{font-weight:600}.box figcaption span{color:#2a2926}
+.box img{display:block;width:100%;height:auto;aspect-ratio:16/10;background:var(--hair);border:0;border-radius:4px}
+.box figcaption{margin-top:var(--x);color:var(--paper)}.box figcaption span{color:var(--hair)}
 
 /* Report a bug */
-form.report{display:grid;gap:12px;max-width:620px}
-form.report label{display:grid;gap:4px;font-size:var(--small);color:var(--mute)}
-form.report label b{color:var(--ink);font-weight:500}
-form.report input,form.report textarea{width:100%;padding:7px 9px;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px}
+form.report{display:grid;gap:var(--x);max-width:620px}
+form.report label{display:grid;gap:4px;font-size:var(--small);color:var(--grey)}
+form.report label b{color:var(--ink)}
+form.report input,form.report textarea{width:100%;padding:7px 9px;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--hair);border-radius:6px}
 form.report textarea{min-height:88px;resize:vertical}
 form.report input:focus,form.report textarea:focus{outline:none;border-color:var(--ink)}
 form.report .gotcha{position:absolute;left:-9999px}
-form.report button{justify-self:start;padding:8px 18px;font:inherit;font-weight:500;color:var(--paper);background:var(--ink);border:0;border-radius:6px;cursor:pointer}
+form.report button{justify-self:start;padding:8px 18px;font:inherit;color:var(--paper);background:var(--ink);border:0;border-radius:6px;cursor:pointer}
 form.report button:disabled{opacity:.4;cursor:default}
-#report-note{margin:0;min-height:1.5em;font-size:var(--small);color:var(--mute)}
+#report-note{margin:0;min-height:1.5em;font-size:var(--small);color:var(--grey)}
 
-/* a phone: one column; the name over its line, the spec under it */
+/* a phone: one column; the name over its line, the spec under it; the summary's picture under its words */
 @media (max-width:760px){
-  :root{--map-w:123px;--map-h:77px;--map-frame:4px;--map-ring:4px}
+  :root{--map-w:100%}
   html{scroll-padding-top:64px}
-  .top{grid-template-columns:auto 1fr;gap:20px;padding:14px var(--gut)}
+  .top{grid-template-columns:auto 1fr;gap:20px}
   .brand,.page .title{font-size:var(--text)}.page .ver{display:none}.page .bug{padding:4px 9px}
-  .wrap{grid-template-columns:1fr;gap:16px}
-  nav{position:static}nav .grp{display:flex;flex-wrap:wrap;gap:2px 14px;padding-left:0;margin-bottom:8px}
-  nav b{width:100%;margin:0}nav .eye{display:none}nav a,nav b{border-bottom:0;padding:0}nav a.on{font-weight:400;color:var(--mute)}
-  .map{margin:var(--map-ring) var(--map-ring) 14px 18px}
-  h2:has(.map) + .lead{white-space:normal}
+  .wrap{grid-template-columns:1fr;gap:var(--x)}
+  nav{position:static}nav .grp{display:flex;flex-wrap:wrap;gap:2px 14px;padding-left:0;margin-bottom:var(--x)}
+  nav b{width:100%;margin:0}nav .eye{display:none}nav a{padding:0}
+  .summary{grid-template-columns:1fr}
   dl,dl.rows,dl.rows.two{grid-template-columns:1fr}
-  dt{border-bottom:0;padding-bottom:0}
-  .rows dd:not(.spec){border-bottom:0}.rows dd.spec{padding-top:0}
-  .rows > div > :last-child{border-bottom:1px solid var(--line)}.rows > div:last-child > :last-child{border-bottom:0}
-  main > :is(p:not(.lead),figure,.signs,form,ol,ul),.pane > :is(p,figure,.strip,.cards,.signs,form){margin-left:0}
-  .pane{display:block}.pane > h3 + :is(p,figure,.signs,.cards){padding-top:0}.pane > .strip{margin-left:0}
-  .pane > figure,main > figure{max-width:100%}
-  .pane > figure.shot{margin-left:22px;max-width:calc(100% - 44px)}
-  .pane > h3 + figure.shot:has(> img){width:auto;margin-left:22px}
-  .cards{grid-template-columns:1fr}.card:nth-child(2){border-top:1px solid var(--line)}
+  dt{padding-bottom:4px}
+  dd{border-top:0;padding-top:0;padding-bottom:var(--x)}
+  .rows dd.spec{padding-top:0}
+  .rows > div > :last-child{padding-bottom:calc(var(--x) * 2)}
+  .pane{display:block}
+  .pane > :where(p,figure,.strip,.cards,.signs,form),main > :is(p:not(.lead),figure,.signs,form,ol,ul){margin-left:0}
+  h3{padding-bottom:var(--x)}
+  main > figure{max-width:100%}
+  .pane > figure.shot,main > figure.shot:has(> img){margin-left:22px;width:auto;max-width:calc(100% - 44px)}
+  .cards{grid-template-columns:1fr}
   .matrix col.name{width:7.5em}
-  .shot i{font-size:var(--small)}
 }
 </style>
 </head>
@@ -218,8 +205,8 @@ form.report button:disabled{opacity:.4;cursor:default}
   <p>Every pane and control, one sentence each. For the illustrated walk-through and the maker sheet, see the <a href="../guide/" target="_blank" rel="noopener">guide</a>.</p>
 </header>
 
-<h2 id="idea"><span class="map" data-map="idea" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="48.70" y="1.50" width="109.80" height="97.00" rx="4.00" class="b1"/><rect x="47.70" y="0.50" width="111.80" height="99.00" rx="5.00" class="b2"/><rect x="46.70" y="-0.50" width="113.80" height="101.00" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span>The idea</h2>
-<p class="lead">Four ideas the whole tool rests on.</p>
+<h2 id="idea">The idea</h2>
+<div class="summary"><p class="lead">Four ideas the whole tool rests on.</p><span class="map" data-map="idea" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="48.70" y="1.50" width="109.80" height="97.00" rx="4.00" class="b1"/><rect x="47.70" y="0.50" width="111.80" height="99.00" rx="5.00" class="b2"/><rect x="46.70" y="-0.50" width="113.80" height="101.00" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
 <section class="pane">
   <h3>The ideas</h3>
@@ -231,8 +218,8 @@ form.report button:disabled{opacity:.4;cursor:default}
   </dl>
 </section>
 
-<h2 id="screen"><span class="map" data-map="screen" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span>The screen</h2>
-<p class="lead">The window's eight parts, by number.</p>
+<h2 id="screen">The screen</h2>
+<div class="summary"><p class="lead">The window's eight parts, by number.</p><span class="map" data-map="screen" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 <figure class="shot">
   <img src="img/screen.webp" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
   <i style="left:23.5%;top:2.4%">①</i><i style="left:30.5%;top:9.5%">②</i><i style="left:80%;top:20%">③</i><i style="left:47.5%;top:3.1%">④</i>
@@ -254,8 +241,8 @@ form.report button:disabled{opacity:.4;cursor:default}
   <p class="watch">On a phone the panel is a drawer: drag its grip to make it taller or shorter.</p>
 </section>
 
-<h2 id="first"><span class="map" data-map="first" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="1.50" y="1.50" width="56.20" height="97.00" rx="4.00" class="b1"/><rect x="0.50" y="0.50" width="58.20" height="99.00" rx="5.00" class="b2"/><rect x="-0.50" y="-0.50" width="60.20" height="101.00" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span>A first dial</h2>
-<p class="lead">From a blank face to a file, in six steps.</p>
+<h2 id="first">A first dial</h2>
+<div class="summary"><p class="lead">From a blank face to a file, in six steps.</p><span class="map" data-map="first" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="1.50" y="1.50" width="56.20" height="97.00" rx="4.00" class="b1"/><rect x="0.50" y="0.50" width="58.20" height="99.00" rx="5.00" class="b2"/><rect x="-0.50" y="-0.50" width="60.20" height="101.00" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
 <section class="pane">
   <h3>Six steps</h3>
@@ -269,56 +256,95 @@ form.report button:disabled{opacity:.4;cursor:default}
   </dl>
 </section>
 
-<h2 id="dial"><span class="map" data-map="dial" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="1.50" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="0.50" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="-0.50" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span><i class="ic" data-ic="dial"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><circle class="hub" cx="17" cy="17" r="2" stroke-width="1.625"></circle></g></svg></i>Dial</h2>
-<p class="lead">The plate: its size, colour and page.</p>
-<p>Dial stays in view; the panes under it scroll.</p>
+<h2 id="dial"><i class="ic" data-ic="dial"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><circle class="hub" cx="17" cy="17" r="2" stroke-width="1.625"></circle></g></svg></i>Dial</h2>
+<div class="summary"><p class="lead">The plate. How big it is, its colour, and the page it sits on.</p><span class="map" data-map="dial" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="1.50" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="0.50" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="-0.50" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
 <section class="pane">
   <h3>Dial</h3>
-  <figure><img src="img/controller-desk.webp" width="440" height="325" style="--w:440px" alt="Press a row's name, here Diameter, and its controller opens over the row"><figcaption>Press a row's name, here Diameter, and its controller opens over the row. Drag the big slider, or press − and +. The number on top is ready to type over.</figcaption></figure>
-  <dl class="rows two">
-    <div><dt>Plate</dt><dd>The plate's colour: the pill on the Dial heading line, with no row of its own. Starts Navy, #25305A.</dd></div>
-    <div><dt>Diameter</dt><dd>The plate's diameter. Typed 5–300; past that it stops and says so. Range 15–50 mm; starts 34.</dd></div>
-    <div><dt>Scale everything with it</dt><dd>On, changing the diameter scales every measure on the dial in proportion, counted from where the run of changes began, so sliding back lands on the first values. Starts off.</dd></div>
-    <div><dt>Weight %</dt><dd>Every width on the dial at once: marks, bands, hands, frames. Lengths and places stay; one undo takes it back. Range 50–200 %; starts 100.</dd></div>
-    <div><dt>Centre hole</dt><dd>The hole in the plate for the hands' pipes, as Ø; 0 for none. The pipes fill it, so it shows only while the hands are hidden; in a mask its outline is a cut line (Print › Cut lines), and the spec sheet lists it. Range 0–6 mm; starts 2.7.</dd></div>
-    <div><dt>Background</dt><dd>Your own picture behind the print.</dd></div>
+  <p>This pane stays put. The panes under it scroll.</p>
+  <figure><img src="img/controller-desk.webp" width="440" height="325" style="--w:440px" alt="Diameter's controller, open over its row"><figcaption>Press a row's name and its controller opens over it. Drag the big slider, or press − and +. The number on top is ready to type over.</figcaption></figure>
+  <dl class="rows">
+    <div><dt>Plate</dt><dd>The plate's colour. It is the pill on the Dial heading line.</dd><dd class="spec"><span>starts Navy · #25305A</span></dd></div>
+    <div><dt>Diameter</dt><dd>The plate, edge to edge. You can type 5 to 300; past that it stops and tells you.</dd><dd class="spec"><b>15–50 mm</b><span>starts 34</span></dd></div>
+    <div><dt>Scale everything with it</dt><dd>On, the whole dial grows and shrinks with the diameter. Slide back and you land where you began.</dd><dd class="spec"><span>starts off</span></dd></div>
+    <div><dt>Weight %</dt><dd>Every width at once: marks, bands, hands, frames. Lengths and places stay put.</dd><dd class="spec"><b>50–200 %</b><span>starts 100</span></dd></div>
+    <div><dt>Centre hole</dt><dd>The hole the hands pass through. Zero for none. You see it only with the hands hidden. In a mask its edge is a cut line.</dd><dd class="spec"><b>0–6 mm</b><span>starts 2.7</span></dd></div>
+    <div><dt>Background</dt><dd>Your own picture behind the print, from an SVG file. It comes after v1.</dd><dd class="spec"></dd></div>
   </dl>
-  <p class="watch">A background of your own, from an SVG file, comes after v1; the row is a note for now. Scale everything with it and Weight % stay in this window: a link doesn't carry them, a settings file does.</p>
+  <p class="watch">A link doesn't carry Scale everything with it or Weight %. A settings file does.</p>
 </section>
 
 <section class="pane">
   <h3>Page</h3>
-  <dl class="rows two">
-    <div><dt>Page margin</dt><dd>Room round the dial on the exported page, and for registration marks; the page is Diameter + 2 × margin. Range 0–10 mm; starts 3.</dd></div>
-    <div><dt>Backdrop</dt><dd>The colour behind the dial in the preview only, never in a file; the same colour as the Backdrop switch at the preview's bottom left.</dd></div>
+  <dl class="rows">
+    <div><dt>Page margin</dt><dd>Room round the dial on the exported page, and for the registration marks. The page is the diameter plus two margins.</dd><dd class="spec"><b>0–10 mm</b><span>starts 3</span></dd></div>
+    <div><dt>Backdrop</dt><dd>The colour behind the dial, in the preview only. Never in a file. The Backdrop switch, bottom left, is the same colour.</dd><dd class="spec"></dd></div>
   </dl>
 </section>
 
 <section class="pane">
   <h3>Colours</h3>
-  <p>Folded, its heading line shows the dial's colours as tiny swatches.</p>
-  <figure><img src="img/colour.webp" width="404" height="358" style="--w:404px" alt="Press a swatch to open its colour"><figcaption>Press a swatch to open its colour. Pick from On this dial or the Palette, or drag in the square and along the rainbow strip. You can also type RGB, CMYK or HEX.</figcaption></figure>
+  <p>Every colour on the dial, in one list. Folded, the heading shows them as small swatches.</p>
+  <figure><img src="img/colour.webp" width="404" height="358" style="--w:404px" alt="A swatch's colour, open"><figcaption>Press a swatch. Pick from On this dial or the Palette, or drag in the square and along the strip. Or type RGB, CMYK or HEX.</figcaption></figure>
   <dl class="rows two">
-    <div><dt>Colours</dt><dd>Every colour on the dial in one list: a line per ring, top first, by its name or kind (a band with more than one position: a swatch per sector); Hour hand, Minute hand, Seconds hand; Cap; Window 1–4 for each window that is on, its frame colour.</dd></div>
+    <div><dt>The list</dt><dd>Each ring, top first, by name. A band with sectors gets a swatch for each. Then the three hands, the cap, and the frame of each open window.</dd></div>
   </dl>
 </section>
 
 <section class="pane">
   <h3>Reset</h3>
   <dl class="rows two">
-    <div><dt>Reset to the First dial</dt><dd>The button on the Reset heading line: replaces everything on this dial (size, rings, hands, windows, colours) with the guide's First dial. Undo brings yours back.</dd></div>
-    <div><dt>Blank face</dt><dd>A white plate and the hands, no windows, and one ring, hidden: turn its <i class="ic" data-ic="eye"><svg viewBox="0 0 30 30" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-eye-show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" stroke-width="1.625"></path><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i> eye on to start. Undo brings yours back.</dd></div>
+    <div><dt>Reset to the First dial</dt><dd>The button on the heading line. Size, rings, hands, windows and colours go back to the First dial.</dd></div>
+    <div><dt>Blank face</dt><dd>A white plate, the hands, one hidden ring. Turn its <i class="ic" data-ic="eye"><svg viewBox="0 0 30 30" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-eye-show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" stroke-width="1.625"></path><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i> eye on to start.</dd></div>
   </dl>
-  <p class="watch">Reset to the First dial and Blank face replace the whole dial: size, rings, hands, windows and colours. Undo brings yours back; a settings file keeps it for good.</p>
+  <p class="watch">Both replace the whole dial. Undo brings yours back. A settings file keeps it for good.</p>
 </section>
 
-<h2 id="rings"><span class="map" data-map="rings" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="9.37" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="8.37" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="7.37" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span><i class="ic" data-ic="rings"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><g stroke-width="1.625"><circle cx="17" cy="17" r="9.5"></circle><circle cx="17" cy="17" r="4.375"></circle></g></g></svg></i>Rings</h2>
-<p class="lead">The print, ring by ring, top row in front.</p>
+<h2 id="rings"><i class="ic" data-ic="rings"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><g stroke-width="1.625"><circle cx="17" cy="17" r="9.5"></circle><circle cx="17" cy="17" r="4.375"></circle></g></g></svg></i>Rings</h2>
+<div class="summary"><p class="lead">The print is a stack of rings. The top of the list sits in front. Choose a ring and the panes below edit it.</p><span class="map" data-map="rings" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="9.37" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="8.37" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="7.37" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
-<section class="pane"><h3>Which panes a ring shows</h3>
-<p>Each starts folded on a first visit; folded, its line sums up what is in it. Press a pane's heading to show or hide it. A pane with nothing for this kind is not shown.</p>
-<table class="matrix"><colgroup><col class="name"></colgroup><thead><tr><th>Pane, in order</th><th><i class="ic" data-ic="kind-ticks"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.00 5.25L12.00 2.25M13.75 5.48L14.52 2.58M15.38 6.15L16.88 3.56M16.77 7.23L18.89 5.11M17.85 8.63L20.44 7.12M18.52 10.25L21.42 9.48M18.75 12.00L21.75 12.00M18.52 13.75L21.42 14.52M17.85 15.37L20.44 16.88M16.77 16.77L18.89 18.89M15.38 17.85L16.88 20.44M13.75 18.52L14.52 21.42M12.00 18.75L12.00 21.75M10.25 18.52L9.48 21.42M8.63 17.85L7.13 20.44M7.23 16.77L5.11 18.89M6.15 15.38L3.56 16.88M5.48 13.75L2.58 14.52M5.25 12.00L2.25 12.00M5.48 10.25L2.58 9.48M6.15 8.63L3.56 7.12M7.23 7.23L5.11 5.11M8.62 6.15L7.12 3.56M10.25 5.48L9.48 2.58" stroke-width="1" stroke-linecap="butt"></path></svg></i>Ticks</th><th><i class="ic" data-ic="kind-markers"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.00 5.75L12.00 2.25M16.42 7.58L18.89 5.11M18.25 12.00L21.75 12.00M16.42 16.42L18.89 18.89M12.00 18.25L12.00 21.75M7.58 16.42L5.11 18.89M5.75 12.00L2.25 12.00M7.58 7.58L5.11 5.11" stroke-width="2" stroke-linecap="butt"></path></svg></i>Markers</th><th><i class="ic" data-ic="kind-numerals"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><text class="figure" x="12" y="6.25" font-size="6.5" letter-spacing="-0.75" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">12</text><text class="figure" x="17.75" y="12" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">3</text><text class="figure" x="12" y="17.75" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">6</text><text class="figure" x="6.25" y="12" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">9</text></svg></i>Numerals</th><th><i class="ic" data-ic="kind-band"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.25" stroke-width="3"></circle></svg></i>Band</th><th><i class="ic" data-ic="kind-text"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><text class="figure words" x="12" y="8.25" font-size="5.5" letter-spacing="0.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">ABC</text><text class="figure words" x="12" y="15.75" font-size="5.5" letter-spacing="0.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">XYZ</text></svg></i>Text</th></tr></thead>
+<section class="pane">
+  <h3>Rings, top first</h3>
+  <p>The ring list. It stays put while the panes under it scroll. Folded, it names the chosen ring, its kind, colour and radius.</p>
+  <figure><img src="img/ringlist.webp" width="468" height="247" style="--w:468px" alt="The ring list, Numerals chosen"><figcaption>Three rings, Numerals chosen. Its drawer shows what it draws and where.</figcaption></figure>
+  <dl class="rows two">
+    <div><dt>A row</dt><dd>Eye, grip, kind, name. Then two numbers: the size (a mark's length, a dot's Ø, a numeral's size, a band's width) and the radius.<span class="row"><span><i class="ic" data-ic="eye-open"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z" stroke-width="1.625"></path><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"></circle></svg></i>Show or hide</span><span><i class="ic" data-ic="grip"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="currentColor" stroke="none"><circle cx="5.5" cy="4" r="1"></circle><circle cx="10.5" cy="4" r="1"></circle><circle cx="5.5" cy="8" r="1"></circle><circle cx="10.5" cy="8" r="1"></circle><circle cx="5.5" cy="12" r="1"></circle><circle cx="10.5" cy="12" r="1"></circle></g></svg></i>Grip</span><span><i class="ic" data-ic="rename"><svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.625 1.625H12.375M16.375 5.625V12.375M12.375 16.375H5.625M1.625 12.375V5.625" stroke-width="1.25"></path><path d="M12.375 1.625A4 4 0 0 1 16.375 5.625M16.375 12.375A4 4 0 0 1 12.375 16.375M5.625 16.375A4 4 0 0 1 1.625 12.375M1.625 5.625A4 4 0 0 1 5.625 1.625" stroke-width="1.375"></path><path d="M9.25 4.75V13.25M7.25 4.75H11.25M7.25 13.25H11.25" stroke-width="1.25"></path></svg></i>Rename</span></span></dd></div>
+    <div><dt>Choose</dt><dd>Press a row anywhere but its eye. Or Tab to it and press Enter. The chosen row takes its ring's guide colour.</dd></div>
+    <div><dt>Eye</dt><dd>Hides or shows the ring. It never changes which ring is chosen.</dd></div>
+    <div><dt>Grip</dt><dd>Drag to reorder. A line shows where the ring will land.</dd></div>
+    <div><dt>Kind</dt><dd>On the chosen row the kind's picture is a menu. Change the kind and the ring keeps its settings.</dd></div>
+    <div><dt>Rename</dt><dd>Press the chosen ring's name, or the box beside it. Enter keeps the new name. Escape, or an empty name, keeps the old.</dd></div>
+    <div><dt>The drawer</dt><dd>Two lines under the chosen row: what it draws, then where. Its swatch opens the colour. Its two round buttons set size and radius: press for the controller, or drag right or up. Shift is ten times finer.</dd></div>
+    <div><dt>The pill</dt><dd>Under the list. Five rows show, then the list scrolls. Drag the pill for more or fewer; tap it to jump between five and all.</dd></div>
+  </dl>
+</section>
+
+<section class="pane">
+  <h3>Tools</h3>
+  <p>On the heading line, for the chosen ring. A tool that can't act is faint.</p>
+  <dl class="rows two">
+    <div><dt><i class="ic" data-ic="tool-add-a-ring"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 3.75V12.75M3.75 8.25H12.75"></path></g></svg></i>Add a ring</dt><dd>Pick one of five kinds. It goes in above the chosen ring, named after its kind, in a guide colour no other ring has. A new numerals or text ring borrows the top numerals ring's font.<div class="strip"><figure><img src="img/v-kind-ticks.webp" width="96" height="96" style="width:96px" alt="ticks"><figcaption>ticks</figcaption></figure><figure><img src="img/v-kind-markers.webp" width="96" height="96" style="width:96px" alt="markers"><figcaption>markers</figcaption></figure><figure><img src="img/v-kind-numerals.webp" width="96" height="96" style="width:96px" alt="numerals"><figcaption>numerals</figcaption></figure><figure><img src="img/v-kind-band.webp" width="96" height="96" style="width:96px" alt="band"><figcaption>band</figcaption></figure><figure><img src="img/v-kind-text.webp" width="192" height="192" style="width:96px" alt="text"><figcaption>text</figcaption></figure></div></dd></div>
+    <div><dt><i class="ic" data-ic="tool-move-up"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 13.25V3.25M4.25 7.25L8.25 3.25L12.25 7.25"></path></g></svg></i><i class="ic" data-ic="tool-move-down"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 3.25V13.25M4.25 9.25L8.25 13.25L12.25 9.25"></path></g></svg></i>Move</dt><dd>Up or down one place.</dd></div>
+    <div><dt><i class="ic" data-ic="tool-duplicate"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><rect x="5.75" y="5.75" width="7.5" height="7.5"></rect><path d="M10.25 5.75V2.75H2.75V10.25H5.75"></path></g></svg></i>Duplicate</dt><dd>A copy, above the chosen ring.</dd></div>
+    <div><dt><i class="ic" data-ic="tool-delete"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M2.75 4.75H13.75M6.25 2.25H10.25"></path><path d="M4.25 4.75L5 13.25H11.5L12.25 4.75"></path></g></svg></i>Delete</dt><dd>A dial keeps one ring at least. Hide the last one instead.</dd></div>
+  </dl>
+</section>
+
+<section class="pane">
+  <h3>On the preview</h3>
+  <p>The chosen ring shows its guide and handles here, even with Guides off.</p>
+  <dl class="rows two">
+    <div><dt>Disc</dt><dd>Drag in or out for the radius.</dd></div>
+    <div><dt>Square</dt><dd>Drag in or out for the length, Ø, size or band width.</dd></div>
+    <div><dt>Triangles</dt><dd>Drag round. The first sets Start, the second Span. The second shows only under 360°.</dd></div>
+    <div><dt>A press</dt><dd>The first press chooses a ring. The second picks the numeral or mark under it and opens Edit one. A press on nothing lets go.</dd></div>
+  </dl>
+</section>
+
+<section class="pane">
+  <h3>The panes</h3>
+  <p>Each kind shows only the panes it uses. Press a pane's heading to open or fold it. They start folded; folded, each sums itself up in a line.</p>
+  <table class="matrix"><colgroup><col class="name"></colgroup><thead><tr><th>Pane, in order</th><th><i class="ic" data-ic="kind-ticks"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.00 5.25L12.00 2.25M13.75 5.48L14.52 2.58M15.38 6.15L16.88 3.56M16.77 7.23L18.89 5.11M17.85 8.63L20.44 7.12M18.52 10.25L21.42 9.48M18.75 12.00L21.75 12.00M18.52 13.75L21.42 14.52M17.85 15.37L20.44 16.88M16.77 16.77L18.89 18.89M15.38 17.85L16.88 20.44M13.75 18.52L14.52 21.42M12.00 18.75L12.00 21.75M10.25 18.52L9.48 21.42M8.63 17.85L7.13 20.44M7.23 16.77L5.11 18.89M6.15 15.38L3.56 16.88M5.48 13.75L2.58 14.52M5.25 12.00L2.25 12.00M5.48 10.25L2.58 9.48M6.15 8.63L3.56 7.12M7.23 7.23L5.11 5.11M8.62 6.15L7.12 3.56M10.25 5.48L9.48 2.58" stroke-width="1" stroke-linecap="butt"></path></svg></i>Ticks</th><th><i class="ic" data-ic="kind-markers"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.00 5.75L12.00 2.25M16.42 7.58L18.89 5.11M18.25 12.00L21.75 12.00M16.42 16.42L18.89 18.89M12.00 18.25L12.00 21.75M7.58 16.42L5.11 18.89M5.75 12.00L2.25 12.00M7.58 7.58L5.11 5.11" stroke-width="2" stroke-linecap="butt"></path></svg></i>Markers</th><th><i class="ic" data-ic="kind-numerals"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><text class="figure" x="12" y="6.25" font-size="6.5" letter-spacing="-0.75" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">12</text><text class="figure" x="17.75" y="12" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">3</text><text class="figure" x="12" y="17.75" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">6</text><text class="figure" x="6.25" y="12" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">9</text></svg></i>Numerals</th><th><i class="ic" data-ic="kind-band"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.25" stroke-width="3"></circle></svg></i>Band</th><th><i class="ic" data-ic="kind-text"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><text class="figure words" x="12" y="8.25" font-size="5.5" letter-spacing="0.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">ABC</text><text class="figure words" x="12" y="15.75" font-size="5.5" letter-spacing="0.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">XYZ</text></svg></i>Text</th></tr></thead>
 <tbody>
 <tr><th>Text</th><td></td><td></td><td></td><td></td><td class="y"></td></tr>
 <tr><th>Type</th><td></td><td></td><td class="y"></td><td></td><td class="y"></td></tr>
@@ -331,90 +357,51 @@ form.report button:disabled{opacity:.4;cursor:default}
 <tr><th>Numerals</th><td></td><td></td><td class="y"></td><td></td><td></td></tr>
 <tr><th>Band</th><td></td><td></td><td></td><td class="y"></td><td></td></tr>
 <tr><th>Edit one numeral · Edit one mark</th><td class="y"></td><td class="y"></td><td class="y"></td><td></td><td class="y"></td></tr>
-</tbody></table></section>
-
-<section class="pane">
-  <h3>Rings, top first</h3>
-  <p>The pinned pane: it stays in view while the panes under it scroll. Folded, it reads "Rings: " and the chosen ring's name, then its kind · colour · radius.</p>
-  <figure><img src="img/ringlist.webp" width="468" height="247" style="--w:468px" alt="The ring list, top ring first"><figcaption>The ring list, top ring first. Press a ring to choose it. Its drawer opens with what it shows and where. The buttons on the right add, move, copy and delete rings.</figcaption></figure>
-  <dl class="rows two">
-    <div><dt>Tools</dt><dd>On the heading line, for the chosen ring:<span class="row"><span><i class="ic" data-ic="tool-add-a-ring"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 3.75V12.75M3.75 8.25H12.75"></path></g></svg></i>Add a ring</span><span><i class="ic" data-ic="tool-move-up"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 13.25V3.25M4.25 7.25L8.25 3.25L12.25 7.25"></path></g></svg></i>Move up</span><span><i class="ic" data-ic="tool-move-down"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 3.25V13.25M4.25 9.25L8.25 13.25L12.25 9.25"></path></g></svg></i>Move down</span><span><i class="ic" data-ic="tool-duplicate"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><rect x="5.75" y="5.75" width="7.5" height="7.5"></rect><path d="M10.25 5.75V2.75H2.75V10.25H5.75"></path></g></svg></i>Duplicate</span><span><i class="ic" data-ic="tool-delete"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M2.75 4.75H13.75M6.25 2.25H10.25"></path><path d="M4.25 4.75L5 13.25H11.5L12.25 4.75"></path></g></svg></i>Delete</span></span> A tool that can't act is faint: Move up on the top row, Move down on the bottom one, Delete when there is one ring.</dd></div>
-    <div><dt>Add a ring</dt><dd>Opens the five kinds, each with its picture; the new ring goes in above the chosen one. Escape closes the menu.<div class="strip"><figure><img src="img/v-kind-ticks.webp" width="96" height="96" style="width:96px" alt="ticks"><figcaption>ticks</figcaption></figure><figure><img src="img/v-kind-markers.webp" width="96" height="96" style="width:96px" alt="markers"><figcaption>markers</figcaption></figure><figure><img src="img/v-kind-numerals.webp" width="96" height="96" style="width:96px" alt="numerals"><figcaption>numerals</figcaption></figure><figure><img src="img/v-kind-band.webp" width="96" height="96" style="width:96px" alt="band"><figcaption>band</figcaption></figure><figure><img src="img/v-kind-text.webp" width="192" height="192" style="width:96px" alt="text"><figcaption>text</figcaption></figure></div></dd></div>
-    <div><dt>A new ring</dt><dd>Named after its kind ("Markers", then "Markers 2"), in the first guide colour no other ring shows. A new numerals or text ring takes the font of the top numerals ring.</dd></div>
-    <div><dt>Duplicate · Delete</dt><dd>Duplicate puts "<em>name</em> copy" above the chosen ring. A dial keeps at least one ring: Delete on the last one does nothing; hide it instead.</dd></div>
-    <div><dt>The list</dt><dd>One row per ring, top to bottom in the order they stack: the top row is drawn last, in front.</dd></div>
-    <div><dt>A row</dt><dd>Eye · grip · kind picture · name · colour (unselected rows only) · size · radius.<span class="row"><span><i class="ic" data-ic="eye-open"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z" stroke-width="1.625"></path><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"></circle></svg></i>Show or hide</span><span><i class="ic" data-ic="grip"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="currentColor" stroke="none"><circle cx="5.5" cy="4" r="1"></circle><circle cx="10.5" cy="4" r="1"></circle><circle cx="5.5" cy="8" r="1"></circle><circle cx="10.5" cy="8" r="1"></circle><circle cx="5.5" cy="12" r="1"></circle><circle cx="10.5" cy="12" r="1"></circle></g></svg></i>Grip</span><span><i class="ic" data-ic="rename"><svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.625 1.625H12.375M16.375 5.625V12.375M12.375 16.375H5.625M1.625 12.375V5.625" stroke-width="1.25"></path><path d="M12.375 1.625A4 4 0 0 1 16.375 5.625M16.375 12.375A4 4 0 0 1 12.375 16.375M5.625 16.375A4 4 0 0 1 1.625 12.375M1.625 5.625A4 4 0 0 1 5.625 1.625" stroke-width="1.375"></path><path d="M9.25 4.75V13.25M7.25 4.75H11.25M7.25 13.25H11.25" stroke-width="1.25"></path></svg></i>Rename</span></span></dd></div>
-    <div><dt>Choosing a row</dt><dd>A press anywhere on a row but its eye chooses it; with the keyboard, Tab to a row and press Enter or Space. The chosen row and its drawer take the colour of the ring's guide.</dd></div>
-    <div><dt>Eye</dt><dd>Hide this ring · Show this ring; it never changes which ring is chosen.</dd></div>
-    <div><dt>Grip</dt><dd>Drag to change the order; a line shows where the ring will land. Let go where it started and the row is only chosen.</dd></div>
-    <div><dt>Kind</dt><dd>On the chosen row the kind picture is a button: Ticks · Markers · Numerals · Band · Text, the current one lit. The ring keeps all its settings when its kind changes.</dd></div>
-    <div><dt>Name · Rename</dt><dd>On the chosen row, press the name or the rename box beside it. Enter or a press elsewhere keeps the new name, Escape puts the old one back; an empty name keeps the old one. The box hides when the name fills the row; the name still renames.</dd></div>
-    <div><dt>Size · radius</dt><dd>The row's two figures: a mark's length (a dot's Ø), a numeral's size or a band's width, then the radius, in the unit box's unit.</dd></div>
-    <div><dt>The pill</dt><dd>Under the list, which shows 5 rows and then scrolls. Drag it to show more or fewer rings, a whole row at a time; a tap jumps between 5 and all. This browser remembers it.</dd></div>
-  </dl>
-</section>
-
-<section class="pane">
-  <h3>The ring's drawer</h3>
-  <dl class="rows two">
-    <div><dt>Details</dt><dd>A framed line under the chosen row, in two lines. First, what it draws: a numerals ring's label set and labels; "Text"; a band's Width and Fill; a mark's Shape, then Diameter or Length and Width. Second, where: Positions, and Start, Span, Skip where, Knock out and Edit one numeral when they are set.</dd></div>
-    <div><dt>Colour</dt><dd>The swatch: opens the colour pop-out.</dd></div>
-    <div><dt>Size · Radius</dt><dd>Two round value buttons, their numbers in the row above. A press opens the controller; press and drag right or up to raise the value, two screen points a step, Shift ten times finer.</dd></div>
-  </dl>
-</section>
-
-<section class="pane">
-  <h3>On the preview</h3>
-  <p>On the Rings tab the chosen ring shows its guide and handles, even with Guides off.</p>
-  <dl class="rows two">
-    <div><dt>Disc</dt><dd>Radius: drag in or out.</dd></div>
-    <div><dt>Square</dt><dd>Length, Ø, Size or Band width: drag in or out.</dd></div>
-    <div><dt>Triangles</dt><dd>The first sets Start: drag round. The second sets Span: drag round; it shows only when the span is under 360°.</dd></div>
-    <div><dt>Pressing the dial</dt><dd>A first press on a ring chooses it; a second press on it picks the numeral or mark under the pointer and opens Edit one numeral or Edit one mark. A press on nothing lets the ring go.</dd></div>
-  </dl>
+</tbody></table>
 </section>
 
 <section class="pane">
   <h3>Text</h3>
-  <p>What a text ring says, written at every position.</p>
+  <p>What a text ring says. It is written at every position.</p>
 </section>
 
 <section class="pane">
   <h3>Type</h3>
-  <p>Open, the pane's heading goes and the font box moves up; folded, it reads family · style · size.</p>
-  <dl class="rows two">
-    <div><dt>The font box</dt><dd>"1234567890 Abcdefg…" in the ring's font; press it to choose a font in the font sheet.</dd></div>
-    <div><dt>Name line</dt><dd>The family's name, which also opens the sheet · the text's colour as a pill with its hex · the language, two letters (EN when none is set).</dd></div>
-    <div><dt>Language</dt><dd>As the font sets it · Turkish · Dutch · German · Polish · Romanian · Catalan · Arabic · Persian · Chinese, simplified · Japanese.</dd></div>
-    <div><dt>Styles</dt><dd>Tabs under the name's line when the family has two styles or more; a variable font with a weight axis and no named styles gets Regular · Bold.</dd></div>
-    <div><dt>Size</dt><dd>A new ring takes the top numerals ring's; the slider runs to the dial's diameter. Range 0.3–8 mm; starts 4.8 Numerals.</dd></div>
-    <div><dt>Tracking</dt><dd>Steps of 5. Range −200–800; starts 0.</dd></div>
-    <div><dt>Axes</dt><dd>A variable font's axes, one row each: Weight, Width, Optical size, Italic, Slant or the font's own name, with its code. Press the name to set the axis back to its default.</dd></div>
-    <div><dt>OpenType features</dt><dd>Its tiles are switches: named features, Stylistic sets, Character variants, each group with its count. Starts shut.</dd></div>
+  <p>The ring's font. Folded, it reads family, style, size.</p>
+  <dl class="rows">
+    <div><dt>The font box</dt><dd>“1234567890 Abcdefg…” in the ring's font. Press it to choose another.</dd><dd class="spec"></dd></div>
+    <div><dt>Name line</dt><dd>The family's name, which also opens the font sheet. Then the text's colour, and the language.</dd><dd class="spec"></dd></div>
+    <div><dt>Language</dt><dd>As the font sets it, or Turkish, Dutch, German, Polish, Romanian, Catalan, Arabic, Persian, Chinese simplified, Japanese.</dd><dd class="spec"><span>EN when none is set</span></dd></div>
+    <div><dt>Styles</dt><dd>Tabs under the name, when the family has two or more. A variable font with a weight axis and no named styles gets Regular and Bold.</dd><dd class="spec"></dd></div>
+    <div><dt>Size</dt><dd>A new ring takes the top numerals ring's size.</dd><dd class="spec"><b>0.3–8 mm</b><span>starts 4.8 Numerals</span></dd></div>
+    <div><dt>Tracking</dt><dd>In steps of 5.</dd><dd class="spec"><b>−200–800</b><span>starts 0</span></dd></div>
+    <div><dt>Axes</dt><dd>A variable font's axes, one row each. Press a name to set it back.</dd><dd class="spec"></dd></div>
+    <div><dt>OpenType features</dt><dd>Switches, in groups: named features, stylistic sets, character variants.</dd><dd class="spec"><span>starts shut</span></dd></div>
   </dl>
-  <p class="watch">A font that isn't loaded yet shows its stand-in and says so; press its name to choose another or to add it.</p>
+  <p class="watch">A font not loaded yet shows a stand-in and says so. Press its name to choose another, or to add it.</p>
 </section>
 
 <section class="pane">
   <h3>Resize Ring</h3>
-  <p>On the heading line, "from" and a menu: what the radius measures to, Outer · Middle · Inner. Marks and bands start at Outer, the First dial's Numerals too; a new numerals or text ring starts at Middle.</p>
+  <p>A menu on the heading line says what the radius measures to. Marks and bands start at Outer, a new numerals or text ring at Middle.</p>
   <div class="strip"><figure><img src="img/v-from-outer.webp" width="96" height="96" style="width:96px" alt="Outer"><figcaption>Outer</figcaption></figure><figure><img src="img/v-from-middle.webp" width="96" height="96" style="width:96px" alt="Middle"><figcaption>Middle</figcaption></figure><figure><img src="img/v-from-inner.webp" width="96" height="96" style="width:96px" alt="Inner"><figcaption>Inner</figcaption></figure></div>
   <dl class="rows">
-    <div><dt>Length</dt><dd>A bar's or wedge's length; a new ring starts at 2.8 for markers, 1.0 for ticks.</dd><dd class="spec"><b>0.05–10 mm</b><span>starts 2.4 Markers · 1.95 Minute ticks</span></dd></div>
+    <div><dt>Length</dt><dd>A bar's or wedge's length. A new ring: 2.8 for markers, 1.0 for ticks.</dd><dd class="spec"><b>0.05–10 mm</b><span>starts 2.4 Markers · 1.95 Minute ticks</span></dd></div>
     <div><dt>Ø</dt><dd>A dot's diameter.</dd><dd class="spec"><b>0.02–5 mm</b></dd></div>
-    <div><dt>Band width</dt><dd>Bands.</dd><dd class="spec"><b>0.02–25 mm</b><span>new band 1.0</span></dd></div>
-    <div><dt>Radius</dt><dd>Measured to the point the menu names. Every kind.</dd><dd class="spec"><b>0–25 mm</b></dd></div>
-    <div><dt>Shapes width</dt><dd>A bar's or wedge's width; a new ring starts at 0.7 for markers, 0.12 for ticks; the same value as Width in Shapes.</dd><dd class="spec"><b>0.02–5 mm</b><span>starts 0.7 Markers · 0.2 Minute ticks</span></dd></div>
+    <div><dt>Band width</dt><dd>A band's width.</dd><dd class="spec"><b>0.02–25 mm</b><span>new band 1.0</span></dd></div>
+    <div><dt>Radius</dt><dd>To the point the menu names.</dd><dd class="spec"><b>0–25 mm</b></dd></div>
+    <div><dt>Shapes width</dt><dd>The same value as Width in Shapes.</dd><dd class="spec"><b>0.02–5 mm</b><span>starts 0.7 Markers · 0.2 Minute ticks</span></dd></div>
   </dl>
-  <p class="watch">A numeral's size is in the font box, not here.</p>
+  <p class="watch">A numeral's size is in Type, not here.</p>
 </section>
 
 <section class="pane">
   <h3>Sector colours</h3>
+  <p>For a band with more than one position.</p>
   <dl class="rows two">
-    <div><dt>Sectors</dt><dd>A band with more than one position: one swatch per sector, each opening the colour pop-out.</dd></div>
-    <div><dt>Alternate</dt><dd>When the count is even: two swatches, sectors 1, 3, 5… and sectors 2, 4, 6….</dd></div>
-    <div><dt>All as the ring</dt><dd>Every sector back in the ring's colour.</dd></div>
+    <div><dt>Sectors</dt><dd>A swatch for each sector.</dd></div>
+    <div><dt>Alternate</dt><dd>With an even count: two swatches, odd sectors and even.</dd></div>
+    <div><dt>All as the ring</dt><dd>Every sector back to the ring's colour.</dd></div>
   </dl>
 </section>
 
@@ -422,105 +409,103 @@ form.report button:disabled{opacity:.4;cursor:default}
   <h3>Shapes</h3>
   <dl class="rows">
     <div><dt>Shape</dt><dd><span class="row"><span><i class="ic" data-ic="shape-bar"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="16.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect></svg></i>bar</span><span><i class="ic" data-ic="shape-wedge"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4H23.5L20.5 23H17.5Z" fill="currentColor" stroke="none"></path></svg></i>wedge</span><span><i class="ic" data-ic="shape-dot"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="19" cy="13.5" r="6" fill="currentColor" stroke="none"></circle></svg></i>dot</span></span></dd><dd class="spec"><span>starts bar</span></dd></div>
-    <div><dt>Width</dt><dd>Bar and wedge; a new ring starts at 0.7 for markers, 0.12 for ticks.</dd><dd class="spec"><b>0.02–5 mm</b><span>starts 0.7 Markers · 0.2 Minute ticks</span></dd></div>
-    <div><dt>Inner width ×</dt><dd>The inner end's width as a share of the outer: 0 a triangle, 1 a bar. Wedge.</dd><dd class="spec"><b>0–2</b><span>starts 0.35</span></dd></div>
-    <div><dt>Hollow wall</dt><dd>Draws the mark as an outline this thick. Every shape, dots too.</dd><dd class="spec"><b>0–1.5 mm</b><span>starts 0 · solid</span></dd></div>
+    <div><dt>Width</dt><dd>Bar and wedge. A new ring: 0.7 for markers, 0.12 for ticks.</dd><dd class="spec"><b>0.02–5 mm</b><span>starts 0.7 Markers · 0.2 Minute ticks</span></dd></div>
+    <div><dt>Inner width ×</dt><dd>The inner end against the outer. 0 is a triangle, 1 a bar. Wedge only.</dd><dd class="spec"><b>0–2</b><span>starts 0.35</span></dd></div>
+    <div><dt>Hollow wall</dt><dd>Draws the mark as an outline this thick. Dots too.</dd><dd class="spec"><b>0–1.5 mm</b><span>starts 0 · solid</span></dd></div>
     <div><dt>Round outer · Round inner</dt><dd>Rounds each end. Bar and wedge.</dd><dd class="spec"><b>0–2 mm</b><span>starts 0</span></dd></div>
-    <div><dt>Round both ends · Square</dt><dd>Both radii to half the width, or both to 0. Bar and wedge.</dd><dd class="spec"></dd></div>
+    <div><dt>Round both ends · Square</dt><dd>Both ends to half the width, or both to 0.</dd><dd class="spec"></dd></div>
   </dl>
 </section>
 
 <section class="pane">
   <h3>Positions</h3>
-  <figure><img src="img/positions.webp" width="428" height="200" style="--w:428px" alt="Positions: the picture shows every place the ring can use"><figcaption>Positions: the picture shows every place the ring can use. Drag its outer band to move the start, and its inner band to move the span's end.</figcaption></figure>
+  <p>Where a ring draws: how many places, which ones, and the arc they share.</p>
+  <figure><img src="img/positions.webp" width="428" height="200" style="--w:428px" alt="The positions picture"><figcaption>Used positions in ink, skipped ones faint. The first is a dot, the span a dotted arc. Drag the outer band to move the start, the inner band to move the end.</figcaption></figure>
   <dl class="rows">
-    <div><dt>The picture</dt><dd>Every position as a mark: used ones in ink, skipped ones faint, the first a dot, the span a dotted arc. Drag in its outer band to move Start, inside it to move the span's end, in whole degrees.</dd><dd class="spec"></dd></div>
-    <div><dt>Count</dt><dd>How many positions round the span: from the menu, or Custom… to type any whole number 1–360 (Enter or → takes it, Escape cancels). A new ring starts at 12 for markers and numerals, 60 for ticks, 1 for bands and text.</dd><dd class="spec"><b>1–360</b><span>starts 12 Numerals, Markers · 4 Minute ticks</span></dd></div>
-    <div><dt>Every</dt><dd>Use one position in every few: 1 to 30 from the menu, or Custom… for 1–60. A new ring starts at 1.</dd><dd class="spec"><b>1–60</b><span>starts 3 Numerals, Markers · 1 Minute ticks</span></dd></div>
-    <div><dt>Offset</dt><dd>Which of every few is used: with Every 3, Offset 1 takes the 2nd, 5th, 8th…</dd><dd class="spec"><b>0–59</b><span>starts 0</span></dd></div>
-    <div><dt>Skip those</dt><dd>Turns it over: the positions Every and Offset take are left out, the others drawn. Off on a new ring.</dd><dd class="spec"><span>on for Markers</span></dd></div>
-    <div><dt>Start</dt><dd>Where the first position stands. A text ring's Start snaps to another ring's position within 2°.</dd><dd class="spec"><b>−180°–180°</b><span>starts 0° · 12 o’clock; 180° Text</span></dd></div>
+    <div><dt>Count</dt><dd>How many positions round the span. Pick one, or Custom… to type any. A new ring: 12 for markers and numerals, 60 for ticks, 1 for bands and text.</dd><dd class="spec"><b>1–360</b><span>starts 12 Numerals, Markers · 4 Minute ticks</span></dd></div>
+    <div><dt>Every</dt><dd>Use one in every few. 1 to 30 from the menu, Custom… up to 60.</dd><dd class="spec"><b>1–60</b><span>starts 3 Numerals, Markers · 1 Minute ticks</span></dd></div>
+    <div><dt>Offset</dt><dd>Which one of the few. With Every 3, Offset 1 takes the 2nd, 5th, 8th.</dd><dd class="spec"><b>0–59</b><span>starts 0</span></dd></div>
+    <div><dt>Skip those</dt><dd>Turns it over: the ones Every and Offset pick are left out, the rest drawn.</dd><dd class="spec"><span>on for Markers</span></dd></div>
+    <div><dt>Start</dt><dd>Where the first position stands. A text ring snaps to another ring's position within 2°.</dd><dd class="spec"><b>−180°–180°</b><span>starts 0° · 12 o’clock; 180° Text</span></dd></div>
     <div><dt>Span</dt><dd>The arc the positions share.</dd><dd class="spec"><b>1°–360°</b><span>starts 360°</span></dd></div>
   </dl>
-  <p class="watch">Press or drag the names Count, Every, Offset, Start and Span to change their values with the controller.</p>
 </section>
 
 <section class="pane">
   <h3>Give way to rings above</h3>
-  <p>Two tabs beside a picture of what the choice does to this ring's marks.</p>
+  <p>Whether this ring steps aside where rings above it fall.</p>
   <div class="strip"><figure><img src="img/v-give-nothing.webp" width="96" height="96" style="width:96px" alt="nothing"><figcaption>nothing</figcaption></figure><figure><img src="img/v-give-skip.webp" width="96" height="96" style="width:96px" alt="Skip where"><figcaption>Skip where</figcaption></figure><figure><img src="img/v-give-knock.webp" width="96" height="96" style="width:96px" alt="Knock out"><figcaption>Knock out</figcaption></figure></div>
-  <dl class="rows two">
-    <div><dt>Skip where</dt><dd>Leaves out this ring's marks under the rings above: nothing · markers above · markers &amp; numerals above · all marks above. "markers &amp; numerals above" counts text rings with the numerals.</dd></div>
-    <div><dt>Knock out</dt><dd>Cuts this ring back round the rings above: nothing · markers above · markers &amp; numerals above · everything above.</dd></div>
-    <div><dt>Clearance</dt><dd>The gap a knock-out leaves. Only on the Knock out tab, and only when its choice is not nothing. Range 0–2 mm; starts 0.25.</dd></div>
+  <dl class="rows">
+    <div><dt>Skip where</dt><dd>Leaves out this ring's marks under the rings above: nothing · markers above · markers &amp; numerals above · all marks above. Text counts as numerals.</dd><dd class="spec"></dd></div>
+    <div><dt>Knock out</dt><dd>Cuts this ring back round the rings above: nothing · markers above · markers &amp; numerals above · everything above.</dd><dd class="spec"></dd></div>
+    <div><dt>Clearance</dt><dd>The gap a knock-out leaves. On Knock out, when it isn't nothing.</dd><dd class="spec"><b>0–2 mm</b><span>starts 0.25</span></dd></div>
   </dl>
-  <p class="watch">Markers, numerals and text leave an open window's position empty; every ring is also cut back from the window's clear zone.</p>
+  <p class="watch">Markers, numerals and text leave an open window's place empty. Every ring is cut back from a window's clear zone.</p>
 </section>
 
 <section class="pane">
   <h3>12 o’clock · first position</h3>
-  <dl class="rows two">
-    <div><dt>Style</dt><dd>The first marker.<span class="row"><span><i class="ic" data-ic="twelve-same"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="16.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect></svg></i>same</span><span><i class="ic" data-ic="twelve-double"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="11.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect><rect x="21.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect></svg></i>double</span><span><i class="ic" data-ic="twelve-triangle"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H27L19 23Z" fill="currentColor" stroke="none"></path></svg></i>triangle</span><span><i class="ic" data-ic="twelve-none"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="19" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="19" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="6.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="6.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="8.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="8.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="10.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="10.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="12.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="12.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="14.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="14.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="16.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="16.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="18.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="18.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="20.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="20.5" r="0.625" fill="currentColor" stroke="none"></circle></svg></i>none</span></span> Starts same.</dd></div>
-    <div><dt>Scale ×</dt><dd>Its size against the others. Not for none. Range 0.5–2.5; starts 1.</dd></div>
-    <div><dt>Gap</dt><dd>Between the two of a double. Double only. Range 0–3 mm; starts 0.5.</dd></div>
+  <dl class="rows">
+    <div><dt>Style</dt><dd>The first marker.<span class="row"><span><i class="ic" data-ic="twelve-same"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="16.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect></svg></i>same</span><span><i class="ic" data-ic="twelve-double"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="11.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect><rect x="21.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect></svg></i>double</span><span><i class="ic" data-ic="twelve-triangle"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H27L19 23Z" fill="currentColor" stroke="none"></path></svg></i>triangle</span><span><i class="ic" data-ic="twelve-none"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="19" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="19" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="6.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="6.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="8.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="8.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="10.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="10.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="12.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="12.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="14.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="14.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="16.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="16.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="18.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="18.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="20.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="20.5" r="0.625" fill="currentColor" stroke="none"></circle></svg></i>none</span></span></dd><dd class="spec"><span>starts same</span></dd></div>
+    <div><dt>Scale ×</dt><dd>Its size against the rest. Not for none.</dd><dd class="spec"><b>0.5–2.5</b><span>starts 1</span></dd></div>
+    <div><dt>Gap</dt><dd>Between the two of a double.</dd><dd class="spec"><b>0–3 mm</b><span>starts 0.5</span></dd></div>
   </dl>
 </section>
 
 <section class="pane">
   <h3>Numerals</h3>
-  <dl class="rows two">
-    <div><dt>Labels</dt><dd>On the heading line: Arabic · Roman · IIII · Roman · IV · Eastern Arabic · Chinese · Words · Custom · Numbers. Starts Arabic.<div class="strip"><figure><img src="img/v-labels-arabic.webp" width="144" height="144" style="width:144px" alt="Arabic"><figcaption>Arabic</figcaption></figure><figure><img src="img/v-labels-iiii.webp" width="144" height="144" style="width:144px" alt="Roman · IIII"><figcaption>Roman · IIII</figcaption></figure><figure><img src="img/v-labels-iv.webp" width="144" height="144" style="width:144px" alt="Roman · IV"><figcaption>Roman · IV</figcaption></figure><figure><img src="img/v-labels-eastern.webp" width="144" height="144" style="width:144px" alt="Eastern Arabic"><figcaption>Eastern Arabic</figcaption></figure><figure><img src="img/v-labels-chinese.webp" width="144" height="144" style="width:144px" alt="Chinese"><figcaption>Chinese</figcaption></figure><figure><img src="img/v-labels-words.webp" width="144" height="144" style="width:144px" alt="Words"><figcaption>Words</figcaption></figure></div></dd></div>
-    <div><dt>Custom</dt><dd>When Labels is Custom: your labels with commas between, one label for each position, the rest stay empty.</dd></div>
-    <div><dt>First number · Step</dt><dd>When Labels is Numbers: the first label; what each adds, −100 to 100, 5 to start. Range −1000–1000; starts 0.</dd></div>
-    <div><dt>Digits</dt><dd>Pads each number with leading zeros to this many digits. Range 0–4; starts 0.</dd></div>
-    <div><dt>Start again after</dt><dd>After this many positions the count starts over; 0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again. Range 0–60.</dd></div>
-    <div><dt>Placement</dt><dd>How each numeral stands.<div class="strip"><figure><img src="img/v-place-upright.webp" width="144" height="144" style="width:144px" alt="upright"><figcaption>upright</figcaption></figure><figure><img src="img/v-place-radial.webp" width="144" height="144" style="width:144px" alt="radial"><figcaption>radial</figcaption></figure><figure><img src="img/v-place-radial-auto-flip.webp" width="144" height="144" style="width:144px" alt="auto-flip"><figcaption>auto-flip</figcaption></figure><figure><img src="img/v-place-on-path.webp" width="144" height="144" style="width:144px" alt="on path"><figcaption>on path</figcaption></figure></div> Starts upright.</dd></div>
+  <dl class="rows">
+    <div><dt>Labels</dt><dd>On the heading line. Also Custom and Numbers.<div class="strip"><figure><img src="img/v-labels-arabic.webp" width="144" height="144" style="width:96px" alt="Arabic"><figcaption>Arabic</figcaption></figure><figure><img src="img/v-labels-iiii.webp" width="144" height="144" style="width:96px" alt="Roman · IIII"><figcaption>Roman · IIII</figcaption></figure><figure><img src="img/v-labels-iv.webp" width="144" height="144" style="width:96px" alt="Roman · IV"><figcaption>Roman · IV</figcaption></figure><figure><img src="img/v-labels-eastern.webp" width="144" height="144" style="width:96px" alt="Eastern Arabic"><figcaption>Eastern Arabic</figcaption></figure><figure><img src="img/v-labels-chinese.webp" width="144" height="144" style="width:96px" alt="Chinese"><figcaption>Chinese</figcaption></figure><figure><img src="img/v-labels-words.webp" width="144" height="144" style="width:96px" alt="Words"><figcaption>Words</figcaption></figure></div></dd><dd class="spec"><span>starts Arabic</span></dd></div>
+    <div><dt>Custom</dt><dd>Your own labels, commas between, one for each position. The rest stay empty.</dd><dd class="spec"></dd></div>
+    <div><dt>First number · Step</dt><dd>For Numbers: the first label, then what each adds. Step runs −100 to 100.</dd><dd class="spec"><b>−1000–1000</b><span>starts 0 · step 5</span></dd></div>
+    <div><dt>Digits</dt><dd>Pads each number with zeros to this many digits.</dd><dd class="spec"><b>0–4</b><span>starts 0</span></dd></div>
+    <div><dt>Start again after</dt><dd>After this many positions the count starts over. Zero counts on. With 12, from 5 by 5: 5 to 60, then 5 again.</dd><dd class="spec"><b>0–60</b></dd></div>
+    <div><dt>Placement</dt><dd>How each numeral stands.<div class="strip"><figure><img src="img/v-place-upright.webp" width="144" height="144" style="width:96px" alt="upright"><figcaption>upright</figcaption></figure><figure><img src="img/v-place-radial.webp" width="144" height="144" style="width:96px" alt="radial"><figcaption>radial</figcaption></figure><figure><img src="img/v-place-radial-auto-flip.webp" width="144" height="144" style="width:96px" alt="auto-flip"><figcaption>auto-flip</figcaption></figure><figure><img src="img/v-place-on-path.webp" width="144" height="144" style="width:96px" alt="on path"><figcaption>on path</figcaption></figure></div></dd><dd class="spec"><span>starts upright</span></dd></div>
   </dl>
 </section>
 
 <section class="pane">
   <h3>Band</h3>
-  <dl class="rows two">
-    <div><dt>Fill % of step</dt><dd>How much of each step the band covers. Range 1–100 %; starts 100 %.</dd></div>
+  <dl class="rows">
+    <div><dt>Fill % of step</dt><dd>How much of each step the band covers.</dd><dd class="spec"><b>1–100 %</b><span>starts 100 %</span></dd></div>
   </dl>
 </section>
 
 <section class="pane">
   <h3>Edit one numeral · Edit one mark</h3>
-  <p>Edit one numeral for numerals and text, Edit one mark for ticks and markers. While the pane is open, the chosen one is outlined on the dial.</p>
-  <dl class="rows two">
-    <div><dt>Numeral · Mark</dt><dd>Which one: only the drawn positions are listed, a numeral by its label, a mark by its time ("1:00"); an edited one has a •. Or press the ring on the dial, then the one you want.</dd></div>
-    <div><dt>Font</dt><dd>The font's name: opens the font sheet for this numeral alone. As the ring, shown once it has its own font, takes the ring's font back. Numerals and text.</dd></div>
-    <div><dt>Colour</dt><dd>This numeral's colour. Numerals and text.</dd></div>
-    <div><dt>Reset this numeral · Reset this mark</dt><dd>Clears its edits, its own font and its own colour.</dd></div>
-    <div><dt>Radius ±</dt><dd>In or out. Range −3–3 mm; starts 0.</dd></div>
-    <div><dt>Angle ± °</dt><dd>Round the dial. Range −30°–30°; starts 0.</dd></div>
-    <div><dt>Rotate °</dt><dd>Turns it. Range −180°–180°; starts 0.</dd></div>
-    <div><dt>Scale ×</dt><dd>Its size. Range 0.2–3; starts 1.</dd></div>
-    <div><dt>Shape</dt><dd>A mark's own shape: As the ring · Bar · Wedge · Dot. Marks only.</dd></div>
+  <p>One numeral or one mark, on its own. While the pane is open it is outlined on the dial, and the guides hide.</p>
+  <dl class="rows">
+    <div><dt>Numeral · Mark</dt><dd>Which one. Only drawn ones are listed; an edited one has a •. Or press the ring on the dial, then the one you want.</dd><dd class="spec"></dd></div>
+    <div><dt>Font</dt><dd>Its own font, from the font sheet. As the ring takes the ring's back. Numerals and text.</dd><dd class="spec"></dd></div>
+    <div><dt>Colour</dt><dd>Its own colour. Numerals and text.</dd><dd class="spec"></dd></div>
+    <div><dt>Reset this</dt><dd>Clears its edits, its font and its colour.</dd><dd class="spec"></dd></div>
+    <div><dt>Radius ±</dt><dd>In or out.</dd><dd class="spec"><b>−3–3 mm</b><span>starts 0</span></dd></div>
+    <div><dt>Angle ± °</dt><dd>Round the dial.</dd><dd class="spec"><b>−30°–30°</b><span>starts 0</span></dd></div>
+    <div><dt>Rotate °</dt><dd>Turns it.</dd><dd class="spec"><b>−180°–180°</b><span>starts 0</span></dd></div>
+    <div><dt>Scale ×</dt><dd>Its size.</dd><dd class="spec"><b>0.2–3</b><span>starts 1</span></dd></div>
+    <div><dt>Shape</dt><dd>A mark's own shape: as the ring, bar, wedge, dot.</dd><dd class="spec"></dd></div>
   </dl>
-  <p class="watch">While a numeral is being edited, the guides hide.</p>
 </section>
 
 <section class="pane">
   <h3>The font sheet</h3>
-  <p>Opens over the panel from the font box, or from Font in Edit one numeral. It comes back on the tab, search and filters it was left with, scrolled to the ring's font.</p>
-  <figure class="shot"><span class="pic"><img src="img/fonts.webp" width="476" height="777" style="--w:476px" alt="The font sheet"><i style="left:-3.5%;top:5%">①</i><i style="left:103.5%;top:5.1%">②</i><i style="left:103.5%;top:9.6%">③</i><i style="left:-3.5%;top:10.4%">④</i><i style="left:-3.5%;top:16.6%">⑤</i><i style="left:103.5%;top:92.6%">⑥</i></span><figcaption>The font sheet. Each line shows a font's name, its numerals and stickers for what it can do. Press a line to use that font. ① Light · Dark · ② search (Find a font) · ③ the six filters: Sans · Serif · Variable · Condensed · Mono · Non-Latin · ④ Dial Tool's fonts · Installed · ⑤ a font's line (Arimo, the first in view) · ⑥ Legend (OpenType abbr.).</figcaption></figure>
+  <p>Opens over the panel, from Type or from Edit one numeral. It comes back as you left it.</p>
+  <figure class="shot"><span class="pic"><img src="img/fonts.webp" width="476" height="777" style="--w:476px" alt="The font sheet"><i style="left:-3.5%;top:5%">①</i><i style="left:103.5%;top:5.1%">②</i><i style="left:103.5%;top:9.6%">③</i><i style="left:-3.5%;top:10.4%">④</i><i style="left:-3.5%;top:16.6%">⑤</i><i style="left:103.5%;top:92.6%">⑥</i></span></figure>
   <dl class="rows two">
-    <div><dt>Light · Dark</dt><dd>The ground the previews stand on, kept for the session.</dd></div>
-    <div><dt>Search</dt><dd>Find a font by name.</dd></div>
-    <div><dt>Sans · Serif · Variable · Condensed · Mono · Non-Latin</dt><dd>Each pill pressed adds its fonts; none pressed shows every font. Mono is drawn monospaced or has tabular figures; Variable is a font with axes. Fonts you added show only when no filter is pressed.</dd></div>
-    <div><dt>Dial Tool’s fonts · Installed</dt><dd>Installed lists the computer's fonts, and shows only where the browser can read them (Chrome, Edge); the first time it asks the browser. On Installed the filters step out of sight.</dd></div>
-    <div><dt>A font's row</dt><dd>The family's name in its own face · its numerals · stickers for what it holds. Choosing a font closes the sheet.</dd></div>
-    <div><dt>Legend (OpenType abbr.)</dt><dd>What the stickers mean: w. 100–900 · bold · italic · wd · opt · tab · old · zero · frac · ss · cv · st.</dd></div>
-    <div><dt>Add font link (gfonts, url)</dt><dd>Opens a field for a Google Fonts link or family name, or a link to a font file.</dd></div>
-    <div><dt>Add font file (woff, ttf, otf)</dt><dd>A font file from this computer: .ttf, .otf, .ttc or .otc. This browser keeps added fonts, under "Added by you".</dd></div>
+    <div><dt><span class="n">①</span>Light · Dark</dt><dd>The ground under the previews.</dd></div>
+    <div><dt><span class="n">②</span>Search</dt><dd>Find a font by name.</dd></div>
+    <div><dt><span class="n">③</span>Filters</dt><dd>Sans, Serif, Variable, Condensed, Mono, Non-Latin. Each adds its fonts; none shows them all. Fonts you added show only with no filter on.</dd></div>
+    <div><dt><span class="n">④</span>Dial Tool’s fonts · Installed</dt><dd>Installed lists your computer's fonts where the browser allows it (Chrome, Edge). It asks the first time.</dd></div>
+    <div><dt><span class="n">⑤</span>A font's line</dt><dd>Its name in its own face, its numerals, stickers for what it holds. Press it to choose; the sheet closes.</dd></div>
+    <div><dt><span class="n">⑥</span>Legend</dt><dd>What the stickers mean.</dd></div>
+    <div><dt>Add font link</dt><dd>A Google Fonts link or family name, or a link to a font file.</dd></div>
+    <div><dt>Add font file</dt><dd>A .ttf, .otf, .ttc or .otc from this computer. The browser keeps it, under “Added by you”.</dd></div>
   </dl>
-  <p class="watch">To close the sheet, press beside it or Escape.</p>
+  <p class="watch">Press beside the sheet, or Escape, to close it.</p>
 </section>
 
-<h2 id="hands"><span class="map" data-map="hands" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="18.52" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="17.52" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="16.52" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span><i class="ic" data-ic="hands"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><path d="M17.25 17.25V8.75M17.25 17.25L22.75 20.75"></path><circle cx="17.25" cy="17.25" r="1.5" fill="currentColor" stroke="none"></circle></g></svg></i>Hands</h2>
-<p class="lead">All hands, then a tab for each hand.</p>
+<h2 id="hands"><i class="ic" data-ic="hands"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><path d="M17.25 17.25V8.75M17.25 17.25L22.75 20.75"></path><circle cx="17.25" cy="17.25" r="1.5" fill="currentColor" stroke="none"></circle></g></svg></i>Hands</h2>
+<div class="summary"><p class="lead">All hands, then a tab for each hand.</p><span class="map" data-map="hands" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="18.52" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="17.52" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="16.52" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
 <section class="pane">
   <h3>All hands</h3>
@@ -565,8 +550,8 @@ form.report button:disabled{opacity:.4;cursor:default}
   <p class="watch">The dashed + tile, a hand of your own from an SVG file, is not built yet.</p>
 </section>
 
-<h2 id="date"><span class="map" data-map="date" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="27.68" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="26.68" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="25.68" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span><i class="ic" data-ic="windows"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><rect x="19" y="14" width="8" height="6.5" rx="1.5" fill="currentColor" stroke="none"></rect></g></svg></i>Windows</h2>
-<p class="lead">Four windows as cards: 12 · 3 · 6 · 9.</p>
+<h2 id="date"><i class="ic" data-ic="windows"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><rect x="19" y="14" width="8" height="6.5" rx="1.5" fill="currentColor" stroke="none"></rect></g></svg></i>Windows</h2>
+<div class="summary"><p class="lead">Four windows as cards: 12 · 3 · 6 · 9.</p><span class="map" data-map="date" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="27.68" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="26.68" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="25.68" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
 <section class="pane"><h3>Which panes a window shows</h3>
 <table class="matrix"><colgroup><col class="name"></colgroup><thead><tr><th>Pane, in order</th><th>date</th><th>day</th><th>am · pm</th><th>moon</th></tr></thead>
@@ -638,8 +623,8 @@ form.report button:disabled{opacity:.4;cursor:default}
   </dl>
 </section>
 
-<h2 id="export"><span class="map" data-map="export" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="36.83" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="35.83" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="34.83" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span><i class="ic" data-ic="export"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><path d="M17.25 9.25V20.25M13.25 16.25L17.25 20.25L21.25 16.25M10.75 24.25H23.75"></path></g></svg></i>Export</h2>
-<p class="lead">Files at true size, print, links, settings.</p>
+<h2 id="export"><i class="ic" data-ic="export"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"></circle><g class="sign"><path d="M17.25 9.25V20.25M13.25 16.25L17.25 20.25L21.25 16.25M10.75 24.25H23.75"></path></g></svg></i>Export</h2>
+<div class="summary"><p class="lead">Files at true size, print, links, settings.</p><span class="map" data-map="export" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="36.83" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="35.83" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="34.83" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 <p>Export a file stays in view; the panes under it scroll.</p>
 
 <section class="pane">
@@ -727,8 +712,8 @@ form.report button:disabled{opacity:.4;cursor:default}
   </dl>
 </section>
 
-<h2 id="canvas"><span class="map" data-map="canvas" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="49.98" y="1.50" width="26.76" height="10.00" rx="4.00" class="b1"/><rect x="48.98" y="0.50" width="28.76" height="12.00" rx="5.00" class="b2"/><rect x="47.98" y="-0.50" width="30.76" height="14.00" rx="6.00" class="b3"/><rect x="143.10" y="1.50" width="15.40" height="16.90" rx="4.00" class="b1"/><rect x="142.10" y="0.50" width="17.40" height="18.90" rx="5.00" class="b2"/><rect x="141.10" y="-0.50" width="19.40" height="20.90" rx="6.00" class="b3"/><rect x="49.98" y="81.60" width="16.04" height="12.60" rx="4.00" class="b1"/><rect x="48.98" y="80.60" width="18.04" height="14.60" rx="5.00" class="b2"/><rect x="47.98" y="79.60" width="20.04" height="16.60" rx="6.00" class="b3"/><rect x="152.50" y="81.60" width="6.00" height="12.70" rx="4.00" class="b1"/><rect x="151.50" y="80.60" width="8.00" height="14.70" rx="5.00" class="b2"/><rect x="150.50" y="79.60" width="10.00" height="16.70" rx="6.00" class="b3"/><rect x="1.50" y="90.50" width="157.00" height="8.00" rx="4.00" class="b1"/><rect x="0.50" y="89.50" width="159.00" height="10.00" rx="5.00" class="b2"/><rect x="-0.50" y="88.50" width="161.00" height="12.00" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span>Corners and bar</h2>
-<p class="lead">The preview's four corners, and the bar.</p>
+<h2 id="canvas">Corners and bar</h2>
+<div class="summary"><p class="lead">The preview's four corners, and the bar.</p><span class="map" data-map="canvas" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="49.98" y="1.50" width="26.76" height="10.00" rx="4.00" class="b1"/><rect x="48.98" y="0.50" width="28.76" height="12.00" rx="5.00" class="b2"/><rect x="47.98" y="-0.50" width="30.76" height="14.00" rx="6.00" class="b3"/><rect x="143.10" y="1.50" width="15.40" height="16.90" rx="4.00" class="b1"/><rect x="142.10" y="0.50" width="17.40" height="18.90" rx="5.00" class="b2"/><rect x="141.10" y="-0.50" width="19.40" height="20.90" rx="6.00" class="b3"/><rect x="49.98" y="81.60" width="16.04" height="12.60" rx="4.00" class="b1"/><rect x="48.98" y="80.60" width="18.04" height="14.60" rx="5.00" class="b2"/><rect x="47.98" y="79.60" width="20.04" height="16.60" rx="6.00" class="b3"/><rect x="152.50" y="81.60" width="6.00" height="12.70" rx="4.00" class="b1"/><rect x="151.50" y="80.60" width="8.00" height="14.70" rx="5.00" class="b2"/><rect x="150.50" y="79.60" width="10.00" height="16.70" rx="6.00" class="b3"/><rect x="1.50" y="90.50" width="157.00" height="8.00" rx="4.00" class="b1"/><rect x="0.50" y="89.50" width="159.00" height="10.00" rx="5.00" class="b2"/><rect x="-0.50" y="88.50" width="161.00" height="12.00" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
 <section class="pane">
   <h3>Top left</h3>
@@ -849,8 +834,8 @@ form.report button:disabled{opacity:.4;cursor:default}
   </dl>
 </section>
 
-<h2 id="show"><span class="map" data-map="show" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="152.50" y="85.80" width="6.00" height="10.00" rx="4.00" class="b1"/><rect x="151.50" y="84.80" width="8.00" height="12.00" rx="5.00" class="b2"/><rect x="150.50" y="83.80" width="10.00" height="14.00" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span><i class="ic" data-ic="iris"><svg viewBox="0 0 30 30" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><radialGradient id="h-iris-rays-fade" gradientUnits="userSpaceOnUse" cx="15.25" cy="15" r="240"><stop offset="0.063" stop-color="white"></stop><stop offset="0.125" stop-color="#555"></stop><stop offset="1" stop-color="black"></stop></radialGradient><mask id="h-iris-eye-cut" maskUnits="userSpaceOnUse" x="-224.75" y="-225" width="480" height="480"><rect x="-224.75" y="-225" width="480" height="480" fill="url(#h-iris-rays-fade)" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><g mask="url(#h-iris-eye-cut)"><path d="M15.25 15L15.25 -225.00M15.25 15L107.09 -206.73M15.25 15L184.96 -154.71M15.25 15L236.98 -76.84M15.25 15L255.25 15.00M15.25 15L236.98 106.84M15.25 15L184.96 184.71M15.25 15L107.09 236.73M15.25 15L15.25 255.00M15.25 15L-76.59 236.73M15.25 15L-154.46 184.71M15.25 15L-206.48 106.84M15.25 15L-224.75 15.00M15.25 15L-206.48 -76.84M15.25 15L-154.46 -154.71M15.25 15L-76.59 -206.73" stroke-width="0.75" stroke-linecap="butt"></path></g><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i>Show mode</h2>
-<p class="lead">The whole watch round your dial, lit.</p>
+<h2 id="show"><i class="ic" data-ic="iris"><svg viewBox="0 0 30 30" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><radialGradient id="h-iris-rays-fade" gradientUnits="userSpaceOnUse" cx="15.25" cy="15" r="240"><stop offset="0.063" stop-color="white"></stop><stop offset="0.125" stop-color="#555"></stop><stop offset="1" stop-color="black"></stop></radialGradient><mask id="h-iris-eye-cut" maskUnits="userSpaceOnUse" x="-224.75" y="-225" width="480" height="480"><rect x="-224.75" y="-225" width="480" height="480" fill="url(#h-iris-rays-fade)" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><g mask="url(#h-iris-eye-cut)"><path d="M15.25 15L15.25 -225.00M15.25 15L107.09 -206.73M15.25 15L184.96 -154.71M15.25 15L236.98 -76.84M15.25 15L255.25 15.00M15.25 15L236.98 106.84M15.25 15L184.96 184.71M15.25 15L107.09 236.73M15.25 15L15.25 255.00M15.25 15L-76.59 236.73M15.25 15L-154.46 184.71M15.25 15L-206.48 106.84M15.25 15L-224.75 15.00M15.25 15L-206.48 -76.84M15.25 15L-154.46 -154.71M15.25 15L-76.59 -206.73" stroke-width="0.75" stroke-linecap="butt"></path></g><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i>Show mode</h2>
+<div class="summary"><p class="lead">The whole watch round your dial, lit.</p><span class="map" data-map="show" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="152.50" y="85.80" width="6.00" height="10.00" rx="4.00" class="b1"/><rect x="151.50" y="84.80" width="8.00" height="12.00" rx="5.00" class="b2"/><rect x="150.50" y="83.80" width="10.00" height="14.00" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
 <section class="pane">
   <h3>Its parts, by number</h3>
@@ -1060,7 +1045,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 </section>
 
 <h2 id="keys">Keys and pointer</h2>
-<p class="lead">Keys work when you aren't typing in a field, and not with <kbd>⌘</kbd> <kbd>Ctrl</kbd> <kbd>⌥</kbd> held. Ctrl for ⌘ on Windows.</p>
+<div class="summary"><p class="lead">Keys work when you aren't typing in a field, and not with <kbd>⌘</kbd> <kbd>Ctrl</kbd> <kbd>⌥</kbd> held. Ctrl for ⌘ on Windows.</p></div>
 
 <section class="pane">
   <h3>Keys</h3>
@@ -1088,7 +1073,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 </section>
 
 <h2 id="touch">iPad and desktop</h2>
-<p class="lead">The same tool under a finger and under a mouse; where they differ.</p>
+<div class="summary"><p class="lead">The same tool under a finger and under a mouse; where they differ.</p></div>
 
 <section class="pane">
   <h3>Controls</h3>
@@ -1124,7 +1109,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 </section>
 
 <h2 id="signs">Signs</h2>
-<p class="lead">Every picture the tool uses, by where it lives.</p>
+<div class="summary"><p class="lead">Every picture the tool uses, by where it lives.</p></div>
 
 <section class="pane">
   <h3>Tabs</h3>
@@ -1156,8 +1141,8 @@ form.report button:disabled{opacity:.4;cursor:default}
   <div class="signs"><figure><i class="ic" data-ic="window-date"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 2.25H23.25M24.75 3.75V17.25M23.25 18.75H6.75M5.25 17.25V3.75"></path><path d="M23.25 2.25A1.5 1.5 0 0 1 24.75 3.75M24.75 17.25A1.5 1.5 0 0 1 23.25 18.75M6.75 18.75A1.5 1.5 0 0 1 5.25 17.25M5.25 3.75A1.5 1.5 0 0 1 6.75 2.25" stroke-width="1.625"></path><path d="M12.75 8L15.25 6V15" stroke-width="1.625"></path></svg></i><figcaption>Date</figcaption></figure><figure><i class="ic" data-ic="window-day"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 4.25H26.25M27.75 5.75V15.25M26.25 16.75H3.75M2.25 15.25V5.75"></path><path d="M26.25 4.25A1.5 1.5 0 0 1 27.75 5.75M27.75 15.25A1.5 1.5 0 0 1 26.25 16.75M3.75 16.75A1.5 1.5 0 0 1 2.25 15.25M2.25 5.75A1.5 1.5 0 0 1 3.75 4.25" stroke-width="1.625"></path><path d="M10.75 14V7L15 12L19.25 7V14" stroke-width="1.5625"></path></svg></i><figcaption>Day</figcaption></figure><figure><i class="ic" data-ic="window-am-pm"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.25 3.75H24.75M26.25 5.25V15.75M24.75 17.25H5.25M3.75 15.75V5.25"></path><path d="M24.75 3.75A1.5 1.5 0 0 1 26.25 5.25M26.25 15.75A1.5 1.5 0 0 1 24.75 17.25M5.25 17.25A1.5 1.5 0 0 1 3.75 15.75M3.75 5.25A1.5 1.5 0 0 1 5.25 3.75" stroke-width="1.625"></path><path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" fill="currentColor" stroke="none"></path></svg></i><figcaption>am · pm</figcaption></figure><figure><i class="ic" data-ic="window-moon-phase"><svg viewBox="0 0 30 21" width="30" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" fill="currentColor" stroke="none"></path><circle cx="15" cy="10.5" r="9.25"></circle></svg></i><figcaption>Moon</figcaption></figure><figure><i class="ic" data-ic="hole-rectangle"><svg viewBox="0 0 26 18" width="26" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.25 3.75H18.75M20.25 5.25V12.75M18.75 14.25H7.25M5.75 12.75V5.25"></path><path d="M18.75 3.75A1.5 1.5 0 0 1 20.25 5.25M20.25 12.75A1.5 1.5 0 0 1 18.75 14.25M7.25 14.25A1.5 1.5 0 0 1 5.75 12.75M5.75 5.25A1.5 1.5 0 0 1 7.25 3.75" stroke-width="1.625"></path></svg></i><figcaption>Rectangle</figcaption></figure><figure><i class="ic" data-ic="hole-circle"><svg viewBox="0 0 26 18" width="26" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="9" r="6" stroke-width="1.625"></circle></svg></i><figcaption>Circle</figcaption></figure><figure><i class="ic" data-ic="hole-polygon"><svg viewBox="0 0 26 18" width="26" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5L18.75 5.75V12.25L13 15.5L7.25 12.25V5.75Z" stroke-width="1.5625"></path></svg></i><figcaption>Polygon</figcaption></figure><figure><i class="ic" data-ic="hole-arc"><svg viewBox="0 0 26 18" width="26" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.75 9.75A15 15 0 0 1 23.25 9.75L20.5 13.75A10.25 10.25 0 0 0 5.5 13.75Z" stroke-width="1.625"></path></svg></i><figcaption>Arc</figcaption></figure><figure><i class="ic" data-ic="hole-arch"><svg viewBox="0 0 26 18" width="26" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.75 14.25A10.25 10.25 0 0 1 23.25 14.25A5.25 5.25 0 0 0 13 14.25A5.25 5.25 0 0 0 2.75 14.25Z" stroke-width="1.625"></path></svg></i><figcaption>Arch</figcaption></figure><figure><i class="ic" data-ic="hole-half"><svg viewBox="0 0 26 18" width="26" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 13.25A8.5 8.5 0 0 1 21.5 13.25Z" stroke-width="1.625"></path></svg></i><figcaption>Half</figcaption></figure></div>
 </section>
 
-<h2 id="gallery"><span class="map" data-map="export" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="36.83" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="35.83" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="34.83" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span>Gallery</h2>
-<p class="lead">Twenty dials to open and take apart.</p>
+<h2 id="gallery">Gallery</h2>
+<div class="summary"><p class="lead">Twenty dials to open and take apart.</p><span class="map" data-map="export" title="Where on the screen"><svg viewBox="0 0 160 100" aria-hidden="true"><rect width="160" height="100" class="backdrop"/><rect width="51.2" height="93.0" class="panel"/><rect y="14.4" width="51.2" height="31.6" class="pane"/><circle cx="7.3" cy="8.6" r="2.4" class="tab"/><circle cx="16.45" cy="8.6" r="2.4" class="tab"/><circle cx="25.6" cy="8.6" r="2.4" class="tab"/><circle cx="34.75" cy="8.6" r="2.4" class="tab"/><circle cx="43.9" cy="8.6" r="2.4" class="tab"/><rect y="93.0" width="160" height="7.0" class="bar"/><circle cx="105.6" cy="46.6" r="39.5" class="dial"/><g class="ticks"><path d="M105.6 14.1L105.6 9.6"/><path d="M121.9 18.5L124.1 14.6"/><path d="M133.7 30.4L137.6 28.1"/><path d="M138.1 46.6L142.6 46.6"/><path d="M133.7 62.9L137.6 65.1"/><path d="M121.8 74.7L124.1 78.6"/><path d="M105.6 79.1L105.6 83.6"/><path d="M89.3 74.7L87.1 78.6"/><path d="M77.5 62.8L73.6 65.1"/><path d="M73.1 46.6L68.6 46.6"/><path d="M77.5 30.3L73.6 28.1"/><path d="M89.4 18.5L87.1 14.6"/></g><path d="M105.6 46.6L89.6 36.6M105.6 46.6L129.6 32.6" class="hands"/><circle cx="105.6" cy="46.6" r="2.2" class="cap"/><rect x="0.0" y="14.4" width="51.2" height="78.6" class="soft"/><rect x="36.83" y="2.30" width="14.15" height="14.60" rx="4.00" class="b1"/><rect x="35.83" y="1.30" width="16.15" height="16.60" rx="5.00" class="b2"/><rect x="34.83" y="0.30" width="18.15" height="18.60" rx="6.00" class="b3"/><rect x=".5" y=".5" width="159" height="99" rx="3" class="frame"/></svg></span></div>
 
 <section class="pane">
   <h3>Gallery</h3>
@@ -1338,7 +1323,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 </section>
 
 <h2 id="report">Report a bug</h2>
-<p class="lead">Thank you for trying the tool. If something looks wrong or acts oddly, tell us here; a few plain words are plenty. Your name lets us thank you and ask a follow-up question. The tester code only keeps spam out; ask Okay for it. Your browser, screen size and whether you use touch or a mouse are sent with the report, as they often explain a bug. Nothing else is sent, and this page keeps nothing.</p>
+<div class="summary"><p class="lead">Thank you for trying the tool. If something looks wrong or acts oddly, tell us here; a few plain words are plenty. Your name lets us thank you and ask a follow-up question. The tester code only keeps spam out; ask Okay for it. Your browser, screen size and whether you use touch or a mouse are sent with the report, as they often explain a bug. Nothing else is sent, and this page keeps nothing.</p></div>
 <form class="report" id="report-form" novalidate>
   <label><b>Name</b><input name="name" required autocomplete="name"></label>
   <label><b>Tester code</b><input name="code" required autocomplete="off" spellcheck="false"></label>
@@ -1361,7 +1346,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 { // a small map opens the real screen, the part boxed; a click or Esc puts it away
   const box = document.getElementById("box"), img = box.querySelector("img"), cap = box.querySelector("figcaption");
   document.querySelectorAll(".map").forEach((m) => { m.setAttribute("role", "button"); m.tabIndex = 0;
-    const open = () => { const h = m.closest("h2"), lead = h.nextElementSibling;
+    const open = () => { const sum = m.closest(".summary"), h = sum.previousElementSibling, lead = sum.querySelector(".lead");
       img.src = "img/where-" + m.dataset.map + ".webp"; img.alt = "The tool's window, " + h.textContent.trim() + " boxed";
       cap.innerHTML = "<b>" + h.textContent.trim() + "</b> <span>· where on the screen" + (lead && lead.classList.contains("lead") ? " · " + lead.textContent : "") + "</span>";
       box.classList.add("open"); };
