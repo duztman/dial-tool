@@ -159,7 +159,8 @@ figcaption{margin-top:var(--x);font-size:var(--small);color:var(--grey)}
 .shot i,.n{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:var(--red)}
 .shot i{position:absolute;transform:translate(-50%,-50%);font-size:var(--small);line-height:1;padding:.183em 0;border-radius:50%;background:var(--paper)}
 .n{margin-right:6px;font-size:var(--small);line-height:1;vertical-align:1px}
-dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}
+dt .thumb{display:block;width:64px;height:64px;margin:0 0 4px}
+dt:has(> .thumb){font-size:var(--small)}      /* a Gallery card's name under its picture, small, so the name column stays no taller than the line beside it (Okay, 26 Oct 2026) */
 dd img{display:block;max-width:100%;height:auto;margin-top:8px}
 .strip{display:flex;flex-wrap:wrap;gap:var(--x) 14px;margin:var(--x) 0 calc(var(--x) * 2)}
 .pane > .strip{margin:var(--x) 0 calc(var(--x) * 2)}
