@@ -147,6 +147,7 @@ The full text of every open row of `build-list.md`, by number and in its groups:
 | # | Item | Status |
 |---|---|---|
 | 63 | **Live text in the PDF**: the SVG keeps numerals as text; the PDF is written by hand (`web/src/output.js`), so live text there means building the font into the file. Okay, 11 Oct 2026: "SVG now, PDF later" | open |
+| 547 | **A window's frame even all round** (Okay, 26 Oct 2026, 18:39, on the help's window pictures: "Check hexagon and moon shape's outlines, they are not uniform"; 18:41, question mode: "Note it, fix after release"). Measured on beta 4.94.20 with the frame at 0.3 mm, the width from the hole's edge along the frame's outer edge: the moon's **arch** 0.22–0.45 mm (thin at the humps, thick over the top; it grows by `offset()`, the stroking that bulges curves, `window_hole` in `web/src/geometry.js`); the **polygon** 0.30–0.375 mm (its sides right, its rounded corners about 25 % thick: the grown corners' rounding is not concentric with the hole's); circle, rectangle, half and pair even (the half's square corners √2 wider, as a sharp corner is). Every export with these windows changes, and the parity check with `dial.py` with it: after the release, on his word | open |
 
 ### Code and tests
 

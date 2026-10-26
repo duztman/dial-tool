@@ -153,6 +153,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | # | Item | From | Status |
 |---|---|---|---|
 | 63 | Live text in the PDF | 11 Oct 2026 — "SVG now, PDF later" | open |
+| 547 | A window's frame even all round: the moon's arch and the polygon | 26 Oct 2026 — "Check hexagon and moon shape's outlines, they are not uniform" | open |
 
 ### Code and tests
 
