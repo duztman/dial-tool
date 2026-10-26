@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## help page · 26 Oct 2026 — the pictures in the help's greys; the disc hand; the windows' choices
+
+Okay, 26 Oct 2026, 03:04: "a neutral gray was the help's main. Replace the blue. All other details are fine. Disc hands are drawn with a mistake floating marker, bigger transparent disc for previews. Windows might like some of these squares too. Dates weekdays, am pm. Do not overdo but illustrate."
+
+- Every dial and watch picture in the help's greys (`grey.cjs`'s palette: a dark plate, near-white print, light hands, the light grey ground); the Gallery's thumbnails keep each dial's own colours.
+- The disc hand drawn as a preview should be: the hour hand alone, its disc as wide as its length reaches (16.5 mm), see-through (45 %), its marker painted at the edge.
+- The windows, zoomed on the window at 3 (12 × 6 mm), the text at the code's 62 %: Big date (date · Big date), Written (Short · Full), Names (EN · TR · DE), Shows (Disc · Words), Shape (rectangle · circle · polygon · arch · half, in place of the icon row).
+
 ## help page · 26 Oct 2026 — what a choice does, in pictures
 
 Okay, 26 Oct 2026, 02:41: "Gallery needs thumbnails for each dial. What else can get a thumbnail?"; 02:51: "All do. All."
