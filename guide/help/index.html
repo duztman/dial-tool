@@ -1468,9 +1468,10 @@ form.report button:disabled{opacity:.4;cursor:default}
   mark();
 }
 
-/* Bug reports go to Formspree, which emails them to Okay.
-   ENDPOINT: the form address from formspree.io (Okay's account); empty = not connected yet.
-   Spam is kept out by the hidden _gotcha field (Formspree drops a report that fills it); no tester code (Okay, 27 Oct 2026:
+/* Bug reports go to a Google Sheet on Okay's Drive, "Dial Tool bug reports", one row each (Okay, 27 Oct 2026: "Sheets is
+   absolutely lovely"), through the Apps Script in report-sheet.gs.
+   ENDPOINT: that script's web-app address (…/exec); empty = not connected yet.
+   Spam is kept out by the hidden _gotcha field (the script drops a report that fills it); no tester code (Okay, 27 Oct 2026:
    "No tester code for report a bug, simplify"). */
 const ENDPOINT = "";
 
@@ -1487,12 +1488,13 @@ form.addEventListener("submit", async (event) => {
   data.set("browser", navigator.userAgent);
   data.set("screen", `${screen.width}×${screen.height} @${devicePixelRatio}x, window ${innerWidth}×${innerHeight}`);
   data.set("pointer", matchMedia("(pointer: coarse)").matches ? "touch" : "mouse or pen");
-  data.set("_subject", `Dial Tool bug · ${data.get("name").trim()}`);
+  data.set("page", location.href);
   const button = form.querySelector("button");
   button.disabled = true; say("Sending…");
   try {
-    const answer = await fetch(ENDPOINT, { method: "POST", body: data, headers: { Accept: "application/json" } });
-    if (!answer.ok) throw new Error(answer.status);
+    // Apps Script answers through a redirect a page can't read across sites: the report is sent "no-cors", and only a
+    // network failure counts as not sent
+    await fetch(ENDPOINT, { method: "POST", body: new URLSearchParams(data), mode: "no-cors" });
     form.reset(); say("Sent. Thank you, it helps a lot.");
   } catch {
     say("It didn't go through, sorry. Your words are still here: try again in a moment.");
