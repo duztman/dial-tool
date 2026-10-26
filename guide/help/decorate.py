@@ -21,59 +21,90 @@ def icon(name):
     svg = re.sub(r' width="[\d.]+" height="[\d.]+"', f' width="{vb[2]}" height="{vb[3]}"', svg, count=1)
     return svg
 
-# the window, in % of its width and height, as measured on the app at 1440 × 900 (shoot.cjs prints them)
-PANEL, BAR = 32, 93
-TABS = [(1.7 + 5.72 * i, 4.8, 5.72, 9.6) for i in range(5)]      # Dial, Rings, Hands, Windows, Export, side by side
-PARTS = {
-    "topleft": (32.8, 1.3, 13.6, 3.6), "topright": (91, 1.3, 8.2, 11.9),
-    "bottomleft": (32.8, 84.1, 6.9, 7.6), "bottomright": (96.9, 84.1, 2.2, 7.7), "iris": (96.9, 88.3, 2.2, 3.5),
+# the window at 1440 × 900, drawn on 160 × 100 (x in % × 1.6, y in %), as measured on the app (Okay, 26 Oct 2026: "You can
+# have more detail in these. Centered icon darker, page sections distinctly colored … small buttons around could be
+# represented by dots, so you can center them"; "Red markers 2x thicker, if they cant center their target due to
+# edges, shrink to center target"). Every button is a dot at its own centre; a section's target is drawn in ink and boxed.
+import math
+W, H = 160, 100
+X = lambda v: round(v * 1.6, 2)
+PANEL_W, BAR_Y = X(32), 93.1
+DIAL = (X(66), 46.6, 39.6)
+TABS = {"dial": 4.5, "rings": 10.2, "hands": 16, "date": 21.7, "export": 27.4}
+DOTS = {      # a button's centre, in % of the window
+  "gallery": (19.6, 2.3), "help": (15.9, 2.3), "unit": (29.5, 2.4),
+  "undo": (34, 3.1), "redo": (36.2, 3.1), "steps": (38.4, 3.1), "versions": (42, 3.1),
+  "guides": (95.5, 3.1), "case": (95.5, 7.3), "xray": (95.5, 11.4),
+  "backdrop": (34.6, 85.8), "shadows": (34.6, 90),
+  "tiny": (98.1, 81.7), "eye": (98.1, 85.8), "iris": (98.1, 90),
+  "play": (4.8, 96.6), "zoomout": (93.6, 96.6), "zoomin": (95.8, 96.6), "fit": (98.1, 96.6),
 }
-WHERE = {      # what each section fills
-    "idea": [(PANEL, 0, 100 - PANEL, BAR)],
-    "screen": [],
-    "first": [(0, 0, PANEL, BAR)],
-    # a tab: the panel below it faint, the tab itself solid
-    "dial": [("soft", 0, 14.4, PANEL, BAR - 14.4), TABS[0]], "rings": [("soft", 0, 14.4, PANEL, BAR - 14.4), TABS[1]],
-    "hands": [("soft", 0, 14.4, PANEL, BAR - 14.4), TABS[2]], "date": [("soft", 0, 14.4, PANEL, BAR - 14.4), TABS[3]],
-    "export": [("soft", 0, 14.4, PANEL, BAR - 14.4), TABS[4]],
-    "canvas": [PARTS["topleft"], PARTS["topright"], PARTS["bottomleft"], PARTS["bottomright"], (0, BAR, 100, 100 - BAR)],
-    "show": [PARTS["iris"]],
+WHERE = {      # what each section boxes: dots by name, "tab:x", "dial", "panel", "bar"; a list in a list is one box round them all
+  "idea": [["dial"]], "screen": [], "first": [["panel"]], "gallery": [["gallery"]],
+  "dial": [["tab:dial"]], "rings": [["tab:rings"]], "hands": [["tab:hands"]], "date": [["tab:date"]], "export": [["tab:export"]],
+  "canvas": [["undo", "redo", "steps", "versions"], ["guides", "case", "xray"], ["backdrop", "shadows"], ["tiny", "eye", "iris"]],
+  "show": [["iris"]],
 }
+R_DOT, R_TAB, PAD = 1.4, 2.6, 4
+
+def bbox(t):
+    if t == "dial": cx, cy, r = DIAL; return (cx - r, cy - r, cx + r, cy + r)
+    if t == "panel": return (1.5, 1.5, PANEL_W - 1, BAR_Y - 1)
+    if t.startswith("tab:"): x = X(TABS[t[4:]]); return (x - R_TAB, 10.2 - R_TAB, x + R_TAB, 10.2 + R_TAB)
+    x, y = DOTS[t]; return (X(x) - R_DOT, y - R_DOT, X(x) + R_DOT, y + R_DOT)
+
+def box(targets):
+    bs = [bbox(t) for t in targets]
+    l, t, r, b = min(x[0] for x in bs), min(x[1] for x in bs), max(x[2] for x in bs), max(x[3] for x in bs)
+    p = max(1, min(PAD, l - 1.5, t - 1.5, W - 1.5 - r, H - 1.5 - b))      # the same room on all four sides: less only where an edge is nearer, so the box stays centred
+    return f'<rect x="{l - p:.2f}" y="{t - p:.2f}" width="{r - l + 2 * p:.2f}" height="{b - t + 2 * p:.2f}" rx="{min(p + 1.5, 4):.2f}" class="mark"/>'
 
 def small_map(name):
-    # Okay, 24 Oct 2026, 19:35: "too tiny. Apply a background and a dummy watch to increase reality, 3x size all"
-    # the window at 1440 × 900 drawn on 160 × 100: the panel, the brown backdrop with a dial in it, the dark bar;
-    # the part the section is about outlined white · red · black (black inside) with room round it; the panel under a tab a shade darker
-    w, h = 160, 100
-    X = lambda v: round(v * w / 100, 2)
-    Y = lambda v: round(v * h / 100, 2)
-    cx, cy, r = X(66), Y(46.6), 39.5      # the first dial, where the app draws it
-    ticks = "".join(f'<path d="M{cx + (r - 7) * __import__("math").sin(a * 0.5236):.1f} {cy - (r - 7) * __import__("math").cos(a * 0.5236):.1f}L{cx + (r - 2.5) * __import__("math").sin(a * 0.5236):.1f} {cy - (r - 2.5) * __import__("math").cos(a * 0.5236):.1f}"/>' for a in range(12))
-    def part(r_):
-        kind, (x, y, a, b) = (r_[0], r_[1:]) if isinstance(r_[0], str) else ("on", r_)
-        a, b = max(X(a), 5), max(Y(b), 5)      # a corner button is a few points of the window: drawn at least 5, so it shows
-        x, y = min(X(x), w - a), min(Y(y), h - b)
-        if kind == "soft": return f'<rect x="{x}" y="{y}" width="{a}" height="{b}" class="soft"/>'
-        # Okay, 24 Oct 2026, 20:23: "drawn more delicately with padding to spare. Use black white black 3px border. No red."
-        p = 2.5
-        x, y, a, b = max(x - p, 1.5), max(y - p, 1.5), a + 2 * p, b + 2 * p
-        a, b = min(a, w - 1.5 - x), min(b, h - 1.5 - y)
-        # Okay, 20:39: "white red black. black inside": three rings a stroke apart, black innermost (1 unit ≈ 1.3 px at this size)
-        ring = lambda d, c: f'<rect x="{x - d:.2f}" y="{y - d:.2f}" width="{a + 2 * d:.2f}" height="{b + 2 * d:.2f}" rx="{4 + d:.2f}" class="{c}"/>'
-        return ring(0, "b1") + ring(1, "b2") + ring(2, "b3")
-    parts = "".join(part(r_) for r_ in WHERE[name])
-    return (f'<svg viewBox="0 0 {w} {h}" aria-hidden="true">'
-            f'<rect width="{w}" height="{h}" class="backdrop"/>'
-            f'<rect width="{X(PANEL)}" height="{Y(BAR)}" class="panel"/>'
-            f'<rect y="{Y(14.4)}" width="{X(PANEL)}" height="{Y(46 - 14.4)}" class="pane"/>'
-            + "".join(f'<circle cx="{X(t[0] + t[2] / 2)}" cy="{Y(8.6)}" r="2.4" class="tab"/>' for t in TABS) +
-            f'<rect y="{Y(BAR)}" width="{w}" height="{h - Y(BAR)}" class="bar"/>'
-            f'<circle cx="{cx}" cy="{cy}" r="{r}" class="dial"/><g class="ticks">{ticks}</g>'
+    on = {t for group in WHERE[name] for t in group}
+    cx, cy, r = DIAL
+    ticks = "".join(f'<path d="M{cx + (r - 7) * math.sin(a * 0.5236):.1f} {cy - (r - 7) * math.cos(a * 0.5236):.1f}L{cx + (r - 2.5) * math.sin(a * 0.5236):.1f} {cy - (r - 2.5) * math.cos(a * 0.5236):.1f}"/>' for a in range(12))
+    rows = "".join(f'<rect x="{X(1.7)}" y="{y}" width="{X(28.6)}" height="{h}" class="row"/>' for y, h in [(47.2, 3.8), (51.6, 3.8), (56.0, 3.8)])
+    lines = "".join(f'<path d="M{X(3)} {y}H{X(29)}" class="line"/>' for y in (20, 26, 32, 38))
+    tabs = "".join(f'<circle cx="{X(x)}" cy="10.2" r="{R_TAB}" class="{"tab on" if "tab:" + k in on else "tab"}"/>' for k, x in TABS.items())
+    dots = "".join(f'<circle cx="{X(x)}" cy="{y}" r="{R_DOT}" class="{"dot on" if k in on else "dot"}"/>' for k, (x, y) in DOTS.items())
+    boxes = "".join(box(g) for g in WHERE[name])
+    return (f'<svg viewBox="0 0 {W} {H}" aria-hidden="true">'
+            f'<rect width="{W}" height="{H}" class="backdrop"/>'
+            f'<rect width="{PANEL_W}" height="{BAR_Y}" class="panel"/>'
+            f'<path d="M{X(3.5)} 2.3H{X(12.5)}" class="title"/>'
+            f'<path d="M{X(1.7)} 14.2H{X(30.3)}" class="rule"/>'
+            f'<rect x="{X(1.7)}" y="15" width="{X(28.6)}" height="31.4" class="pin"/>{lines}{rows}{tabs}'
+            f'<rect y="{BAR_Y}" width="{W}" height="{H - BAR_Y}" class="bar"/>'
+            f'<path d="M{X(33)} 96.6H{X(67)}" class="ruler"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="{r}" class="{"dial on" if "dial" in on else "dial"}"/><g class="ticks">{ticks}</g>'
             f'<path d="M{cx} {cy}L{cx - 16} {cy - 10}M{cx} {cy}L{cx + 24} {cy - 14}" class="hands"/><circle cx="{cx}" cy="{cy}" r="2.2" class="cap"/>'
-            f'{parts}<rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="3" class="frame"/></svg>')
+            f'{dots}{boxes}</svg>')
+
+WHERE_CAP = '<span class="where">The red box is where this sits on the screen. Press for the larger view.</span>'
+CAPS = {"show-watch": '<span class="where">Show mode itself: the panel on the right, the watch on its own ground. Press for the larger view.</span>'}
+
+def show_map():
+    # show mode, simply (Okay, 26 Oct 2026: "add a second: the panel and bg changed version with a simple silhouette watch
+    # with case and bracelet"): the canvas on its own ground at left, the panel on the right, the bar along the foot
+    px = X(66)                                     # the panel's left edge, as shoot.cjs measures show mode
+    tabs = "".join(f'<circle cx="{px + 8 + i * 13.2:.1f}" cy="10.2" r="{R_TAB}" class="tab"/>' for i in range(4))
+    cx, cy = px / 2, 46.6
+    links = "".join(f'<rect x="{cx - 9}" y="{y:.1f}" width="18" height="5" rx="1" class="link"/>' for y in [cy - 31, cy - 25.5, cy + 20.5, cy + 26])
+    return (f'<svg viewBox="0 0 {W} {H}" aria-hidden="true">'
+            f'<rect width="{W}" height="{H}" class="ground"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="42" class="spot"/>'
+            f'<rect x="{px}" width="{W - px}" height="{BAR_Y}" class="panel"/>'
+            f'<path d="M{px + 4} 2.3H{px + 22}" class="title"/><path d="M{px + 3} 14.2H{W - 3}" class="rule"/>{tabs}'
+            f'<rect x="{px + 3}" y="15" width="{W - px - 6}" height="31.4" class="pin"/>'
+            + "".join(f'<path d="M{px + 5} {y}H{W - 5}" class="line"/>' for y in (20, 26, 32, 38, 52, 58, 64)) +
+            f'<rect x="{cx - 9}" y="4" width="18" height="{BAR_Y - 8}" class="band"/>{links}'
+            f'<rect x="{cx - 14}" y="{cy - 20}" width="28" height="40" rx="4" class="lugs"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="17" class="case"/><circle cx="{cx}" cy="{cy}" r="12.5" class="face"/>'
+            f'<path d="M{cx} {cy}L{cx - 5.5} {cy - 3.5}M{cx} {cy}L{cx + 8.5} {cy - 5}" class="hands"/>'
+            f'<rect y="{BAR_Y}" width="{W}" height="{H - BAR_Y}" class="bar"/><path d="M{X(33)} 96.6H{X(60)}" class="ruler"/></svg>')
 
 text = page.read_text()
 text = re.sub(r'<i class="ic" data-ic="([a-z0-9-]+)">.*?</i>', lambda m: f'<i class="ic" data-ic="{m[1]}">{icon(m[1])}</i>', text, flags=re.S)
-text = re.sub(r'<span class="map" data-map="([a-z]+)"[^>]*>.*?</span>', lambda m: f'<span class="map" data-map="{m[1]}" title="Where on the screen">{small_map(m[1])}</span>', text, flags=re.S)
+text = re.sub(r'<span class="map" data-map="([a-z-]+)"[^>]*>.*?</svg>(<span class="where">.*?</span>)?</span>', lambda m: f'<span class="map" data-map="{m[1]}" title="Where on the screen">{show_map() if m[1] == "show-watch" else small_map(m[1])}{CAPS.get(m[1], WHERE_CAP)}</span>', text, flags=re.S)
 page.write_text(text)
 print("icons:", len(re.findall(r'class="ic"', text)), "· maps:", len(re.findall(r'class="map"', text)))

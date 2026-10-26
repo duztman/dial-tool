@@ -132,7 +132,13 @@ const shoot = async (file, caption, set) => {
 const B = { dress: 3, field: 2, diver: 1, emre01: 5 };
 for (const [k, c] of [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"], ["emre01", "Emre"]]) await shoot(`v-case-${k}`, c, { bezel: B[k], strap: 1, w_view: 0, w_style: 1, w_lighting: 0 });
 for (const [st, l, c] of [[1, 0, "Miyazaki · Dramatic"], [0, 0, "Engineer · Dramatic"], [1, 1, "Miyazaki · Flat"], [0, 1, "Engineer · Flat"]]) await shoot(`v-style-${st}${l}`, c, { bezel: 1, strap: 1, w_view: 0, w_style: st, w_lighting: l });
-for (const [st, c] of [[1, "leather"], [3, "NATO"], [2, "bracelet"], [4, "links"]]) await shoot(`v-strap-${c.toLowerCase()}`, c, { bezel: 1, strap: st, w_view: 1, w_style: 1, w_lighting: 0 });
+for (const [st, c] of [[1, "leather"], [3, "NATO"], [2, "bracelet"], [4, "links"]]) await shoot(`v-strap-${c.toLowerCase()}`, c, { bezel: 1, strap: st, w_view: 1, w_style: 1, w_lighting: 0, out_watch_px: 1200 });
+// the straps on the page: one square crop each, the same size and place, on the strap under the case (Okay, 26 Oct 2026:
+// "zoom into crops on straps, all same square crops. Click to lightbox the full images"); the whole watch stays for the lightbox.
+// A strap on its own (leather, NATO) is drawn smaller in its whole-watch picture than a bracelet: its square is cut tighter, so each strap fills its square alike
+for (const c of ["leather", "nato", "bracelet", "links"]) execFileSync("python3", ["-c", `from PIL import Image
+im=Image.open("${OUT}v-strap-${c}.webp"); w,h=im.size; s=round(h*(0.16 if w < h/2 else 0.3)); x=round(w/2-s/2); y=round(h*0.7)
+im.crop((x,y,x+s,y+s)).resize((224,224),Image.LANCZOS).save("${OUT}v-strap-${c}-crop.webp",quality=86,method=6)`]);
 await browser.close();
 fs.mkdirSync("/tmp/claude-0/help", { recursive: true }); fs.writeFileSync("/tmp/claude-0/help/variants.json", JSON.stringify({ pictures: [...pictures, ...from_app].map(({ file, caption }) => ({ file, caption })), shots }, null, 1));
 console.log(pictures.length, "dial pictures ·", from_app.length, "from the app ·", shots.length, "watch pictures");
