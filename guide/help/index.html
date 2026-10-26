@@ -166,7 +166,7 @@ dd .strip{margin-bottom:0}
 .ic{display:inline;margin-right:.25em}
 .ic svg{display:inline;width:auto;height:var(--h,.8em);vertical-align:var(--v,-.04em);overflow:visible}
 .ic svg *{vector-effect:non-scaling-stroke}
-.ic[data-ic="iris"] svg{overflow:hidden}      /* its rays run far past its box under a fading mask: kept inside it */
+.ic[data-ic="iris"]{margin-inline:.4em .55em}.ic[data-ic="iris"] svg{overflow:visible;clip-path:circle(.8em at 50% 50%)}      /* its rays grow past its box and fade (Okay, 26 Oct 2026: "it had lovely lines of rays growing … Bring back that icon"), stopped by a circle so they never reach the words round it */
 .ic svg .hub{fill:currentColor}.ic .figure{font-family:Inter,sans-serif}
 /* FIT: made by fit.cjs, not by hand */
 .ic[data-ic="mark"]{--h:0.8em;--v:-0.036em}
