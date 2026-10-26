@@ -37,6 +37,7 @@
   --frame:#333;                                          /* the map's frame: the pictures' own dark grey plate (variants.mjs) */
   --big:26px;--text:19px;--small:15px;
   --x:12px;
+  --xh:.546em;                                           /* Inter's x-height */
   --page:1100px;--gut:16px;--nav:190px;--nav-gap:48px;
   --main:calc(var(--page) - 2 * var(--gut) - var(--nav) - var(--nav-gap));
   --name:171px;--spec:190px;--map-w:300px;
@@ -239,10 +240,9 @@ h2 .ic[data-ic="iris"]{margin-inline:0 .35em}h2 .ic[data-ic="iris"] svg{clip-pat
 main img{cursor:zoom-in}
 /* a picture that opens larger says so (Okay, 26 Oct 2026: "All embiggenable images get this arrow in a rounded square in
    correct thickness color and placement next to bigables"): at the right end of its caption line, or of a line of its own */
-.big .grow{display:inline-block;margin-left:.35em;vertical-align:-.12em}      /* at the end of the caption's last word (Okay, 26 Oct 2026: "attaches to end of caption sentence, not pushed to the edge") */
-.big.tag{margin-top:4px;font-size:var(--small)}.big .grow{width:1em;height:1em;color:var(--grey)}
-.big .grow svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-main img:hover ~ * .grow,main figure:hover .grow{color:var(--ink)}
+.grow{display:inline-block;width:var(--xh);height:var(--xh);margin-left:.18em;vertical-align:0;color:var(--grey)}      /* an x-height square on the baseline, a period's distance from the word */
+.grow svg{display:block;width:100%;height:100%;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+
 .box .step{position:absolute;top:50%;width:48px;height:48px;margin-top:-24px;border:0;border-radius:50%;background:transparent;color:var(--paper);font:300 44px/1 Inter,sans-serif;cursor:pointer}
 .box .step:hover{background:rgba(255,255,255,.12)}.box .back{left:12px}.box .on{right:12px}
 .box figcaption{margin-top:var(--x);color:var(--paper)}.box figcaption span{color:var(--hair)}
@@ -1411,12 +1411,19 @@ form.report button:disabled{opacity:.4;cursor:default}
     ? () => { const h = el.closest(".summary").previousElementSibling.textContent.trim(), w = el.querySelector(".where");
         return [el.dataset.map === "show-watch" ? "img/show.webp" : "img/where-" + el.dataset.map + ".webp", "The tool's window, " + h, "<b>" + h + "</b> <span>· " + (w ? w.textContent : "") + "</span>", true]; }
     : () => { const f = el.closest("figure"), c = f && f.querySelector("figcaption"); return [el.dataset.full || el.currentSrc || el.src, el.alt, c ? c.textContent : el.alt, false]; });
-  const GROW = '<span class="grow" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="3.5"/><path d="M6 10L11 5M7.5 5H11V8.5"/></svg></span>';
+  // the open-larger sign follows the words nearest its picture, as a period would (Okay, 26 Oct 2026: "All arrows attached
+  // to text as if a period"): a caption's end; else the words just before the picture in its row; else its name; else
+  // the line that opens its pane
+  const GROW = '<span class="grow" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="3.5"/><path d="M2.03 13.97L11 5M6.4 5H11V9.6"/></svg></span>';
+  const after = (el) => { if (el && !el.querySelector(":scope > .grow")) el.insertAdjacentHTML("beforeend", GROW); return Boolean(el); };      // one sign to a sentence, however many pictures it leads
   document.querySelectorAll("main img").forEach((i) => {
     const f = i.closest("figure"), c = f && f.querySelector(":scope > figcaption");
-    if (c) { c.classList.add("big"); c.innerHTML = "<span>" + c.innerHTML + "</span>" + GROW; return; }
-    const line = document.createElement("div"); line.className = "big tag"; line.innerHTML = "<span></span>" + GROW;
-    (f || i).after(line);
+    if (c && !f.closest(".strip.no-grow")) return after(c);
+    const dt = i.closest("dt"); if (dt) return after(dt);
+    const holder = f || i, prev = holder.previousSibling;
+    if (prev && prev.nodeType === 3 && prev.textContent.trim()) { holder.insertAdjacentHTML("beforebegin", GROW); return; }
+    const pane = holder.closest(".pane"), lead = pane && pane.querySelector(":scope > p:not(.watch)");
+    if (!after(lead)) after(holder.closest("dd"));
   });
   let at = -1;
   const show = (n) => { at = (n + items.length) % items.length; const [src, alt, words, screen] = items[at]();
