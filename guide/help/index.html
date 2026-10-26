@@ -172,7 +172,8 @@ dd .strip{margin-bottom:0}
    the menu eye's line); measured on the rendered type */
 :is(h2, .brand) .ic:not([data-ic="iris"]) svg :is(path, circle, rect, line, polyline){stroke-width:2px}
 .brand .ic svg path{stroke-width:1.5px}
-.ic[data-ic="iris"]{margin-inline:.4em .55em}.ic[data-ic="iris"] svg{overflow:visible;clip-path:circle(.8em at 50% 50%)}      /* its rays grow past its box and fade (Okay, 26 Oct 2026: "it had lovely lines of rays growing … Bring back that icon"), stopped by a circle so they never reach the words round it */
+.ic[data-ic="iris"]{margin-inline:.4em .55em}.ic[data-ic="iris"] svg{overflow:visible;clip-path:circle(.8em at 50% 50%)}
+h2 .ic[data-ic="iris"]{margin-inline:0 .35em}h2 .ic[data-ic="iris"] svg{clip-path:none;pointer-events:none}      /* on the Show Case's title the rays run out across the page and fade, as the app draws them (Okay, 26 Oct 2026: "You had something like this, on the show mode title … I want that") */      /* its rays grow past its box and fade (Okay, 26 Oct 2026: "it had lovely lines of rays growing … Bring back that icon"), stopped by a circle so they never reach the words round it */
 .ic svg .hub{fill:currentColor}.ic .figure{font-family:Inter,sans-serif}
 /* FIT: made by fit.cjs, not by hand */
 .ic[data-ic="mark"]{--h:0.8em;--v:-0.036em}
