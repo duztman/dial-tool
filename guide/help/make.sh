@@ -10,7 +10,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 python3 check.py
 echo; echo "— pictures and icons, from web/dial-tool.html"
-(cd ../../web && node ../guide/help/icons.cjs >/dev/null && node ../guide/help/shoot.cjs >/dev/null && node ../guide/help/where.cjs)
+(cd ../../web && node ../guide/help/icons.cjs >/dev/null && node ../guide/help/fit.cjs && node ../guide/help/shoot.cjs >/dev/null && node ../guide/help/where.cjs)
 python3 webp.py && python3 decorate.py
 echo; echo "— the page, as read"
 node look.cjs
