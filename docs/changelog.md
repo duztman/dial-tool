@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## help page · 26 Oct 2026 — the bar, piece by piece; one stylesheet, one grid
+
+Okay, 26 Oct 2026, 03:25: "The black bar and its screenshots, buttons like start stop am date etc. and pieces not screenshotted and explained thorougly. The design needs better adherence to columns, discrepancies exist. Check the css, it might be too bloated … Dial crops elegant, kudos. However some like numbers placement auto rotate etc better show all dial."
+
+- **The bar**: two numbered pictures (its left end ①–⑥, the timeline ⑦), the numbers over the picture; a row each for Play, Speed (with the speed's pill while dragged), Time, AM · PM, Date, Now, the timeline (scrub, the snap to the hour or 10:10, the hour buttons, the needle) and Zoom · Fit. A new pane, the date's popup: weekday · Day · Month · Year · − +, numbered.
+- **Pieces not shown before**, from the current build (`shoot3.cjs`): the steps, named; Versions open with two saved; the Tiny preview.
+- **One stylesheet** in place of the old one and its appended layers (196 rules, 17 matching nothing): one grid — names and headings on the name column, everything that is content (text, notes, pictures, strips, the How cards, the matrix's kinds, the Signs, the form, the window's numbered pictures) on the text column. Measured at 1200 px: every block starts at 0, 171 or 740.
+- **Placement** shows the whole dial again, where the turning shows; the Complication strip zoomed on the window, as the other window strips; the text kind's picture zoomed on its word.
+
 ## help page · 26 Oct 2026 — Watch notes on the grid, with their sign; every word readable
 
 Okay, 26 Oct 2026, 03:09: "Watch's placed well into the grid. Watches multiply overall, and receive an icon; triangle with watch hands inside. Should be able to read all the word when showing weekdays and such. Content visible. Arabic japanese and stuff too." In question mode: more Watch notes; the icon, then "Watch ·".

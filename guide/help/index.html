@@ -8,146 +8,183 @@
 <title>Dial Tool · Help</title>
 <meta name="description" content="Every pane and control of Dial Tool, in one sentence each.">
 <style>
+/* Dial Tool · Help — one stylesheet, one grid (Okay, 26 Oct 2026: "One grid to rule everything. Keep it simple. No many font
+   sizes, 3 is the limit"; "The design needs better adherence to columns … Check the css, it might be too bloated").
+   THE GRID: a name column (--name), the text column, and in a pane of sizes the spec column (--spec). Names and headings
+   stand on the name column; everything that is content — a pane's text, its notes, pictures, strips, cards, grids, the
+   form — starts on the text column. THE SIZES: 26 a section's heading, 19 the text, 15 the small things.
+   THE RULES: a section's ink rule under its heading; an ink rule where a pane begins and where a section's panes end;
+   a row's hairline, nearer the row it opens (--row-top under the rule, --row-bottom over the next). */
 @font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/Inter-Regular.woff2) format("woff2")}
 @font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2) format("woff2")}
 @font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2) format("woff2")}
-:root{--name:171px;--spec:190px;--row-top:13.5px;--row-bottom:19.5px;--bug:#c8331b;--map-w:211px;--map-h:132px;--map-frame:7px;--map-ring:5px;--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
-*{box-sizing:border-box}html{scroll-padding-top:96px;scroll-behavior:smooth}
+:root{
+  --paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--bug:#c8331b;--well:#ebe9e3;
+  --big:26px;--text:19px;--small:15px;
+  --name:171px;--spec:190px;--text-w:569px;--main:calc(var(--name) + var(--text-w) + var(--spec));
+  --row-top:13.5px;--row-bottom:19.5px;--gut:16px;--nav:190px;--nav-gap:48px;
+  --map-w:211px;--map-h:132px;--map-frame:7px;--map-ring:5px}
+*{box-sizing:border-box}
+html{scroll-padding-top:96px;scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font:var(--text)/1.321 Inter,ui-sans-serif,system-ui,sans-serif}
+a{color:inherit}
+code{font:var(--small) ui-monospace,Menlo,monospace}
+kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;font:500 var(--small)/1.4 Inter,ui-sans-serif,system-ui,sans-serif;text-align:center;background:var(--well)}
+
+/* the frame: the top bar, the menu, the column of sections */
 .topbar{position:sticky;top:0;z-index:10;background:var(--paper);padding-top:env(safe-area-inset-top,0px)}
-.top{display:grid;grid-template-columns:190px 1fr;gap:48px;align-items:baseline;max-width:1200px;margin:0 auto;padding:18px var(--gut)}
-.brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:26px;font-weight:600;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
+.top{display:grid;grid-template-columns:var(--nav) 1fr;gap:var(--nav-gap);align-items:baseline;max-width:1200px;margin:0 auto;padding:18px var(--gut);
+  background:linear-gradient(var(--line),var(--line)) no-repeat var(--gut) 100% / calc(min(100%, var(--nav) + var(--nav-gap) + var(--main) + 2 * var(--gut)) - 2 * var(--gut)) 1px}
+.brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:var(--big);font-weight:600;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
 .brand .ic{margin:0;align-self:center}.brand .ic svg{width:1em;height:1em}
-.page{display:flex;align-items:baseline;line-height:1;justify-content:space-between;gap:16px}
-.page .title{font-size:26px;font-weight:600;letter-spacing:-.01em}
-.page .ver{font-size:15px;color:var(--mute)}
-.page .ver{margin-left:auto}.page .bug{font-size:15px;font-weight:600;color:var(--bug);text-decoration:none;border:1.5px solid var(--bug);border-radius:99px;padding:5px 12px;line-height:1}.page .bug:hover{background:var(--bug);color:#fff}
-nav a[href="#report"]{color:var(--bug)}
-body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.321 Inter,ui-sans-serif,system-ui,sans-serif}
-.wrap{max-width:1200px;margin:0 auto;padding:28px var(--gut) 80px;display:grid;grid-template-columns:190px 1fr;gap:48px}
-nav{position:sticky;top:104px;align-self:start;font-size:15px;line-height:1.55}
+.page{display:flex;align-items:baseline;gap:16px;line-height:1;max-width:var(--main)}
+.page .title{font-size:var(--big);font-weight:600;letter-spacing:-.01em}
+.page .ver{margin-left:auto;font-size:var(--small);color:var(--mute)}
+.page .bug{font-size:var(--small);font-weight:600;color:var(--bug);text-decoration:none;border:1.5px solid var(--bug);border-radius:99px;padding:5px 12px;line-height:1}
+.page .bug:hover{background:var(--bug);color:#fff}
+.wrap{display:grid;grid-template-columns:var(--nav) 1fr;gap:var(--nav-gap);max-width:1200px;margin:0 auto;padding:28px var(--gut) 80px;letter-spacing:-.015em}
+nav{position:sticky;top:104px;align-self:start;font-size:var(--small);line-height:1.55}
 nav .grp{position:relative;padding-left:36px;margin-bottom:18px}
 nav a,nav b{border-bottom:1px solid var(--line);padding:3px 0}
-nav a{display:block;position:relative;color:var(--mute);text-decoration:none}nav a:hover{color:var(--ink)}
+nav a{display:block;color:var(--mute);text-decoration:none}nav a:hover{color:var(--ink)}
 nav a.on{color:var(--ink);font-weight:600}
+nav a[href="#report"]{color:var(--bug)}
+nav b{display:flex;align-items:center;margin:0 0 2px;font-weight:600}
 nav .eye{position:absolute;left:4px;width:18px;height:18px;color:var(--mute);opacity:0;transition:opacity .2s}
 nav .grp.on .eye{opacity:1}
-nav b{display:flex;align-items:center;margin:0 0 2px;color:var(--ink);font-weight:600}
-.intro p{margin:.24em 0 0;color:var(--mute);max-width:60ch}
-h2{clear:both;position:relative;margin:56px 0 4px;font-size:26px;font-weight:600;padding-bottom:8px;border-bottom:1px solid transparent}
-h2::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--ink);z-index:1}
-h3{margin:42px 0 9px;font-size:19px;font-weight:600}
-p.lead{margin:18px 0 6px;color:var(--mute);max-width:64ch}
-dl{display:grid;grid-template-columns:var(--name) minmax(0,1fr);column-gap:0;margin:0;border-top:1px solid var(--line)}
-dt,dd{margin:0;padding:var(--row-top) 0 var(--row-bottom);border-bottom:1px solid var(--line)}
-dt{font-weight:500;padding-right:16px}dd{color:var(--ink);padding-right:16px}
-.watch{margin:10px 0 0 var(--name);font-size:15px;color:var(--mute);max-width:60ch}
-.watch::before{content:"Watch · ";color:var(--ink);font-weight:600;padding-left:1.45em;background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%231b1a18' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M8 1.6 15 14.2H1Z'/><path d='M8 10.9 5.7 8.9M8 10.9l2.9-2.9'/></svg>") no-repeat 0 .08em / 1.15em 1.15em}      /* the Watch sign (Okay, 26 Oct 2026: "receive an icon; triangle with watch hands inside") */
-ol,ul{padding-left:20px;max-width:66ch}li{margin:21px 0}
-a{color:inherit}
-code{font:15px ui-monospace,Menlo,monospace}
-footer{margin-top:64px;font-size:15px;color:var(--mute)}
-@media (max-width:760px){:root{--map-w:123px;--map-h:77px;--map-frame:4px;--map-ring:4px}.map{margin:var(--map-ring) var(--map-ring) 14px 18px}.top{grid-template-columns:auto 1fr;gap:20px;padding:14px var(--gut)}.brand,.page .title{font-size:21px}.page .ver{display:none}.page .bug{font-size:13px;padding:4px 9px}html{scroll-padding-top:64px}.shot i{font-size:11px}.wrap{grid-template-columns:1fr;gap:16px}nav{position:static}nav .grp{display:flex;flex-wrap:wrap;gap:2px 14px;padding-left:0;margin-bottom:8px}nav b{width:100%;margin:0}nav .eye{display:none}nav a,nav b{border-bottom:0;padding:0}nav a.on{font-weight:400;color:var(--mute)}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}}
-form.report{display:grid;gap:12px;max-width:620px;margin-top:12px}
-form.report label{display:grid;gap:4px;font-size:15px;color:var(--mute)}
-form.report label b{color:var(--ink);font-weight:500}
-form.report input,form.report textarea{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%}
-form.report textarea{min-height:88px;resize:vertical}
-form.report input:focus,form.report textarea:focus{outline:none;border-color:var(--ink)}
-form.report .gotcha{position:absolute;left:-9999px}
-form.report button{justify-self:start;font:inherit;font-weight:500;color:var(--paper);background:var(--ink);border:0;border-radius:6px;padding:8px 18px;cursor:pointer}
-form.report button:disabled{opacity:.4;cursor:default}
-kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;font:500 15px/1.4 Inter,ui-sans-serif,system-ui,sans-serif;text-align:center;color:var(--ink);background:color-mix(in srgb,var(--paper) 80%,var(--ink) 4%)}
-figure{margin:16px 0 0}figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
-figcaption{margin-top:6px;font-size:15px;color:var(--mute)}
-.shot{position:relative}
-.shot i{position:absolute;transform:translate(-50%,-50%);font-style:normal;font-size:15px;line-height:1;padding:.183em 0;border-radius:50%;background:var(--paper)}
-.shot i,.n{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-weight:600;color:var(--bug)}
-.n{margin-right:6px;font-size:15px;line-height:1;vertical-align:1px}
-dd img{display:block;max-width:100%;height:auto;margin-top:8px}
-.ic{display:inline-flex;vertical-align:-.2em;margin-right:4px}.ic svg{width:1.15em;height:1.15em}
-dt .ic{margin-right:8px}h2 > .ic{margin-right:10px}h2 .ic svg{width:1.3em;height:1.3em}
-.ic svg{width:auto;overflow:hidden}.row{display:inline;margin-left:.35em}.row span{white-space:nowrap;margin-right:.55em}.row span:last-child{margin-right:0}.row .ic{margin-right:3px}.row .ic svg{height:1.3em}
-.ic .figure{font-family:Inter,sans-serif;font-weight:700}
-.signs{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:2px;margin:10px 0 0}
-.signs figure{margin:0;padding:14px 6px 10px;text-align:center;background:#ebe9e3;border-radius:4px}
-.signs .ic{margin:0}.signs .ic svg{height:34px;width:auto;max-width:76px}.signs figcaption{margin-top:8px;font-size:15px;line-height:1.25;color:var(--ink)}
-h3.sg{margin:22px 0 4px}
-.ic svg .hub{fill:currentColor}
-.map{float:right;position:relative;margin:var(--map-ring) var(--map-ring) 21px 29px;line-height:0}
+main{max-width:var(--main);min-width:0}
+footer{margin-top:64px;font-size:var(--small);color:var(--mute)}
+
+/* a section: its heading, its small map, its lead */
+h2{clear:both;position:relative;margin:56px 0 4px;padding-bottom:8px;font-size:var(--big);font-weight:600}
+h2::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--ink)}
 h2:has(.map)::after{right:calc(var(--map-ring) + var(--map-frame) * 2 + var(--map-w))}
-.map::before{content:"";position:absolute;inset:calc(var(--map-ring) * -1);background:var(--line);border-radius:2px;z-index:0}
-.map svg{position:relative;z-index:2;width:var(--map-w);height:var(--map-h);border:var(--map-frame) solid var(--ink);box-sizing:content-box}
-.map .backdrop{fill:#d1d1d1}.map .panel{fill:#f7f6f3}.map .pane{fill:#ecebe7}.map .tab{fill:none;stroke:#1b1a18;stroke-width:.8}.map .bar{fill:#2e2d2b}
-.map .dial{fill:#333}.map .ticks{stroke:#f0f0f0;stroke-width:1.6}.map .hands{stroke:#dbdbdb;stroke-width:2.6;stroke-linecap:round}.map .cap{fill:#f5f5f5}
-.map .b1{fill:none;stroke:#111;stroke-width:1.3;vector-effect:non-scaling-stroke}.map .b2{fill:none;stroke:#d0341c;stroke-width:1.3;vector-effect:non-scaling-stroke}.map .b3{fill:none;stroke:#fff;stroke-width:1.3;vector-effect:non-scaling-stroke}
-.map{cursor:zoom-in}.map .soft{fill:#000;opacity:.06}
-.map .frame{display:none}
-#report-note{font-size:15px;color:var(--mute);min-height:1.5em;margin:0}
-main{max-width:calc(var(--name) + 30em + var(--spec));min-width:0}
-.wrap{letter-spacing:-.015em}
+h2 > .ic{margin-right:10px}h2 .ic svg{width:1.3em;height:1.3em}
+p.lead{margin:18px 0 6px;color:var(--mute)}
 h2:has(.map) + .lead{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 h2:has(.map) + .lead + *{clear:both}
-@media (max-width:760px){h2:has(.map) + .lead{white-space:normal}}
-.page{max-width:calc(var(--name) + 30em + var(--spec))}
-.top{background:linear-gradient(var(--line),var(--line)) no-repeat var(--gut) 100% / calc(min(100%, 190px + 48px + var(--name) + 30em + var(--spec) + 2 * var(--gut)) - 2 * var(--gut)) 1px}
+.map{float:right;position:relative;margin:var(--map-ring) var(--map-ring) 21px 29px;line-height:0;cursor:zoom-in}
+.map::before{content:"";position:absolute;inset:calc(var(--map-ring) * -1);background:var(--line);border-radius:2px}
+.map svg{position:relative;width:var(--map-w);height:var(--map-h);border:var(--map-frame) solid var(--ink);box-sizing:content-box}
+.map .backdrop{fill:#d1d1d1}.map .panel{fill:#f7f6f3}.map .pane{fill:#ecebe7}.map .tab{fill:none;stroke:var(--ink);stroke-width:.8}.map .bar{fill:#2e2d2b}
+.map .dial{fill:#333}.map .ticks{stroke:#f0f0f0;stroke-width:1.6}.map .hands{stroke:#dbdbdb;stroke-width:2.6;stroke-linecap:round}.map .cap{fill:#f5f5f5}
+.map .b1,.map .b2,.map .b3{fill:none;stroke-width:1.3;vector-effect:non-scaling-stroke}.map .b1{stroke:#111}.map .b2{stroke:#d0341c}.map .b3{stroke:#fff}
+.map .soft{fill:#000;opacity:.06}.map .frame{display:none}
+
+/* the grid: a pane opens with an ink rule; its name on the name column, everything else on the text column */
+.pane{margin:0;border-top:1px solid var(--ink)}
+.pane:first-of-type{margin-top:42px}
+.pane:last-of-type{border-bottom:1px solid var(--ink)}
+h3{margin:0;padding:var(--row-top) 0 6px;font-size:var(--text);font-weight:600}
+main > :is(p:not(.lead),figure,.signs,form,ol,ul),
+.pane > :is(p,figure,.strip,.cards,.signs,form){margin:0 0 var(--row-bottom) var(--name)}
+main > p:not(.lead){margin-top:12px}
+.pane > p{color:var(--mute)}
+.pane > p.watch{color:var(--mute)}
+/* rows: a name, its line, and in a pane of sizes the spec (the range in ink over "starts …") */
+dl{display:grid;grid-template-columns:var(--name) minmax(0,1fr);margin:0;border-top:1px solid var(--line)}
+dl.rows{grid-template-columns:var(--name) minmax(0,1fr) var(--spec)}
+dl.rows.two{grid-template-columns:var(--name) minmax(0,1fr)}
+.rows > div{display:contents}
+dt,dd{margin:0;padding:var(--row-top) 16px var(--row-bottom) 0;border-bottom:1px solid var(--line)}
+dt{font-weight:500}
+.rows > div:last-child > *{border-bottom:0}
+.rows dd.spec{padding-right:0;padding-top:calc(var(--row-top) + 3px);font-size:var(--small);line-height:1.4;font-variant-numeric:tabular-nums}
+.rows dd.spec b{display:block;font-weight:400}.rows dd.spec span{display:block;color:var(--mute)}
+dl + .watch{margin-top:var(--row-top)}
+/* a note: the Watch sign (a triangle with a watch's hands at 10:10), then its words */
+.watch{font-size:var(--small);color:var(--mute)}
+.watch::before{content:"Watch · ";padding-left:1.45em;color:var(--ink);font-weight:600;background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%231b1a18' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M8 1.6 15 14.2H1Z'/><path d='M8 10.9 5.7 8.9M8 10.9l2.9-2.9'/></svg>") no-repeat 0 .08em / 1.15em 1.15em}
+/* the matrix: a pane on the name column, the kinds sharing the text and spec columns */
+table.matrix{width:100%;border-collapse:collapse;table-layout:fixed}
+.matrix col.name{width:var(--name)}
+.matrix th,.matrix td{padding:var(--row-top) 4px var(--row-bottom);border-bottom:1px solid var(--line);text-align:center;font-weight:400}
+.matrix th:first-child{text-align:left;padding-left:0}
+.matrix thead th{font-size:var(--small);vertical-align:bottom}
+.matrix thead .ic{display:block;margin:0 auto 4px}.matrix thead .ic svg{height:1.3em}
+.matrix tbody tr:last-child > *{border-bottom:0}
+.matrix td.y::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ink)}
+/* How do I…: the tasks two to a line on the text column, each its steps numbered */
+.cards{display:grid;grid-template-columns:1fr 1fr}
+.card{padding:var(--row-top) 16px var(--row-bottom) 0;border-top:1px solid var(--line)}
+.card:nth-child(-n+2){border-top:0}
+.card h4{margin:0 0 6px;font-size:var(--text);font-weight:500}
+.card ol{margin:0;padding:0;list-style:none;counter-reset:s}
+.card li{position:relative;margin:0;padding-left:1.4em;counter-increment:s}
+.card li::before{content:counter(s);position:absolute;left:0;top:2px;color:var(--bug);font-weight:600;font-size:var(--small)}
+
+/* pictures: at their true size, never past the column; numbered ones with their numbers in the margins */
+figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
+.pane > figure,main > figure{width:fit-content;max-width:calc(100% - var(--name))}
+.pane > figure img,main > figure img{max-width:var(--w,100%)}
+/* the window, whole: as wide as the text and spec columns, its numbers on it */
+.pane > figure.shot:has(> img),main > figure.shot:has(> img){width:calc(100% - var(--name));max-width:none}
+figcaption{margin-top:6px;font-size:var(--small);color:var(--mute)}
+.shot{position:relative}.shot .pic{position:relative;display:inline-block;vertical-align:top}.shot .pic img{display:block}
+.shot.over{padding-top:16px}
+.shot i,.n{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-weight:600;color:var(--bug)}
+.shot i{position:absolute;transform:translate(-50%,-50%);font-style:normal;font-size:var(--small);line-height:1;padding:.183em 0;border-radius:50%;background:var(--paper)}
+.n{margin-right:6px;font-size:var(--small);line-height:1;vertical-align:1px}
+dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}
+dd img{display:block;max-width:100%;height:auto;margin-top:8px}
+/* what a choice does: a strip of small pictures, each over its word */
+.strip{display:flex;flex-wrap:wrap;gap:12px 14px;margin:10px 0 2px}
+.strip figure{margin:0;display:flex;flex-direction:column;align-items:flex-start}
+.strip img{display:block;height:auto;max-width:none;margin:0;border:0;border-radius:0}
+.strip.watches img{border-radius:4px}
+.strip figcaption{margin-top:4px;line-height:1.2}
+/* the app's own signs */
+.ic{display:inline-flex;vertical-align:-.2em;margin-right:4px}.ic svg{width:auto;height:1.15em;overflow:hidden}
+.ic svg .hub{fill:currentColor}.ic .figure{font-family:Inter,sans-serif;font-weight:700}
+dt .ic{margin-right:8px}
+.row{display:block;margin:6px 0 0}.row span{white-space:nowrap;margin-right:.55em}.row span:last-child{margin-right:0}.row .ic{margin-right:3px}.row .ic svg{height:1.3em}
+.signs{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:2px}
+.signs figure{margin:0;padding:14px 6px 10px;text-align:center;background:var(--well);border-radius:4px}
+.signs .ic{margin:0}.signs .ic svg{height:34px;max-width:76px}
+.signs figcaption{margin-top:8px;line-height:1.25;color:var(--ink)}
+
+/* a picture made large: the lightbox (the page's script opens it) */
 .box{position:fixed;inset:0;z-index:20;display:none;place-items:center;padding:24px;background:rgba(96,93,87,.8);cursor:zoom-out}
 .box.open{display:grid}
 .box figure{margin:0;width:min(1400px, 100vw - 48px, (100vh - 110px) * 1.6);display:flex;flex-direction:column}
 .box img{display:block;width:100%;height:auto;aspect-ratio:16/10;background:#d1d1d1;border:0;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
-.box figcaption{margin-top:12px;color:#111;font-size:15px}.box figcaption b{font-weight:600}.box figcaption span{color:#2a2926}
-table.two{width:100%;border-collapse:collapse;margin-top:10px;table-layout:fixed}
-table.two th,table.two td{text-align:left;vertical-align:top;padding:16.5px 12px 16.5px 0;border-bottom:1px solid var(--line)}
-table.two thead th{font-size:15px;color:var(--mute);font-weight:500;padding-top:0}
-table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{width:9em}
-@media (max-width:760px){table.two thead{display:none}table.two,table.two tbody,table.two tr,table.two th,table.two td{display:block;width:auto}table.two tbody th{padding-bottom:2px;border:0}table.two td{padding:2px 0 8px;border:0}table.two td:not([colspan])::before{display:block;font-size:14px;color:var(--mute)}table.two td:nth-of-type(1):not([colspan])::before{content:"Mouse"}table.two td:nth-of-type(2)::before{content:"Finger"}table.two tr{border-bottom:1px solid var(--line);padding:9px 0}}
+.box figcaption{margin-top:12px;color:#111}.box figcaption b{font-weight:600}.box figcaption span{color:#2a2926}
 
-/* the reference layout (Okay, 26 Oct 2026, four drawn rounds: "One grid to rule everything. Keep it simple. No many font
-   sizes, 3 is the limit"; "Hr lines closer to the paragraph start then paragraph end"). One grid for every list, table and
-   card: name (--name) · text · spec (--spec, range over the start value). Three sizes: 26 a section, 19 the text and a
-   pane's name, 15 the small things. Rules in three levels: a section's ink rule under its heading; an ink rule where a pane
-   begins and where a section's last pane ends; a row's hairline, nearer the row it opens (--row-top under it, --row-bottom over the next) */
-.pane{margin:0;border-top:1px solid var(--ink)}
-h2 + .lead + .pane,h2 + .lead + p + .pane,.pane:first-of-type{margin-top:42px}
-.pane:last-of-type,.pane.end{border-bottom:1px solid var(--ink)}
-.pane > h3{margin:0;padding:var(--row-top) 0 6px}
-.pane > p{margin:0 0 0 var(--name);padding:0 0 var(--row-bottom);color:var(--mute);max-width:none}
-.pane > figure{margin:0 0 var(--row-bottom) var(--name)}
-dl.rows{grid-template-columns:var(--name) minmax(0,1fr) var(--spec)}
-.rows > div{display:contents}
-.rows > div:last-child > *{border-bottom:0}
-.rows dd.spec{padding-right:0;font-size:15px;line-height:1.4;font-variant-numeric:tabular-nums;padding-top:calc(var(--row-top) + 3px)}
-.rows dd.spec b{display:block;font-weight:400}.rows dd.spec span{display:block;color:var(--mute)}
-.rows .row{display:block;margin:6px 0 0}
-table.matrix{width:100%;border-collapse:collapse;margin-top:12px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);table-layout:fixed}
-.matrix col.name{width:calc(var(--name) + 8em)}
-.matrix th,.matrix td{padding:var(--row-top) 4px var(--row-bottom);border-bottom:1px solid var(--line);text-align:center;font-weight:400}
-.matrix tbody tr:last-child > *{border-bottom:0}
-.matrix thead th{font-size:15px;vertical-align:bottom}
-.matrix thead .ic{display:block;margin:0 auto 4px}.matrix thead .ic svg{height:1.3em}
-.matrix th:first-child{text-align:left;padding-left:0}
-.matrix td.y::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ink)}
-.cards{display:grid;grid-template-columns:1fr 1fr;margin-top:12px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
-.card{padding:var(--row-top) 16px var(--row-bottom) 0;border-bottom:1px solid var(--line)}
-.card h4{margin:0 0 6px;font-size:19px;font-weight:500}
-.card ol{margin:0;padding:0;list-style:none;counter-reset:s;max-width:none}
-.card li{margin:0;padding-left:1.4em;position:relative;counter-increment:s}
-.card li::before{content:counter(s);position:absolute;left:0;top:2px;color:var(--bug);font-weight:600;font-size:15px}
-@media (max-width:760px){dl.rows{grid-template-columns:7em minmax(0,1fr)}.rows dd.spec{grid-column:2;padding-top:0;margin-top:-10px}.rows dd:not(.spec){border-bottom:0}.rows dt{border-bottom:0}.cards{grid-template-columns:1fr}.pane > p,.pane > figure,.watch{margin-left:0}.matrix col.name{width:9em}}
-.pane > figure{width:fit-content;max-width:calc(100% - var(--name))}.pane > figure img{width:100%;max-width:var(--w,100%)}
-@media (max-width:760px){.pane > figure{max-width:100%}}
-.shot .pic{position:relative;display:inline-block;vertical-align:top}.shot .pic img{display:block}      /* the numbers count on the picture alone, not its caption */
-@media (max-width:760px){.pane > figure.shot{margin-left:22px;max-width:calc(100% - 44px)}}      /* room for the numbers beside a picture */
-.pane > table.matrix{border-top:0;border-bottom:0;margin-top:0}.matrix thead th{border-bottom:1px solid var(--line)}      /* in a pane, the pane's rules frame it */
-dl.rows.two{grid-template-columns:var(--name) minmax(0,1fr)}      /* a pane of choices and switches: its few values said in the sentence, no spec column (Okay, 26 Oct 2026: "Either incorporate sentence format pertinent information there or leave it empty or remove altogether") */
-dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}      /* a Gallery card's own drawing over its name (Okay, 26 Oct 2026: "Gallery needs thumbnails for each dial") */
-.strip{display:flex;flex-wrap:wrap;gap:12px 14px;margin:10px 0 2px}      /* what a choice does: the First dial drawn with each (variants.mjs; Okay, 26 Oct 2026: "All do. All.") */
-.strip figure{margin:0;display:flex;flex-direction:column;align-items:flex-start}
-.strip img{display:block;height:auto;max-width:none;border:0;border-radius:0}
-.strip.watches img{border-radius:4px}
-.strip figcaption{margin-top:4px;font-size:15px;color:var(--mute);line-height:1.2}
-.pane > .strip{margin:0 0 var(--row-bottom) var(--name)}
-@media (max-width:760px){.pane > .strip{margin-left:0}}
+/* Report a bug */
+form.report{display:grid;gap:12px;max-width:620px}
+form.report label{display:grid;gap:4px;font-size:var(--small);color:var(--mute)}
+form.report label b{color:var(--ink);font-weight:500}
+form.report input,form.report textarea{width:100%;padding:7px 9px;font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px}
+form.report textarea{min-height:88px;resize:vertical}
+form.report input:focus,form.report textarea:focus{outline:none;border-color:var(--ink)}
+form.report .gotcha{position:absolute;left:-9999px}
+form.report button{justify-self:start;padding:8px 18px;font:inherit;font-weight:500;color:var(--paper);background:var(--ink);border:0;border-radius:6px;cursor:pointer}
+form.report button:disabled{opacity:.4;cursor:default}
+#report-note{margin:0;min-height:1.5em;font-size:var(--small);color:var(--mute)}
+
+/* a phone: one column; the name over its line, the spec under it */
+@media (max-width:760px){
+  :root{--map-w:123px;--map-h:77px;--map-frame:4px;--map-ring:4px}
+  html{scroll-padding-top:64px}
+  .top{grid-template-columns:auto 1fr;gap:20px;padding:14px var(--gut)}
+  .brand,.page .title{font-size:var(--text)}.page .ver{display:none}.page .bug{padding:4px 9px}
+  .wrap{grid-template-columns:1fr;gap:16px}
+  nav{position:static}nav .grp{display:flex;flex-wrap:wrap;gap:2px 14px;padding-left:0;margin-bottom:8px}
+  nav b{width:100%;margin:0}nav .eye{display:none}nav a,nav b{border-bottom:0;padding:0}nav a.on{font-weight:400;color:var(--mute)}
+  .map{margin:var(--map-ring) var(--map-ring) 14px 18px}
+  h2:has(.map) + .lead{white-space:normal}
+  dl,dl.rows,dl.rows.two{grid-template-columns:1fr}
+  dt{border-bottom:0;padding-bottom:0}
+  .rows dd:not(.spec){border-bottom:0}.rows dd.spec{padding-top:0}
+  .rows > div > :last-child{border-bottom:1px solid var(--line)}.rows > div:last-child > :last-child{border-bottom:0}
+  main > :is(p:not(.lead),figure,.signs,form,ol,ul),.pane > :is(p,figure,.strip,.cards,.signs,form){margin-left:0}
+  .pane > figure,main > figure{max-width:100%}
+  .pane > figure.shot{margin-left:22px;max-width:calc(100% - 44px)}
+  .cards{grid-template-columns:1fr}.card:nth-child(2){border-top:1px solid var(--line)}
+  .matrix col.name{width:7.5em}
+  .shot i{font-size:var(--small)}
+}
 </style>
 </head>
 <body>
@@ -288,7 +325,7 @@ dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}      /* a Gallery
   <figure><img src="img/ringlist.webp" width="468" height="247" style="--w:468px" alt="The ring list, top ring first"><figcaption>The ring list, top ring first. Press a ring to choose it. Its drawer opens with what it shows and where. The buttons on the right add, move, copy and delete rings.</figcaption></figure>
   <dl class="rows two">
     <div><dt>Tools</dt><dd>On the heading line, for the chosen ring:<span class="row"><span><i class="ic" data-ic="tool-add-a-ring"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 3.75V12.75M3.75 8.25H12.75"></path></g></svg></i>Add a ring</span><span><i class="ic" data-ic="tool-move-up"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 13.25V3.25M4.25 7.25L8.25 3.25L12.25 7.25"></path></g></svg></i>Move up</span><span><i class="ic" data-ic="tool-move-down"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M8.25 3.25V13.25M4.25 9.25L8.25 13.25L12.25 9.25"></path></g></svg></i>Move down</span><span><i class="ic" data-ic="tool-duplicate"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><rect x="5.75" y="5.75" width="7.5" height="7.5"></rect><path d="M10.25 5.75V2.75H2.75V10.25H5.75"></path></g></svg></i>Duplicate</span><span><i class="ic" data-ic="tool-delete"><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="12.1875" stroke-width="1.625"></circle><g transform="translate(5 5)"><path d="M2.75 4.75H13.75M6.25 2.25H10.25"></path><path d="M4.25 4.75L5 13.25H11.5L12.25 4.75"></path></g></svg></i>Delete</span></span> A tool that can't act is faint: Move up on the top row, Move down on the bottom one, Delete when there is one ring.</dd></div>
-    <div><dt>Add a ring</dt><dd>Opens the five kinds, each with its picture; the new ring goes in above the chosen one. Escape closes the menu.<div class="strip"><figure><img src="img/v-kind-ticks.webp" width="96" height="96" style="width:96px" alt="ticks"><figcaption>ticks</figcaption></figure><figure><img src="img/v-kind-markers.webp" width="96" height="96" style="width:96px" alt="markers"><figcaption>markers</figcaption></figure><figure><img src="img/v-kind-numerals.webp" width="96" height="96" style="width:96px" alt="numerals"><figcaption>numerals</figcaption></figure><figure><img src="img/v-kind-band.webp" width="96" height="96" style="width:96px" alt="band"><figcaption>band</figcaption></figure><figure><img src="img/v-kind-text.webp" width="96" height="96" style="width:96px" alt="text"><figcaption>text</figcaption></figure></div></dd></div>
+    <div><dt>Add a ring</dt><dd>Opens the five kinds, each with its picture; the new ring goes in above the chosen one. Escape closes the menu.<div class="strip"><figure><img src="img/v-kind-ticks.webp" width="96" height="96" style="width:96px" alt="ticks"><figcaption>ticks</figcaption></figure><figure><img src="img/v-kind-markers.webp" width="96" height="96" style="width:96px" alt="markers"><figcaption>markers</figcaption></figure><figure><img src="img/v-kind-numerals.webp" width="96" height="96" style="width:96px" alt="numerals"><figcaption>numerals</figcaption></figure><figure><img src="img/v-kind-band.webp" width="96" height="96" style="width:96px" alt="band"><figcaption>band</figcaption></figure><figure><img src="img/v-kind-text.webp" width="192" height="192" style="width:96px" alt="text"><figcaption>text</figcaption></figure></div></dd></div>
     <div><dt>A new ring</dt><dd>Named after its kind ("Markers", then "Markers 2"), in the first guide colour no other ring shows. A new numerals or text ring takes the font of the top numerals ring.</dd></div>
     <div><dt>Duplicate · Delete</dt><dd>Duplicate puts "<em>name</em> copy" above the chosen ring. A dial keeps at least one ring: Delete on the last one does nothing; hide it instead.</dd></div>
     <div><dt>The list</dt><dd>One row per ring, top to bottom in the order they stack: the top row is drawn last, in front.</dd></div>
@@ -540,7 +577,7 @@ dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}      /* a Gallery
   <h3>Window at …</h3>
   <dl class="rows two">
     <div><dt>Position</dt><dd>On the heading line: 3 · 6 · 9 · 12 · 4, then ···; the heading says where the window is. ··· opens Time: every place, 12 · 1:30 · 3 · 4 · 4:30 · 6 · 7:30 · 9 · 10:30, and a field for any time, where 2:15, 2.25 and 14:15 all mean a quarter past two. Set elsewhere, ··· shows the place. Starts 3.</dd></div>
-    <div><dt>Complication</dt><dd>What the window shows. Each kind keeps its own shape, sizes, text, colours and font in this window; Position and Radius are shared.<div class="strip"><figure><img src="img/v-window-date.webp" width="96" height="96" style="width:96px" alt="date"><figcaption>date</figcaption></figure><figure><img src="img/v-window-day.webp" width="96" height="96" style="width:96px" alt="day"><figcaption>day</figcaption></figure><figure><img src="img/v-window-am · pm.webp" width="96" height="96" style="width:96px" alt="am · pm"><figcaption>am · pm</figcaption></figure><figure><img src="img/v-window-moon phase.webp" width="96" height="96" style="width:96px" alt="moon"><figcaption>moon</figcaption></figure></div><img src="img/windows.webp" width="300" height="300" alt="A dial with four windows: the date at 12, the moon at 3, the day at 6, am · pm at 9."> Starts date.</dd></div>
+    <div><dt>Complication</dt><dd>What the window shows. Each kind keeps its own shape, sizes, text, colours and font in this window; Position and Radius are shared.<div class="strip"><figure><img src="img/v-window-date.webp" width="288" height="144" style="width:144px" alt="date"><figcaption>date</figcaption></figure><figure><img src="img/v-window-day.webp" width="288" height="144" style="width:144px" alt="day"><figcaption>day</figcaption></figure><figure><img src="img/v-window-ampm.webp" width="288" height="144" style="width:144px" alt="am · pm"><figcaption>am · pm</figcaption></figure><figure><img src="img/v-window-moonphase.webp" width="288" height="144" style="width:144px" alt="moon"><figcaption>moon</figcaption></figure></div><img src="img/windows.webp" width="300" height="300" alt="A dial with four windows: the date at 12, the moon at 3, the day at 6, am · pm at 9."> Starts date.</dd></div>
     <div><dt>Big date</dt><dd>Under date: two holes, the tens and the units, each on a disc.<div class="strip"><figure><img src="img/v-wbig-date.webp" width="144" height="72" style="width:144px" alt="date"><figcaption>date</figcaption></figure><figure><img src="img/v-wbig-big.webp" width="144" height="72" style="width:144px" alt="Big date"><figcaption>Big date</figcaption></figure></div></dd></div>
     <div><dt>am · pm</dt><dd>Follows the time shown, AM · PM beside the time under the panel.</dd></div>
     <div><dt>Picture</dt><dd>A moon window's picture, Arch · Phase · Line. Starts Arch.</dd></div>
@@ -685,10 +722,12 @@ dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}      /* a Gallery
 
 <section class="pane">
   <h3>Top left</h3>
+  <figure><img src="img/steps.webp" width="416" height="406" style="--w:208px" alt="The steps, named: one step ahead faint over the Now line, three steps back under it"><figcaption>The steps, named: after a few changes and one undo. The step redo brings back is faint over Now.</figcaption></figure>
   <dl class="rows two">
     <div><dt><i class="ic" data-ic="undo"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.25 6.75H9.75A3.25 3.25 0 0 1 9.75 13.25H6.25M6.25 3.75L3.25 6.75L6.25 9.75" stroke-width="1.5625"></path></svg></i>Undo · <i class="ic" data-ic="redo"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" stroke-width="1.5625"></path></svg></i>Redo</dt><dd>One step back or forward; the tooltip names the step. Pale when there is nothing that way.</dd></div>
     <div><dt><i class="ic" data-ic="history"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.25 6.25L8.25 10.25L12.25 6.25" stroke-width="1.5625"></path></svg></i>The steps, named</dt><dd>The chevron drops the steps, newest first: redo steps faint above the Now line, undo steps under it. Press a step to undo or redo to it; "Nothing to undo yet." when empty. Range up to 20 each side.</dd></div>
     <div><dt><i class="ic" data-ic="versions"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.25" cy="8.25" r="5.5" stroke-width="1.625"></circle><path d="M8.25 8.25V5.25"></path><path d="M8.25 8.25L10.5 9.75" stroke-width="1.5625"></path></svg></i>Versions</dt><dd>Your saved dials, kept in this browser; a link or a settings file takes one elsewhere.</dd></div>
+    <div><dt>Versions, open</dt><dd><img src="img/versions.webp" width="954" height="612" style="width:477px" alt="Versions open: Save this dial, Compare, Sheet, then two saved dials as cards">Save this dial · Compare · Sheet on its top line, then how many are saved, then the saved dials, three across, each named by its Ø and when.</dd></div>
     <div><dt>Save this dial</dt><dd>Keeps the dial as it is now, named by its Ø and the date and time. The next save past the last replaces the oldest, and the note says which. Range up to 9.</dd></div>
     <div><dt>Compare</dt><dd>Every saved dial side by side at one size, the panel away. With 2 or more saved; Compare again, <i class="ic" data-ic="eye"><svg viewBox="0 0 30 30" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-eye-show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" stroke-width="1.625"></path><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i> the eye, <kbd>E</kbd> or <kbd>Esc</kbd> ends it.</dd></div>
     <div><dt>Sheet</dt><dd>Every saved dial on one A4, saved as <code>dials-N-sheet.svg</code>. With 1 or more saved.</dd></div>
@@ -754,6 +793,7 @@ dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}      /* a Gallery
 
 <section class="pane">
   <h3>Bottom right</h3>
+  <figure><img src="img/tiny.webp" width="386" height="386" style="--w:193px" alt="The Tiny preview: the dial at its own size, the eye at its top left"><figcaption>The Tiny preview: the dial at its own size on the screen, its eye at the top left.</figcaption></figure>
   <dl class="rows two">
     <div><dt><i class="ic" data-ic="tiny"><svg viewBox="0 0 30 30" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-tiny-iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i>Tiny preview</dt><dd>The dial at its real size, opened in the button's place; drag it anywhere. No guides, X-ray or case. A tap wakes its eye for 2.4 s; the eye, top left, puts it away.</dd></div>
     <div><dt><i class="ic" data-ic="eye"><svg viewBox="0 0 30 30" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><mask id="h-eye-show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"></rect><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" fill="black" stroke="black" stroke-width="1.625"></path></mask><path d="M6.25 15C12.25 8.7 18.25 8.7 24.25 15C18.25 21.3 12.25 21.3 6.25 15Z" stroke-width="1.625"></path><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"></circle></svg></i>The dial alone</dt><dd>The panel slides away; the bar stays. In Compare, it ends Compare.</dd></div>
@@ -763,16 +803,29 @@ dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}      /* a Gallery
 
 <section class="pane">
   <h3>The bar</h3>
-  <figure><img src="img/zoom.webp" width="112" height="48" style="--w:112px" alt="Zoom out, Zoom in, and Fit to show the whole page again"><figcaption>Zoom out, Zoom in, and Fit to show the whole page again. Scrolling also zooms.</figcaption></figure>
+  <p>Along the window's foot: the time and how it runs on the left, the timeline across the middle, the view's three squares on the right. None of it changes the dial's design.</p>
+  <figure class="shot over"><span class="pic"><img src="img/bar-time.webp" width="936" height="124" style="--w:468px" alt="The bar's left end: play, the speed, the time, AM, the date, Now"><i style="left:14.7%;top:-22%">①</i><i style="left:37.1%;top:-22%">②</i><i style="left:62.0%;top:-22%">③</i><i style="left:74.6%;top:-22%">④</i><i style="left:80.2%;top:-22%">⑤</i><i style="left:88.7%;top:-22%">⑥</i></span><figcaption>The bar's left end. ① Play · ② Speed · ③ Time · ④ AM · PM · ⑤ Date · ⑥ Now.</figcaption></figure>
+  <figure class="shot over"><span class="pic"><img src="img/bar-day.webp" width="1066" height="112" style="--w:533px" alt="The timeline: the ruler, the hours under it, the red needle at the time shown"><i style="left:50%;top:-24%">⑦</i></span><figcaption>⑦ The timeline: the ruler of the twelve hours, the hours under it, the red needle at the time shown (here 10:08).</figcaption></figure>
   <dl class="rows two">
-    <div><dt><i class="ic" data-ic="play"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true"><circle cx="17" cy="17" r="17"></circle><circle cx="17" cy="17" r="15.5"></circle><path d="M2.753 13.182A14.75 14.75 0 0 1 27.430 6.570" stroke-width="1.5"></path><path d="M31.247 20.818A14.75 14.75 0 0 1 6.570 27.430" stroke-width="1.5"></path><filter id="h-play-play-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1"></feGaussianBlur></filter><path d="M23.975 17.000L13.513 23.041L13.512 10.959Z" filter="url(#h-play-play-soft)"></path></svg></i>Play · Pause</dt><dd>Runs time; the button pulses with the beat.</dd></div>
-    <div><dt>Speed</dt><dd>How fast time runs: 0.1 · 0.25 · 0.5 · 1×, then smoothly on to 720×, a dot at 1×. Not part of the dial. Range 0.1×–720×; starts 1×.</dd></div>
-    <div><dt>Time</dt><dd>The time shown, h:mm:ss. Type <code>15:20</code> or <code>3:20 pm</code>; either sets AM or PM too.</dd></div>
-    <div><dt>AM · PM</dt><dd>Morning or afternoon: flips 12 hours; an am · pm window follows it.</dd></div>
-    <div><dt>Date</dt><dd>The day the dial shows, day over month; a date or day window shows it. A press opens the weekday, day · month · year menus, and − + a day earlier or later. Starts today until you set one.</dd></div>
-    <div><dt>Now</dt><dd>The time it is now, and the date back to today.</dd></div>
-    <div><dt>Timeline</dt><dd>A ruler of the 12 hours with a red needle: drag to scrub; a tap snaps to the nearest tick.</dd></div>
-    <div><dt><i class="ic" data-ic="zoom"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.75" cy="6.75" r="5.5" stroke-width="1.625"></circle><path d="M10.75 10.75L14.25 14.25" stroke-width="1.5625"></path><path d="M4.25 6.75H9.25"></path></svg></i>Zoom out · <i class="ic" data-ic="zoomin"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.75" cy="6.75" r="5.5" stroke-width="1.625"></circle><path d="M10.75 10.75L14.25 14.25" stroke-width="1.5625"></path><path d="M4.25 6.75H9.25M6.75 4.25V9.25" stroke-width="1.25"></path></svg></i>Zoom in · <i class="ic" data-ic="fit"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 2.25L6.25 6.25M14.25 2.25L10.25 6.25M2.25 14.25L6.25 10.25M14.25 14.25L10.25 10.25" stroke-width="1.5625"></path><path d="M6.25 3.75V6.25H3.75M10.25 3.75V6.25H12.75M6.25 12.75V10.25H3.75M10.25 12.75V10.25H12.75" stroke-width="1.25"></path></svg></i>Fit</dt><dd>Three joined squares: ×1.4 out or in about the middle; Fit brings the whole dial back. Scroll or pinch zooms too, out to a quarter of Fit; right-drag or two fingers move the dial. On a phone, Fit alone.</dd></div>
+    <div><dt><span class="n">①</span>Play · Pause</dt><dd>Runs time from the time shown, at the speed set. The triangle flashes with the movement's beat, at most 6 a second unless the beat is faster. <kbd>Space</kbd> plays or pauses.</dd></div>
+    <div><dt><span class="n">②</span>Speed</dt><dd>How fast time runs, on one track: its first part, two thumbs wide, holds 0.1 · 0.25 · 0.5 · 1× and the thumb snaps onto them; from the dot at 1× it runs smoothly on to 720×. The ends are named 0.1X and 720X; the speed rides over the thumb, the one white thing on the bar, and turns into a pill while you drag. On a phone it is written on the thumb. Starts 1×.<img src="img/bar-speed.webp" width="298" height="108" style="width:149px" alt="The speed at 60×, its name a pill over the thumb while it is dragged"></dd></div>
+    <div><dt><span class="n">③</span>Time</dt><dd>The time shown, h:mm:ss. Press it and type: <code>15:20</code> or <code>3:20 pm</code>, and the half of the day follows. <kbd>←</kbd> <kbd>→</kbd> move it a minute, with <kbd>⇧</kbd> an hour.</dd></div>
+    <div><dt><span class="n">④</span>AM · PM</dt><dd>Morning or afternoon: a press flips 12 hours. The hands look the same either way; an am · pm window follows it.</dd></div>
+    <div><dt><span class="n">⑤</span>Date</dt><dd>The day the dial shows, day over month, touching AM · PM; a date or day window shows it. Until you set one it is today's, wherever the dial is opened. A press opens its popup.</dd></div>
+    <div><dt><span class="n">⑥</span>Now</dt><dd>The time it is now, and the date back to today.</dd></div>
+    <div><dt><span class="n">⑦</span>Timeline</dt><dd>The twelve hours of the half shown, a ruler cut finer the wider the window. Drag anywhere along it to scrub; a tap that doesn't move snaps to the nearest hour, or to 10:10. The hours under it are buttons: a press sets that hour; the hour shown is bold. On a phone every other hour is written. The red needle stands on the time, from the ruler down to the window's foot.</dd></div>
+    <div><dt><span class="n">⑧</span>Zoom · Fit</dt><dd><span class="row"><span><i class="ic" data-ic="zoom"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.75" cy="6.75" r="5.5" stroke-width="1.625"></circle><path d="M10.75 10.75L14.25 14.25" stroke-width="1.5625"></path><path d="M4.25 6.75H9.25"></path></svg></i>Zoom out</span><span><i class="ic" data-ic="zoomin"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.75" cy="6.75" r="5.5" stroke-width="1.625"></circle><path d="M10.75 10.75L14.25 14.25" stroke-width="1.5625"></path><path d="M4.25 6.75H9.25M6.75 4.25V9.25" stroke-width="1.25"></path></svg></i>Zoom in</span><span><i class="ic" data-ic="fit"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 2.25L6.25 6.25M14.25 2.25L10.25 6.25M2.25 14.25L6.25 10.25M14.25 14.25L10.25 10.25" stroke-width="1.5625"></path><path d="M6.25 3.75V6.25H3.75M10.25 3.75V6.25H12.75M6.25 12.75V10.25H3.75M10.25 12.75V10.25H12.75" stroke-width="1.25"></path></svg></i>Fit</span></span> Three joined squares: ×1.4 out or in about the middle; Fit brings the whole dial back. Scroll or pinch zooms too, out to a quarter of Fit; right-drag or two fingers move the dial. On a phone, Fit alone.</dd></div>
+  </dl>
+</section>
+
+<section class="pane">
+  <h3>The date's popup</h3>
+  <p>One line over the date. <kbd>Esc</kbd> or a press elsewhere closes it.</p>
+  <figure class="shot over"><span class="pic"><img src="img/datepop.webp" width="612" height="190" style="--w:306px" alt="The date's popup: Mon, 26, Oct, 2026, minus and plus"><i style="left:10.8%;top:-12%">①</i><i style="left:46.4%;top:-12%">②</i><i style="left:85.3%;top:-12%">③</i></span><figcaption>The date's popup, over the bar. ① the weekday · ② Day · Month · Year · ③ − +.</figcaption></figure>
+  <dl class="rows two">
+    <div><dt><span class="n">①</span>Weekday</dt><dd>The day's name, written, never chosen: it follows the date. Its box keeps one width, so the line doesn't move as the name changes.</dd></div>
+    <div><dt><span class="n">②</span>Day · Month · Year</dt><dd>Each a menu. A month or year with fewer days keeps the day as near as it can: 31 Jan, then Feb, is 28 or 29 Feb. Years run 50 either side of the one shown.</dd></div>
+    <div><dt><span class="n">③</span>− +</dt><dd>A day earlier or later, across months and years.</dd></div>
   </dl>
 </section>
 

@@ -39,6 +39,7 @@ Okay: "This will have to get updated, and expanded into the big guide." One comm
 
 1. `bash guide/help/make.sh` (about a minute):
    - `check.py` — the app's version against the one the page was checked against (`<meta name="checked">`), with the changelog headings in between: **read those entries**, they say what changed in behaviour; then row labels added or gone since the last check (`labels.txt`), and labels the page never names (`known.txt` lists the deliberate ones, with why).
+   - `shoot2.cjs` (the popups, the controller, the iPad) · `shoot3.cjs` (the bar, the date's popup, the steps, Versions, the Tiny preview), run from `web/`.
    - `icons.cjs` · `shoot.cjs` · `webp.py` · `decorate.py` — the app's own icons and the pictures, taken again from the committed `web/dial-tool.html`; the small maps redrawn.
    - `look.cjs` — every section, wide and on a phone, into `out/` (not committed); fails on sideways scroll, a broken picture or Inter not loading.
 2. Revise `index.html` by hand for what step 1 listed: one sentence a control, the app's own labels, in the app's order.
