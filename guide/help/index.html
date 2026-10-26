@@ -75,12 +75,23 @@ h2:has(.map) + .lead + *{clear:both}
 /* the grid: a pane opens with an ink rule; its name on the name column, everything else on the text column */
 .pane{margin:0;border-top:1px solid var(--ink)}
 .pane:first-of-type{margin-top:42px}
-.pane:last-of-type{border-bottom:1px solid var(--ink)}
+:where(:not(.pane)) + .pane{margin-top:32px}                       /* a section's first pane, after its heading, lead or picture */
+h2 + .pane{margin-top:0;border-top:0}                       /* straight under the heading, the heading's rule opens it */
+.pane:has(+ :not(.pane)),.pane:last-child{border-bottom:1px solid var(--ink)}      /* …and its last: an ink rule where the panes end */
 h3{margin:0;padding:var(--row-top) 0 6px;font-size:var(--text);font-weight:600}
 main > :is(p:not(.lead),figure,.signs,form,ol,ul),
-.pane > :is(p,figure,.strip,.cards,.signs,form){margin:0 0 var(--row-bottom) var(--name)}
+.pane > :where(p,figure,.strip,.cards,.signs,form){margin:0 0 var(--row-bottom) var(--name)}
 main > p:not(.lead){margin-top:12px}
 .pane > p{color:var(--mute)}
+/* a pane's heading and what opens it share a line: the heading on the name column, the line on the text column */
+.pane{display:grid;grid-template-columns:var(--name) minmax(0,1fr)}
+.pane > *{grid-column:1/-1}
+.pane > h3{grid-column:1;padding-right:16px}
+/* …and when the pane opens with a picture, the signs or the cards, they too start on the heading's line */
+.pane > h3 + :is(p,figure,.signs,.cards){grid-column:2;margin:0 0 var(--row-bottom);padding-top:var(--row-top)}
+.pane > h3 + figure{max-width:100%}
+.pane > h3 + .cards{padding-top:0}                          /* a card opens with its own room */
+.pane > h3 + figure.shot:has(> img){width:100%}
 .pane > p.watch{color:var(--mute)}
 /* rows: a name, its line, and in a pane of sizes the spec (the range in ink over "starts …") */
 dl{display:grid;grid-template-columns:var(--name) minmax(0,1fr);margin:0;border-top:1px solid var(--line)}
@@ -130,6 +141,7 @@ dt .thumb{display:block;width:64px;height:64px;margin:0 0 8px}
 dd img{display:block;max-width:100%;height:auto;margin-top:8px}
 /* what a choice does: a strip of small pictures, each over its word */
 .strip{display:flex;flex-wrap:wrap;gap:12px 14px;margin:10px 0 2px}
+.pane > .strip{margin:0 0 var(--row-bottom) var(--name)}
 .strip figure{margin:0;display:flex;flex-direction:column;align-items:flex-start}
 .strip img{display:block;height:auto;max-width:none;margin:0;border:0;border-radius:0}
 .strip.watches img{border-radius:4px}
@@ -179,8 +191,10 @@ form.report button:disabled{opacity:.4;cursor:default}
   .rows dd:not(.spec){border-bottom:0}.rows dd.spec{padding-top:0}
   .rows > div > :last-child{border-bottom:1px solid var(--line)}.rows > div:last-child > :last-child{border-bottom:0}
   main > :is(p:not(.lead),figure,.signs,form,ol,ul),.pane > :is(p,figure,.strip,.cards,.signs,form){margin-left:0}
+  .pane{display:block}.pane > h3 + :is(p,figure,.signs,.cards){padding-top:0}.pane > .strip{margin-left:0}
   .pane > figure,main > figure{max-width:100%}
   .pane > figure.shot{margin-left:22px;max-width:calc(100% - 44px)}
+  .pane > h3 + figure.shot:has(> img){width:auto;margin-left:22px}
   .cards{grid-template-columns:1fr}.card:nth-child(2){border-top:1px solid var(--line)}
   .matrix col.name{width:7.5em}
   .shot i{font-size:var(--small)}
@@ -362,9 +376,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 
 <section class="pane">
   <h3>Text</h3>
-  <dl class="rows two">
-    <div><dt>Text</dt><dd>What a text ring says, written at every position.</dd></div>
-  </dl>
+  <p>What a text ring says, written at every position.</p>
 </section>
 
 <section class="pane">
@@ -703,9 +715,7 @@ form.report button:disabled{opacity:.4;cursor:default}
 
 <section class="pane">
   <h3>Log</h3>
-  <dl class="rows two">
-    <div><dt>Log</dt><dd>What each export, copy, load and reset said. Every export writes the thinnest line and the narrowest gap to it.</dd></div>
-  </dl>
+  <p>What each export, copy, load and reset said. Every export writes the thinnest line and the narrowest gap to it.</p>
 </section>
 
 <section class="pane">
