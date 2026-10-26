@@ -14,7 +14,7 @@
 
 **Not yet done.**
 - The app's **Help** link still opens the guide (`GUIDE` in `web/src/app.js`, line 38, `target="_blank"`). Pointing it at `/help/` is one line in a small push, on Okay's word.
-- Per-pane anchors from the app (#230): each pane's `?` could open `/help/#rings` etc.; the page's `id`s are ready: `idea screen first dial rings hands date export canvas show how words`.
+- Per-pane anchors from the app (#230): each pane's `?` could open `/help/#rings` etc.; the page's `id`s are ready: `idea first gallery dial rings hands date export canvas show keys how words report`.
 
 ## Screenshots to add (few, small, plain crops at 1×; Okay's card style from the guide notes if he wants it)
 
