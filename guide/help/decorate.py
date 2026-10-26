@@ -98,7 +98,16 @@ def small_map(name):
             f'<rect width="{W}" height="{H}" class="backdrop"/>{panel(0, PANEL_W, 5, tab_on)}{bar((L, W / 2 + 20))}'
             f'<circle cx="{cx}" cy="{cy}" r="{r}" class="{"dial on" if "dial" in on else "dial"}"/><g class="ticks">{ticks}</g>'
             f'<path d="M{cx} {cy}L{cx - 16} {cy - 10}M{cx} {cy}L{cx + 24} {cy - 14}" class="hands"/><circle cx="{cx}" cy="{cy}" r="2.2" class="cap"/>'
-            f'{dots}{"".join(box(g) for g in WHERE[name])}</svg>')
+            f'{dots}{"".join(box(g) for g in WHERE[name])}{letters() if name == "canvas" else ""}</svg>')
+
+def letters():
+    # the four corners lettered A to D, clockwise from the top left, as the section's titles are (Okay, 27 Oct 2026:
+    # "A, B, C, D"): each letter beside its box, toward the dial
+    g = WHERE["canvas"]
+    ext = lambda grp: [f(bbox(t)[i] for t in grp) for f, i in ((min, 0), (min, 1), (max, 2), (max, 3))]
+    (l0, t0, r0, b0), (l1, t1, r1, b1), (l2, t2, r2, b2), (l3, t3, r3, b3) = (ext(x) for x in g)
+    at = [("A", (l0 + r0) / 2, b0 + PAD + 5.5), ("B", l1 - PAD - 4.5, t1 + 2), ("C", l3 - PAD - 4.5, b3 - 2), ("D", r2 + PAD + 4.5, b2 - 2)]
+    return "".join(f'<text x="{x:.2f}" y="{y:.2f}" class="letter">{c}</text>' for c, x, y in at)
 
 def show_map():
     # the Show Case on the same grid (Okay, 26 Oct 2026: "add a second: the panel and bg changed version with a simple

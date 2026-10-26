@@ -10,12 +10,13 @@ const { GALLERY } = await import(new URL("src/gallery.js", WEB)), { EXAMPLES } =
 export const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
 const page = await browser.newPage({ viewport: { width: SIZE, height: SIZE } });
-for (const c of [...GALLERY, ...EXAMPLES]) {
-  await page.setContent(`<style>html,body{margin:0;background:transparent}svg{display:block;width:${SIZE}px;height:${SIZE}px}</style>${c.picture.replace("<svg ", `<svg width="${SIZE}" height="${SIZE}" `)}`);
-  const png = OUT + `g-${slug(c.name)}.png`;
+// each also at 1200 px for the lightbox, g-<name>-full.webp (Okay, 27 Oct 2026: "All these Lightboxes hi res image")
+for (const c of [...GALLERY, ...EXAMPLES]) for (const px of [SIZE, 1200]) {
+  await page.setViewportSize({ width: px, height: px });
+  await page.setContent(`<style>html,body{margin:0;background:transparent}svg{display:block;width:${px}px;height:${px}px}</style>${c.picture.replace("<svg ", `<svg width="${px}" height="${px}" `)}`);
+  const png = OUT + `g-${slug(c.name)}${px === SIZE ? "" : "-full"}.png`;
   await page.screenshot({ path: png, omitBackground: true });
   execFileSync("python3", ["-c", `from PIL import Image;im=Image.open("${png}");im.save("${png.replace(".png", ".webp")}",quality=86,method=6)`]);
   fs.unlinkSync(png);
-  console.log(c.name, "→", `g-${slug(c.name)}.webp`);
 }
 await browser.close();

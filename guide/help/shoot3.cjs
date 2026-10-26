@@ -92,8 +92,20 @@ async function places(page, name, clip, parts) {
 
   // 6 · Versions with two saved
   await page.click("#versions"); await page.waitForTimeout(250);
+  // the two saved dials told apart at a glance: the second card's every font a Bodoni, not the First dial's Barlow
+  // (Okay, 27 Oct 2026: "All fonts in that dial. Distinctly different than the other")
+  const fonts = (family, ps) => page.evaluate(([family, ps]) => { const t = window.dial_tool, S = JSON.parse(JSON.stringify(t.S));
+    S.rings.forEach((r) => { if (r.kind === 2 || r.kind === 4) { r.family = family; r.ps = ps; r.axes = {}; } }); S.da_family = family; S.da_ps = ps; S.da_axes = {};
+    (S.windows || []).forEach((w) => { w.family = family; w.ps = ps; w.axes = {}; }); t.statik = null; t.load_text(JSON.stringify(S), "help.json"); }, [family, ps]);
+  const was = await page.evaluate(() => { const r = window.dial_tool.S.rings.find((r) => r.kind === 2); return [r.family, r.ps]; });
+  await fonts("Bodoni Moda", "BodoniModa-Regular");
+  await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 }); await page.evaluate(() => document.fonts.ready); await frame(page);
+  if (!(await page.isVisible("#instance-save"))) { await page.click("#versions"); await page.waitForTimeout(250); }
   await page.click("#instance-save"); await page.waitForTimeout(300);
+  await fonts(...was);
+  await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 }); await frame(page);
   await page.evaluate(() => window.dial_tool.set_value("global", "dial_d", 40)); await page.waitForTimeout(200);
+  if (!(await page.isVisible("#instance-save"))) { await page.click("#versions"); await page.waitForTimeout(250); }
   await page.click("#instance-save"); await page.waitForTimeout(600); await rest();
   { const clip = await shoot(page, "versions", ["#version-list", "#versions"]);
     if (clip) await places(page, "versions", clip, [["Save this dial", ["#instance-save"]], ["Compare", ["#instance-compare"]], ["Sheet", ["#instance-sheet"]], ["a card", ["#version-list .card"]]]); }
