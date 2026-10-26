@@ -46,8 +46,7 @@
 
 /* 2 · base */
 *{box-sizing:border-box}
-html{scroll-padding-top:calc(var(--bar) + var(--x) * 2);scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+h2{scroll-margin-top:var(--land, 72px)}      /* a jump lands the section's rule on the menu's first line; --land is measured by the page's script */
 body{margin:0;background:var(--paper);color:var(--ink);font:400 var(--text)/var(--lh) Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:-.015em}
 .watch,figcaption,.sub,form.report label,#report-note,.page .ver,footer,.matrix thead th,.box figcaption{line-height:var(--lh-small)}
 b,strong,h1,th,dt,em,i{font-weight:400;font-style:normal}
@@ -1452,7 +1451,11 @@ form.report button:disabled{opacity:.4;cursor:default}
   const links = [...nav.querySelectorAll("a")];
   const parts = links.map((a) => [a, document.getElementById(a.hash.slice(1))]).filter(([, h]) => h);
   let chosen = null;                                              // a jump's section, held until the reader scrolls
-  const land = (h, smooth) => scrollTo({ top: Math.max(0, scrollY + h.getBoundingClientRect().bottom - line()), behavior: smooth ? "smooth" : "auto" });
+  // a jump is instant and lands exactly (Okay, 26 Oct 2026: "Scroll to point by menu click still jumpy. iPad slow. Robust an
+  // easy and accurate solution please"): no animation over a long page, the browser's own anchor jump, its stopping place
+  // set once in CSS (scroll-margin) from the menu's line and a title's height, measured here and again on resize
+  const fit = () => document.documentElement.style.setProperty("--land", (line() - document.querySelector("main h2").offsetHeight) + "px");
+  const land = (h) => h.scrollIntoView({ block: "start", behavior: "instant" });
   const mark = () => {
     let on = parts[0];
     if (chosen) on = parts.find(([, h]) => h === chosen) || on;
@@ -1468,13 +1471,12 @@ form.report button:disabled{opacity:.4;cursor:default}
   };
   let queued = false;
   const later = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; mark(); }); } };
-  addEventListener("scroll", later, { passive: true }); addEventListener("resize", later);
+  addEventListener("scroll", later, { passive: true }); addEventListener("resize", () => { fit(); later(); }); fit();
   for (const ev of ["wheel", "touchmove", "keydown"]) addEventListener(ev, () => { if (chosen) { chosen = null; later(); } }, { passive: true });
   document.querySelectorAll('a[href^="#"]').forEach((a) => a.addEventListener("click", (e) => {
     const h = document.getElementById(a.hash.slice(1)); if (!h || !sticky()) return;
-    e.preventDefault(); history.pushState(null, "", a.hash); chosen = h; mark();
-    land(h, !matchMedia("(prefers-reduced-motion: reduce)").matches); }));
-  addEventListener("load", () => { const h = location.hash && document.getElementById(location.hash.slice(1)); if (h && sticky()) { chosen = h; land(h, false); } mark(); });
+    e.preventDefault(); history.replaceState(null, "", a.hash); chosen = h; fit(); land(h); mark(); }));
+  addEventListener("load", () => { const h = location.hash && document.getElementById(location.hash.slice(1)); if (h && sticky()) { chosen = h; fit(); land(h); } mark(); });
   mark();
 }
 
