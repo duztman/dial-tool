@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## help page · 26 Oct 2026 — what a choice does, in pictures
+
+Okay, 26 Oct 2026, 02:41: "Gallery needs thumbnails for each dial. What else can get a thumbnail?"; 02:51: "All do. All."
+
+- **The Gallery**: every card with its own dial over its name (`thumbs.mjs`, from the cards' own drawings, 64 px).
+- **What a choice does** (`variants.mjs`): the First dial drawn by the Gallery's `card()` with one setting changed — the ten hand shapes (their middle), the four complications, the five ring kinds alone, six Labels (Eastern Arabic in Vazirmatn, Chinese in Noto Serif SC, as one would choose), the four Placements, Resize Ring's Outer · Middle · Inner against a red circle at the radius, Give way's nothing · Skip where · Knock out round the 3, the colour file beside its Mono print mask; and show mode from the app's own PNG export — the four cases, Engineer · Miyazaki by Dramatic · Flat, the four straps (Whole watch, the bracelets closed). Each strip sits in the row or pane it shows; a strip that stands for a row of icons replaces it.
+
 ## help page · 26 Oct 2026 — the spec column only where it informs
 
 Okay, 26 Oct 2026, 02:24: "These right columns become less informative and perplexing in many views. Either incorporate sentence format pertinent information there or leave it empty or remove altogether. decide for each instance."
