@@ -8,7 +8,7 @@
 
 **Where the words come from.** Pane titles and row labels are the app's (`hdr(…)`, `num/chk/seg/pick(…)` in `web/src/app.js`, the `SECTIONS` block), button titles and aria labels for the canvas. A sentence says what a control does; nothing from memory. Next pass: a script that lists every label in `app.js` and flags any the page doesn't name (so a new row can't be missed).
 
-**Order** (26 Oct 2026, the release audit). Start: Dial Tool, in short (the four ideas, the numbered window) · A first dial · Gallery · Tabs: Dial · Rings · Hands · Windows · Export · Around the dial: Around the preview · The bar · Show Case · More: Keys and touch · How do I… (one line a task, linked) · Words (the trade's terms) · Report a bug. Every section opens with a summary of what is below (Okay, 26 Oct 2026: "Start sections with summary, then go into detail bit by bit"); the look's rules are in the stylesheet's header comment.
+**Order** (26 Oct 2026, the release audit). Start: Dial Tool, in short (two paragraphs, the numbered window) · A first dial · Gallery · Tabs: Dial · Rings · Hands · Windows · Export · Around the dial: Around the preview · The bar · Show Case · More: Keys and touch · How do I… (one line a task, linked) · Words (the trade's terms) · Report a bug. Every section opens with a summary of what is below (Okay, 26 Oct 2026: "Start sections with summary, then go into detail bit by bit"); the look's rules are in the stylesheet's header comment.
 
 **Starting values** are the First dial's (`web/src/opener.js`, what a new visitor opens on and Dial › Reset brings back); a value the First dial doesn't set is the code's default (`DEFAULTS`); a new ring, window or guide gives its own template's.
 
