@@ -42,6 +42,7 @@ Okay: "This will have to get updated, and expanded into the big guide." One comm
    - `icons.cjs` · `shoot.cjs` · `webp.py` · `decorate.py` — the app's own icons and the pictures, taken again from the committed `web/dial-tool.html`; the small maps redrawn.
    - `look.cjs` — every section, wide and on a phone, into `out/` (not committed); fails on sideways scroll, a broken picture or Inter not loading.
 2. Revise `index.html` by hand for what step 1 listed: one sentence a control, the app's own labels, in the app's order.
+2a. When the content is settled, a last pass with the Humanizer skill (27 Oct 2026, decisions.md): sentence-level prose and repetition only; layout, bold, titles, captions, facts, names and meaning untouched.
 3. `python3 guide/help/check.py --done` — records the version and the labels as checked, and dates the footer.
 4. Commit and push `dev`; look at `out/`.
 5. On Okay's word: `bash guide/help/publish.sh` — copies the page, `img/`, `fonts/` to `help/` on gh-pages from the pushed `dev`.
