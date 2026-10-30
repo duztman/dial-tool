@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.0.7 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -88,7 +88,13 @@ export const RING_BASE = {
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
   ink_d: 0,                                        // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
   ink_b: false,                                    // show mode's Inks (#545): with its colour split into two inks, this ring is printed with ink B; the file and the session, not the link (R7)
+  // a stroke round the numerals or letters (#551; Okay, 30 Oct 2026: "good strokes, uniform. And round/sharp/miter
+  // options"; 31 Oct: "Stroke on off, miter round sharp, inside middle outside of vector, and its color"): drawn as a
+  // grown outline in its own colour, never a stroke in a file (R4). join: a place in STROKE_JOINS · side: in STROKE_SIDES
+  stroke: false, stroke_w: 0.1, stroke_join: 0, stroke_side: 2, stroke_c: [0.85, 0.1, 0.1, 1],
 };
+export const STROKE_JOINS = ["Miter", "Round", "Bevel"];      // Illustrator's three (Okay, 31 Oct 2026: "Miter · Round · Bevel")
+export const STROKE_SIDES = ["Inside", "Middle", "Outside"];  // which side of the outline the stroke stands on
 export const TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
 
 // round: corner radius of a hand's ends (web version, beta 3.0). Half the width or more = a round end.
@@ -539,6 +545,7 @@ export const LINK_KEYS = [
   "own_names", "da_own_names", "ampm_form", "da_ampm_form",      // 4.92.11 (#515, #516): appended; none and the disc to start, as every older link
   "ink_d",                  // 4.92.15 (#521): appended for the table's sake; lean() leaves it out of a link (R7)
   "depth", "da_depth",      // 4.95 (#526): appended; null to start = the shared sh_disc, as every older link
+  "stroke", "stroke_w", "stroke_join", "stroke_side", "stroke_c",      // v1.1 beta (#551): appended; off to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -883,10 +890,10 @@ export class Path {
    *  and scaled back: PathKit's stroker approximates a curve to a tolerance in path units, and in millimetres that is
    *  coarse — a Ø 2.6 mm circle grown by 0.3 bulged 21 % (the "four-petal blob", #168); at ×1000 it is 4 µm off
    *  (measured 30 Oct 2026, test/crops/stroke-scale.mjs). */
-  expandStroke(width) {
+  expandStroke(width, join = "Round") {
     const K = STROKE_SCALE;
     const a = this.copy().scale(K)._pk();
-    a.stroke({ width: width * K, join: PK.StrokeJoin.ROUND, cap: PK.StrokeCap.ROUND });
+    a.stroke({ width: width * K, join: PK.StrokeJoin[join.toUpperCase()] || PK.StrokeJoin.ROUND, cap: PK.StrokeCap.ROUND });
     a.simplify();
     const out = Path._from_pk(a)._wound().scale(1 / K);
     a.delete();
@@ -978,11 +985,20 @@ export function sector(r_in, r_out, a0, a1) {
   return p.closePath();
 }
 
-/** the same shape grown (d > 0) or shrunk (d < 0) by d mm, corners rounded. */
-export function offset(p, d) {
+/** the same shape grown (d > 0) or shrunk (d < 0) by d mm; its corners rounded, or mitred or bevelled (join: a word of STROKE_JOINS). */
+export function offset(p, d, join = "Round") {
   if (empty(p) || abs(d) < 1e-6) return p;
-  const band = p.expandStroke(2 * abs(d));         // a band of width 2|d| along the outline
+  const band = p.expandStroke(2 * abs(d), join);   // a band of width 2|d| along the outline
   return d > 0 ? p.union(band) : p.difference(band);
+}
+
+/** a stroke round a shape as a filled outline (R4): w mm wide, on the inside, the middle or the outside of the edge,
+ *  its corners by join. The shape itself stays as it is; the stroke is a path of its own, drawn over it. */
+export function stroke_outline(p, w, side, join) {
+  if (empty(p) || !(w > 0)) return null;
+  if (side === "Inside") return p.difference(offset(p, -w, join));
+  if (side === "Middle") return offset(p, w / 2, join).difference(offset(p, -w / 2, join));
+  return offset(p, w, join).difference(p);
 }
 
 const _memo = new Map();
@@ -1502,6 +1518,8 @@ function build_rings(S, cut = null) {
     };
     const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d) => [key_of(d.ring), d.keep]), cut ? date_key(S) : null]);
     const d = { ring, kind, keep, taken, shape, at, parts, path: memo(key, final), ghost: !ring.on };
+    // a stroke round the letters (#551): a grown outline of the ring's final shape, drawn over it in its own colour
+    if ((kind === "numerals" || kind === "text") && ring.stroke && ring.stroke_w > 0) d.stroke = memo("stroke" + key, () => stroke_outline(d.path, ring.stroke_w, STROKE_SIDES[ring.stroke_side] || "Outside", STROKE_JOINS[ring.stroke_join] || "Miter"));
     // a band whose sectors have colours of their own is drawn as one shape per colour: the sectors of that
     // colour, cut like the whole ring. Which sectors go together is remembered, not which colour they have.
     if ((kind === "band" || kind === "numerals" || kind === "text") && at.some((i) => ring.cs && ring.cs[String(i)])) {      // a numeral's own colour too (#513): the same split
@@ -2033,6 +2051,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
     for (const d of rings) {
       if (!ink || !d.tints) { if (of(d.ring.c) || (d.tints && !ink)) add("ring", d.path, black, { ring: d, index: index(d) }); }
       else d.tints.forEach((tint, n) => { if (of(sector_colour(d.ring, tint.at))) add("ring", tint.path, black, { ring: d, index: index(d), part: n + 1 }); });
+      if (d.stroke && of(d.ring.stroke_c)) add("ring stroke", d.stroke, black, { ring: d, index: index(d), part: "stroke" });
     }
     for (const x of windows) {
       if (of(wc(x).ink)) add("date frame", x.frame, black, { window: x.index });
@@ -2071,6 +2090,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });
+      if (d.stroke) add("ring stroke", d.stroke, dim(d.ring.stroke_c, face), { ring: d, index: index(d), part: "stroke" });      // over its letters (#551)
     }
     for (const x of windows) add("date frame", x.frame, dim(wc(x).ink, face), { window: x.index });
     if (S.ha_on) {

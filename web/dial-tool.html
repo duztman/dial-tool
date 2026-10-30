@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.0.7 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -775,7 +775,7 @@
   .row > .ownnames { grid-column: 3 / -1; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: var(--u1); padding: var(--u1) 0; }      /* your own words, side by side (#515, #516) */
   .ownnames > .ownname { min-width: 0; padding: 0 var(--u1); text-align: center; }      /* as typed: what the window draws */
   .row.off > label:first-child { color: var(--uiblack, var(--ink)); }
-  .row:has(> .toggle[aria-checked="true"]) > label:first-child { color: var(--white); }      /* on: its name white (19:40: "On text white switch to the right and pill filled 'black'") */      /* a toggle that is off: its name goes dark (#525; Okay, 24 Oct 2026: "Off text label also goes black") */
+  .shenanigans .row:has(> .toggle[aria-checked="true"]) > label:first-child { color: var(--white); }      /* on, on the dark shenanigans box: its name white (19:40: "On text white switch to the right and pill filled 'black'"); on the panel a toggle's name stays grey (the Stroke switch, #551) */      /* a toggle that is off: its name goes dark (#525; Okay, 24 Oct 2026: "Off text label also goes black") */
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
   .menulabel { display: flex; align-items: center; gap: var(--unit); min-width: 0; }
@@ -7471,7 +7471,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.0.7 beta";
+var VERSION = "v1.1 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7564,9 +7564,19 @@ var RING_BASE = {
   // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
   ink_d: 0,
   // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
-  ink_b: false
+  ink_b: false,
   // show mode's Inks (#545): with its colour split into two inks, this ring is printed with ink B; the file and the session, not the link (R7)
+  // a stroke round the numerals or letters (#551; Okay, 30 Oct 2026: "good strokes, uniform. And round/sharp/miter
+  // options"; 31 Oct: "Stroke on off, miter round sharp, inside middle outside of vector, and its color"): drawn as a
+  // grown outline in its own colour, never a stroke in a file (R4). join: a place in STROKE_JOINS · side: in STROKE_SIDES
+  stroke: false,
+  stroke_w: 0.1,
+  stroke_join: 0,
+  stroke_side: 2,
+  stroke_c: [0.85, 0.1, 0.1, 1]
 };
+var STROKE_JOINS = ["Miter", "Round", "Bevel"];
+var STROKE_SIDES = ["Inside", "Middle", "Outside"];
 var TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
 var HAND_BASE = {
   on: true,
@@ -8582,8 +8592,14 @@ var LINK_KEYS = [
   "ink_d",
   // 4.92.15 (#521): appended for the table's sake; lean() leaves it out of a link (R7)
   "depth",
-  "da_depth"
+  "da_depth",
   // 4.95 (#526): appended; null to start = the shared sh_disc, as every older link
+  "stroke",
+  "stroke_w",
+  "stroke_join",
+  "stroke_side",
+  "stroke_c"
+  // v1.1 beta (#551): appended; off to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -8996,10 +9012,10 @@ var Path = class _Path {
    *  and scaled back: PathKit's stroker approximates a curve to a tolerance in path units, and in millimetres that is
    *  coarse — a Ø 2.6 mm circle grown by 0.3 bulged 21 % (the "four-petal blob", #168); at ×1000 it is 4 µm off
    *  (measured 30 Oct 2026, test/crops/stroke-scale.mjs). */
-  expandStroke(width) {
+  expandStroke(width, join = "Round") {
     const K = STROKE_SCALE;
     const a = this.copy().scale(K)._pk();
-    a.stroke({ width: width * K, join: PK.StrokeJoin.ROUND, cap: PK.StrokeCap.ROUND });
+    a.stroke({ width: width * K, join: PK.StrokeJoin[join.toUpperCase()] || PK.StrokeJoin.ROUND, cap: PK.StrokeCap.ROUND });
     a.simplify();
     const out = _Path._from_pk(a)._wound().scale(1 / K);
     a.delete();
@@ -9085,10 +9101,16 @@ function sector(r_in, r_out, a0, a1) {
   } else p.lineTo([0, 0]);
   return p.closePath();
 }
-function offset(p, d) {
+function offset(p, d, join = "Round") {
   if (empty(p) || abs(d) < 1e-6) return p;
-  const band = p.expandStroke(2 * abs(d));
+  const band = p.expandStroke(2 * abs(d), join);
   return d > 0 ? p.union(band) : p.difference(band);
+}
+function stroke_outline(p, w, side, join) {
+  if (empty(p) || !(w > 0)) return null;
+  if (side === "Inside") return p.difference(offset(p, -w, join));
+  if (side === "Middle") return offset(p, w / 2, join).difference(offset(p, -w / 2, join));
+  return offset(p, w, join).difference(p);
 }
 var _memo = /* @__PURE__ */ new Map();
 function memo(key, build) {
@@ -9516,6 +9538,7 @@ function build_rings(S, cut = null) {
     };
     const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d2) => [key_of(d2.ring), d2.keep]), cut ? date_key(S) : null]);
     const d = { ring, kind, keep, taken, shape: shape3, at, parts, path: memo(key, final), ghost: !ring.on };
+    if ((kind === "numerals" || kind === "text") && ring.stroke && ring.stroke_w > 0) d.stroke = memo("stroke" + key, () => stroke_outline(d.path, ring.stroke_w, STROKE_SIDES[ring.stroke_side] || "Outside", STROKE_JOINS[ring.stroke_join] || "Miter"));
     if ((kind === "band" || kind === "numerals" || kind === "text") && at.some((i2) => ring.cs && ring.cs[String(i2)])) {
       const groups = /* @__PURE__ */ new Map();
       at.forEach((i2, j) => {
@@ -9945,6 +9968,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       } else d.tints.forEach((tint, n) => {
         if (of(sector_colour(d.ring, tint.at))) add("ring", tint.path, black, { ring: d, index: index(d), part: n + 1 });
       });
+      if (d.stroke && of(d.ring.stroke_c)) add("ring stroke", d.stroke, black, { ring: d, index: index(d), part: "stroke" });
     }
     for (const x2 of windows) {
       if (of(wc(x2).ink)) add("date frame", x2.frame, black, { window: x2.index });
@@ -9978,6 +10002,7 @@ function scene(S, statik, t, preview = true, selected = null) {
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });
+      if (d.stroke) add("ring stroke", d.stroke, dim(d.ring.stroke_c, face), { ring: d, index: index(d), part: "stroke" });
     }
     for (const x2 of windows) add("date frame", x2.frame, dim(wc(x2).ink, face), { window: x2.index });
     if (S.ha_on) {
@@ -11626,6 +11651,7 @@ var num = (v, digits = 4) => {
 var rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
 function item_name(item) {
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");
+  if (item.role === "ring stroke") return (item.ring.ring.name || item.ring.kind) + " stroke";
   if (item.role === "hand") return { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name;
   if (item.role === "mark") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " mark";
   if (item.window !== void 0) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date picture": "picture", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
@@ -16178,7 +16204,8 @@ var FONTS = {
     const size = this.build_row(own ? { ...num2("size", "Size %", 20, 100, 1), scope: "window" } : { ...num2("size", "Size", 0.3, 8, 0.05, { top: (S) => S.dial_d }), scope: "ring" });
     const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
-    wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el), ...own ? [back] : [], state);
+    const stroke2 = own ? null : this.box_part("font/stroke", "Stroke", this.stroke_part(), true);
+    wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el, ...stroke2 ? [stroke2.el] : []), ...own ? [back] : [], state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? window_type(this.S, T) : T;
@@ -16188,6 +16215,7 @@ var FONTS = {
       size.refresh(T);
       tracking.refresh(T);
       axes.el.hidden = !axes.refresh(R, T);
+      if (stroke2) stroke2.refresh(R, T);
       features.refresh(R, T);
       swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
       const mine = this.families().get(R.family) || [], f2 = this.catalog.get(R.ps) || mine[0];
@@ -16588,6 +16616,27 @@ var FONTS = {
     return { el: wrap, refresh };
   },
   /** the font's OpenType features, likewise a part of every font box. Only what differs from the font's default is stored (R12). */
+  /** a stroke round the ring's letters (#551; Okay, 31 Oct 2026: "Stroke on off, miter round sharp, inside middle outside
+   *  of vector, and its color"): the switch, and with it on, its width in mm, its join, which side of the outline it
+   *  stands on, its colour. Drawn as a grown outline in the files (R4). */
+  stroke_part() {
+    const on = this.build_row({ ...seg("stroke", "Stroke", [], { bool: true }), scope: "ring" });
+    const rows = [
+      this.build_row({ ...num2("stroke_w", "Width", 0.02, 1, 0.01), scope: "ring" }),
+      this.build_row({ ...seg("stroke_join", "Join", STROKE_JOINS), scope: "ring" }),
+      this.build_row({ ...seg("stroke_side", "Side", STROKE_SIDES), scope: "ring" }),
+      this.build_row({ ...col("stroke_c", "Colour"), scope: "ring" })
+    ];
+    const wrap = el("div", { className: "strokerows" }, on.el, ...rows.map((r) => r.el));
+    return { el: wrap, refresh: (R, T) => {
+      on.refresh(T);
+      for (const r of rows) {
+        r.el.hidden = !T.stroke;
+        r.refresh(T);
+      }
+      return true;
+    } };
+  },
   features_part(pre, own) {
     const wrap = el("div", { className: "features" }), side = this.font_side(own);
     let shown = null;
@@ -20226,7 +20275,7 @@ var PREVIEW = {
       const x2 = this.statik.windows.find((b) => b.index === item.window), kind = WINDOW_KINDS[x2.w.kind];
       return { kind: "date", window: x2.index, name: { date: "Date window", day: "Day window", "am \xB7 pm": "AM \xB7 PM window", "moon phase": "Moon phase window" }[kind], path: x2.window, angle: 0 };
     }
-    let d = role === "ring" ? item.ring : null;
+    let d = role === "ring" || role === "ring stroke" ? item.ring : null;
     if (!d) {
       const slack = 4 / this.z;
       const angle = Math.atan2(mm[0], mm[1]) * 180 / Math.PI;
@@ -21593,6 +21642,7 @@ function svg_dial_face(S, statik, ambient = false) {
       const ringFill = ambient && ambient !== "plate" ? [0.9, 0.9, 0.9, 1] : d.ring.c;
       items.push({ role: "ring", path: d.path, fill: ringFill });
     }
+    if (d.stroke) items.push({ role: "ring", path: d.stroke, fill: ambient && ambient !== "plate" ? [0.9, 0.9, 0.9, 1] : d.ring.stroke_c });
   }
   return layer_svg(S, items);
 }
@@ -21748,6 +21798,7 @@ function svg_preview(S, statik) {
     } else {
       items.push({ role: "ring", path: d.path, fill: d.ring.c });
     }
+    if (d.stroke) items.push({ role: "ring", path: d.stroke, fill: d.ring.stroke_c });
   }
   for (const x2 of statik.windows || []) {
     if (x2.frame) items.push({ role: "date frame", path: x2.frame, fill: x2.w.ink });

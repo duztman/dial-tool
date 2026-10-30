@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1 beta · 31 Oct 2026 — a stroke round a ring's letters (#551)
+
+Okay, 30 Oct 2026, 21:58: "I'd like to add strokes to shapes, numbers as well, but good strokes, uniform. And round/sharp/miter options"; 31 Oct, 00:25: "add strokes to Type, under OpenType features. Stroke on off, miter round sharp, inside middle outside of vector, and its color"; in question mode: Miter · Round · Bevel; the colour "Only in the Type pane".
+
+- **Stroke** is a part of a ring's font box, under OpenType features, folded to start: its switch, and with it on, Width (mm), Join (Miter · Round · Bevel), Side (Inside · Middle · Outside) and Colour. Numerals and text rings.
+- **How it is drawn**: never a stroke in a file (R4) — a grown outline of the ring's final shape (`stroke_outline` in `geometry.js`: outside = grown − shape, inside = shape − shrunk, middle = half out, half in), through the stroker at scale with the join asked, as a scene item of its own ("ring stroke": a layer in the PDF, an id in the SVG, a shape in the Wear OS face, a mask of its own ink in production), drawn over the letters. Keys `stroke`, `stroke_w`, `stroke_join`, `stroke_side`, `stroke_c` on the ring (R7, R8, R9), appended to the link's table.
+- A toggle's name turns white only on the dark shenanigans box: the rule that did it everywhere made the Stroke switch's name vanish on the panel.
+- `test/frames.mjs` checks the outline's sides and joins on a 2 × 1 box; the window test the part, its rows and the scene.
+- Not in this step: strokes on markers, ticks, bands and a window's text; show mode's Inks don't count a stroke (Okay: "Only in the Type pane").
+
 ## v1.0.7 beta · 31 Oct 2026 — window frames even all round: the stroker at scale (#550)
 
 Okay, 26 Oct 2026: "Check hexagon and moon shape's outlines, they are not uniform"; 30 Oct, 23:53: "1-2 together" (fix the stroker; the polygon through it).

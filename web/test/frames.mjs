@@ -27,3 +27,12 @@ for (const [name, w] of [["hexagon", { da_on: true, da_shape: 3, da_sides: 6, da
   console.log(`${ok ? "ok  " : "FAIL"}  a Ø 2.6 circle grown by 0.3 by stroking: radius ${lo.toFixed(4)}–${hi.toFixed(4)} (1.6 wanted)`);
   if (!ok) process.exitCode = 1;
 }
+{ // a stroke round a shape as a grown outline (#551): a 2 × 1 rectangle, 0.2 wide outside — Miter keeps the corner sharp (the box 2.4 × 1.4), Round and Bevel cut it
+  const rect = new G.Path().rect(-1, -0.5, 2, 1);
+  const box = (p) => { const q = pts(p); const xs = q.map((v) => v[0]), ys = q.map((v) => v[1]); return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map((v) => +v.toFixed(3)); };
+  const corner = (p) => pts(p).some(([x, y]) => Math.abs(x - 1.2) < 0.002 && Math.abs(y - 0.7) < 0.002);
+  const miter = G.stroke_outline(rect, 0.2, "Outside", "Miter"), round = G.stroke_outline(rect, 0.2, "Outside", "Round"), bevel = G.stroke_outline(rect, 0.2, "Outside", "Bevel"), inside = G.stroke_outline(rect, 0.2, "Inside", "Miter"), middle = G.stroke_outline(rect, 0.2, "Middle", "Miter");
+  const ok = box(miter).join() === "-1.2,-0.7,1.2,0.7" && corner(miter) && !corner(round) && !corner(bevel) && box(inside).join() === "-1,-0.5,1,0.5" && box(middle).join() === "-1.1,-0.6,1.1,0.6";
+  console.log(`${ok ? "ok  " : "FAIL"}  a stroke as a grown outline: outside 0.2 on a 2 × 1 box reaches ${box(miter).join(" ")}, Miter's corner sharp, Round's and Bevel's cut; Inside stays within the shape, Middle half out`);
+  if (!ok) process.exitCode = 1;
+}

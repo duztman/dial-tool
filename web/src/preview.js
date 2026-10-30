@@ -650,7 +650,7 @@ export const PREVIEW = {
       const x = this.statik.windows.find((b) => b.index === item.window), kind = G.WINDOW_KINDS[x.w.kind];
       return { kind: "date", window: x.index, name: { date: "Date window", day: "Day window", "am · pm": "AM · PM window", "moon phase": "Moon phase window" }[kind], path: x.window, angle: 0 };
     }
-    let d = role === "ring" ? item.ring : null;
+    let d = role === "ring" || role === "ring stroke" ? item.ring : null;      // a stroke is pressed as its ring
     if (!d) {                                      // the plate or the backdrop. Thin ticks are hard to hit, so:
       const slack = 4 / this.z;                    // of the rings whose zone (between their radii) is under the
       const angle = Math.atan2(mm[0], mm[1]) * 180 / Math.PI;      // point, take the one with the nearest mark

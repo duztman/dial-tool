@@ -6,7 +6,7 @@ import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { $, DEFAULT_ON, FEATURE_NAMES, KEY, PLACE, clamp, el, filled, fmt, parse_number } from "./ui.js";
 
 import { NONE_SIGN, SIGNS, TOOL_ICONS, eye, icon } from "./icons.js";
-import { LANG_NAMES, lang_short, num } from "./rows.js";
+import { LANG_NAMES, col, lang_short, num, seg } from "./rows.js";
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
 export const FONT_DARK_KEY = KEY("font-dark");      // the font sheet's ground, light or dark, kept for the session (#276)
@@ -163,7 +163,8 @@ export const FONTS = {
     const size = this.build_row(own ? { ...num("size", "Size %", 20, 100, 1), scope: "window" } : { ...num("size", "Size", 0.3, 8, 0.05, { top: (S) => S.dial_d }), scope: "ring" });      // a window's text is sized in % of its height
     const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
-    wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el), ...(own ? [back] : []), state);
+    const stroke = own ? null : this.box_part("font/stroke", "Stroke", this.stroke_part(), true);      // a ring's letters can take a stroke (#551); a window's text not yet
+    wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el, ...(stroke ? [stroke.el] : [])), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
@@ -173,6 +174,7 @@ export const FONTS = {
       size.refresh(T);
       tracking.refresh(T);
       axes.el.hidden = !axes.refresh(R, T);
+      if (stroke) stroke.refresh(R, T);
       features.refresh(R, T);
       swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
@@ -476,6 +478,21 @@ export const FONTS = {
   },
 
   /** the font's OpenType features, likewise a part of every font box. Only what differs from the font's default is stored (R12). */
+  /** a stroke round the ring's letters (#551; Okay, 31 Oct 2026: "Stroke on off, miter round sharp, inside middle outside
+   *  of vector, and its color"): the switch, and with it on, its width in mm, its join, which side of the outline it
+   *  stands on, its colour. Drawn as a grown outline in the files (R4). */
+  stroke_part() {
+    const on = this.build_row({ ...seg("stroke", "Stroke", [], { bool: true }), scope: "ring" });
+    const rows = [
+      this.build_row({ ...num("stroke_w", "Width", 0.02, 1, 0.01), scope: "ring" }),
+      this.build_row({ ...seg("stroke_join", "Join", G.STROKE_JOINS), scope: "ring" }),
+      this.build_row({ ...seg("stroke_side", "Side", G.STROKE_SIDES), scope: "ring" }),
+      this.build_row({ ...col("stroke_c", "Colour"), scope: "ring" }),
+    ];
+    const wrap = el("div", { className: "strokerows" }, on.el, ...rows.map((r) => r.el));
+    return { el: wrap, refresh: (R, T) => { on.refresh(T); for (const r of rows) { r.el.hidden = !T.stroke; r.refresh(T); } return true; } };
+  },
+
   features_part(pre, own) {
     const wrap = el("div", { className: "features" }), side = this.font_side(own);
     let shown = null;

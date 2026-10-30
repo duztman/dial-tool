@@ -24,6 +24,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 | 16 | Live text in the SVG |  | verify |
 | 439 | Backdrop's swatch loses its outline at times |  | verify |
 | 453 | FIT's left line on a phone | 21 Oct 2026 — "This fit losing border on mobile still an issue" | verify |
+| 552 | The Type pane opening jumps the panel's scroll | 31 Oct 2026 — "it should open in place, without moving up" | ask — not seen in Chromium; which machine and browser? |
 | 465 | Bevel not seen in 4.89.12 |  | verify |
 | 232 | Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch | 15 Oct 2026 | open |
 | 369 | "The preview gets these wonky orange parts" |  | verify |
@@ -137,7 +138,6 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 421 | Keep a hand's details in the lit picture |  | after v1 |
 | 346 | Complications, systematized |  | after v1 |
 | 349 | Each marker selectable and editable |  | after v1 |
-| 551 | Strokes on numerals, markers, ticks and shapes: width, side, join (round · miter · bevel) — grown outlines, never strokes in a file (R4) | 30 Oct 2026 — "good strokes, uniform. And round/sharp/miter options" | a step (v1.1), sketches first |
 | 497 | Resize Ring from on the canvas | 21 Oct 2026 | note |
 | 467 | A moon window's disc, as a date window's | 20 Oct 2026 | open |
 | 252 | Nudge's picker |  | open |

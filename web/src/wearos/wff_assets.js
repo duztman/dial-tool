@@ -75,6 +75,7 @@ export function svg_dial_face(S, statik, ambient = false) {
       const ringFill = (ambient && ambient !== "plate") ? [0.9, 0.9, 0.9, 1] : d.ring.c;
       items.push({ role: "ring", path: d.path, fill: ringFill });
     }
+    if (d.stroke) items.push({ role: "ring", path: d.stroke, fill: (ambient && ambient !== "plate") ? [0.9, 0.9, 0.9, 1] : d.ring.stroke_c });      // the stroke round its letters (#551)
   }
 
   return layer_svg(S, items);
@@ -282,6 +283,7 @@ export function svg_preview(S, statik) {
     } else {
       items.push({ role: "ring", path: d.path, fill: d.ring.c });
     }
+    if (d.stroke) items.push({ role: "ring", path: d.stroke, fill: d.ring.stroke_c });      // the stroke round its letters (#551)
   }
 
   // Window frames above plate and rings
