@@ -4,6 +4,8 @@
 //  the color selector box to open default as, other colors still allowed, pill swatches still say hex codes unless ral."
 // 01:54, round 2: "narrower box, as wide as the green box" (drawn from x 120 to 442 of the 460 crop: five of the
 // panel's columns, 5 --col + 4 --gap = 318); the notes cut to his words.
+// 02:01, round 3: "Gray lines before after every row … there are good examples just below on your screenshot diameter
+// and such"; "Titles on the left too far away. Bring them as close inner (right) as possible."
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
 below = 260;
@@ -11,9 +13,9 @@ tab = "Dial";
 css = `
   .unitbox.cog { width: auto; height: auto; padding: var(--u1); display: grid; place-items: center; }
   .unitbox.cog > .word { display: none; }
-  .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: calc(5 * var(--col) + 4 * var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); padding: 0 var(--u2); }      /* --u2 in from its sides: the Colours pill fits five columns */
+  .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: calc(5 * var(--col) + 4 * var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); padding: var(--u2); }      /* --u2 in from every side: the grey lines over the first row and under the last stand clear of the black edge */
   .settingsbox > .row.note > .quiet { grid-column: 3 / -1; }      /* on the controls' column, as a pane's note (4c-rows.css, .body) */
-  .settingsbox > .row:first-child { box-shadow: none; }      /* no line over the first row: the box's own top line is there (as a headless pane's) */
+  .settingsbox > .row > label { grid-column: 1 / 3; justify-self: end; text-align: right; }      /* the name against its controls, a column gap from them */
 `;
 build = async () => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q);
