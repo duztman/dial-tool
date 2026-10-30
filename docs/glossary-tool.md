@@ -79,7 +79,8 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Footer** (of a night popup) | `.popfoot`: a band of the field colour, cells divided by hairlines of the night, content 13 in from each line, the last cell to the edge (the Shadows pane; Okay's drawing, 25 Oct 2026). |
 | **LIMIT** | What a number row's name says, in red, for a moment, when its value reaches an end its neighbours set (`bounds`; the Shadows pane's heights). |
 | **Bottom section** | A popup's foot on the night field: the Guides list's; the Shadows pane's is the **footer**. |
-| **Colour pop-out** | What a swatch opens: *On this dial* · *Palette* · field and hues · RGB / CMYK / HEX. |
+| **Colour pop-out** | What a swatch opens: *On this dial* · *Palette* · field and hues · RGB / HEX / CMYK / RAL; Copy is the copy sign. |
+| **RAL mode** | The pop-out's fourth mode: a **family's grid** (7 steps of lightness × 16 of chroma; RAL Classic cells plain, RAL Design System+ cells dotted, the **Design switch** under, on to start) in the field's place, the nine **family bands** (1000 yellow … 9000 white and black, named under them) in the strip's; the line groups swatch and code in one box, the name beside, "≈" before a code the colour is near, not on. The values are the web's sRGB stand-ins; the printed card is the reference; Design colours are not what shops stock. |
 | **Colour pill** | A button with swatch and hex that opens the pop-out. |
 | **Palette** | The pop-out's second row: ten colours plus added ones; kept by the browser. |
 | **Opacity** | The colour's fourth number; rings and sectors only. |

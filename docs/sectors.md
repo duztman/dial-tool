@@ -25,7 +25,7 @@ The grid: a toggle column (`--eye`) and six columns (`--col`, `--gap`) between t
     - **Nested row** `.row.nest/.tied/.under`, **note** `.row.note`: part of the row above's box, no line between, a half line from `--nest-from`; the box ends `--note-air` under a note · canon §6 *A tick says its name; a note says what it means*; the check quotes #420.
     - **Detail box** `.detail` (`4d-hands.css`): the hand large, its handles `.grips .handle`, the lit part `.lit` (#329).
     - **Font box** `.fontbox` (`4g-fonts.css`): a framed thing; hanging tabs `.tab.hang`; Lang. and Change… at `--control-s` · R32a; the **font sheet** `.picker` (search, filters, Installed, Light · Dark) · R35.
-    - **Colour** `.colour`, the **swatch** → the **colour pop-out** `.colourpop` (`4e-colour.css`): draggable, doubles; `dvh` for an iPad's bars.
+    - **Colour** `.colour`, the **swatch** → the **colour pop-out** `.colourpop` (`4e-colour.css`): draggable, doubles; `dvh` for an iPad's bars; **RAL mode** `.ralgrid`, `.rallegend`, `.bands`, the line's `.ralcode` and `.ralname` (`ral.js`), on `--pop-field` and `--pop-hue`.
     - **Gallery, examples** `.gallery`, `.examples` (`4h-gallery.css`): cards by `card()` in `web/links.mjs`.
 - **Chosen** (`5-chosen.css`): what is switched on, picked or open is ink with paper words — one layer, nothing earlier undoes it · R32.
 - **Show mode's column** `.showing .panel`: the same panel, `--show-col`, `--show-margin`, tinted from the backdrop (`show.js` sets `--column`, `--column-top`, `--swatch`, `--uiblack`); **Shenanigans** `.shenanigans` at its foot (borrows: the toggle from a hand's Bevel line, R15 *Toggle*) · glossary-tool *Show mode*; `mode.js`.

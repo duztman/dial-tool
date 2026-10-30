@@ -2,6 +2,12 @@
 
 Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused; the changelog says what each version built.
 
+## 30 Oct 2026
+
+| # | Item | Status |
+|---|---|---|
+| 549 | **RAL mode in the colour pop-out** (Okay, 30 Oct 2026: "a color picker that is made of ral colors … classified colors show up as a grid in gradient's place"): a fourth mode on the line; a family's grid (Classic plain, Design System+ dotted, its switch) in the field's place, nine family bands in the strip's; the swatch and the code in one box, the name beside, Copy as its sign | **done — v1.0.1 beta** |
+
 ## Okay's notes of 24 Oct 2026 (group L)
 
 | # | Item | Status |

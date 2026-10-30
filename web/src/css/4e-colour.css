@@ -82,6 +82,39 @@
   .hue, .alpha { height: var(--pop-hue); border-radius: calc(var(--pop-hue) / 2); cursor: ew-resize; }
   .hue { background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
   .alpha { flex: 1; background: linear-gradient(to right, transparent, var(--solid, var(--black))), var(--checker); }
+  /* RAL mode (Okay, 30 Oct 2026: "classified colors show up as a grid in gradient's place"; his drawing of 15:16:
+     "smaller, rounded color swatches, design system on off possible and group the color code with the swatch down
+     below"): in the field's place a family's colours on a fixed grid, a row a step of lightness (light at the top),
+     a column a step of chroma (grey at the left); the cells share the width, small and rounded; an empty step is
+     nothing. A Design System+ cell carries a white dot at its corner; under the grid the two kinds named, and the
+     Design switch. In the strip's place the nine families as fixed bands, named by their thousand under them, the
+     chosen one ringed; a chosen cell is ringed like a chip. */
+  .ralgrid { display: grid; grid-auto-rows: minmax(0, 1fr); gap: var(--u1); height: var(--pop-field); }
+  .ralgrid .ralrow { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: var(--u1); }
+  .ralgrid button { position: relative; height: auto; min-width: 0; padding: 0; border: 0; border-radius: var(--round-small); background: var(--c); }
+  .ralgrid button.design::after { content: ""; position: absolute; right: var(--u1); bottom: var(--u1); width: 3px; height: 3px; border-radius: 50%; background: var(--white); opacity: 0.8; }
+  .ralgrid button.on { outline: var(--thick) solid var(--white); outline-offset: var(--hair); z-index: 1; }
+  .rallegend { display: flex; align-items: center; gap: var(--u4); margin-top: calc(-1 * var(--u2)); font-size: var(--t-s); color: var(--grey); }
+  .rallegend .key { display: inline-flex; align-items: center; gap: var(--u2); }
+  .rallegend .key > i { position: relative; width: var(--u3); height: var(--u3); border-radius: var(--round-tiny); background: var(--pop-key); }      /* the shown family's band colour, set by colour.js */
+  .rallegend .key.design > i::after { content: ""; position: absolute; right: 1px; bottom: 1px; width: 2px; height: 2px; border-radius: 50%; background: var(--white); }
+  .rallegend .toggle { margin-left: var(--u1); }
+  .rallegend .toggle[aria-checked="false"] { background: var(--night-field); border-color: var(--grey); }      /* off, it still shows on the night (Okay, 15:28: "Visible when off") */
+  .bands { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: var(--u1); height: calc(var(--pop-hue) + var(--t-xs) + var(--u2)); }
+  .bands button { position: relative; height: auto; min-width: 0; padding: 0 0 calc(var(--t-xs) + var(--u2)); border: 0; background: none; color: var(--grey); font: var(--t-xs)/1 var(--mono); }
+  .bands button::before { content: ""; display: block; height: var(--pop-hue); background: var(--c); }      /* the band itself; its number stands under it */
+  .bands button > span { position: absolute; left: 0; right: 0; bottom: 0; }
+  .bands button:first-child::before { border-radius: calc(var(--pop-hue) / 2) 0 0 calc(var(--pop-hue) / 2); }
+  .bands button:last-child::before { border-radius: 0 calc(var(--pop-hue) / 2) calc(var(--pop-hue) / 2) 0; }
+  .bands button.on::before { outline: var(--thick) solid var(--white); outline-offset: var(--hair); }
+  .bands button.on { color: var(--ink); z-index: 1; }
+  /* the line in RAL mode: the swatch inside the code's box, then the name in a box that takes the rest and cuts a long
+     name (Okay: "İf name does not fit crop it"); Copy is the copy sign alone */
+  .asnumbers .ralcode { flex: none; display: inline-flex; align-items: center; gap: var(--u1); height: var(--control); padding-left: var(--u1); border: var(--hair) solid var(--rule); background: var(--field); }
+  .asnumbers .ralcode > .dot { flex: none; margin: 0; }
+  .asnumbers .ralcode > input { width: var(--col); border: 0; background: none; }
+  .asnumbers .ralname { flex: 1; min-width: 0; height: var(--control); padding: 0 var(--u1); line-height: var(--control); border: var(--hair) solid var(--rule); background: var(--field); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .asnumbers .copy.done { background: var(--ink); color: var(--paper); }
   /* handles: a white ring with a dark one round it, so they show on any colour. On the field a disc; on a strip a pill. */
   .sv i, .hue i, .alpha i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 var(--thick) var(--white), 0 0 0 calc(var(--thick) + var(--thumb-eye-edge) / 2) var(--night); pointer-events: none; }
   :is(.hue, .alpha) i { top: 50%; width: calc(var(--knob) * 0.5); height: calc(var(--pop-hue) + var(--u1)); border-radius: var(--knob); }
@@ -94,6 +127,6 @@
   .asnumbers .dot { margin: 0 var(--u1) 0 var(--unit); }
   .asnumbers .numbers { flex: 1; min-width: 0; display: flex; gap: var(--chip-gap); }
   .asnumbers .numbers input { padding: 0 var(--u1); text-align: center; text-transform: uppercase; }
-  .asnumbers .copy { flex: none; min-width: var(--col); padding: 0 var(--unit); font-weight: 600; }
+  .asnumbers .copy { flex: none; display: inline-grid; place-items: center; width: var(--control); min-width: 0; padding: 0; }      /* Copy: a square as small as its sign (Okay, 30 Oct 2026: "Copy gets an icon"; "Copy box as small as the icon") */
   /* wide: twice the size (app.js sets the width and the field's height). */
 }

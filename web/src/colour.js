@@ -5,6 +5,7 @@ import * as G from "./geometry.js";
 import { $, KEY, clamp, drag_in, el, from_hex, has_focus, is_day, moon_look, paint, to_hex } from "./ui.js";
 import { num } from "./rows.js";
 import { PICS, SIGNS, TOOL_ICONS, icon, shown_dot } from "./icons.js";
+import { RAL_FAMILIES, ral_by_code, ral_family_colour, ral_grid, ral_nearest } from "./ral.js";
 
 export const PALETTE = ["#111111", "#FFFFFF", "#EDE8DB", "#A7A7AA", "#3A3A3C", "#0E2A47", "#12372A", "#7A1F1F", "#C8E6A0", "#E8742A"];      // the palette's first ten: black, white, cream, silver, anthracite, navy, green, burgundy, lume, orange
 
@@ -70,6 +71,22 @@ export const COLOUR = {
     P.hues = el("div", { className: "hue", title: "Hue" }, el("i"));
     drag_in(P.field, (x, y) => { P.hsv = [P.hsv[0], x, 1 - y]; put(hsv_rgb(P.hsv)); });
     drag_in(P.hues, (x) => { P.hsv = [x * 360, P.hsv[1], P.hsv[2]]; put(hsv_rgb(P.hsv)); });
+    // RAL mode (ral.js): in the field's place a family's colours as a grid, in the strip's place the nine families as
+    // fixed bands, each named by its thousand. Pressing a band shows its family; pressing a colour takes it, exactly.
+    // Under the grid, what the cells are: Classic plain, Design System+ dotted, and its switch (Okay: "design system
+    // on off possible"; on to start, kept while the page is open).
+    P.design = true;
+    P.ral = el("div", { className: "ralgrid", id: "pop-ralgrid", title: "RAL: down, darker; across, more vivid", hidden: true });
+    P.design_switch = this.line_toggle("pop-design", "Design System+ colours too", () => P.design, (on) => { P.design = on; this.pop_refresh(); });
+    P.legend = el("div", { className: "rallegend", id: "pop-legend", hidden: true },
+      el("span", { className: "key" }, el("i"), el("span", { textContent: "Classic" })),
+      el("span", { className: "key design" }, el("i"), el("span", { textContent: "Design System+ · not stock" }), P.design_switch.el));      // the switch right after its words (Okay, 15:28: "switch connected to design system")
+    P.bands = el("div", { className: "bands", id: "pop-bands", hidden: true }, ...RAL_FAMILIES.map(([digit, name]) => {
+      const b = el("button", { type: "button", id: "pop-band-" + digit, title: `${name} (RAL ${digit}000)`, ariaLabel: `${name}, RAL ${digit}000`, onclick: () => { P.family = digit; this.pop_refresh(); } }, el("span", { textContent: digit + "000" }));
+      b.dataset.family = digit;
+      b.style.setProperty("--c", ral_family_colour(digit));
+      return b;
+    }));
     // how see-through: a strip from nothing to the full colour, and the same as a percentage. Rings only.
     const see_through = (a) => P.at.write(P.at.read().slice(0, 3).concat([+clamp(a, 0, 1).toFixed(2)]));
     P.alpha = el("div", { className: "alpha", title: "Opacity" }, el("i"));
@@ -79,17 +96,19 @@ export const COLOUR = {
     P.alpha_row = el("div", { className: "alpharow" }, P.alpha, P.alpha_field);
     P.dot = el("i", { className: "dot" });
     P.modes = el("span", { className: "segs" });
-    for (const mode of ["RGB", "CMYK", "HEX"]) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => { this.colour_mode = mode; this.pop_refresh(); } }));
+    for (const mode of ["RGB", "HEX", "CMYK", "RAL"]) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => { this.colour_mode = mode; this.pop_refresh(); } }));
     P.numbers = el("span", { className: "numbers" });
-    P.copy = el("button", { type: "button", className: "btn copy", id: "pop-copy", textContent: "COPY", title: "Copy the values shown", onclick: async () => {
-      try { await navigator.clipboard.writeText(this.pop_text()); P.copy.textContent = "COPIED"; } catch (e) { P.copy.textContent = "NO"; }
-      setTimeout(() => { P.copy.textContent = "COPY"; }, 1200);
+    // Copy: the copy sign alone (Okay, 30 Oct 2026: "Copy gets an icon, color name area grows"); copied, it fills for a moment; failed, it says NO
+    P.copy = el("button", { type: "button", className: "btn copy", id: "pop-copy", title: "Copy the values shown", ariaLabel: "Copy the values shown", onclick: async () => {
+      try { await navigator.clipboard.writeText(this.pop_text()); P.copy.classList.add("done"); } catch (e) { P.copy.textContent = "NO"; }
+      setTimeout(() => { P.copy.classList.remove("done"); P.copy.innerHTML = icon(SIGNS.copy); }, 1200);
     } });
+    P.copy.innerHTML = icon(SIGNS.copy);
     P.el = el("div", { className: "colourpop night", id: "colour-pop", hidden: true },
       head,
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "On this dial" }), P.used_chips),
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P.palette_chips),
-      P.field, P.hues, P.alpha_row, el("div", { className: "asnumbers" }, P.modes, P.dot, P.numbers, P.copy));
+      P.field, P.ral, P.legend, P.hues, P.bands, P.alpha_row, el("div", { className: "asnumbers" }, P.modes, P.dot, P.numbers, P.copy));
     P.el.setAttribute("role", "dialog");
     P.el.onkeydown = (e) => { if (e.key === "Escape") { const swatch = P.at && P.at.swatch; this.pop_close(); if (swatch) swatch.focus(); } };
     // the head drags it (not when it is wide, and not on a phone, where it is a sheet)
@@ -146,6 +165,7 @@ export const COLOUR = {
     if (P.at && P.at.swatch === swatch) return this.pop_close();
     if (P.at) P.at.swatch.setAttribute("aria-expanded", "false");
     P.at = { ...colour, swatch };
+    P.family = null;      // RAL mode starts at the family of the colour in hand
     swatch.setAttribute("aria-expanded", "true");
     P.el.hidden = false;
     this.pop_wide(false);
@@ -168,16 +188,17 @@ export const COLOUR = {
   pop_wide(on) {
     const P = this.pop;
     if (on === P.wide) return;
-    const r = P.el.getBoundingClientRect(), field = P.field.getBoundingClientRect().height;
+    const face = this.colour_mode === "RAL" ? P.ral : P.field;      // the field of one hue, or RAL's grid: whichever is shown takes the added height
+    const r = P.el.getBoundingClientRect(), field = face.getBoundingClientRect().height;
     P.wide = on;
     P.el.classList.toggle("wide", on);
     $("#pop-wide").setAttribute("aria-pressed", String(on));
     if (on && !this.pop_is_sheet()) {
       P.el.style.width = `${Math.min(2 * r.width, innerWidth)}px`;
-      P.field.style.height = `${field}px`;
+      face.style.height = `${field}px`;
       const rest = P.el.getBoundingClientRect().height - field;      // everything but the field, at the new width (the chips grew)
-      P.field.style.height = `${Math.max(field, Math.min(2 * r.height, innerHeight) - rest)}px`;
-    } else P.el.style.width = P.field.style.height = "";
+      face.style.height = `${Math.max(field, Math.min(2 * r.height, innerHeight) - rest)}px`;
+    } else P.el.style.width = P.field.style.height = P.ral.style.height = "";
     if (!P.el.hidden) this.pop_place(r.left, r.top);          // where it was, moved only as far as the window asks
   },
 
@@ -185,14 +206,15 @@ export const COLOUR = {
   pop_cover() {
     const P = this.pop;
     if (!P.at) return;
-    if (this.pop_is_sheet()) { P.el.style.width = P.field.style.height = ""; }
+    if (this.pop_is_sheet()) { P.el.style.width = P.field.style.height = P.ral.style.height = ""; }
     const r = P.el.getBoundingClientRect();
     this.pop_place(r.left, r.top);
   },
 
-  /** the values as the line shows them, to copy: #RRGGBB · 255, 128, 0 · 0, 50, 100, 0 */
+  /** the values as the line shows them, to copy: #RRGGBB · 255, 128, 0 · 0, 50, 100, 0 · RAL 5015 Sky blue */
   pop_text() {
     const rgb = this.pop.at.read().slice(0, 3), mode = this.colour_mode;
+    if (mode === "RAL") { const { colour, exact } = ral_nearest(rgb, this.pop.design); return `${exact ? "" : "≈ "}RAL ${colour.code} ${colour.name}`; }
     return mode === "HEX" ? to_hex(rgb).toUpperCase() : (mode === "RGB" ? rgb.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb).map((v) => Math.round(v * 100))).join(", ");
   },
 
@@ -221,6 +243,26 @@ export const COLOUR = {
       P.palette_chips.replaceChildren(...this.palette.map(chip), change);
     }
     for (const b of P.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
+    // RAL mode shows a family's grid and the bands in place of the field and the hues (ral.js)
+    const ral = this.colour_mode === "RAL", near = ral ? ral_nearest(rgb, P.design) : null;
+    P.field.hidden = P.hues.hidden = ral;
+    P.ral.hidden = P.legend.hidden = P.bands.hidden = !ral;
+    if (ral) {
+      const family = P.family || near.colour.family, shown = family + (P.design ? "+" : "");
+      if (P.ral.dataset.shown !== shown) {
+        P.ral.dataset.shown = shown;
+        P.ral.replaceChildren(...ral_grid(family, P.design).map((row) => el("div", { className: "ralrow" }, ...row.map((c) => {
+          if (!c) return el("i");      // no colour at this step
+          const b = el("button", { type: "button", className: c.design ? "design" : "", title: `RAL ${c.code} ${c.name}`, ariaLabel: `RAL ${c.code} ${c.name}`, onclick: () => P.pick(c.hex) });
+          b.dataset.code = c.code; b.style.setProperty("--c", c.hex);
+          return b;
+        }))));
+      }
+      for (const b of P.ral.querySelectorAll("button")) b.classList.toggle("on", near.exact && b.dataset.code === near.colour.code);
+      for (const b of P.bands.children) b.classList.toggle("on", b.dataset.family === family);
+      P.legend.style.setProperty("--pop-key", ral_family_colour(family));
+      P.design_switch.refresh();
+    }
     // the field and the hues. Grey has no hue and black no strength: keep the ones last chosen.
     const fresh = rgb_hsv(rgb);
     if (to_hex(hsv_rgb(P.hsv)).toUpperCase() !== value) P.hsv = [fresh[1] > 0 && fresh[2] > 0 ? fresh[0] : P.hsv[0], fresh[2] > 0 ? fresh[1] : P.hsv[1], fresh[2]];
@@ -236,6 +278,7 @@ export const COLOUR = {
     P.alpha.firstChild.style.left = `${a * 100}%`;
     if (!has_focus(P.alpha_field)) P.alpha_field.value = `${Math.round(a * 100)}%`;
     paint(P.dot, P.at.alpha ? colour : rgb);
+    P.dot.hidden = ral;      // in RAL mode the swatch stands in the code's box
     // the line: the same colour as numbers
     const mode = this.colour_mode;
     [...P.modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
@@ -245,19 +288,25 @@ export const COLOUR = {
       const commit = () => {
         const fields = [...P.numbers.querySelectorAll("input")];
         if (mode === "HEX") { const hex = parse_hex(fields[0].value); if (hex) P.pick(hex); else this.pop_refresh(); return; }
+        if (mode === "RAL") { const colour = ral_by_code(fields[0].value); if (colour) P.pick(colour.hex); else this.pop_refresh(); return; }
         const all = fields.map((x) => parseFloat(x.value) || 0);
         const next = mode === "RGB" ? all.map((v) => v / 255) : cmyk_rgb(all.map((v) => v / 100));
         P.put(next);
         this.pop_refresh();
       };
-      P.numbers.replaceChildren(...(mode === "HEX" ? ["hex"] : [...mode]).map((letter, i) => {
+      P.numbers.replaceChildren(...(mode === "HEX" ? ["hex"] : mode === "RAL" ? ["ral"] : [...mode]).map((letter, i) => {
         const f = el("input", { type: "text", inputMode: mode === "HEX" ? "text" : "numeric", ariaLabel: letter, id: "pop-" + letter, spellcheck: false, onchange: commit });
         f.dataset.i = i;
         return f;
       }));
+      if (mode === "RAL") {      // the code in a box with the colour's own swatch at its left (Okay's drawing: "group the color code with the swatch"), then its name in a box of its own; "≈" before the code when the colour is near one, not on it
+        const code = P.numbers.querySelector("input");
+        P.numbers.replaceChildren(el("span", { className: "ralcode" }, P.ralswatch = el("i", { className: "dot" }), code), el("span", { className: "ralname", id: "pop-ral-name" }));
+      }
     }
-    const values = mode === "HEX" ? [value] : mode === "RGB" ? rgb.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb).map((v) => Math.round(v * 100));
+    const values = mode === "HEX" ? [value] : mode === "RAL" ? [(near.exact ? "" : "≈ ") + near.colour.code] : mode === "RGB" ? rgb.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb).map((v) => Math.round(v * 100));
     for (const f of P.numbers.querySelectorAll("input")) if (!has_focus(f)) f.value = values[f.dataset.i];
+    if (mode === "RAL") { $("#pop-ral-name").textContent = near.colour.name; paint(P.ralswatch, rgb); }
   },
 
   /** a setting changed outside set_value (a colour in a list): show it. shapes = the dial's shapes changed too. */

@@ -64,7 +64,7 @@
        (Okay, 19 Oct 2026, 21:18: "This popup and others needs … padding from all sides except top on mobile"; 21:26: 7) */
     .colourpop { inset: auto var(--sheet-edge) var(--sheet-edge); z-index: 7; width: auto; border-radius: var(--round-large); }      /* over the drawer and its gripper (Okay, 19 Oct 2026, 21:18: "the resize nubbin is visible. Shouldn't be") */
     .colourpop.wide { inset: 0 var(--sheet-edge) var(--sheet-edge); grid-template-rows: auto auto auto 1fr; border-radius: var(--round-large); }      /* wide, a sheet is the whole screen; the field takes the height that is left */
-    .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
+    .colourpop.wide :is(.sv, .ralgrid) { height: auto; min-height: var(--pop-field); }
     .colourpop header { cursor: default; }
     /* the Guides and Shadows lists: sheets from the bottom, as the colour pop-out is here — over the drawer, never cut by
        it, and nothing on the preview showing through (Okay, 15 Oct 2026, 06:27, a picture of the Guides list cut off) */
