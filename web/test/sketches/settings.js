@@ -18,6 +18,7 @@
 // "Red marked paddings are halved. Left side of the box does not shrink, texts move closer to pills": the name to its
 // pill --gap → --u2; the box keeps its width, the room going to its left padding.
 // 02:11: "Cog hover outline is original icon gray."
+// 02:12: "Cogs teeth wider, inner hole is just a dot, slightly thinner outline."
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
 states = ["closed", "hover", "open"];
@@ -39,8 +40,8 @@ css = `
 `;
 build = async (state) => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q);
-  // the cog: 8 teeth, outline, a hole; drawn at its size on screen (16), curves at CURVE 1.625 (R33, canon §9)
-  const c = 8.25, R = 7, r = 5.25, hole = 2.5, n = 8, top = 0.16, foot = 0.24;      // centre on a quarter point; tooth tops and feet as fractions of a turn's eighth
+  // the cog: 8 teeth, outline, a dot at its centre; drawn at its size on screen (16); its line LINE 1.5, one canon step under CURVE (02:12: "slightly thinner outline"; R33, canon §9); the dot a fill, not a line
+  const c = 8.25, R = 7, r = 5.25, hole = 1.25, n = 8, top = 0.19, foot = 0.28;      // 02:12: "teeth wider" (top 0.16 → 0.19, foot 0.24 → 0.28, ~18 %); "inner hole is just a dot" (a filled dot, r 1.25)      // centre on a quarter point; tooth tops and feet as fractions of a turn's eighth
   const P = (a, rr) => `${(c + rr * Math.sin(a)).toFixed(3)} ${(c - rr * Math.cos(a)).toFixed(3)}`;
   let d = "";
   for (let k = 0; k < n; k++) {
@@ -48,7 +49,7 @@ build = async (state) => {
     const a1 = a - s * foot, a2 = a - s * top, a3 = a + s * top, a4 = a + s * foot, a5 = a + s / 2 + 0.001;
     d += (k ? "" : `M${P(a1, r)}`) + `L${P(a2, R)}A${R} ${R} 0 0 1 ${P(a3, R)}L${P(a4, r)}A${r} ${r} 0 0 1 ${P(a + s - s * foot, r)}`;
   }
-  const svg = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linejoin="round"><path d="${d}Z"/><circle cx="${c}" cy="${c}" r="${hole}"/></svg>`;
+  const svg = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="${d}Z"/><circle cx="${c}" cy="${c}" r="${hole}" fill="currentColor" stroke="none"/></svg>`;
   const b = $("#unit"); b.classList.add("cog"); b.title = "Settings"; b.insertAdjacentHTML("beforeend", svg);
   // the box: the app's own rows
   const box = document.createElement("div"); box.className = "settingsbox";
