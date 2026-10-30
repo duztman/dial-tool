@@ -21,6 +21,7 @@
 // 02:12: "Cogs teeth wider, inner hole is just a dot, slightly thinner outline."
 // 02:19: "A is what i wanted. And why did you ignore thinner lines? Larger icon, do not box the icon ever. Active cog
 // itself gets black. Hover outline gets black."
+// 02:21: "Take this box, 2x its inner padding from all sides. It grows towards left this way."
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
 states = ["closed", "hover", "open"];
@@ -35,7 +36,7 @@ css = `
   .unitbox.cog[aria-expanded="true"] { color: var(--ink); }
   .unitbox.cog[aria-expanded="true"] .body { fill: currentColor; }      /* open: the cog itself black, filled (02:19: "Active cog itself gets black") */
   .unitbox.cog[aria-expanded="true"] .dot { fill: var(--paper); }      /* …its dot left in paper, so it still reads as a cog's centre */
-  .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: max-content; border: var(--hair) solid var(--ink); background: var(--well); --row-rule: var(--line-on-grey); padding: var(--u2) var(--u2) var(--u2) var(--gap); column-gap: var(--u2); }      /* on grey: white lines (1-tokens.css); left padding takes what the halved gap gives back, so the box keeps its width */      /* --u2 in from every side: the grey lines over the first row and under the last stand clear of the black edge */
+  .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: max-content; border: var(--hair) solid var(--ink); background: var(--well); --row-rule: var(--line-on-grey); padding: var(--u4) var(--u4) var(--u4) calc(2 * var(--gap));      /* 02:21: "2x its inner padding from all sides" (5.5 → 11, the left 12 → 24); anchored right, it grows to the left */ column-gap: var(--u2); }      /* on grey: white lines (1-tokens.css); left padding takes what the halved gap gives back, so the box keeps its width */      /* --u2 in from every side: the grey lines over the first row and under the last stand clear of the black edge */
   .settingsbox > .row.note > .quiet { grid-column: 2; }      /* on the controls' column, as a pane's note (4c-rows.css, .body) */
   .settingsbox { display: grid; grid-template-columns: max-content max-content; }      /* two columns: the names, the controls */
   .settingsbox > .row { grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: var(--u2); }      /* every row on the box's two columns, so the names share one width */
