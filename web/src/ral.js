@@ -2140,6 +2140,13 @@ export function ral_nearest([r, g, b], with_design = true) {
   return { colour: best, exact };
 }
 
+/** the RAL colour a hex is exactly, Classic before Design, or null */
+let by_hex = null;
+export function ral_exact(hex) {
+  if (!by_hex) { by_hex = new Map(); for (const c of [...design(), ...classic]) by_hex.set(c.hex.toUpperCase(), c); }      // Classic set last, so it wins a shared hex
+  return by_hex.get(String(hex).toUpperCase()) || null;
+}
+
 /** "5015", "RAL 5015", "210 50 30", "RAL 210 50 30" → the colour, or null */
 export function ral_by_code(text) {
   const m = /^\s*(?:ral)?\s*(\d{4}|\d{1,3}\s+\d{1,3}\s+\d{1,3})\s*$/i.exec(String(text));

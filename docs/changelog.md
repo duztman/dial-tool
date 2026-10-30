@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## v1.0.2 beta · 30 Oct 2026 — the colour pop-out redrawn round RAL: the line, the rows, the bands, the pill
+
+Okay, 30 Oct 2026, 15:48–16:23, in drawing rounds ("Just draw windows"; "give it to me whole 4 ways"; "Done. Implement"; "R's placements, top gray hr, spacing downtown was perfect here, implement this").
+
+- **The line**: RGB · HEX · CMYK · RAL, then one box holding the colour's swatch (plain, no stroke) and the values in cells divided by black rules, a small grey letter over each cell (HEX · R G B · C M Y K · RAL NAME; "colors listed as rgb hex cmyk ral"; "Incorporate swatches into the color code boxes, no stroke for them. combine rgb and cmyk into boxes with black vertical rules, add a rule after color swatch"). RAL's name cell is twice a code's and cuts a long name. Copy is a square as small as its sign. The letters make the line one letter taller.
+- **The rows**: a hairline above On this dial, between the rows and after the Palette; the chips 5.5 apart, eleven to a row, a twelfth colour on a second line on the same columns ("Line above on this dial and after palette swatches. If palette goes to a second line, new colors come in on their column"). A chip that is exactly a RAL colour carries a faded R ("Faded R"); the +/− slot stays as it was ("Ok keep the system").
+- **RAL mode**: the thousands inside the bands, dark on a light band ("Put ral's thousands inside the colored section to win one line there"); the chart is a pill switch, flush left, smaller type — RAL Classic | Classic & Design System+ — each choice with the tiles it shows, the second on to start ("Pill selectors we have designed use them"; "inside the pills give all thumbnails"; "RAL classic on the left").
+- **The panel's colour pills** say a RAL colour as R and its code, no space, dashes inside (R5015, R210-50-30), at the hex's width, a long code cut ("rals get into big swatch pills like hex with R 5001 pill size does not change, longer names get cropped"; "R does not have space, spaces inside color names become dashes").
+- **Growing**: RAL mode is taller; a pop-out standing low on the screen keeps its bottom and grows upward ("ral selection makes color popup grow up when it's down on screen, down when up").
+- The window test's colour pop-out section checks the line (letters, rules, the swatch), the rows (5.5 apart), the pill, the bands' names inside, the R marks, the panel pill's word and width, and the upward growth.
+
 ## v1.0.1 beta · 30 Oct 2026 — RAL mode in the colour pop-out
 
 Okay, 30 Oct 2026, 14:22: "I am thinking about a color picker that is made of ral colors. I want to keep the gradient view and hue slider, but instead of an endless tiny gradient, can we get classified colors show up as a grid in gradient's place?"; 14:31: "Fixed band for slider, include design system but with a note on the swatches for non standard ones. In our style and shape of the popup"; 14:37: "Fuckin awesome. Implement on dev"; 15:16, his drawing: "smaller, rounded color swatches, design system on off possible and group the color code with the swatch down below"; 15:19: "Copy gets an icon, color name area grows. İf name does not fit crop it"; 15:28: "Copy box as small as the icon, colors listed as rgb hex cmyk ral. Ral switcher better. Visible when off and switch connected to design system. Comes on as default".

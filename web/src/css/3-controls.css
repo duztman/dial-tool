@@ -117,7 +117,7 @@
   @media (pointer: coarse) {
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
     :is(.gdot, .gchev) { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-none)) / 2); }      /* a guide's dot and tick (#527): the whole height of its line, half the room between them */
-    .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
+    .chiprow .chips button { --reach-x: calc(var(--u2) / 2); --reach-y: calc(var(--u2) / 2); }      /* a colour in the pop-out */
     .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
     .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
     .fontname .btn { --reach-y: calc((var(--control) - var(--control-s)) / 2 + var(--unit)); }      /* Lang. and Change…: the font name line's whole height */
