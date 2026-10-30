@@ -12,6 +12,11 @@
 // its after. Bg of popout box darker, and where is thou?" — pill to note = note to the line after it = the line before
 // a row to its pill, measured off the screen; the box on the panel's grey (--well); thou listed (the app's own units).
 // 02:07, round 6: "No box around cog icon unless hover and click." — three states: closed, under the pointer, open.
+// 02:10, round 7: "lines … need to turn white or darker gray? What are rules! … Why are you not just implementing them
+// but inventing things?" — the rule (1-tokens.css): a row's line is white on grey, the scrolling grey on paper; a part
+// that sets its ground sets --row-rule with it. This box stands on grey, so its lines are --line-on-grey (white).
+// "Red marked paddings are halved. Left side of the box does not shrink, texts move closer to pills": the name to its
+// pill --gap → --u2; the box keeps its width, the room going to its left padding.
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
 states = ["closed", "hover", "open"];
@@ -23,10 +28,10 @@ css = `
   .unitbox.cog { border-color: transparent; }      /* no frame at rest */
   @media (hover: hover) { .unitbox.cog:hover { border-color: currentColor; } }      /* its frame under the pointer; open, the app's chosen look (5-chosen.css: ink, the cog in paper) */
   .unitbox.cog[aria-expanded="true"] { border-color: var(--ink); }      /* this sketch's styles stand outside the layers, so the chosen frame is said again */
-  .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: max-content; border: var(--hair) solid var(--ink); background: var(--well); padding: var(--u2); }      /* --u2 in from every side: the grey lines over the first row and under the last stand clear of the black edge */
+  .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: max-content; border: var(--hair) solid var(--ink); background: var(--well); --row-rule: var(--line-on-grey); padding: var(--u2) var(--u2) var(--u2) var(--gap); column-gap: var(--u2); }      /* on grey: white lines (1-tokens.css); left padding takes what the halved gap gives back, so the box keeps its width */      /* --u2 in from every side: the grey lines over the first row and under the last stand clear of the black edge */
   .settingsbox > .row.note > .quiet { grid-column: 2; }      /* on the controls' column, as a pane's note (4c-rows.css, .body) */
   .settingsbox { display: grid; grid-template-columns: max-content max-content; }      /* two columns: the names, the controls */
-  .settingsbox > .row { grid-column: 1 / -1; grid-template-columns: subgrid; }      /* every row on the box's two columns, so the names share one width */
+  .settingsbox > .row { grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: var(--u2); }      /* every row on the box's two columns, so the names share one width */
   .settingsbox > .row > label { grid-column: 1; justify-self: end; text-align: right; }      /* the name against its controls, a column gap from them */
   .settingsbox > .row > :not(label) { grid-column: 2; }
 `;
@@ -58,7 +63,7 @@ build = async (state) => {
   box.querySelectorAll(".row").forEach((r, i) => r.id ||= "set-row-" + i);
   box.querySelectorAll(".row.note").forEach((n) => { n.previousElementSibling.classList.add("noted"); n.dataset.after = "field"; });      // as sync_rows marks a row and its note: one box, the note just below the pill
   const q = getComputedStyle(box.querySelector(".row.note > .quiet")), wn = [...document.querySelectorAll(".row")].find((r) => !box.contains(r) && r.textContent.startsWith("Every width")), w = getComputedStyle(wn.lastElementChild);      // the app's own note under Weight %, for comparison
-  console.log("measured:", JSON.stringify({ box: Math.round(box.getBoundingClientRect().width), note: [q.fontSize, q.color], weight_note: [w.fontSize, w.color] }));
+  console.log("measured:", JSON.stringify({ box: Math.round(box.getBoundingClientRect().width), name_to_pill: +(box.querySelector(".row.seg > :not(label)").getBoundingClientRect().left - box.querySelector(".row.seg > label").getBoundingClientRect().right).toFixed(1), line: getComputedStyle(box.querySelector(".row.seg")).boxShadow.slice(0, 22), note: [q.fontSize, q.color], weight_note: [w.fontSize, w.color] }));
   // the gaps, on the ink: g = the line over a row to the top of its pill; the note's words g under the pill, the line g under them
   await document.fonts.ready;
   const before = {};
