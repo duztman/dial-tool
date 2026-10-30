@@ -35,7 +35,7 @@ async function shot(tuned) {
   // ink(selector): the rectangle a part's ink covers, in window pixels, read from the screen itself (R21: measured,
   // not estimated). Its border and background are not ink: only pixels far from the part's own commonest colour.
   await page.exposeFunction("ink", async (sel) => {
-    const r = await page.evaluate((q) => { const e = document.querySelector(q), b = e.getBoundingClientRect(); const i = 2; return { x: b.x + e.clientLeft + i, y: b.y + e.clientTop + i, width: (e.clientWidth || b.width) - 2 * i, height: (e.clientHeight || b.height) - 2 * i }; }, sel);      // 2 px in from the border: its edge is not ink
+    const r = await page.evaluate((q) => { const e = document.querySelector(q), b = e.getBoundingClientRect(); const i = e.clientLeft || e.clientTop ? 2 : 0; return { x: b.x + e.clientLeft + i, y: b.y + e.clientTop + i, width: (e.clientWidth || b.width) - 2 * i, height: (e.clientHeight || b.height) - 2 * i }; }, sel);      // 2 px in from a border: its edge is not ink
     const png = (await page.screenshot({ clip: r })).toString("base64");
     return page.evaluate(async ([data, r]) => {
       const img = new Image(); img.src = "data:image/png;base64," + data; await img.decode();
@@ -43,9 +43,13 @@ async function shot(tuned) {
       const g = c.getContext("2d"); g.drawImage(img, 0, 0); const d = g.getImageData(0, 0, c.width, c.height).data;
       const counts = new Map(); for (let i = 0; i < d.length; i += 4) { const k = d[i] << 16 | d[i + 1] << 8 | d[i + 2]; counts.set(k, (counts.get(k) || 0) + 1); }
       const ground = [...counts].sort((a, b) => b[1] - a[1])[0][0], gr = ground >> 16, gg = ground >> 8 & 255, gb = ground & 255;
+      // the ink's edge where a pixel is at least half as far from the ground as the strongest ink: an edge smoothed over
+      // two dots counts the same on a figure as on a 1 px rule
+      const far = (i) => Math.abs(d[i] - gr) + Math.abs(d[i + 1] - gg) + Math.abs(d[i + 2] - gb);
+      let most = 0; for (let i = 0; i < d.length; i += 4) most = Math.max(most, far(i));
       let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1;
       for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
-        const i = 4 * (y * c.width + x); if (Math.abs(d[i] - gr) + Math.abs(d[i + 1] - gg) + Math.abs(d[i + 2] - gb) < 60) continue;
+        const i = 4 * (y * c.width + x); if (far(i) < most / 2) continue;
         x0 = Math.min(x0, x); x1 = Math.max(x1, x + 1); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 1);
       }
       const k = c.width / r.width;      // 2: the shot is at twice the window's pixels

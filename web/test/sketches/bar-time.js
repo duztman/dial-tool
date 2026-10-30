@@ -3,7 +3,8 @@
 // His green marks: AM's room left of the word = right of it = the date's room left of "31" (all var(--u2)).
 // 01:35, round 2: "Notice the gaps" (each rule the same ink distance from the figure before and after it);
 // "Am and now vertically centered within the green lines" (their ink's middle on the time's ink's middle).
-// 01:39: "Vertical rules: lines have gap between them" — each rule split in two, --u1 between.
+// 01:39: "Vertical rules: lines have gap between them" — each rule split in two;
+// 01:41: "The hr gaps before after line segments should be equal" — the gap inside the rule = the gap either side (--clock-gap).
 // Kept from the crop he liked (01:14): the colons as thin upright rules, AM in NOW's kind of type.
 part = ".bar .lead";
 tab = "Dial";
@@ -13,7 +14,7 @@ css = `
   .bar .lead .timewell .time { display: none; }
   .bar .lead .timewell .clock { display: flex; align-items: center; height: 100%; font-family: var(--time-face); font-size: var(--t-time); letter-spacing: var(--time-track); color: var(--bar-light); }
   /* each rule two lines with a gap between them, like a colon drawn long (01:39: "lines have gap between them") */
-  .bar .lead .timewell .clock i { flex: none; width: var(--hair); height: 0.75em; background: linear-gradient(var(--bar-light) calc(50% - var(--u1) / 2), transparent 0 calc(50% + var(--u1) / 2), var(--bar-light) 0); }
+  .bar .lead .timewell .clock i { flex: none; width: var(--hair); height: 0.75em; background: linear-gradient(var(--bar-light) calc(50% - var(--clock-gap) / 2), transparent 0 calc(50% + var(--clock-gap) / 2), var(--bar-light) 0); }
   .bar .lead .timebox .half { width: auto; padding: 0 var(--u2); font-size: var(--t-m); letter-spacing: var(--track-50); }
 `;
 build = async () => {
@@ -25,10 +26,10 @@ build = async () => {
   await document.fonts.ready;
   // each rule: the same ink distance to the figure before it and the one after
   const gap = parseFloat(getComputedStyle(c).getPropertyValue("--clock-gap"));
-  for (const k of [0, 1]) {
-    const a = await ink(`#k${k}`), r = $(`#r${k}`).getBoundingClientRect(), b = await ink(`#k${k + 1}`);
-    $(`#r${k}`).style.marginLeft = (gap - (r.left - a.right)) + "px";
-    $(`#r${k}`).style.marginRight = (gap - (b.left - r.right)) + "px";
+  for (let n = 0; n < 4; n++) for (const k of [0, 1]) {      // measured again after the first pass: rounding to screen dots
+    const a = await ink(`#k${k}`), r = await ink(`#r${k}`), b = await ink(`#k${k + 1}`), st = $(`#r${k}`).style;      // the rule as drawn, on its screen dots
+    st.marginLeft = (parseFloat(st.marginLeft || 0) + gap - (r.left - a.right)) + "px";
+    st.marginRight = (parseFloat(st.marginRight || 0) + gap - (b.left - r.right)) + "px";
   }
   // AM and NOW: their ink's middle on the time's ink's middle
   const t = await ink(".bar .timewell"), mid = (t.top + t.bottom) / 2;
@@ -39,7 +40,7 @@ build = async () => {
     for (let n = 0; n < 3; n++) { const e = await ink(q); dy += mid - (e.top + e.bottom) / 2; word.style.top = dy + "px"; }      // moved, measured again, till it stands
   }
   const out = {};
-  for (const k of [0, 1]) { const a = await ink(`#k${k}`), r = $(`#r${k}`).getBoundingClientRect(), b = await ink(`#k${k + 1}`); out["rule" + k] = [+(r.left - a.right).toFixed(2), +(b.left - r.right).toFixed(2)]; }
+  for (const k of [0, 1]) { const a = await ink(`#k${k}`), r = await ink(`#r${k}`), b = await ink(`#k${k + 1}`); out["rule" + k] = [+(r.left - a.right).toFixed(2), +(b.left - r.right).toFixed(2)]; }
   const t2 = await ink(".bar .timewell");
   for (const q of [".bar .lead .timebox .half", ".bar .lead #now"]) { const e = await ink(q); out[q.split(" ").pop()] = +(((e.top + e.bottom) - (t2.top + t2.bottom)) / 2).toFixed(2); }
   console.log("measured:", JSON.stringify(out));
