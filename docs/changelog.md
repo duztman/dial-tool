@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.0.7 beta · 31 Oct 2026 — window frames even all round: the stroker at scale (#550)
+
+Okay, 26 Oct 2026: "Check hexagon and moon shape's outlines, they are not uniform"; 30 Oct, 23:53: "1-2 together" (fix the stroker; the polygon through it).
+
+- **Why the frames were uneven**: PathKit's stroker approximates a curve to a tolerance in path units, and the tool's paths are in millimetres, so a 2.6 mm circle was stroked as coarsely as a 2.6 px one — measured, grown by 0.3 it bulged 21 % (the "four-petal blob" of #168, which had every shape but the arch grown by hand instead). `expandStroke` now strokes a thousand times larger and scales back: 4 µm off (`test/crops/stroke-scale.mjs` measured 1 · 10 · 100 · 1000).
+- **The polygon** grows by stroking again, like the arch, so its corner roundings are concentric with the hole's: frame 0.300–0.300 mm all round (its corners were a quarter thick). The arch's frame 0.300–0.317 (was 0.197–0.46). Circles, rectangles, arcs, pairs and halves grow by their measures as before.
+- Everything else grown by `offset()` gains the same accuracy: a hollow hand's wall, a ring grown for its clearance.
+- `test/frames.mjs`, in the full check: each frame's outer outline against its hole, and the stroked circle's radius. The parity check with `dial.py` stays within its thresholds.
+
 ## v1.0.6 beta · 30 Oct 2026 — the bar's time and AM · PM in Dial Mono; the hours' names over the ruler, its marks taller
 
 Okay, 30 Oct 2026, 18:31: "While you're at it, make the time and ampm mono too"; 18:37, on the crop: "The screenshot looks gorgeous. Now for the time ruler, put the numbers up top"; 18:38: "I meant taller marks as wider vertically".

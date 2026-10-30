@@ -137,6 +137,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 421 | Keep a hand's details in the lit picture |  | after v1 |
 | 346 | Complications, systematized |  | after v1 |
 | 349 | Each marker selectable and editable |  | after v1 |
+| 551 | Strokes on numerals, markers, ticks and shapes: width, side, join (round · miter · bevel) — grown outlines, never strokes in a file (R4) | 30 Oct 2026 — "good strokes, uniform. And round/sharp/miter options" | a step (v1.1), sketches first |
 | 497 | Resize Ring from on the canvas | 21 Oct 2026 | note |
 | 467 | A moon window's disc, as a date window's | 20 Oct 2026 | open |
 | 252 | Nudge's picker |  | open |
@@ -154,7 +155,6 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | # | Item | From | Status |
 |---|---|---|---|
 | 63 | Live text in the PDF | 11 Oct 2026 — "SVG now, PDF later" | open |
-| 547 | A window's frame even all round: the moon's arch and the polygon | 26 Oct 2026 — "Check hexagon and moon shape's outlines, they are not uniform" | open |
 
 ### Code and tests
 

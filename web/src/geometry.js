@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.0.6 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.0.7 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -656,6 +656,7 @@ export function lean(S) {
 // ── the engines ──────────────────────────────────────────────
 
 let PK = null;                                     // PathKit (shape combining)
+const STROKE_SCALE = 1000;                         // the stroker works at this scale (expandStroke)
 let PK_VERB = null;                                // our command letters as PathKit's verbs (set at start)
 let HB = null;                                     // HarfBuzz (text)
 
@@ -878,12 +879,16 @@ export class Path {
     a.delete();
     return this;
   }
-  /** the outline of a line of this width drawn along the path, round joins and ends. */
+  /** the outline of a line of this width drawn along the path, round joins and ends. Stroked a thousand times larger
+   *  and scaled back: PathKit's stroker approximates a curve to a tolerance in path units, and in millimetres that is
+   *  coarse — a Ø 2.6 mm circle grown by 0.3 bulged 21 % (the "four-petal blob", #168); at ×1000 it is 4 µm off
+   *  (measured 30 Oct 2026, test/crops/stroke-scale.mjs). */
   expandStroke(width) {
-    const a = this._pk();
-    a.stroke({ width, join: PK.StrokeJoin.ROUND, cap: PK.StrokeCap.ROUND });
+    const K = STROKE_SCALE;
+    const a = this.copy().scale(K)._pk();
+    a.stroke({ width: width * K, join: PK.StrokeJoin.ROUND, cap: PK.StrokeCap.ROUND });
     a.simplify();
-    const out = Path._from_pk(a)._wound();
+    const out = Path._from_pk(a)._wound().scale(1 / K);
     a.delete();
     return out;
   }
@@ -1612,17 +1617,15 @@ export const PICTURE_TONES = { shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0
 function window_hole(w) {
   const shape = window_shape(w);
   if (shape === "rectangle") return [rounded_rect(w.w, w.h, w.round), (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d)];
-  // circles, polygons and arcs grow by their measures, as rectangles do (#168, 14 Oct 2026): growing a curve by
-  // stroking it (offset) bulged a circle up to 6 % at 45° — the "four-petal blob" Okay saw on a stroked frame
+  // circles and arcs grow by their measures, as rectangles do (#168, 14 Oct 2026); the polygon and the arch grow by
+  // stroking (offset), which is exact now that the stroker works at scale (expandStroke): a polygon grown by its
+  // measures had corners a quarter too thick, their rounding not concentric with the hole's (#547, 30 Oct 2026)
   if (shape === "circle") return [circle(w.w), (d) => circle(w.w + 2 * d)];
   if (shape === "polygon") {
     const n = min(max(parseInt(w.sides) || 6, 3), 24), R = w.w / 2;
-    const make = (d) => {                          // every side moves out by d: the corners by d / cos(180°/n), their rounding by d
-      const Rd = R + d / cos(PI / n);
-      const points = Array.from({ length: n }, (_, i) => { const a = radians(180 / n + i * 360 / n); return [Rd * sin(a), -Rd * cos(a)]; });
-      return poly(points, points.map(() => min(w.round, R * 0.9) + d));
-    };
-    return [make(0), make];
+    const points = Array.from({ length: n }, (_, i) => { const a = radians(180 / n + i * 360 / n); return [R * sin(a), -R * cos(a)]; });
+    const hole = poly(points, points.map(() => min(w.round, R * 0.9)));
+    return [hole, (d) => offset(hole.copy(), d)];
   }
   if (shape === "arc") {
     const a = window_angle(w), c = clock_point(w.r, a);

@@ -6,6 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
+| 550 | **A window's frame even all round** (was listed as a second #547; Okay, 26 Oct 2026: "Check hexagon and moon shape's outlines, they are not uniform"): the stroker's tolerance is in path units — at ×1000 it is exact; the polygon grows by stroking like the arch. Frames measured 0.300 all round; `test/frames.mjs` holds it | **done — v1.0.7 beta** |
 | 549 | **RAL mode in the colour pop-out** (Okay, 30 Oct 2026: "a color picker that is made of ral colors … classified colors show up as a grid in gradient's place"): a fourth mode on the line; a family's grid (Classic plain, Design System+ dotted, its switch) in the field's place, nine family bands in the strip's; the swatch and the code in one box, the name beside, Copy as its sign | **done — v1.0.1 beta** |
 
 ## Okay's notes of 24 Oct 2026 (group L)
