@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.1 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.2 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1356,10 +1356,18 @@
   @media (hover: hover) { .partfold:hover { background: var(--hover); } }
   .fontbox .tile > .sticker { justify-self: start; }
   .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
-  .partline { display: flex; align-items: center; }      /* a part's head with a control beside it: the Stroke's On tick (#551) */
-  .partline > .partfold { flex: 1; }
-  .partline > .parton { flex: none; padding: 0 var(--frame-pad); font-weight: 400; }
+  /* a part's head with a control beside it (the Stroke's On tick, #551), on the rows' columns: the head's words in the
+     name column, the tick on the column edge where the sliders start (Okay, 31 Oct 2026: "everything within is flush
+     left to line. Including on") */
+  .partline { grid-template-columns: var(--font-label) minmax(0, 1fr); column-gap: 0; padding-right: var(--frame-pad); }      /* the box's own columns: the name column, then the rest from the column edge */
+  .partline > .partfold { grid-column: 1; padding-right: 0; white-space: nowrap; overflow: visible; }
+  .body .partline:not(.side) > .parton { grid-column: 2; justify-self: start; font-weight: 400; }      /* on the column edge (the panel's own rule puts a check at the controls' column, 4c-rows) */
   .strokerows > .row { border-top: var(--hair) solid var(--rule); }      /* the Stroke's rows ruled apart, as the box's own lines (Okay, 31 Oct 2026: "the sections need hr rules like above") */
+  .strokerows > .row:not(.num) { grid-template-columns: var(--font-label) minmax(0, 1fr); column-gap: 0; }      /* the box's own columns, as its slider rows */
+  .strokerows > .row:not(.num) > :first-child { grid-column: 1; }
+  .strokerows > .row > :is(.picks, .pillswitch, .colour) { grid-column: 2; justify-self: start; }      /* its controls begin on the column edge, where the sliders start */
+  .picks.bare { grid-template-columns: repeat(3, var(--control-large)); }      /* three square tiles, pictures alone */
+  .picks.bare .pickt { min-height: 0; aspect-ratio: 1; align-content: center; padding: 0; }      /* the picture at its drawn size (R33), centred */
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontname .btn { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* Lang. and Change…: three quarters of a button, and lighter (Okay, 14 Oct 2026) */
   @media (hover: hover) { .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); } }
@@ -7475,7 +7483,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.1 beta";
+var VERSION = "v1.1.2 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -12124,7 +12132,8 @@ var PICS = {
   window_mark: icon(`<rect x="7" y="8.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none"/>`, KIND_PIC),
   // a stroke's joins (#551; Okay's drawing, 31 Oct 2026: three tiles, an L-shaped band each, its outer corner sharp,
   // round or cut): the band 5 wide, as the shape tile's baton; pictured widths, not lines
-  join: [`<path d="M12 6H17V16H27V21H12Z" ${solid}/>`, `<path d="M12 6H17V16H27V21H17A5 5 0 0 1 12 16Z" ${solid}/>`, `<path d="M12 6H17V16H27V21H17L12 16Z" ${solid}/>`],
+  // drawn whole at 24 (not through pic()): a bare tile shows the picture alone, large (Okay, 31 Oct 2026: "NO LABEL, LARGER icon"); the band 7 wide
+  join: [`<path d="M5 2H12V15H22V22H5Z" ${solid}/>`, `<path d="M5 2H12V15H22V22H12A7 7 0 0 1 5 15Z" ${solid}/>`, `<path d="M5 2H12V15H22V22H12L5 15Z" ${solid}/>`].map((d) => icon(d, 24)),
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [
     // the baton is the shape tile's baton: same width (5)
@@ -16637,8 +16646,8 @@ var FONTS = {
     };
     const rows = [
       this.build_row({ ...num2("stroke_w", "Width", 0.02, 1, 0.01), scope: "ring" }),
-      this.build_row({ ...pick("stroke_join", "Join", STROKE_JOINS, PICS.join), scope: "ring" }),
-      // the joins as pictures: an L-shaped band, its corner sharp, round or cut
+      this.build_row({ ...pick("stroke_join", "Join", STROKE_JOINS, (i2) => PICS.join[i2], { bare: true }), scope: "ring" }),
+      // the joins as pictures alone (Okay, 31 Oct 2026: "NO LABEL, LARGER icon"): an L-shaped band, its corner sharp, round or cut
       this.build_row({ ...seg("stroke_side", "Side", STROKE_SIDES), scope: "ring" }),
       this.build_row({ ...col("stroke_c", "Colour"), scope: "ring" })
     ];
@@ -16712,7 +16721,7 @@ var FONTS = {
       }
       set();
     };
-    const wrap = el("div", { className: "boxpart" }, aside ? el("div", { className: "partline" }, head, aside) : head, part2.el);
+    const wrap = el("div", { className: "boxpart" }, aside ? el("div", { className: "partline row" }, head, aside) : head, part2.el);
     return { el: wrap, refresh: (R, T) => {
       const has = part2.refresh(R, T);
       wrap.hidden = !has;
@@ -17590,7 +17599,7 @@ var PANEL = {
       };
     }
     if (row.kind === "pick") {
-      const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : row.bare ? "picks bare" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
       if (row.across) group.style.setProperty("--across", Math.max(4, row.across));
       (row.order || row.items.map((_, i2) => i2)).forEach((i2) => {
         const name = row.items[i2];
@@ -17598,7 +17607,7 @@ var PANEL = {
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i2}`, title: name, onclick: () => set(i2) });
         tile.setAttribute("role", "radio");
         tile.innerHTML = typeof row.pics === "function" ? row.pics(i2) : pic(row.pics[i2]);
-        tile.append(el("span", { textContent: TILE_WORDS[name] || name }));
+        if (!row.bare) tile.append(el("span", { textContent: TILE_WORDS[name] || name }));
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });

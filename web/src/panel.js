@@ -514,7 +514,7 @@ export const PANEL = {
     }
 
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
-      const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : row.bare ? "picks bare" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });      // bare: pictures alone in square tiles, the name the tile's title (the Stroke's joins, #551)
       if (row.across) group.style.setProperty("--across", Math.max(4, row.across));      // four to a line at least: fewer keep a four's size, the room left at the right; a fifth squeezes in (design canon §6)      // as many tiles to a line as it has (a window's complications, five)
       (row.order || row.items.map((_, i) => i)).forEach((i) => {      // order: the tiles' order when it isn't the list's (R9)
         const name = row.items[i];
@@ -522,7 +522,7 @@ export const PANEL = {
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
         tile.setAttribute("role", "radio");
         tile.innerHTML = typeof row.pics === "function" ? row.pics(i) : pic(row.pics[i]);
-        tile.append(el("span", { textContent: TILE_WORDS[name] || name }));
+        if (!row.bare) tile.append(el("span", { textContent: TILE_WORDS[name] || name }));
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });

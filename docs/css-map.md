@@ -49,7 +49,7 @@
 | `--compare-d` | `0px` | set by compare_place(): the size every saved dial is shown at in Compare (#435) | 6-preview ×2 | set by cards.js |
 | `--compare-pad` · set in 6-preview | `calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit)))` | the backdrop is the preview's own picture, hidden with the dial: its colour painted behind | 6-preview |  |
 | `--control` | `26px` | a control's height: field, button, swatch | 1-tokens ×3, 3-controls ×7, 4a-panel, 4c-rows, 4e-colour ×4, 4f-rings ×5, 4g-fonts ×3, 6-preview ×6, 7-bar ×3 |  |
-| `--control-large` | `32px` | the Guides switch, the hex line | 1-tokens, 3-controls, 4c-rows, 4f-rings ×2, 4g-fonts, 6-preview ×18, 7-bar ×2, 8-narrow |  |
+| `--control-large` | `32px` | the Guides switch, the hex line | 1-tokens, 3-controls, 4c-rows, 4f-rings ×2, 4g-fonts ×2, 6-preview ×18, 7-bar ×2, 8-narrow |  |
 | `--control-s` · special | `calc(0.75 * var(--control))` | a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") | 3-controls, 4g-fonts ×2 |  |
 | `--covered` · set in 6-preview | `calc(var(--panel-w) * (1 - var(--away)))` | how much of the canvas the column lies over | 6-preview |  |
 | `--cut-l` · set in 4b-lines-tabs | `var(--tab-notch)` |  | 4b-lines-tabs ×5 | 4b-lines-tabs `:is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab, .sheettabs .segs > .tab:first-child)` → `0px`; 4b-lines-tabs `.tab.hang:first-child` → `0px`; 4b-lines-tabs `.tab.on` → `0px` |
@@ -79,7 +79,7 @@
 | `--find` | `calc(3 * var(--col) + 2 * var(--gap))` | the font sheet's Find field: three columns, the sheet's right half | 4g-fonts |  |
 | `--font-colour-at` · set in 4g-fonts | `calc(var(--swatch-col) + (var(--line-button) + var(--t-m) + 2 * var(--hair)) / 2 + var(--pill-gap) - var(--hair))` | from the line's right edge to the pill's left: its swatch where the ring list's colour stands, the hex after it, so the two line up (Okay, 21 Oct 2026, 22:57, his drawing: the pill from that line, "FIT HERE", before EN) | 4g-fonts ×2 |  |
 | `--font-head-in` · special | `4px` | the font box's preview, this far in from the box's edge on the grey head (Okay's drawing, font-selector_171026, 18 Oct 2026) | 4g-fonts ×2 |  |
-| `--font-label` · special | `calc(6.5em + var(--btn-pad))` | the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest | 4g-fonts |  |
+| `--font-label` · special | `calc(6.5em + var(--btn-pad))` | the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest | 4g-fonts ×3 |  |
 | `--font-night` | `#3F3F3E` |  | 4g-fonts ×3 |  |
 | `--font-night-grey` | `#C6C6C1` |  | 4g-fonts ×2 |  |
 | `--font-night-hover` | `#4B4B49` |  | 4g-fonts |  |

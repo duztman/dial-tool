@@ -491,7 +491,7 @@ export const FONTS = {
     box.onchange = () => { this.set_value("ring", "stroke", box.checked); if (box.checked && out.open) out.open(); };
     const rows = [
       this.build_row({ ...num("stroke_w", "Width", 0.02, 1, 0.01), scope: "ring" }),
-      this.build_row({ ...pick("stroke_join", "Join", G.STROKE_JOINS, PICS.join), scope: "ring" }),      // the joins as pictures: an L-shaped band, its corner sharp, round or cut
+      this.build_row({ ...pick("stroke_join", "Join", G.STROKE_JOINS, (i) => PICS.join[i], { bare: true }), scope: "ring" }),      // the joins as pictures alone (Okay, 31 Oct 2026: "NO LABEL, LARGER icon"): an L-shaped band, its corner sharp, round or cut
       this.build_row({ ...seg("stroke_side", "Side", G.STROKE_SIDES), scope: "ring" }),
       this.build_row({ ...col("stroke_c", "Colour"), scope: "ring" }),
     ];
@@ -560,7 +560,7 @@ export const FONTS = {
       head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>` + (many ? `<span class="many">${many}</span>` : "");
     };
     head.onclick = () => { if (none) return; this.is_folded({ fold: name, row: {} }); this.folds[name] = !(this.folds[name] ?? shut); try { localStorage.setItem(KEY("folds"), JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
-    const wrap = el("div", { className: "boxpart" }, aside ? el("div", { className: "partline" }, head, aside) : head, part.el);      // aside: a control on the head's line (the Stroke's On)
+    const wrap = el("div", { className: "boxpart" }, aside ? el("div", { className: "partline row" }, head, aside) : head, part.el);      // aside: a control on the head's line, on the rows' columns (the Stroke's On, at the column edge)
     return { el: wrap, refresh: (R, T) => { const has = part.refresh(R, T); wrap.hidden = !has; none = has === "none"; set(); }, open: () => { if (this.folds[name] ?? shut) head.click(); } };
   },
 

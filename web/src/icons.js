@@ -166,7 +166,8 @@ export const PICS = {
   window_mark: icon(`<rect x="7" y="8.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none"/>`, KIND_PIC),
   // a stroke's joins (#551; Okay's drawing, 31 Oct 2026: three tiles, an L-shaped band each, its outer corner sharp,
   // round or cut): the band 5 wide, as the shape tile's baton; pictured widths, not lines
-  join: [`<path d="M12 6H17V16H27V21H12Z" ${solid}/>`, `<path d="M12 6H17V16H27V21H17A5 5 0 0 1 12 16Z" ${solid}/>`, `<path d="M12 6H17V16H27V21H17L12 16Z" ${solid}/>`],
+  // drawn whole at 24 (not through pic()): a bare tile shows the picture alone, large (Okay, 31 Oct 2026: "NO LABEL, LARGER icon"); the band 7 wide
+  join: [`<path d="M5 2H12V15H22V22H5Z" ${solid}/>`, `<path d="M5 2H12V15H22V22H12A7 7 0 0 1 5 15Z" ${solid}/>`, `<path d="M5 2H12V15H22V22H12L5 15Z" ${solid}/>`].map((d) => icon(d, 24)),
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [                                        // the baton is the shape tile's baton: same width (5)
     `<rect x="16.5" y="4" width="5" height="19" ${solid}/>`,

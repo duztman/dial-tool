@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.2 beta · 31 Oct 2026 — the Stroke part on the column edge, the joins as pictures alone
+
+Okay, 31 Oct 2026, 00:55: "The column left edge, everything within is flush left to line. Including on"; 01:00: "Join BUTTONS: NO LABEL, LARGER icon"; 01:09: "Bingo on stroke".
+
+- The Stroke head line and its rows stand on the font box's own columns (`--font-label`, then the rest): On, the join tiles, the Side pill and the Colour pill all begin where the sliders start.
+- Join: three square tiles (32) with the picture alone, drawn at 24 (`PICS.join`, an L-shaped band 7 wide); the name is the tile's title. A `pick` row can be `bare`.
+
 ## v1.1.1 beta · 31 Oct 2026 — the Stroke part as drawn: On on its head line, the joins as tiles, rules between the rows
 
 Okay, 31 Oct 2026, 00:44, his marks on v1.1: "Change corner pills into buttons that I designed on the side. And the sections need hr rules like above. And also turning stroke on expands panel. Opening eye just expands panel without turning it on."

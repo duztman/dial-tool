@@ -47,10 +47,18 @@
   @media (hover: hover) { .partfold:hover { background: var(--hover); } }
   .fontbox .tile > .sticker { justify-self: start; }
   .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
-  .partline { display: flex; align-items: center; }      /* a part's head with a control beside it: the Stroke's On tick (#551) */
-  .partline > .partfold { flex: 1; }
-  .partline > .parton { flex: none; padding: 0 var(--frame-pad); font-weight: 400; }
+  /* a part's head with a control beside it (the Stroke's On tick, #551), on the rows' columns: the head's words in the
+     name column, the tick on the column edge where the sliders start (Okay, 31 Oct 2026: "everything within is flush
+     left to line. Including on") */
+  .partline { grid-template-columns: var(--font-label) minmax(0, 1fr); column-gap: 0; padding-right: var(--frame-pad); }      /* the box's own columns: the name column, then the rest from the column edge */
+  .partline > .partfold { grid-column: 1; padding-right: 0; white-space: nowrap; overflow: visible; }
+  .body .partline:not(.side) > .parton { grid-column: 2; justify-self: start; font-weight: 400; }      /* on the column edge (the panel's own rule puts a check at the controls' column, 4c-rows) */
   .strokerows > .row { border-top: var(--hair) solid var(--rule); }      /* the Stroke's rows ruled apart, as the box's own lines (Okay, 31 Oct 2026: "the sections need hr rules like above") */
+  .strokerows > .row:not(.num) { grid-template-columns: var(--font-label) minmax(0, 1fr); column-gap: 0; }      /* the box's own columns, as its slider rows */
+  .strokerows > .row:not(.num) > :first-child { grid-column: 1; }
+  .strokerows > .row > :is(.picks, .pillswitch, .colour) { grid-column: 2; justify-self: start; }      /* its controls begin on the column edge, where the sliders start */
+  .picks.bare { grid-template-columns: repeat(3, var(--control-large)); }      /* three square tiles, pictures alone */
+  .picks.bare .pickt { min-height: 0; aspect-ratio: 1; align-content: center; padding: 0; }      /* the picture at its drawn size (R33), centred */
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontname .btn { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* Lang. and Change…: three quarters of a button, and lighter (Okay, 14 Oct 2026) */
   @media (hover: hover) { .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); } }
