@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.0.3 beta · 30 Oct 2026 — the pop-out's words in Dial Mono (plain zeros); the R centred; the rows up
+
+Okay, 30 Oct 2026, 16:43, his marks on v1.0.2: "centered" (the R on a chip), "Remove & move up" (the hairline above On this dial), "No slashed 0 anywhere!!!" (the bands' thousands, the code cell).
+
+- **Dial Mono** (`fonts/ui/mono_font.py`, JetBrains Mono cut down, its 0 a plain oval) now holds #, ≈, a space and the letters too, and is the face of the colour pill's word, the bands' thousands and the line's cells. The bar and the log keep `--mono` as before.
+- The R on a RAL chip is a layer over the whole chip, centred.
+- No hairline above On this dial: the head's own line stands there; the rows sit half a gap under it and under each other.
+
 ## v1.0.2 beta · 30 Oct 2026 — the colour pop-out redrawn round RAL: the line, the rows, the bands, the pill
 
 Okay, 30 Oct 2026, 15:48–16:23, in drawing rounds ("Just draw windows"; "give it to me whole 4 ways"; "Done. Implement"; "R's placements, top gray hr, spacing downtown was perfect here, implement this").

@@ -120,7 +120,7 @@
 | `--guide-pill-pad` · special | `var(--u2)` | a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) | 6-preview |  |
 | `--guide-row` · special | `30px` | the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) | 3-controls ×2, 6-preview ×5 | 1-tokens `:root` → `38px` |
 | `--guide-tint` | `22%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 1-tokens, 4f-rings ×2 |  |
-| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×11, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×5, 4e-colour ×11, 4f-rings ×28, 4g-fonts ×20, 6-preview ×46, 7-bar ×20, 8-narrow ×7 |  |
+| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×11, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×5, 4e-colour ×10, 4f-rings ×28, 4g-fonts ×20, 6-preview ×46, 7-bar ×20, 8-narrow ×7 |  |
 | `--handle` · the window's | `—` |  | 6-preview | set by hands.js, set by preview.js |
 | `--head` | `40px` | a pane's heading | 3-controls, 4a-panel ×3, 4b-lines-tabs ×2, 4e-colour, 4g-fonts ×2, 8-narrow ×2 |  |
 | `--header` | `calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair))` | the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes | 4a-panel ×2, 4g-fonts |  |
@@ -163,7 +163,7 @@
 | `--mast-ink` · set in 4a-panel | `var(--ink)` |  | 4a-panel ×2 | 4a-panel `#app.dark` → `var(--white)` |
 | `--mast-shift` · the window's | `—` |  | 4a-panel | set by preview.js |
 | `--menu-box` | `18px` | the boxed arrow beside a label that opens a small menu | 4c-rows ×2 |  |
-| `--mono` | `ui-monospace, "SF Mono", Menlo, Consolas, monospace` | only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") | 1-tokens ×2, 3-controls ×2, 4e-colour ×4, 4f-rings, 6-preview, 7-bar ×2 |  |
+| `--mono` | `ui-monospace, "SF Mono", Menlo, Consolas, monospace` | only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") | 1-tokens ×2, 3-controls ×2, 4f-rings, 6-preview, 7-bar ×2 |  |
 | `--n` · the window's | `—` |  | 4c-rows | set by windows.js |
 | `--name-in` · special | `6px` | a ring's name starts this far into its column; the ring line's buttons too | 4f-rings ×2 |  |
 | `--names` | `18px` | the day's ruler: its height, the hours' names under it, the handle's width | 7-bar ×8 |  |
@@ -264,7 +264,7 @@
 | `--round-switch` | `10px` | the switches on the preview: undo, Guides, Backdrop | 6-preview ×18, 7-bar ×4, 8-narrow |  |
 | `--round-tiny` | `3px` | …and a sticker's corners, a small swatch's | 4e-colour ×4, 4g-fonts |  |
 | `--row-end` | `calc(var(--frame-pad) - var(--hair) + var(--ringline-inner))` | the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons | 1-tokens, 4f-rings |  |
-| `--row-rule` | `var(--line-on-paper)` |  | 4c-rows ×8, 4e-colour ×3, 4f-rings ×4, 6-preview ×4 | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))`; 4a-panel `.form` → `var(--line-on-grey)`; 4f-rings `.numpop .row` → `transparent` |
+| `--row-rule` | `var(--line-on-paper)` |  | 4c-rows ×8, 4e-colour ×2, 4f-rings ×4, 6-preview ×4 | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))`; 4a-panel `.form` → `var(--line-on-grey)`; 4f-rings `.numpop .row` → `transparent` |
 | `--rule` | `#B9B9B4` | colour | 1-tokens ×2, 3-controls ×11, 4a-panel ×10, 4b-lines-tabs ×2, 4c-rows, 4d-hands ×2, 4e-colour ×3, 4f-rings ×19, 4g-fonts ×15, 6-preview ×2, 8-narrow ×2 | 3-controls `.night` → `var(--night-rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)`; set by show.js |
 | `--rule-light` | `#D4D4CF` | colour | 4g-fonts ×2 | 4a-panel `.showing .panel` → `var(--rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)` |
 | `--ruler` | `22px` | the day's ruler: its height, the hours' names under it, the handle's width | 7-bar ×7 |  |
@@ -409,7 +409,7 @@
 | `--u8` | `calc(4 * var(--unit))` |  | 4g-fonts, 7-bar ×2 |  |
 | `--uiblack` · the window's | `—` |  | 3-controls ×4, 4a-panel ×4, 4c-rows | set by show.js |
 | `--unit` | `5.5px` | every space is a multiple of this: the scale below, in half-units (u1 = half a unit … u8 = four) | 1-tokens ×21, 3-controls ×17, 4a-panel ×9, 4b-lines-tabs ×3, 4c-rows ×7, 4d-hands ×6, 4e-colour, 4f-rings ×6, 4g-fonts ×28, 4h-gallery ×7, 6-preview ×20, 7-bar, 8-narrow ×2 | read by fonts.js, read by panel.js |
-| `--unit-face` | `"Dial Mono", var(--mono)` | the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) | 4a-panel |  |
+| `--unit-face` | `"Dial Mono", var(--mono)` | the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) | 4a-panel, 4e-colour ×4 |  |
 | `--unit-pad` · special | `4px` | the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") | 4a-panel ×3 |  |
 | `--value-pop` | `132px` | a value button's tag: about as wide as it is high | 4f-rings |  |
 | `--veil` | `rgba(0, 0, 0, 0.06)` | a touch of dark on a coloured row | 4f-rings |  |

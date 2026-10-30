@@ -3,7 +3,7 @@
   /* colour: a pill — one small button holding a swatch and the hex in monospace; it opens the pop-out. Quiet at
      rest, a middle grey under the pointer, black while its pop-out is open (no outlines). A swatch shows its colour
      (--c) over a checkerboard, so a see-through colour looks see-through. */
-  .colour { display: inline-flex; align-items: center; gap: var(--pill-gap); justify-self: start; height: var(--pill); padding: 0 var(--pill-gap);      border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--mono); }
+  .colour { display: inline-flex; align-items: center; gap: var(--pill-gap); justify-self: start; height: var(--pill); padding: 0 var(--pill-gap);      border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--unit-face); }      /* Dial Mono: a plain 0 (Okay, 30 Oct 2026: "No slashed 0 anywhere!!!") */
   @media (hover: hover) { .colour:hover { background: var(--rule); } }
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
@@ -74,15 +74,13 @@
   .colourpop header .sign[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
   /* a row of colours: its name, then the chips. A row holds --pop-chips of them with wide gaps; they share the width,
      so they shrink to fit and grow when the pop-out does. */
-  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: center; padding: var(--u2) 0; border-top: var(--hair) solid var(--row-rule); }      /* a hairline above each row and after the second (Okay, 30 Oct 2026: "Line above on this dial and after palette swatches") */
-  .chiprow + .chiprow { border-bottom: var(--hair) solid var(--row-rule); }
-  .colourpop > .chiprow { margin: calc(-1 * var(--pop-gap) / 2) 0; }      /* the rows share one hairline, the pop-out's gap halved between them */
-  .colourpop > header + .chiprow { margin-top: 0; }      /* the first keeps the whole gap under the head's own line */
+  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: center; padding: var(--u2) 0; border-bottom: var(--hair) solid var(--row-rule); }      /* a hairline after each row; the head's own line stands above the first (Okay, 30 Oct 2026, 16:43: "Remove & move up") */
+  .colourpop > .chiprow { margin: calc(-1 * var(--pop-gap) / 2) 0; }      /* the rows close under the head and each other: the pop-out's gap halved round them */
   .chiprow > .quiet { font-size: var(--t-s); }
   .chiprow .chips { width: 100%; grid-template-columns: repeat(var(--pop-chips), minmax(0, 1fr)); gap: var(--u2); }      /* close together, so the chips grow (Okay, 30 Oct 2026: "larger swatches there, closer together"); an eleventh colour starts a second line on the same columns */
   .chiprow .chips button { width: 100%; height: auto; aspect-ratio: 1; }
-  .chips button.ral { display: grid; place-items: center; color: rgba(255, 255, 255, 0.45); font: 600 var(--t-xs)/1 var(--sans); }      /* exactly a RAL colour: a faded R (Okay, 30 Oct 2026, 16:14: "Faded R") */
-  .chips button.ral::after { content: "R"; }
+  .chips button.ral { position: relative; color: rgba(255, 255, 255, 0.45); font: 600 var(--t-xs)/1 var(--sans); }      /* exactly a RAL colour: a faded R, centred (Okay, 30 Oct 2026, 16:14: "Faded R"; 16:43: "centered") */
+  .chips button.ral::after { content: "R"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
   .sv, .hue, .alpha { position: relative; touch-action: none; }
   .sv { height: var(--pop-field); border-radius: var(--round); cursor: crosshair; background: linear-gradient(to top, var(--black), transparent), linear-gradient(to right, var(--white), var(--hue, #f00)); }
   .hue, .alpha { height: var(--pop-hue); border-radius: calc(var(--pop-hue) / 2); cursor: ew-resize; }
@@ -105,7 +103,7 @@
   .charts i { position: relative; width: 9px; height: 9px; border-radius: var(--round-tiny); background: var(--pop-key); }      /* the tiles: the shown family's band colour, set by colour.js */
   .charts i.design::after { right: 1px; bottom: 1px; width: 2px; height: 2px; }
   .bands { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: var(--u1); height: var(--pop-hue); }
-  .bands button { height: auto; min-width: 0; padding: 0; border: 0; background: var(--c); color: rgba(255, 255, 255, 0.8); font: 10px/1 var(--mono); }
+  .bands button { height: auto; min-width: 0; padding: 0; border: 0; background: var(--c); color: rgba(255, 255, 255, 0.8); font: 10px/1 var(--unit-face); }
   .bands button.light { color: rgba(0, 0, 0, 0.6); }
   .bands button:first-child { border-radius: calc(var(--pop-hue) / 2) 0 0 calc(var(--pop-hue) / 2); }
   .bands button:last-child { border-radius: 0 calc(var(--pop-hue) / 2) calc(var(--pop-hue) / 2) 0; }
@@ -129,8 +127,8 @@
   .valuebox .cell { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; border-left: var(--hair) solid var(--black); }
   .valuebox .cell.name { flex: 2; }
   .valuebox .cell::before { content: attr(data-l); position: absolute; left: 0; right: 0; bottom: calc(100% + var(--u1) + var(--hair)); font-size: var(--t-xs); line-height: 1; color: var(--grey); text-align: center; text-transform: uppercase; letter-spacing: 0.08em; }
-  .valuebox .cell > input { height: 100%; border: 0; background: none; padding: 0 var(--u1); text-align: center; text-transform: uppercase; font-family: var(--mono); }
-  .valuebox .cell > span { min-width: 0; padding: 0 var(--u1); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .valuebox .cell > input { height: 100%; border: 0; background: none; padding: 0 var(--u1); text-align: center; text-transform: uppercase; font-family: var(--unit-face); }
+  .valuebox .cell > span { min-width: 0; padding: 0 var(--u1); font-family: var(--unit-face); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .asnumbers .copy { flex: none; display: inline-grid; place-items: center; width: var(--control); min-width: 0; padding: 0; }      /* Copy: a square as small as its sign (Okay, 30 Oct 2026: "Copy gets an icon"; "Copy box as small as the icon") */
   .asnumbers .copy.done { background: var(--ink); color: var(--paper); }
   /* wide: twice the size (app.js sets the width and the field's height). */
