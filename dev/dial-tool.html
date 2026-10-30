@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.1 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1356,6 +1356,10 @@
   @media (hover: hover) { .partfold:hover { background: var(--hover); } }
   .fontbox .tile > .sticker { justify-self: start; }
   .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
+  .partline { display: flex; align-items: center; }      /* a part's head with a control beside it: the Stroke's On tick (#551) */
+  .partline > .partfold { flex: 1; }
+  .partline > .parton { flex: none; padding: 0 var(--frame-pad); font-weight: 400; }
+  .strokerows > .row { border-top: var(--hair) solid var(--rule); }      /* the Stroke's rows ruled apart, as the box's own lines (Okay, 31 Oct 2026: "the sections need hr rules like above") */
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontname .btn { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* Lang. and Change…: three quarters of a button, and lighter (Okay, 14 Oct 2026) */
   @media (hover: hover) { .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); } }
@@ -7471,7 +7475,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1 beta";
+var VERSION = "v1.1.1 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -12118,6 +12122,9 @@ var PICS = {
   // show mode's Dial tab (#546; Okay, 25 Oct 2026: "Tiny marks … look at prescedents"; "Hands unnecessary to iconize"):
   // beside the ring marks above, a window (the Windows tab's, alone), at KIND_PIC
   window_mark: icon(`<rect x="7" y="8.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none"/>`, KIND_PIC),
+  // a stroke's joins (#551; Okay's drawing, 31 Oct 2026: three tiles, an L-shaped band each, its outer corner sharp,
+  // round or cut): the band 5 wide, as the shape tile's baton; pictured widths, not lines
+  join: [`<path d="M12 6H17V16H27V21H12Z" ${solid}/>`, `<path d="M12 6H17V16H27V21H17A5 5 0 0 1 12 16Z" ${solid}/>`, `<path d="M12 6H17V16H27V21H17L12 16Z" ${solid}/>`],
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [
     // the baton is the shape tile's baton: same width (5)
@@ -16204,7 +16211,9 @@ var FONTS = {
     const size = this.build_row(own ? { ...num2("size", "Size %", 20, 100, 1), scope: "window" } : { ...num2("size", "Size", 0.3, 8, 0.05, { top: (S) => S.dial_d }), scope: "ring" });
     const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
-    const stroke2 = own ? null : this.box_part("font/stroke", "Stroke", this.stroke_part(), true);
+    const stroke_rows = own ? null : this.stroke_part();
+    const stroke2 = own ? null : this.box_part("font/stroke", "Stroke", stroke_rows, true, stroke_rows.on);
+    if (stroke2) stroke_rows.open = stroke2.open;
     wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el, ...stroke2 ? [stroke2.el] : []), ...own ? [back] : [], state);
     let shown = null;
     out.refresh = (T) => {
@@ -16620,22 +16629,26 @@ var FONTS = {
    *  of vector, and its color"): the switch, and with it on, its width in mm, its join, which side of the outline it
    *  stands on, its colour. Drawn as a grown outline in the files (R4). */
   stroke_part() {
-    const on = this.build_row({ ...seg("stroke", "Stroke", [], { bool: true }), scope: "ring" });
+    const box3 = el("input", { type: "checkbox", id: "ring-stroke-on" });
+    const on = el("label", { className: "check parton", htmlFor: "ring-stroke-on" }, box3, el("span", { className: "words", textContent: "On" }));
+    box3.onchange = () => {
+      this.set_value("ring", "stroke", box3.checked);
+      if (box3.checked && out.open) out.open();
+    };
     const rows = [
       this.build_row({ ...num2("stroke_w", "Width", 0.02, 1, 0.01), scope: "ring" }),
-      this.build_row({ ...seg("stroke_join", "Join", STROKE_JOINS), scope: "ring" }),
+      this.build_row({ ...pick("stroke_join", "Join", STROKE_JOINS, PICS.join), scope: "ring" }),
+      // the joins as pictures: an L-shaped band, its corner sharp, round or cut
       this.build_row({ ...seg("stroke_side", "Side", STROKE_SIDES), scope: "ring" }),
       this.build_row({ ...col("stroke_c", "Colour"), scope: "ring" })
     ];
-    const wrap = el("div", { className: "strokerows" }, on.el, ...rows.map((r) => r.el));
-    return { el: wrap, refresh: (R, T) => {
-      on.refresh(T);
-      for (const r of rows) {
-        r.el.hidden = !T.stroke;
-        r.refresh(T);
-      }
+    const wrap = el("div", { className: "strokerows" }, ...rows.map((r) => r.el));
+    const out = { el: wrap, on, refresh: (R, T) => {
+      box3.checked = Boolean(T.stroke);
+      for (const r of rows) r.refresh(T);
       return true;
     } };
+    return out;
   },
   features_part(pre, own) {
     const wrap = el("div", { className: "features" }), side = this.font_side(own);
@@ -16676,7 +16689,7 @@ var FONTS = {
   },
   /** a part of a font box that can be put away (Okay, 13 Oct 2026: "show hide within block possible"): a line with its
    *  name, a press folds what is under it. Kept with the panes' folds, one for all font boxes. */
-  box_part(name, title, part2, shut = false) {
+  box_part(name, title, part2, shut = false, aside = null) {
     const head = el("button", { type: "button", className: "partfold", title: "Show or hide this part" });
     let none = false;
     const set = () => {
@@ -16699,12 +16712,14 @@ var FONTS = {
       }
       set();
     };
-    const wrap = el("div", { className: "boxpart" }, head, part2.el);
+    const wrap = el("div", { className: "boxpart" }, aside ? el("div", { className: "partline" }, head, aside) : head, part2.el);
     return { el: wrap, refresh: (R, T) => {
       const has = part2.refresh(R, T);
       wrap.hidden = !has;
       none = has === "none";
       set();
+    }, open: () => {
+      if (this.folds[name] ?? shut) head.click();
     } };
   },
   /** fonts are needed before the first numerals are right: load what the settings name, if we may. */
