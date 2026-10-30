@@ -7,6 +7,7 @@
 // The tune file (kept in git, so the next agent has it) is plain JavaScript run in the page, with three things set:
 //   part   = ".bar .lead"          the part to show (a selector)
 //   tab    = "Dial"                the tab to open first (optional)
+//   below  = 300                   optional: px more under the part, for a popup hanging from it
 //   css    = `...`                 rules laid over the stylesheet: use the tokens (docs/sectors.md, docs/css-map.md)
 //   build  = async () => { ... }   optional: anything CSS can't do (a new row from the app's own builders, a changed word);
 //                                  it may await ink(".selector") — the part's ink rectangle, read off the screen — to
@@ -56,7 +57,7 @@ async function shot(tuned) {
       return { left: r.x + x0 / k, right: r.x + x1 / k, top: r.y + y0 / k, bottom: r.y + y1 / k };
     }, [png, r]);
   });
-  const T = await page.evaluate(`(() => { let part = ".bar", tab = "Dial", css = "", build = null; ${tune}; return { part, tab, css, build: build ? String(build) : null }; })()`);
+  const T = await page.evaluate(`(() => { let part = ".bar", tab = "Dial", css = "", build = null, below = 0; ${tune}; return { part, tab, css, below, build: build ? String(build) : null }; })()`);
   await page.click(`button[data-tab="${T.tab}"]`);
   await page.evaluate(() => window.dial_tool.paint && window.dial_tool.paint());
   if (tuned) {
@@ -65,7 +66,7 @@ async function shot(tuned) {
   }
   await page.waitForTimeout(400);
   const b = await (await page.$(T.part)).boundingBox();
-  const clip = { x: Math.max(0, b.x - M), y: Math.max(0, b.y - M), width: b.width + 2 * M, height: b.height + 2 * M };
+  const clip = { x: Math.max(0, b.x - M), y: Math.max(0, b.y - M), width: b.width + 2 * M, height: b.height + 2 * M + T.below };      // below: room for a popup hanging under the part (the same in both shots)
   const png = await page.screenshot({ clip });
   await page.close();
   return { png: png.toString("base64"), clip };

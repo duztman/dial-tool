@@ -25,7 +25,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 | 439 | Backdrop's swatch loses its outline at times |  | verify |
 | 453 | FIT's left line on a phone | 21 Oct 2026 — "This fit losing border on mobile still an issue" | verify |
 | 552 | The Type pane opening jumps the panel's scroll | 31 Oct 2026 — "it should open in place, without moving up" | ask — not seen in Chromium; which machine and browser? |
-| 553 | The bar's time box squeezed: colons as black lines, the room to the slider, AM in NOW's type | 31 Oct 2026 — "Squeeze this box to minimum … Colons on time, replace with black vertical lines" | drawn, not built — aborted 01:17 ("Abort mission"); the sketch kit on his Mac, `screenshots/2026-10-31/claude/time-box-sketch/` |
+| 553 | The bar's time box squeezed: colons as split hairlines, AM's box narrower, the room to the slider | 31 Oct 2026 — "Done. Don't publish yet, just make sure this is the thing will come up" (01:49) | approved, not built — the spec is `web/test/sketches/bar-time.js` (round 4); build on Okay's word |
 | 465 | Bevel not seen in 4.89.12 |  | verify |
 | 232 | Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch | 15 Oct 2026 | open |
 | 369 | "The preview gets these wonky orange parts" |  | verify |
@@ -110,6 +110,7 @@ From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Oka
 | 535 | Sliders that stop short | 24 Oct 2026 | open |
 | 536 | Help page and bug reports | 24 Oct 2026 | now |
 | 548 | A visitor counter on the live site | 27 Oct 2026 | open — not built until Okay says build |
+| 554 | Settings: a cog in the unit box's place, a white box with Unit and Colours | 31 Oct 2026 — "We are adding a settings icon. In place of mm" | drawing, round 1 (`web/test/sketches/settings.js`) |
 | 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane (4.94.4) and the Light tab's sun box (4.94.9) built; the guides' foot open |
 | 528 | Dramatic lighting more dramatic |  | built (4.94.19); the darkness to confirm |
 | 530 | SVG imports after v1 |  | decided |
