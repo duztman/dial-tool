@@ -164,6 +164,9 @@ export const PICS = {
   // show mode's Dial tab (#546; Okay, 25 Oct 2026: "Tiny marks … look at prescedents"; "Hands unnecessary to iconize"):
   // beside the ring marks above, a window (the Windows tab's, alone), at KIND_PIC
   window_mark: icon(`<rect x="7" y="8.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none"/>`, KIND_PIC),
+  // a stroke's joins (#551; Okay's drawing, 31 Oct 2026: three tiles, an L-shaped band each, its outer corner sharp,
+  // round or cut): the band 5 wide, as the shape tile's baton; pictured widths, not lines
+  join: [`<path d="M12 6H17V16H27V21H12Z" ${solid}/>`, `<path d="M12 6H17V16H27V21H17A5 5 0 0 1 12 16Z" ${solid}/>`, `<path d="M12 6H17V16H27V21H17L12 16Z" ${solid}/>`],
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [                                        // the baton is the shape tile's baton: same width (5)
     `<rect x="16.5" y="4" width="5" height="19" ${solid}/>`,

@@ -47,6 +47,10 @@
   @media (hover: hover) { .partfold:hover { background: var(--hover); } }
   .fontbox .tile > .sticker { justify-self: start; }
   .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
+  .partline { display: flex; align-items: center; }      /* a part's head with a control beside it: the Stroke's On tick (#551) */
+  .partline > .partfold { flex: 1; }
+  .partline > .parton { flex: none; padding: 0 var(--frame-pad); font-weight: 400; }
+  .strokerows > .row { border-top: var(--hair) solid var(--rule); }      /* the Stroke's rows ruled apart, as the box's own lines (Okay, 31 Oct 2026: "the sections need hr rules like above") */
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontname .btn { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* Lang. and Change…: three quarters of a button, and lighter (Okay, 14 Oct 2026) */
   @media (hover: hover) { .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); } }

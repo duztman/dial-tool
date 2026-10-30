@@ -5,8 +5,8 @@ import * as G from "./geometry.js";
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { $, DEFAULT_ON, FEATURE_NAMES, KEY, PLACE, clamp, el, filled, fmt, parse_number } from "./ui.js";
 
-import { NONE_SIGN, SIGNS, TOOL_ICONS, eye, icon } from "./icons.js";
-import { LANG_NAMES, col, lang_short, num, seg } from "./rows.js";
+import { NONE_SIGN, PICS, SIGNS, TOOL_ICONS, eye, icon } from "./icons.js";
+import { LANG_NAMES, col, lang_short, num, pick, seg } from "./rows.js";
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
 export const FONT_DARK_KEY = KEY("font-dark");      // the font sheet's ground, light or dark, kept for the session (#276)
@@ -163,7 +163,9 @@ export const FONTS = {
     const size = this.build_row(own ? { ...num("size", "Size %", 20, 100, 1), scope: "window" } : { ...num("size", "Size", 0.3, 8, 0.05, { top: (S) => S.dial_d }), scope: "ring" });      // a window's text is sized in % of its height
     const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
-    const stroke = own ? null : this.box_part("font/stroke", "Stroke", this.stroke_part(), true);      // a ring's letters can take a stroke (#551); a window's text not yet
+    const stroke_rows = own ? null : this.stroke_part();      // a ring's letters can take a stroke (#551); a window's text not yet
+    const stroke = own ? null : this.box_part("font/stroke", "Stroke", stroke_rows, true, stroke_rows.on);
+    if (stroke) stroke_rows.open = stroke.open;
     wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el, ...(stroke ? [stroke.el] : [])), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
@@ -482,15 +484,20 @@ export const FONTS = {
    *  of vector, and its color"): the switch, and with it on, its width in mm, its join, which side of the outline it
    *  stands on, its colour. Drawn as a grown outline in the files (R4). */
   stroke_part() {
-    const on = this.build_row({ ...seg("stroke", "Stroke", [], { bool: true }), scope: "ring" });
+    // On stands on the part's head line as a tick (Okay's drawing, 31 Oct 2026: "☑ on" beside Stroke); turned on, the part
+    // opens; the eye opens it without turning it on, its rows showing either way
+    const box = el("input", { type: "checkbox", id: "ring-stroke-on" });
+    const on = el("label", { className: "check parton", htmlFor: "ring-stroke-on" }, box, el("span", { className: "words", textContent: "On" }));
+    box.onchange = () => { this.set_value("ring", "stroke", box.checked); if (box.checked && out.open) out.open(); };
     const rows = [
       this.build_row({ ...num("stroke_w", "Width", 0.02, 1, 0.01), scope: "ring" }),
-      this.build_row({ ...seg("stroke_join", "Join", G.STROKE_JOINS), scope: "ring" }),
+      this.build_row({ ...pick("stroke_join", "Join", G.STROKE_JOINS, PICS.join), scope: "ring" }),      // the joins as pictures: an L-shaped band, its corner sharp, round or cut
       this.build_row({ ...seg("stroke_side", "Side", G.STROKE_SIDES), scope: "ring" }),
       this.build_row({ ...col("stroke_c", "Colour"), scope: "ring" }),
     ];
-    const wrap = el("div", { className: "strokerows" }, on.el, ...rows.map((r) => r.el));
-    return { el: wrap, refresh: (R, T) => { on.refresh(T); for (const r of rows) { r.el.hidden = !T.stroke; r.refresh(T); } return true; } };
+    const wrap = el("div", { className: "strokerows" }, ...rows.map((r) => r.el));
+    const out = { el: wrap, on, refresh: (R, T) => { box.checked = Boolean(T.stroke); for (const r of rows) r.refresh(T); return true; } };
+    return out;
   },
 
   features_part(pre, own) {
@@ -539,7 +546,7 @@ export const FONTS = {
 
   /** a part of a font box that can be put away (Okay, 13 Oct 2026: "show hide within block possible"): a line with its
    *  name, a press folds what is under it. Kept with the panes' folds, one for all font boxes. */
-  box_part(name, title, part, shut = false) {
+  box_part(name, title, part, shut = false, aside = null) {
     const head = el("button", { type: "button", className: "partfold", title: "Show or hide this part" });
     let none = false;                              // nothing to show (a font without switches): the line is grey, its sign a sheet with a cross, and it folds nothing
     const set = () => {
@@ -553,8 +560,8 @@ export const FONTS = {
       head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>` + (many ? `<span class="many">${many}</span>` : "");
     };
     head.onclick = () => { if (none) return; this.is_folded({ fold: name, row: {} }); this.folds[name] = !(this.folds[name] ?? shut); try { localStorage.setItem(KEY("folds"), JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
-    const wrap = el("div", { className: "boxpart" }, head, part.el);
-    return { el: wrap, refresh: (R, T) => { const has = part.refresh(R, T); wrap.hidden = !has; none = has === "none"; set(); } };
+    const wrap = el("div", { className: "boxpart" }, aside ? el("div", { className: "partline" }, head, aside) : head, part.el);      // aside: a control on the head's line (the Stroke's On)
+    return { el: wrap, refresh: (R, T) => { const has = part.refresh(R, T); wrap.hidden = !has; none = has === "none"; set(); }, open: () => { if (this.folds[name] ?? shut) head.click(); } };
   },
 
   /** fonts are needed before the first numerals are right: load what the settings name, if we may. */

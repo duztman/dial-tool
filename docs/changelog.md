@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.1 beta · 31 Oct 2026 — the Stroke part as drawn: On on its head line, the joins as tiles, rules between the rows
+
+Okay, 31 Oct 2026, 00:44, his marks on v1.1: "Change corner pills into buttons that I designed on the side. And the sections need hr rules like above. And also turning stroke on expands panel. Opening eye just expands panel without turning it on."
+
+- **On** is a tick on the Stroke head's line; ticked, the part opens. The eye opens the part without turning the stroke on; Width · Join · Side · Colour show whenever the part is open.
+- **Join** is three tiles (`PICS.join`): an L-shaped band each, its outer corner sharp, round or cut — Miter · Round · Bevel.
+- A hairline over each of the part's rows, as between the box's own lines.
+- A box part can carry a control on its head line (`box_part`'s `aside`) and be opened from outside (`open`).
+
 ## v1.1 beta · 31 Oct 2026 — a stroke round a ring's letters (#551)
 
 Okay, 30 Oct 2026, 21:58: "I'd like to add strokes to shapes, numbers as well, but good strokes, uniform. And round/sharp/miter options"; 31 Oct, 00:25: "add strokes to Type, under OpenType features. Stroke on off, miter round sharp, inside middle outside of vector, and its color"; in question mode: Miter · Round · Bevel; the colour "Only in the Type pane".
