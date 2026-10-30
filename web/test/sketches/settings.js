@@ -11,13 +11,18 @@
 // 02:06, round 5: "Red marked vertical gaps look excessive. Are they up to code? Even so, reduce, equalize with line and
 // its after. Bg of popout box darker, and where is thou?" — pill to note = note to the line after it = the line before
 // a row to its pill, measured off the screen; the box on the panel's grey (--well); thou listed (the app's own units).
+// 02:07, round 6: "No box around cog icon unless hover and click." — three states: closed, under the pointer, open.
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
+states = ["closed", "hover", "open"];
 below = 260;
 tab = "Dial";
 css = `
   .unitbox.cog { width: auto; height: auto; padding: var(--u1); display: grid; place-items: center; }
   .unitbox.cog > .word { display: none; }
+  .unitbox.cog { border-color: transparent; }      /* no frame at rest */
+  @media (hover: hover) { .unitbox.cog:hover { border-color: currentColor; } }      /* its frame under the pointer; open, the app's chosen look (5-chosen.css: ink, the cog in paper) */
+  .unitbox.cog[aria-expanded="true"] { border-color: var(--ink); }      /* this sketch's styles stand outside the layers, so the chosen frame is said again */
   .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: max-content; border: var(--hair) solid var(--ink); background: var(--well); padding: var(--u2); }      /* --u2 in from every side: the grey lines over the first row and under the last stand clear of the black edge */
   .settingsbox > .row.note > .quiet { grid-column: 2; }      /* on the controls' column, as a pane's note (4c-rows.css, .body) */
   .settingsbox { display: grid; grid-template-columns: max-content max-content; }      /* two columns: the names, the controls */
@@ -25,7 +30,7 @@ css = `
   .settingsbox > .row > label { grid-column: 1; justify-self: end; text-align: right; }      /* the name against its controls, a column gap from them */
   .settingsbox > .row > :not(label) { grid-column: 2; }
 `;
-build = async () => {
+build = async (state) => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q);
   // the cog: 8 teeth, outline, a hole; drawn at its size on screen (16), curves at CURVE 1.625 (R33, canon §9)
   const c = 8.25, R = 7, r = 5.25, hole = 2.5, n = 8, top = 0.16, foot = 0.24;      // centre on a quarter point; tooth tops and feet as fractions of a turn's eighth
@@ -47,6 +52,8 @@ build = async () => {
   row({ kind: "seg", key: "ui_colour_as", text: "Colours", items: ["RGB", "HEX", "CMYK", "RAL"], scope: "" });
   row({ kind: "note", text: "The colour pop-out opens in it" });
   $(".unit").append(box);
+  b.setAttribute("aria-expanded", String(state === "open"));
+  if (state !== "open") { box.style.display = "none"; return state === "hover" ? { hover: "#unit" } : null; }
   box.querySelectorAll(".row").forEach((r) => r.hidden = false);
   box.querySelectorAll(".row").forEach((r, i) => r.id ||= "set-row-" + i);
   box.querySelectorAll(".row.note").forEach((n) => { n.previousElementSibling.classList.add("noted"); n.dataset.after = "field"; });      // as sync_rows marks a row and its note: one box, the note just below the pill

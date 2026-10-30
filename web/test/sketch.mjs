@@ -9,9 +9,11 @@
 //   tab    = "Dial"                the tab to open first (optional)
 //   below  = 300                   optional: px more under the part, for a popup hanging from it
 //   css    = `...`                 rules laid over the stylesheet: use the tokens (docs/sectors.md, docs/css-map.md)
-//   build  = async () => { ... }   optional: anything CSS can't do (a new row from the app's own builders, a changed word);
+//   states = ["closed", "open"]    optional: one tuned shot per state; build receives the state's name
+//   build  = async (state) => {…}  optional: anything CSS can't do (a new row from the app's own builders, a changed word);
 //                                  it may await ink(".selector") — the part's ink rectangle, read off the screen — to
-//                                  centre or space things on what is drawn, not on their boxes
+//                                  centre or space things on what is drawn, not on their boxes; it may return
+//                                  { hover: ".selector" } to be shot with the pointer over that part
 // When Okay says build, the tune's values go into src/ and the tune file is deleted.
 //
 // Rulers: 1 tick = 1 px of the window (the shot is 2×, so a tick is 2 px of the picture), longer every 5, longest every
@@ -24,7 +26,7 @@ const tune = fs.readFileSync(`test/sketches/${name}.js`, "utf8");
 const W = +(process.env.CROP_W || 1440), H = +(process.env.CROP_H || 900), M = 12;      // the window; the margin round the part
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
 
-async function shot(tuned) {
+async function shot(tuned, state = "") {
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 2 });
   page.on("pageerror", (e) => console.log("page error:", e.message));
   page.on("console", (m) => { if (m.text().startsWith("measured")) console.log(m.text()); });      // what a tune reports of itself
@@ -57,22 +59,24 @@ async function shot(tuned) {
       return { left: r.x + x0 / k, right: r.x + x1 / k, top: r.y + y0 / k, bottom: r.y + y1 / k };
     }, [png, r]);
   });
-  const T = await page.evaluate(`(() => { let part = ".bar", tab = "Dial", css = "", build = null, below = 0; ${tune}; return { part, tab, css, below, build: build ? String(build) : null }; })()`);
+  const T = await page.evaluate(`(() => { let part = ".bar", tab = "Dial", css = "", build = null, below = 0, states = [""]; ${tune}; return { part, tab, css, below, states, build: build ? String(build) : null }; })()`);
   await page.click(`button[data-tab="${T.tab}"]`);
   await page.evaluate(() => window.dial_tool.paint && window.dial_tool.paint());
   if (tuned) {
     await page.addStyleTag({ content: T.css });
-    if (T.build) await page.evaluate(`(${T.build})()`);
+    const did = T.build ? await page.evaluate(`(${T.build})(${JSON.stringify(state)})`) : null;
+    if (did && did.hover) await page.hover(did.hover);      // a state shown under the pointer: build returns { hover: selector }
   }
   await page.waitForTimeout(400);
   const b = await (await page.$(T.part)).boundingBox();
   const clip = { x: Math.max(0, b.x - M), y: Math.max(0, b.y - M), width: b.width + 2 * M, height: b.height + 2 * M + T.below };      // below: room for a popup hanging under the part (the same in both shots)
   const png = await page.screenshot({ clip });
   await page.close();
-  return { png: png.toString("base64"), clip };
+  return { png: png.toString("base64"), clip, states: T.states };
 }
 
-const before = await shot(false), after = await shot(true);
+const before = await shot(false), shots = [["As it is", before]];
+for (const st of before.states) shots.push([`Tuned: ${name}` + (st ? ` · ${st}` : ""), await shot(true, st)]);      // one shot per state the tune names (closed, hover, open…)
 // lay the two out with their rulers, on a page of its own, and shoot that
 const page = await browser.newPage({ viewport: { width: 400, height: 300 }, deviceScaleFactor: 2 });
 await page.setContent(`<!doctype html><style>
@@ -82,7 +86,7 @@ await page.setContent(`<!doctype html><style>
   .x, .y { position: absolute; } .x { left: 0; top: 100%; height: 14px; } .y { right: 100%; top: 0; width: 14px; }
   .t { position: absolute; background: #5C5C58; } .x .t { width: 1px; } .y .t { height: 1px; }
   .n { position: absolute; font-size: 8px; } .x .n { top: 11px; translate: -50% 0; } .y .n { right: 12px; translate: 0 -50%; }
-</style><body>${[["As it is", before], ["Tuned: " + name, after]].map(([cap, s]) => {
+</style><body>${shots.map(([cap, s]) => {
   const w = s.clip.width, h = s.clip.height;
   const ticks = (n, axis) => Array.from({ length: Math.floor(n) + 1 }, (_, i) => {
     const len = i % 10 === 0 ? 8 : i % 5 === 0 ? 5 : 3, pos = axis === "x" ? `left:${i}px;top:0;height:${len}px` : `top:${i}px;right:0;width:${len}px`;
