@@ -163,7 +163,7 @@
 | `--mast-ink` · set in 4a-panel | `var(--ink)` |  | 4a-panel ×2 | 4a-panel `#app.dark` → `var(--white)` |
 | `--mast-shift` · the window's | `—` |  | 4a-panel | set by preview.js |
 | `--menu-box` | `18px` | the boxed arrow beside a label that opens a small menu | 4c-rows ×2 |  |
-| `--mono` | `ui-monospace, "SF Mono", Menlo, Consolas, monospace` | only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") | 1-tokens ×2, 3-controls ×2, 4e-colour ×2, 4f-rings, 6-preview, 7-bar ×2 |  |
+| `--mono` | `"Dial Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace` | the house mono, Dial Mono (packed; a plain 0), the system's behind it (Okay, 30 Oct 2026: "go with dial mono for all then, but try not to change shapes"); only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") | 1-tokens ×2, 3-controls ×2, 4e-colour ×2, 4f-rings, 6-preview, 7-bar ×2 |  |
 | `--n` · the window's | `—` |  | 4c-rows | set by windows.js |
 | `--name-in` · special | `6px` | a ring's name starts this far into its column; the ring line's buttons too | 4f-rings ×2 |  |
 | `--names` | `18px` | the day's ruler: its height, the hours' names under it, the handle's width | 7-bar ×8 |  |

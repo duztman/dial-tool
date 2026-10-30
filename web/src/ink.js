@@ -39,8 +39,12 @@ export function offset(text, style) {
   const track = parseFloat(style.letterSpacing) || 0;      // tracking: the browser adds it after every letter, the last too
   const key = font + "|" + track + "|" + text;
   if (!known.has(key)) {
-    pen.font = font;
-    const m = pen.measureText(text);
+    // measured ten times larger and scaled back: at a label's own size the canvas rounds a face's metrics to whole
+    // pixels (Dial Mono's "1" came back a pixel tall, and the label sat a pixel low), at 110 px it does not
+    const px = parseFloat(style.fontSize) || 10, scale = 10;
+    pen.font = `${style.fontStyle} ${style.fontWeight} ${px * scale}px ${style.fontFamily}`;
+    const big = pen.measureText(text), m = {};
+    for (const k of ["width", "actualBoundingBoxLeft", "actualBoundingBoxRight", "actualBoundingBoxAscent", "actualBoundingBoxDescent", "fontBoundingBoxAscent", "fontBoundingBoxDescent"]) m[k] = big[k] / scale;
     // left to right: the ink rectangle's centre against the middle of the advance (what the browser centres)
     const ink_x = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
     // top to bottom: the ink rectangle's centre against the middle of the font's own box (the line box's middle)

@@ -137,5 +137,5 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Box rule** | A framed thing spans from the labels' start to the pane's right line, `--frame-pad` inside (design canon §10). |
 | **Scale** (of spaces) | Every space a step of the unit (5.5): `--u1` ½ … `--u8` 4 units (R32). |
 | **Icon** | A small SVG drawn in `icons.js` by R33: the **icon grid** (one unit a point, lines on **quarter points**), four widths **LINE · SLANT · CURVE · DENSE**, a **pictured width** kept as drawn, a **rim** an ordinary line, a line's **look** read by `icons/look.py`. |
-| **Dial Mono** · **Dial Time** · **Pixel font** | The tool's own packed fonts: JetBrains Mono (the unit box, the row's numbers), Barlow Condensed Light (the bar's time), Silkscreen (stickers, tiny numbers). Not dial fonts. |
+| **Dial Mono** · **Dial Time** · **Pixel font** | The tool's own packed fonts: JetBrains Mono with a plain 0, the interface's mono — `--mono` — in two weights (the unit box, the row's numbers, the bar, the log, links, a hex), Barlow Condensed Light (the bar's time), Silkscreen (stickers, tiny numbers). Not dial fonts. |
 | **Imported file** | An SVG, PDF or AI as a marker or hand shape (R23; not built, #50). |

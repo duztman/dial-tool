@@ -46,9 +46,11 @@ const sheets = fs.readdirSync(path.join(here, "src/css")).filter((f) => f.endsWi
 // Dial Time (fonts/ui/time_font.py: Barlow Condensed Light, SIL OFL, cut down, its colon smaller and centred): the
 // bar's time and AM · PM (#284, beta 4.44)
 const time_face = `@font-face { font-family: "Dial Time"; font-weight: 300; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/DialTime-Light.ttf"))}) format("truetype"); font-display: block; }`;
-// Dial Mono (fonts/ui/mono_font.py: JetBrains Mono, SIL OFL, at the weight whose stem is a line at 10 px, cut down):
-// the unit box's word (#302, beta 4.44.1)
-const unit_face = `@font-face { font-family: "Dial Mono"; font-weight: 400; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/DialMono.ttf"))}) format("truetype"); font-display: block; }`;
+// Dial Mono (fonts/ui/mono_font.py: JetBrains Mono, SIL OFL, at the weight whose stem is a line at 10 px, a plain 0, cut
+// down): the interface's mono — the unit box's word (#302, beta 4.44.1) and everything --mono sets (Okay, 30 Oct 2026:
+// "go with dial mono for all"); a semibold cut for the bar's names
+const unit_face = `@font-face { font-family: "Dial Mono"; font-weight: 400; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/DialMono.ttf"))}) format("truetype"); font-display: block; }
+@font-face { font-family: "Dial Mono"; font-weight: 600; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/DialMono-Semi.ttf"))}) format("truetype"); font-display: block; }`;
 // Dial Date (fonts/ui/date_font.py: Inter SemiBold, SIL OFL, its figures only): the bar's stacked date (Okay: "try inter with appropriate weight for that size")
 const date_face = `@font-face { font-family: "Dial Date"; font-weight: 600; src: url(data:font/otf;base64,${b64(path.join(here, "fonts/ui/DialDate-SemiBold.otf"))}) format("opentype"); font-display: block; }`;
 const css = sheets.map((f) => fs.readFileSync(path.join(here, "src/css", f), "utf8")).join("\n") + pixel + time_face + unit_face + date_face;

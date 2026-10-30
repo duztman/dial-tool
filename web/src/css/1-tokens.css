@@ -186,7 +186,7 @@
     --scrollbar: var(--unit);                      /* a scrollbar drawn by the tool: slim */
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --pixel: "Silkscreen", ui-monospace, Menlo, monospace;      /* tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) */
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
+    --mono: "Dial Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* the house mono, Dial Mono (packed; a plain 0), the system's behind it (Okay, 30 Oct 2026: "go with dial mono for all then, but try not to change shapes"); only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
 
     /* ── specials (R32) ──────────────────────────────────────────────────────────────────────────────────
        Every value that leaves the scale of spaces (--u1 … --u8), the three lines (--hair, --thick, --triple) or the

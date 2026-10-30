@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.0.5 beta · 30 Oct 2026 — Dial Mono is the interface's mono
+
+Okay, 30 Oct 2026, 16:56: "House mono i meant we have a monospace font selected for the whole ui dont we? Sf mono should be a fallback for macs"; 18:10: "Ok go with dial mono for all then, but try not to change shapes."
+
+- `--mono` is now `"Dial Mono", ui-monospace, "SF Mono", …`: the packed JetBrains Mono cut (plain 0) draws everything the tool sets in mono — the bar, the log, links, a hex, a RAL name, the feature tags — on every machine the same; the system's mono stands behind it. `fonts/ui/mono_font.py` cuts the whole printable set now (and ≈ · × — → …), in two weights: the regular at the stem weight 456, and a semibold for the bar's sliding speed pill (11 KB each, packed by `build.mjs`).
+- Shapes held: measured before and after at 1440 px, the bar's three parts (460 · 562 · 121) and the log are unchanged, a colour pill 79.1 → 78.9; a mono character advances 0.6 em in both faces.
+- `ink.js` measures a label ten times larger and scales back: at a label's own size the canvas rounds a face's metrics to whole pixels, and a Dial Mono "1" on the bar sat a pixel low.
+- v1.0.4's split (the pop-out's number cells in the sans) stands: numbers alone are the panel's type (design.md §type); the hex, the name and the pill are mono.
+
 ## v1.0.4 beta · 30 Oct 2026 — the pop-out's numbers in the panel's type; v1.0.3's Dial Mono taken back
 
 Okay, 30 Oct 2026, 16:50: "You overdid it instead of reading the rules. No new fonts necessary … Ui elements do not get slashed 0s."
