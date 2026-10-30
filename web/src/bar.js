@@ -87,7 +87,7 @@ export const BAR = {
   /** the day's ruler. An hour gets as many cuts as its width allows: none, halves, quarters, ten or five minutes.
    *  Hour lines are long, the others shorter; all cross the line. A click on the slider snaps to the nearest cut. */
   draw_ruler() {
-    const W = this.time_slider.clientWidth, H = 22, THUMB = 3;
+    const W = this.time_slider.clientWidth, H = 26, THUMB = 3;      // H: --ruler
     if (!W) return;
     const hour = (W - THUMB) / 12;
     const minutes = [5, 10, 15, 30, 60].find((m) => hour / (60 / m) >= 7) || 60;      // cuts at least 7 apart
@@ -95,7 +95,7 @@ export const BAR = {
     const lines = { hour: "", half: "", small: "" };
     this.day_ticks = [];
     for (let m = 0; m < 720; m += minutes) {
-      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 18, half: 12, small: 7 }[kind];      // all longer (Okay, 15 Oct 2026, 00:42; were 16 · 10 · 6)
+      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 21, half: 14, small: 8 }[kind];      // taller (Okay, 30 Oct 2026, 18:38: "taller marks as wider vertically"; were 18 · 12 · 7)
       lines[kind] += `M${x(m * 60)} ${(H - h) / 2}V${(H + h) / 2}`;
       this.day_ticks.push(m * 60);
     }

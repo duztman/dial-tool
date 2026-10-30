@@ -91,8 +91,8 @@
     /* the time and AM · PM in Dial Time (#284, beta 4.44: Barlow Condensed Light, packed; fonts/ui/time_font.py). Its
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
-    --time-face: "Dial Time", var(--mono);
-    --time-figure: 0.418em; --time-colon: 0.24em; --time-pm: 0.8em; --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
+    --time-face: var(--mono);                      /* the time and AM · PM in the house mono (Okay, 30 Oct 2026, 18:31: "make the time and ampm mono too"); Dial Time stays packed for the Show Case */
+    --time-figure: 0.6em; --time-colon: 0.6em; --time-pm: 1.2em;      /* a mono's advance: every character 0.6 em, "AM" two of them */ --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
     --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
@@ -128,7 +128,7 @@
     --grip: 18px;                                  /* the ring list's drag handle column */
     --log-least: 96px; --log-most: 260px;          /* the Export log: at least this high, at most this */
     --round-switch: 10px;                          /* the switches on the preview: undo, Guides, Backdrop */
-    --ruler: 22px; --names: 18px; --day-handle: var(--triple);      /* the day's ruler: its height, the hours' names under it, the handle's width */
+    --ruler: 26px; --names: 18px; --day-handle: var(--triple);      /* the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width */
     --bar-lead-narrow: 46px; --bar-day-narrow: 48px;      /* on a phone the bar is two lines: the panel's controls, then the day */
     --tick: 16px;                                  /* a tick box */
     --tick-gap: var(--u4);                         /* from a tick box to its words (the box's margin and a space's width before, 8.25 + 3.4); a note under the words starts there too (#420) */

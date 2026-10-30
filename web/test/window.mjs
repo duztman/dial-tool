@@ -1734,8 +1734,8 @@ check(t2 - t1 > 20 && t2 - t1 < 90, `about 60×: a minute every second (${(t2 - 
     out.dot = [+(((dot.left + dot.right) / 2 - track.left) / track.width).toFixed(3), +split.toFixed(3), getComputedStyle(t.speeds.querySelector(".knob.one")).backgroundColor];
     return out;
   });
-  check(slow.left.join() === "0.1,0,0.1×,0.1X" && slow.near_quarter[0] === 0.25 && slow.near_quarter[1] === Math.round(slow.split * 1000 / 3) && slow.half[0] === 0.5 && slow.half[3] === "0.5X" && slow.one[0] === slow.one[1] && slow.wide >= 2 * slow.thumb - 1 && Math.abs(slow.dot[0] - slow.dot[1]) < 0.01 && slow.dot[2] === "rgb(0, 0, 0)",
-    `slow motion: the track's first ${slow.wide} (two ${slow.thumb} thumbs) holds 0.1 · 0.25 · 0.5 · 1×, the thumb snapping onto them (${slow.near_quarter[0]}× at its step); 1× is ${slow.one[0] / 10} % along, marked by a black dot on the line (4.44.5)`);
+  check(slow.left.join() === "0.1,0,0.1×,0.1X" && slow.near_quarter[0] === 0.25 && slow.near_quarter[1] === Math.round(slow.split * 1000 / 3) && slow.half[0] === 0.5 && slow.half[3] === "0.5X" && slow.one[0] === slow.one[1] && slow.wide >= slow.thumb && Math.abs(slow.dot[0] - slow.dot[1]) < 0.01 && slow.dot[2] === "rgb(0, 0, 0)",
+    `slow motion: the track's first ${slow.wide} (a ${slow.thumb} thumb or more: the mono time took the slider's room, Okay, 30 Oct 2026: "gorgeous") holds 0.1 · 0.25 · 0.5 · 1×, the thumb snapping onto them (${slow.near_quarter[0]}× at its step); 1× is ${slow.one[0] / 10} % along, marked by a black dot on the line (4.44.5)`);
 }
 await at_speed(1);
 const z1 = await S("t.z");
@@ -2352,10 +2352,10 @@ await tab("Export");
     `the speed thumb at an end stands as far from the box's wall (${m.side.join(" · ")}) as from its top (${m.top}); mm's word and line one light colour (${m.unit[0]})`);
 }
 const look = await page.evaluate(() => { const q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect(), c = (s) => getComputedStyle(q(s));
-  return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], time: c("#time").fontFamily.startsWith('"Dial Time"') && document.fonts.check('300 17px "Dial Time"'),
+  return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], time: c("#time").fontFamily.startsWith('"Dial Mono"') && document.fonts.check('400 17px "Dial Mono"'), names_over: r(".steps12").bottom <= r(".ruler").top + 0.5,
     status: c(".bar .status").display, hint: [q("#zoom-in").dataset.tip, q("#fit").dataset.tip], last: q(".zooms").lastElementChild === q("#fit"), ruler: Math.round(r("#time-slider").width) }; });
-check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint[0].includes("scroll") && look.hint[1].includes("right-drag") && look.last && look.ruler <= 518,
-  `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in Dial Time (Barlow Condensed Light, #284), no status line, how to zoom and move in the squares' tags (Okay, 25 Oct 2026: "Remove it; the tip goes on the buttons' tags"), Fit last, the day slider no wider than an iPad's (${look.ruler})`);
+check(look.square && look.bar === 62 && look.names_over && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint[0].includes("scroll") && look.hint[1].includes("right-drag") && look.last && look.ruler <= 518,
+  `the bar: a fifth higher (${look.bar}), the hours' names over the ruler and its marks taller (Okay, 30 Oct 2026: "put the numbers up top"; "taller marks"), no panel square, a round play, the time in Dial Mono (Okay, 30 Oct 2026: "make the time and ampm mono too"), no status line, how to zoom and move in the squares' tags (Okay, 25 Oct 2026: "Remove it; the tip goes on the buttons' tags"), Fit last, the day slider no wider than an iPad's (${look.ruler})`);
 { // the needle (notes 2, 18 Oct 2026: "Ruler pin does not move on bottom bar"; "1px wide and red, starts from the bottom of
   // the screen"): placed from the time, whatever has the focus; a press and a drag on the strip set the time (an iPad's own
   // range control did not scrub)

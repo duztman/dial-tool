@@ -72,11 +72,11 @@
   .bar .timebox { display: flex; }
   .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
   @media (hover: hover) { .bar .timewell:hover { background: var(--bar-field); } }
-  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
+  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
   /* AM · PM in the same face and size as the time, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am
      attached to time and same size barlow"), one width for both words. A frame,
      never filled (Okay, 15 Oct 2026, 00:18); little room beside its word (#306: "Reds reduce hor padding") */
-  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
+  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
   /* the date (Okay, 18 Oct 2026: "short date … stacked … next to am, touching"; 19 Oct: no year, "better fit inside
      the bounding box"): day over month in Inter SemiBold ("try inter with appropriate weight for that size"), its box
      touching AM · PM's as AM's touches the time's. A press
@@ -129,14 +129,14 @@
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
-  .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
-  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: var(--hair); shape-rendering: crispEdges; }
+  .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--names) var(--ruler); align-content: center; gap: 0; padding: 0 var(--u8); }      /* the hours' names over the ruler (Okay, 30 Oct 2026, 18:37: "put the numbers up top") */
+  .ruler { grid-area: 2 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: var(--hair); shape-rendering: crispEdges; }
   .ruler .line { opacity: var(--ruler-line); }
   .ruler .hour { opacity: var(--ruler-hour); }
   .ruler .half { opacity: var(--ruler-half); }
   .ruler .small { opacity: var(--ruler-small); }
   .bar .day { touch-action: none; cursor: ew-resize; }      /* the strip reads presses itself (app.js day_strip): no pan, no swipe */
-  .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); pointer-events: none; }      /* the keyboard's and a screen reader's way in; presses go to the strip */
+  .bar .day input[type="range"] { grid-area: 2 / 1; height: var(--ruler); pointer-events: none; }      /* the keyboard's and a screen reader's way in; presses go to the strip */
   /* the needle (Okay, 18 Oct 2026, notes 2: "The moving needle is 1px wide and red, starts from the bottom of the screen
      unlike the ruler which has room below"): placed by app.js (place_needle) from the ruler's top to the bar's foot */
   .bar .day .needle { position: absolute; z-index: 1; width: var(--hair); translate: -50% 0; background: var(--play); pointer-events: none; }
@@ -147,7 +147,7 @@
   .bar .day input[type="range"]::-moz-range-thumb { width: var(--day-handle); height: var(--ruler); border-radius: 0; background: none; box-shadow: none; }
   .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-light); }
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
-  .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--day-handle) / 2); }
+  .steps12 { grid-area: 1 / 1; position: relative; height: var(--names); margin: 0 calc(var(--day-handle) / 2); }
   .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-light); }
   @media (hover: hover) { .steps12 button:hover { text-decoration: underline; } }
   .steps12 button.on { font-weight: 700; }

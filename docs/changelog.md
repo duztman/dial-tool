@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.0.6 beta · 30 Oct 2026 — the bar's time and AM · PM in Dial Mono; the hours' names over the ruler, its marks taller
+
+Okay, 30 Oct 2026, 18:31: "While you're at it, make the time and ampm mono too"; 18:37, on the crop: "The screenshot looks gorgeous. Now for the time ruler, put the numbers up top"; 18:38: "I meant taller marks as wider vertically".
+
+- The time field and AM · PM are set in `--mono` (Dial Mono), weight 400, at the same 20 px: `--time-figure` and `--time-colon` are a mono's 0.6 em, AM · PM's box 1.2 em. The time field grows 66 → 102, AM 28 → 36; the speed slider, the lead's flexible part, gives the room (133 → 89), so slow motion's first part now holds one thumb, not two (#283's check reads so). Dial Time stays packed (the Show Case).
+- The day: the hours' names stand over the ruler; the ruler is 26 high with cuts of 21 · 14 · 8 (were 22 and 18 · 12 · 7); the bar keeps its 62.
+
 ## v1.0.5 beta · 30 Oct 2026 — Dial Mono is the interface's mono
 
 Okay, 30 Oct 2026, 16:56: "House mono i meant we have a monospace font selected for the whole ui dont we? Sf mono should be a fallback for macs"; 18:10: "Ok go with dial mono for all then, but try not to change shapes."

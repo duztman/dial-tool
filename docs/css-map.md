@@ -66,7 +66,7 @@
 | `--datepop-pad` · special | `8px` | inside its frame round the boxes · before the weekday | 7-bar ×2 |  |
 | `--datepop-steps-gap` · special | `4px` | between two boxes · before − + | 7-bar |  |
 | `--datepop-year` · special | `44px` | each cell's inside: the day's, the month's, the year's value; a ⌄ | 7-bar |  |
-| `--day-handle` | `var(--triple)` | the day's ruler: its height, the hours' names under it, the handle's width | 7-bar ×3 |  |
+| `--day-handle` | `var(--triple)` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×3 |  |
 | `--day-wide` | `518px` | the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) | 7-bar |  |
 | `--details-line` · special | `17px` | the ring drawer's two lines of details, baseline to baseline (the same drawing: 16–17) | 4f-rings |  |
 | `--dim` · special | `0.45` | a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured | 4f-rings ×2 |  |
@@ -166,7 +166,7 @@
 | `--mono` | `"Dial Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace` | the house mono, Dial Mono (packed; a plain 0), the system's behind it (Okay, 30 Oct 2026: "go with dial mono for all then, but try not to change shapes"); only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") | 1-tokens ×2, 3-controls ×2, 4e-colour ×2, 4f-rings, 6-preview, 7-bar ×2 |  |
 | `--n` · the window's | `—` |  | 4c-rows | set by windows.js |
 | `--name-in` · special | `6px` | a ring's name starts this far into its column; the ring line's buttons too | 4f-rings ×2 |  |
-| `--names` | `18px` | the day's ruler: its height, the hours' names under it, the handle's width | 7-bar ×8 |  |
+| `--names` | `18px` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×8 |  |
 | `--nest-from` | `calc((100% + var(--gap)) / 3)` | where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here | 4c-rows |  |
 | `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×3, 4e-colour, 6-preview ×7 | set by show.js |
 | `--night-chip-rule` | `rgba(255, 255, 255, 0.28)` |  | 3-controls, 4e-colour |  |
@@ -267,7 +267,7 @@
 | `--row-rule` | `var(--line-on-paper)` |  | 4c-rows ×8, 4e-colour ×2, 4f-rings ×4, 6-preview ×4 | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))`; 4a-panel `.form` → `var(--line-on-grey)`; 4f-rings `.numpop .row` → `transparent` |
 | `--rule` | `#B9B9B4` | colour | 1-tokens ×2, 3-controls ×11, 4a-panel ×10, 4b-lines-tabs ×2, 4c-rows, 4d-hands ×2, 4e-colour ×3, 4f-rings ×19, 4g-fonts ×15, 6-preview ×2, 8-narrow ×2 | 3-controls `.night` → `var(--night-rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)`; set by show.js |
 | `--rule-light` | `#D4D4CF` | colour | 4g-fonts ×2 | 4a-panel `.showing .panel` → `var(--rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)` |
-| `--ruler` | `22px` | the day's ruler: its height, the hours' names under it, the handle's width | 7-bar ×7 |  |
+| `--ruler` | `26px` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×7 |  |
 | `--ruler-half` · special | `0.6` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
 | `--ruler-hour` · special | `0.85` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
 | `--ruler-line` · special | `0.4` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
@@ -378,12 +378,12 @@
 | `--tile` | `50px` | a picture tile's least height | 3-controls ×2, 8-narrow |  |
 | `--tile-w` | `calc((4 * var(--col) + 3 * var(--gap) - 3 * var(--unit)) / 4)` | a tile: four stand on the four control columns one unit apart, so each is a little wider than a column. A number's field and its stepper are the third and the fourth tile | 1-tokens ×4, 4g-fonts ×4 |  |
 | `--time-chars` | `calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track))` | the time's field: "10:09:36" | 7-bar |  |
-| `--time-colon` | `0.24em` | the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for | 1-tokens |  |
-| `--time-face` | `"Dial Time", var(--mono)` |  | 7-bar ×2 |  |
-| `--time-figure` | `0.418em` | the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for | 1-tokens |  |
-| `--time-pm` | `0.8em` | the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for | 7-bar |  |
-| `--time-pm-track` | `-0.02em` | the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for | 7-bar |  |
-| `--time-track` | `0.04em` | the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for | 1-tokens, 7-bar |  |
+| `--time-colon` | `0.6em` | a mono's advance: every character 0.6 em, "AM" two of them | 1-tokens |  |
+| `--time-face` | `var(--mono)` | the time and AM · PM in the house mono (Okay, 30 Oct 2026, 18:31: "make the time and ampm mono too"); Dial Time stays packed for the Show Case | 7-bar ×2 |  |
+| `--time-figure` | `0.6em` | a mono's advance: every character 0.6 em, "AM" two of them | 1-tokens |  |
+| `--time-pm` | `1.2em` | a mono's advance: every character 0.6 em, "AM" two of them | 7-bar |  |
+| `--time-pm-track` | `-0.02em` | a mono's advance: every character 0.6 em, "AM" two of them | 7-bar |  |
+| `--time-track` | `0.04em` | a mono's advance: every character 0.6 em, "AM" two of them | 1-tokens, 7-bar |  |
 | `--tiny-cast` · special | `8px` | the Tiny Preview's corners and its hard shadow, down and right (#337, Okay's picture in notes 2) | 6-preview ×2 |  |
 | `--tiny-fade` · special | `150ms` | the Tiny Preview's eye fades in this long | 6-preview |  |
 | `--tiny-round` · special | `18px` | the Tiny Preview's corners and its hard shadow, down and right (#337, Okay's picture in notes 2) | 6-preview |  |
@@ -424,7 +424,7 @@
 | `--word-x` · the window's | `—` |  | 4a-panel | set by bar.js |
 | `--word-y` · the window's | `—` |  | 4a-panel | set by bar.js |
 
-**Tokens whose comment names another token** — a quirk borrowed from another region and given a token of its own (sectors.md §7), or a value derived from another's (21): `--bar-control` ← `--bar-lead-narrow`; `--bar-height` ← `--bar-lead-narrow`; `--canvas-inset` ← `--u5`; `--canvas-inset-wide` ← `--canvas-inset`, `--u5`; `--canvas-top` ← `--header`; `--list-gap` ← `--list-room`; `--pixel-ink-bar` ← `--pixel-ink`; `--pop-chip-gap` ← `--u2`; `--select` ← `--play`; `--select-rule` ← `--play`; `--shadow-solid` ← `--shadow`; `--t-l` ← `--t-xxs`, `--t-time`; `--t-m` ← `--t-xxs`, `--t-time`; `--t-s` ← `--t-xxs`, `--t-time`; `--t-time` ← `--t-l`; `--t-xs` ← `--t-xxs`, `--t-time`; `--time-colon` ← `--time-pm`; `--time-figure` ← `--time-pm`; `--time-pm-track` ← `--time-pm`; `--time-track` ← `--time-pm`; `--tip-half` ← `--arrow`.
+**Tokens whose comment names another token** — a quirk borrowed from another region and given a token of its own (sectors.md §7), or a value derived from another's (17): `--bar-control` ← `--bar-lead-narrow`; `--bar-height` ← `--bar-lead-narrow`; `--canvas-inset` ← `--u5`; `--canvas-inset-wide` ← `--canvas-inset`, `--u5`; `--canvas-top` ← `--header`; `--list-gap` ← `--list-room`; `--pixel-ink-bar` ← `--pixel-ink`; `--pop-chip-gap` ← `--u2`; `--select` ← `--play`; `--select-rule` ← `--play`; `--shadow-solid` ← `--shadow`; `--t-l` ← `--t-xxs`, `--t-time`; `--t-m` ← `--t-xxs`, `--t-time`; `--t-s` ← `--t-xxs`, `--t-time`; `--t-time` ← `--t-l`; `--t-xs` ← `--t-xxs`, `--t-time`; `--tip-half` ← `--arrow`.
 
 **Set but used nowhere** (0): none.
 
