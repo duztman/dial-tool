@@ -25,6 +25,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 | 439 | Backdrop's swatch loses its outline at times |  | verify |
 | 453 | FIT's left line on a phone | 21 Oct 2026 — "This fit losing border on mobile still an issue" | verify |
 | 552 | The Type pane opening jumps the panel's scroll | 31 Oct 2026 — "it should open in place, without moving up" | ask — not seen in Chromium; which machine and browser? |
+| 553 | The bar's time box squeezed: colons as black lines, the room to the slider, AM in NOW's type | 31 Oct 2026 — "Squeeze this box to minimum … Colons on time, replace with black vertical lines" | drawn, not built — aborted 01:17 ("Abort mission"); the sketch kit on his Mac, `screenshots/2026-10-31/claude/time-box-sketch/` |
 | 465 | Bevel not seen in 4.89.12 |  | verify |
 | 232 | Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch | 15 Oct 2026 | open |
 | 369 | "The preview gets these wonky orange parts" |  | verify |
