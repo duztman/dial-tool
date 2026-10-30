@@ -2,6 +2,8 @@
 // "We are adding a settings icon. In place of mm. Icon drawing rules, a cog with a hole, outline. Opens a white box.
 //  Inside two settings: unit, explain this applies everywhere on app. Colors cmyk hex whatever, selecting whatever opens
 //  the color selector box to open default as, other colors still allowed, pill swatches still say hex codes unless ral."
+// 01:54, round 2: "narrower box, as wide as the green box" (drawn from x 120 to 442 of the 460 crop: five of the
+// panel's columns, 5 --col + 4 --gap = 318); the notes cut to his words.
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
 below = 260;
@@ -9,9 +11,9 @@ tab = "Dial";
 css = `
   .unitbox.cog { width: auto; height: auto; padding: var(--u1); display: grid; place-items: center; }
   .unitbox.cog > .word { display: none; }
-  .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: var(--box-w); border: var(--hair) solid var(--ink); background: var(--field); padding: 0 var(--u4); }
-  .settingsbox > .row + .row:not(.note) { border-top: var(--hair) solid var(--rule); }
-  .settingsbox > .row.note > .quiet { margin-top: 0; }      /* under a pill: clear of it (sketch: the canon has notes under fields and ticks, none yet under a pill) */
+  .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: calc(5 * var(--col) + 4 * var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); padding: 0 var(--u2); }      /* --u2 in from its sides: the Colours pill fits five columns */
+  .settingsbox > .row.note > .quiet { grid-column: 3 / -1; }      /* on the controls' column, as a pane's note (4c-rows.css, .body) */
+  .settingsbox > .row:first-child { box-shadow: none; }      /* no line over the first row: the box's own top line is there (as a headless pane's) */
 `;
 build = async () => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q);
@@ -30,12 +32,13 @@ build = async () => {
   const box = document.createElement("div"); box.className = "settingsbox";
   const row = (r) => { const o = t.build_row(r); box.append(o.el); o.refresh(t.S); };
   row({ kind: "seg", key: "ui_unit", text: "Unit", items: ["mm", "pt", "in", "lig"], scope: "" });
-  row({ kind: "note", under: true, text: "Every length in the app is shown in it, and typed numbers are read in it." });
+  row({ kind: "note", text: "Every length in the app" });
   t.S.ui_colour_as = 1;
   row({ kind: "seg", key: "ui_colour_as", text: "Colours", items: ["RGB", "HEX", "CMYK", "RAL"], scope: "" });
-  row({ kind: "note", under: true, text: "The colour pop-out opens in it; the others stay a press away. Swatches show the hex code, or the RAL code in RAL." });
+  row({ kind: "note", text: "The colour pop-out opens in it" });
   $(".unit").append(box);
-  const h = $(".panel > header"), hs = getComputedStyle(h);      // as wide as the header's rule: the panel's own columns fit inside
-  box.style.setProperty("--box-w", (h.clientWidth - parseFloat(hs.paddingLeft) - parseFloat(hs.paddingRight)) + "px");
   box.querySelectorAll(".row").forEach((r) => r.hidden = false);
+  box.querySelectorAll(".row.note").forEach((n) => { n.previousElementSibling.classList.add("noted"); n.dataset.after = "field"; });      // as sync_rows marks a row and its note: one box, the note just below the pill
+  const q = getComputedStyle(box.querySelector(".row.note > .quiet")), wn = [...document.querySelectorAll(".row")].find((r) => !box.contains(r) && r.textContent.startsWith("Every width")), w = getComputedStyle(wn.lastElementChild);      // the app's own note under Weight %, for comparison
+  console.log("measured:", JSON.stringify({ box: Math.round(box.getBoundingClientRect().width), note: [q.fontSize, q.color], weight_note: [w.fontSize, w.color] }));
 };
