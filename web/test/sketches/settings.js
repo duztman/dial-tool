@@ -19,6 +19,8 @@
 // pill --gap → --u2; the box keeps its width, the room going to its left padding.
 // 02:11: "Cog hover outline is original icon gray."
 // 02:12: "Cogs teeth wider, inner hole is just a dot, slightly thinner outline."
+// 02:19: "A is what i wanted. And why did you ignore thinner lines? Larger icon, do not box the icon ever. Active cog
+// itself gets black. Hover outline gets black."
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
 states = ["closed", "hover", "open"];
@@ -27,10 +29,12 @@ tab = "Dial";
 css = `
   .unitbox.cog { width: auto; height: auto; padding: var(--u1); display: grid; place-items: center; }
   .unitbox.cog > .word { display: none; }
-  .unitbox.cog { border-color: transparent; }      /* no frame at rest */
+  .unitbox.cog, .unitbox.cog:hover, .unitbox.cog[aria-expanded="true"] { border-color: transparent; background: none; }      /* never boxed (02:19: "do not box the icon ever"); this sketch's styles stand outside the layers, so they beat the chosen look */
   .unitbox.cog { --cog: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); }      /* the cog's own grey: the unit box's resting colour */
-  @media (hover: hover) { .unitbox.cog:hover { color: var(--cog); border-color: var(--cog); background: none; } }      /* 02:16: "Hover icon no bg" */      /* under the pointer the frame in the cog's own grey, the cog unchanged (02:11: "Cog hover outline is original icon gray"); open, the app's chosen look (5-chosen.css: ink, the cog in paper) */
-  .unitbox.cog[aria-expanded="true"] { border-color: var(--ink); }      /* this sketch's styles stand outside the layers, so the chosen frame is said again */
+  @media (hover: hover) { .unitbox.cog:hover { color: var(--ink); } }      /* under the pointer the cog's outline black (02:19: "Hover outline gets black") */
+  .unitbox.cog[aria-expanded="true"] { color: var(--ink); }
+  .unitbox.cog[aria-expanded="true"] .body { fill: currentColor; }      /* open: the cog itself black, filled (02:19: "Active cog itself gets black") */
+  .unitbox.cog[aria-expanded="true"] .dot { fill: var(--paper); }      /* …its dot left in paper, so it still reads as a cog's centre */
   .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: max-content; border: var(--hair) solid var(--ink); background: var(--well); --row-rule: var(--line-on-grey); padding: var(--u2) var(--u2) var(--u2) var(--gap); column-gap: var(--u2); }      /* on grey: white lines (1-tokens.css); left padding takes what the halved gap gives back, so the box keeps its width */      /* --u2 in from every side: the grey lines over the first row and under the last stand clear of the black edge */
   .settingsbox > .row.note > .quiet { grid-column: 2; }      /* on the controls' column, as a pane's note (4c-rows.css, .body) */
   .settingsbox { display: grid; grid-template-columns: max-content max-content; }      /* two columns: the names, the controls */
@@ -40,8 +44,10 @@ css = `
 `;
 build = async (state) => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q);
-  // the cog: 8 teeth, outline, a dot at its centre; drawn at its size on screen (16); its line LINE 1.5, one canon step under CURVE (02:12: "slightly thinner outline"; R33, canon §9); the dot a fill, not a line
-  const c = 8.25, R = 7, r = 5.25, hole = 1.25, n = 8, top = 0.19, foot = 0.28;      // 02:12: "teeth wider" (top 0.16 → 0.19, foot 0.24 → 0.28, ~18 %); "inner hole is just a dot" (a filled dot, r 1.25)      // centre on a quarter point; tooth tops and feet as fractions of a turn's eighth
+  // the cog (02:19: "A is what i wanted"): 8 broad teeth, an outline, a dot at its centre; drawn at its size on screen, 20
+  // (02:19: "Larger icon", 16 → 20, 25 %); its line DENSE 1.25, the canon's thinnest (02:12/02:19: "thinner lines": 1.5 was too
+  // little to see); the dot a fill, not a line (R33, canon §9). Outer edge 10.25 + 8.75 + 0.625 = 19.6, inside its 20 box
+  const c = 10.25, R = 8.75, r = 6.5, hole = 1.5, n = 8, top = 0.25, foot = 0.36;      // A, ×1.25: centre on a quarter point; tooth tops and feet as fractions of a turn's eighth
   const P = (a, rr) => `${(c + rr * Math.sin(a)).toFixed(3)} ${(c - rr * Math.cos(a)).toFixed(3)}`;
   let d = "";
   for (let k = 0; k < n; k++) {
@@ -49,7 +55,7 @@ build = async (state) => {
     const a1 = a - s * foot, a2 = a - s * top, a3 = a + s * top, a4 = a + s * foot, a5 = a + s / 2 + 0.001;
     d += (k ? "" : `M${P(a1, r)}`) + `L${P(a2, R)}A${R} ${R} 0 0 1 ${P(a3, R)}L${P(a4, r)}A${r} ${r} 0 0 1 ${P(a + s - s * foot, r)}`;
   }
-  const svg = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="${d}Z"/><circle cx="${c}" cy="${c}" r="${hole}" fill="currentColor" stroke="none"/></svg>`;
+  const svg = `<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"><path class="body" d="${d}Z"/><circle class="dot" cx="${c}" cy="${c}" r="${hole}" fill="currentColor" stroke="none"/></svg>`;
   const b = $("#unit"); b.classList.add("cog"); b.title = "Settings"; b.insertAdjacentHTML("beforeend", svg);
   // the box: the app's own rows
   const box = document.createElement("div"); box.className = "settingsbox";
