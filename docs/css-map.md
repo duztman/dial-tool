@@ -163,7 +163,7 @@
 | `--mast-ink` · set in 4a-panel | `var(--ink)` |  | 4a-panel ×2 | 4a-panel `#app.dark` → `var(--white)` |
 | `--mast-shift` · the window's | `—` |  | 4a-panel | set by preview.js |
 | `--menu-box` | `18px` | the boxed arrow beside a label that opens a small menu | 4c-rows ×2 |  |
-| `--mono` | `ui-monospace, "SF Mono", Menlo, Consolas, monospace` | only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") | 1-tokens ×2, 3-controls ×2, 4f-rings, 6-preview, 7-bar ×2 |  |
+| `--mono` | `ui-monospace, "SF Mono", Menlo, Consolas, monospace` | only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") | 1-tokens ×2, 3-controls ×2, 4e-colour ×2, 4f-rings, 6-preview, 7-bar ×2 |  |
 | `--n` · the window's | `—` |  | 4c-rows | set by windows.js |
 | `--name-in` · special | `6px` | a ring's name starts this far into its column; the ring line's buttons too | 4f-rings ×2 |  |
 | `--names` | `18px` | the day's ruler: its height, the hours' names under it, the handle's width | 7-bar ×8 |  |
@@ -272,7 +272,7 @@
 | `--ruler-hour` · special | `0.85` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
 | `--ruler-line` · special | `0.4` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
 | `--ruler-small` · special | `0.38` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
-| `--sans` | `system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif` |  | 1-tokens, 2-base, 4e-colour, 4f-rings ×5, 7-bar |  |
+| `--sans` | `system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif` |  | 1-tokens, 2-base, 4e-colour ×3, 4f-rings ×5, 7-bar |  |
 | `--scroll` | `#E8E8E6` | the part of the panel that scrolls: 8 % darker than the paper; the font box's head stands on it too | 1-tokens, 4a-panel, 4g-fonts ×2 | 4a-panel `.showing .panel` → `transparent` |
 | `--scroll-w` | `6px` | a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar | 6-preview ×2 |  |
 | `--scrollbar` | `var(--unit)` | a scrollbar drawn by the tool: slim | 4g-fonts ×2 |  |
@@ -409,7 +409,7 @@
 | `--u8` | `calc(4 * var(--unit))` |  | 4g-fonts, 7-bar ×2 |  |
 | `--uiblack` · the window's | `—` |  | 3-controls ×4, 4a-panel ×4, 4c-rows | set by show.js |
 | `--unit` | `5.5px` | every space is a multiple of this: the scale below, in half-units (u1 = half a unit … u8 = four) | 1-tokens ×21, 3-controls ×17, 4a-panel ×9, 4b-lines-tabs ×3, 4c-rows ×7, 4d-hands ×6, 4e-colour, 4f-rings ×6, 4g-fonts ×28, 4h-gallery ×7, 6-preview ×20, 7-bar, 8-narrow ×2 | read by fonts.js, read by panel.js |
-| `--unit-face` | `"Dial Mono", var(--mono)` | the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) | 4a-panel, 4e-colour ×4 |  |
+| `--unit-face` | `"Dial Mono", var(--mono)` | the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) | 4a-panel |  |
 | `--unit-pad` · special | `4px` | the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") | 4a-panel ×3 |  |
 | `--value-pop` | `132px` | a value button's tag: about as wide as it is high | 4f-rings |  |
 | `--veil` | `rgba(0, 0, 0, 0.06)` | a touch of dark on a coloured row | 4f-rings |  |

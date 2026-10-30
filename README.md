@@ -5,7 +5,7 @@ Built to explore, present and produce watch dials.
 
 **Use it: <https://duztman.github.io/dial-tool/>** (the released build, `main`), or <https://duztman.github.io/dial-tool/dev/> (the newest small push, `dev`, with its own saved dials and session), or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer).
 
-**Version: v1.0.3 beta on `dev` and /dev/ (30 Oct 2026: RAL mode in the colour pop-out, the pop-out's line and rows redrawn, plain zeros); v1.0 beta on `main` and the released page (27 Oct 2026; Okay: "call this a v1.0 beta version from now on"). It is beta 4.94.20 renamed, with the help page's round of 27 Oct.** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
+**Version: v1.0.4 beta on `dev` and /dev/ (30 Oct 2026: RAL mode in the colour pop-out, the pop-out's line and rows redrawn); v1.0 beta on `main` and the released page (27 Oct 2026; Okay: "call this a v1.0 beta version from now on"). It is beta 4.94.20 renamed, with the help page's round of 27 Oct.** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
 What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next, and what v1 needs: [`docs/build-list.md`](docs/build-list.md).
 
 **Guidebook:** edition 1 is at <https://duztman.github.io/dial-tool/guide/>, built from the app in `guide/` by its plan, `guide/PLAN.md` (build list #93); rebuilt only when Okay asks (R25).

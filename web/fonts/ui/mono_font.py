@@ -20,9 +20,9 @@ from fontTools import subset
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE = os.path.join(HERE, "JetBrainsMono[wght].ttf")
-STEM, KEEP = 100, "mptinlghou0123456789.-#≈ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"      # a stem of 1 px at 10 px; the letters of mm · pt · in · lig · thou; the figures, for a selected ring's size and radius (Okay, 18 Oct 2026, notes 2: "Large mono numbers for size and
-# radius, slashless 0 if possible") — JetBrains Mono's 0 has a dot, taken out below; and the colour pop-out's words — a hex, a RAL
-# code and name, the bands' thousands (Okay, 30 Oct 2026: "No slashed 0 anywhere!!!")
+STEM, KEEP = 100, "mptinlghou0123456789.-"      # a stem of 1 px at 10 px; the letters of mm · pt · in · lig · thou; and since
+# 4.55 the figures, for a selected ring's size and radius (Okay, 18 Oct 2026, notes 2: "Large mono numbers for size and
+# radius, slashless 0 if possible") — JetBrains Mono's 0 has a dot, taken out below
 
 
 def stem(weight):

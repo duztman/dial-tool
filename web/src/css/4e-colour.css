@@ -3,7 +3,7 @@
   /* colour: a pill — one small button holding a swatch and the hex in monospace; it opens the pop-out. Quiet at
      rest, a middle grey under the pointer, black while its pop-out is open (no outlines). A swatch shows its colour
      (--c) over a checkerboard, so a see-through colour looks see-through. */
-  .colour { display: inline-flex; align-items: center; gap: var(--pill-gap); justify-self: start; height: var(--pill); padding: 0 var(--pill-gap);      border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--unit-face); }      /* Dial Mono: a plain 0 (Okay, 30 Oct 2026: "No slashed 0 anywhere!!!") */
+  .colour { display: inline-flex; align-items: center; gap: var(--pill-gap); justify-self: start; height: var(--pill); padding: 0 var(--pill-gap);      border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--mono); }
   @media (hover: hover) { .colour:hover { background: var(--rule); } }
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
@@ -103,7 +103,7 @@
   .charts i { position: relative; width: 9px; height: 9px; border-radius: var(--round-tiny); background: var(--pop-key); }      /* the tiles: the shown family's band colour, set by colour.js */
   .charts i.design::after { right: 1px; bottom: 1px; width: 2px; height: 2px; }
   .bands { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: var(--u1); height: var(--pop-hue); }
-  .bands button { height: auto; min-width: 0; padding: 0; border: 0; background: var(--c); color: rgba(255, 255, 255, 0.8); font: 10px/1 var(--unit-face); }
+  .bands button { height: auto; min-width: 0; padding: 0; border: 0; background: var(--c); color: rgba(255, 255, 255, 0.8); font: 10px/1 var(--sans); font-variant-numeric: tabular-nums lining-nums; }      /* a number alone: the panel's type, plain zero (design.md §type; Okay, 30 Oct 2026: "No slashed 0 anywhere!!!") */
   .bands button.light { color: rgba(0, 0, 0, 0.6); }
   .bands button:first-child { border-radius: calc(var(--pop-hue) / 2) 0 0 calc(var(--pop-hue) / 2); }
   .bands button:last-child { border-radius: 0 calc(var(--pop-hue) / 2) calc(var(--pop-hue) / 2) 0; }
@@ -127,8 +127,9 @@
   .valuebox .cell { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; border-left: var(--hair) solid var(--black); }
   .valuebox .cell.name { flex: 2; }
   .valuebox .cell::before { content: attr(data-l); position: absolute; left: 0; right: 0; bottom: calc(100% + var(--u1) + var(--hair)); font-size: var(--t-xs); line-height: 1; color: var(--grey); text-align: center; text-transform: uppercase; letter-spacing: 0.08em; }
-  .valuebox .cell > input { height: 100%; border: 0; background: none; padding: 0 var(--u1); text-align: center; text-transform: uppercase; font-family: var(--unit-face); }
-  .valuebox .cell > span { min-width: 0; padding: 0 var(--u1); font-family: var(--unit-face); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .valuebox .cell > input { height: 100%; border: 0; background: none; padding: 0 var(--u1); text-align: center; text-transform: uppercase; font-family: var(--sans); font-variant-numeric: tabular-nums lining-nums; }      /* numbers alone: the panel's type, plain zero (design.md §type) */
+  .valuebox .cell[data-l="hex"] > input, .valuebox .cell > span { font-family: var(--mono); }      /* a hex and a name are words the tool says: mono */
+  .valuebox .cell > span { min-width: 0; padding: 0 var(--u1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .asnumbers .copy { flex: none; display: inline-grid; place-items: center; width: var(--control); min-width: 0; padding: 0; }      /* Copy: a square as small as its sign (Okay, 30 Oct 2026: "Copy gets an icon"; "Copy box as small as the icon") */
   .asnumbers .copy.done { background: var(--ink); color: var(--paper); }
   /* wide: twice the size (app.js sets the width and the field's height). */
