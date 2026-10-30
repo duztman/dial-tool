@@ -17,6 +17,7 @@
 // that sets its ground sets --row-rule with it. This box stands on grey, so its lines are --line-on-grey (white).
 // "Red marked paddings are halved. Left side of the box does not shrink, texts move closer to pills": the name to its
 // pill --gap → --u2; the box keeps its width, the room going to its left padding.
+// 02:11: "Cog hover outline is original icon gray."
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
 states = ["closed", "hover", "open"];
@@ -26,7 +27,8 @@ css = `
   .unitbox.cog { width: auto; height: auto; padding: var(--u1); display: grid; place-items: center; }
   .unitbox.cog > .word { display: none; }
   .unitbox.cog { border-color: transparent; }      /* no frame at rest */
-  @media (hover: hover) { .unitbox.cog:hover { border-color: currentColor; } }      /* its frame under the pointer; open, the app's chosen look (5-chosen.css: ink, the cog in paper) */
+  .unitbox.cog { --cog: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); }      /* the cog's own grey: the unit box's resting colour */
+  @media (hover: hover) { .unitbox.cog:hover { color: var(--cog); border-color: var(--cog); } }      /* under the pointer the frame in the cog's own grey, the cog unchanged (02:11: "Cog hover outline is original icon gray"); open, the app's chosen look (5-chosen.css: ink, the cog in paper) */
   .unitbox.cog[aria-expanded="true"] { border-color: var(--ink); }      /* this sketch's styles stand outside the layers, so the chosen frame is said again */
   .settingsbox { position: absolute; z-index: 6; top: calc(100% + var(--unit)); right: 0; width: max-content; border: var(--hair) solid var(--ink); background: var(--well); --row-rule: var(--line-on-grey); padding: var(--u2) var(--u2) var(--u2) var(--gap); column-gap: var(--u2); }      /* on grey: white lines (1-tokens.css); left padding takes what the halved gap gives back, so the box keeps its width */      /* --u2 in from every side: the grey lines over the first row and under the last stand clear of the black edge */
   .settingsbox > .row.note > .quiet { grid-column: 2; }      /* on the controls' column, as a pane's note (4c-rows.css, .body) */
