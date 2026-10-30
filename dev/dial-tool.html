@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.0.5 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.0.6 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -126,8 +126,8 @@
     /* the time and AM · PM in Dial Time (#284, beta 4.44: Barlow Condensed Light, packed; fonts/ui/time_font.py). Its
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
-    --time-face: "Dial Time", var(--mono);
-    --time-figure: 0.418em; --time-colon: 0.24em; --time-pm: 0.8em; --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
+    --time-face: var(--mono);                      /* the time and AM · PM in the house mono (Okay, 30 Oct 2026, 18:31: "make the time and ampm mono too"); Dial Time stays packed for the Show Case */
+    --time-figure: 0.6em; --time-colon: 0.6em; --time-pm: 1.2em;      /* a mono's advance: every character 0.6 em, "AM" two of them */ --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
     --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
@@ -163,7 +163,7 @@
     --grip: 18px;                                  /* the ring list's drag handle column */
     --log-least: 96px; --log-most: 260px;          /* the Export log: at least this high, at most this */
     --round-switch: 10px;                          /* the switches on the preview: undo, Guides, Backdrop */
-    --ruler: 22px; --names: 18px; --day-handle: var(--triple);      /* the day's ruler: its height, the hours' names under it, the handle's width */
+    --ruler: 26px; --names: 18px; --day-handle: var(--triple);      /* the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width */
     --bar-lead-narrow: 46px; --bar-day-narrow: 48px;      /* on a phone the bar is two lines: the panel's controls, then the day */
     --tick: 16px;                                  /* a tick box */
     --tick-gap: var(--u4);                         /* from a tick box to its words (the box's margin and a space's width before, 8.25 + 3.4); a note under the words starts there too (#420) */
@@ -2031,11 +2031,11 @@
   .bar .timebox { display: flex; }
   .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
   @media (hover: hover) { .bar .timewell:hover { background: var(--bar-field); } }
-  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
+  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
   /* AM · PM in the same face and size as the time, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am
      attached to time and same size barlow"), one width for both words. A frame,
      never filled (Okay, 15 Oct 2026, 00:18); little room beside its word (#306: "Reds reduce hor padding") */
-  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
+  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
   /* the date (Okay, 18 Oct 2026: "short date … stacked … next to am, touching"; 19 Oct: no year, "better fit inside
      the bounding box"): day over month in Inter SemiBold ("try inter with appropriate weight for that size"), its box
      touching AM · PM's as AM's touches the time's. A press
@@ -2088,14 +2088,14 @@
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
-  .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
-  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: var(--hair); shape-rendering: crispEdges; }
+  .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--names) var(--ruler); align-content: center; gap: 0; padding: 0 var(--u8); }      /* the hours' names over the ruler (Okay, 30 Oct 2026, 18:37: "put the numbers up top") */
+  .ruler { grid-area: 2 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: var(--hair); shape-rendering: crispEdges; }
   .ruler .line { opacity: var(--ruler-line); }
   .ruler .hour { opacity: var(--ruler-hour); }
   .ruler .half { opacity: var(--ruler-half); }
   .ruler .small { opacity: var(--ruler-small); }
   .bar .day { touch-action: none; cursor: ew-resize; }      /* the strip reads presses itself (app.js day_strip): no pan, no swipe */
-  .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); pointer-events: none; }      /* the keyboard's and a screen reader's way in; presses go to the strip */
+  .bar .day input[type="range"] { grid-area: 2 / 1; height: var(--ruler); pointer-events: none; }      /* the keyboard's and a screen reader's way in; presses go to the strip */
   /* the needle (Okay, 18 Oct 2026, notes 2: "The moving needle is 1px wide and red, starts from the bottom of the screen
      unlike the ruler which has room below"): placed by app.js (place_needle) from the ruler's top to the bar's foot */
   .bar .day .needle { position: absolute; z-index: 1; width: var(--hair); translate: -50% 0; background: var(--play); pointer-events: none; }
@@ -2106,7 +2106,7 @@
   .bar .day input[type="range"]::-moz-range-thumb { width: var(--day-handle); height: var(--ruler); border-radius: 0; background: none; box-shadow: none; }
   .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-light); }
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
-  .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--day-handle) / 2); }
+  .steps12 { grid-area: 1 / 1; position: relative; height: var(--names); margin: 0 calc(var(--day-handle) / 2); }
   .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-light); }
   @media (hover: hover) { .steps12 button:hover { text-decoration: underline; } }
   .steps12 button.on { font-weight: 700; }
@@ -7471,7 +7471,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.0.5 beta";
+var VERSION = "v1.0.6 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -21032,7 +21032,7 @@ var BAR = {
   /** the day's ruler. An hour gets as many cuts as its width allows: none, halves, quarters, ten or five minutes.
    *  Hour lines are long, the others shorter; all cross the line. A click on the slider snaps to the nearest cut. */
   draw_ruler() {
-    const W2 = this.time_slider.clientWidth, H2 = 22, THUMB = 3;
+    const W2 = this.time_slider.clientWidth, H2 = 26, THUMB = 3;
     if (!W2) return;
     const hour = (W2 - THUMB) / 12;
     const minutes = [5, 10, 15, 30, 60].find((m) => hour / (60 / m) >= 7) || 60;
@@ -21040,7 +21040,7 @@ var BAR = {
     const lines = { hour: "", half: "", small: "" };
     this.day_ticks = [];
     for (let m = 0; m < 720; m += minutes) {
-      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 18, half: 12, small: 7 }[kind];
+      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 21, half: 14, small: 8 }[kind];
       lines[kind] += `M${x2(m * 60)} ${(H2 - h) / 2}V${(H2 + h) / 2}`;
       this.day_ticks.push(m * 60);
     }
