@@ -110,7 +110,7 @@ From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Oka
 | 535 | Sliders that stop short | 24 Oct 2026 | open |
 | 536 | Help page and bug reports | 24 Oct 2026 | now |
 | 548 | A visitor counter on the live site | 27 Oct 2026 | open — not built until Okay says build |
-| 554 | Settings: a cog in the unit box's place, a white box with Unit and Colours | 31 Oct 2026 — "We are adding a settings icon. In place of mm" | drawing, round 7 (`web/test/sketches/settings.js`) |
+| 554 | Settings: a cog in the unit box's place, a box with Unit and Colours | 31 Oct 2026 — "We are adding a settings icon. In place of mm"; 02:24 "rules for settings is set" | approved drawing, not built — the spec is `web/test/sketches/settings.js` and design canon §6 *The Settings box*; open: kept per browser or in the link |
 | 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane (4.94.4) and the Light tab's sun box (4.94.9) built; the guides' foot open |
 | 528 | Dramatic lighting more dramatic |  | built (4.94.19); the darkness to confirm |
 | 530 | SVG imports after v1 |  | decided |

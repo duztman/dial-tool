@@ -195,6 +195,14 @@ alignment to these rules as well."*
   tiles stand on the controls' column, beside the row's name, four to a line and equal. Two or three keep a four's
   size, the room left at the right. A fifth squeezes in, the five equal; more than five is a sign to find another
   way. `.picks` in `3-controls.css`; `--across` (windows.js) is never less than four.
+- **The Settings box** (#554; Okay, 31 Oct 2026, 02:24: "Congratulations rules for settings is set as so"). Opened by the
+  cog in the header's top right, where the unit box stood. The cog: 8 broad teeth, an outline with a dot at its centre,
+  drawn at 20, `DENSE`; never framed or grounded; at rest the unit box's grey, under the pointer its outline ink, open
+  filled ink with its dot in paper (an exception to the chosen look, his word). The box: hung from the cog's right edge,
+  as wide as what it holds; on the panel's grey (`--well`), so its row lines are `--line-on-grey`, white; a hairline
+  `--ink` edge; padding `--u4`, and `2 × --gap` on the left. Rows on two columns: the names in ink, right-aligned,
+  `--u2` from their pills; each pill's note under it in `--t-xs` grey; line → pill = pill → note's words = words →
+  next line = 4 px, measured on the ink. Its look: `web/test/sketches/settings.js`.
 
 ## 7 · Writing
 

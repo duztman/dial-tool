@@ -22,6 +22,7 @@
 // 02:19: "A is what i wanted. And why did you ignore thinner lines? Larger icon, do not box the icon ever. Active cog
 // itself gets black. Hover outline gets black."
 // 02:21: "Take this box, 2x its inner padding from all sides. It grows towards left this way."
+// 02:24: "Bump down one size colors and unit titles get black. Congratulations rules for settings is set as so."
 // Round 1: the box shown open. Rows are the app's own (build_row: a seg row and a note row), not drawn copies.
 part = ".panel > header";
 states = ["closed", "hover", "open"];
@@ -40,7 +41,8 @@ css = `
   .settingsbox > .row.note > .quiet { grid-column: 2; }      /* on the controls' column, as a pane's note (4c-rows.css, .body) */
   .settingsbox { display: grid; grid-template-columns: max-content max-content; }      /* two columns: the names, the controls */
   .settingsbox > .row { grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: var(--u2); }      /* every row on the box's two columns, so the names share one width */
-  .settingsbox > .row > label { grid-column: 1; justify-self: end; text-align: right; }      /* the name against its controls, a column gap from them */
+  .settingsbox > .row > label { grid-column: 1; justify-self: end; text-align: right; color: var(--ink); }      /* the names in ink (02:24: "colors and unit titles get black") */
+  .settingsbox > .row.note > .quiet { font-size: var(--t-xs); }      /* the notes one size down, 12 → 11 (02:24: "Bump down one size") */      /* the name against its controls, a column gap from them */
   .settingsbox > .row > :not(label) { grid-column: 2; }
 `;
 build = async (state) => {
