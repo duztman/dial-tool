@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.0.1 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.0.2 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -256,7 +256,7 @@
     --pixel-ink-bar: 1;                            /* the bar's 1X, 720X and the speed riding over the thumb: the pixel font at full strength in their own colours, not --pixel-ink (Okay, 15 Oct 2026, 00:18: "same color as the ball") */
     --ground-cols: 8;                              /* show mode's Backdrop: squares to a row across the Shadows pane's width; a gradient takes two (#510) */
     --ground-chip: calc((var(--shade-w) - 2 * var(--shade-pad) - (var(--ground-cols) - 1) * var(--pop-chip-gap)) / var(--ground-cols));      /* one square: what the row leaves after its gaps */
-    --pop-chip-gap: 12px;                          /* between two colours in the colour pop-out's rows (Okay, 12 Oct 2026: "×3 gaps") */
+    --pop-chip-gap: 12px;                          /* between two of the backdrop's ground tiles (the colour pop-out's rows are closer, at --u2: Okay, 30 Oct 2026) */
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what the room above adds over the old u3 + 4 − half a thumb, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
@@ -444,7 +444,7 @@
   @media (pointer: coarse) {
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
     :is(.gdot, .gchev) { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-none)) / 2); }      /* a guide's dot and tick (#527): the whole height of its line, half the room between them */
-    .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
+    .chiprow .chips button { --reach-x: calc(var(--u2) / 2); --reach-y: calc(var(--u2) / 2); }      /* a colour in the pop-out */
     .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
     .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
     .fontname .btn { --reach-y: calc((var(--control) - var(--control-s)) / 2 + var(--unit)); }      /* Lang. and Change…: the font name line's whole height */
@@ -920,6 +920,7 @@
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
   .colour .dot { width: 1em; height: 1em; border-radius: var(--round-tiny); }      /* as large as its hex */
+  .colour .hex { display: inline-block; width: 7ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }      /* a hex's width whatever the word: R5015, or R210-50-3… cut (Okay, 30 Oct 2026: "pill size does not change, longer names get cropped") */
   .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: var(--round-tiny); vertical-align: calc(-1 * var(--hair)); }
   .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
   @media (hover: hover) { .swatch:hover { border-color: var(--ink); } }
@@ -985,61 +986,65 @@
   .colourpop header .sign[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
   /* a row of colours: its name, then the chips. A row holds --pop-chips of them with wide gaps; they share the width,
      so they shrink to fit and grow when the pop-out does. */
-  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: center; }
+  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: center; padding: var(--u2) 0; border-top: var(--hair) solid var(--row-rule); }      /* a hairline above each row and after the second (Okay, 30 Oct 2026: "Line above on this dial and after palette swatches") */
+  .chiprow + .chiprow { border-bottom: var(--hair) solid var(--row-rule); }
+  .colourpop > .chiprow { margin: calc(-1 * var(--pop-gap) / 2) 0; }      /* the rows share one hairline, the pop-out's gap halved between them */
+  .colourpop > header + .chiprow { margin-top: 0; }      /* the first keeps the whole gap under the head's own line */
   .chiprow > .quiet { font-size: var(--t-s); }
-  .chiprow .chips { grid-template-columns: repeat(var(--pop-chips), minmax(0, 1fr)); gap: var(--pop-chip-gap); }
-  .chiprow .chips button { width: auto; height: auto; aspect-ratio: 1; }
+  .chiprow .chips { width: 100%; grid-template-columns: repeat(var(--pop-chips), minmax(0, 1fr)); gap: var(--u2); }      /* close together, so the chips grow (Okay, 30 Oct 2026: "larger swatches there, closer together"); an eleventh colour starts a second line on the same columns */
+  .chiprow .chips button { width: 100%; height: auto; aspect-ratio: 1; }
+  .chips button.ral { display: grid; place-items: center; color: rgba(255, 255, 255, 0.45); font: 600 var(--t-xs)/1 var(--sans); }      /* exactly a RAL colour: a faded R (Okay, 30 Oct 2026, 16:14: "Faded R") */
+  .chips button.ral::after { content: "R"; }
   .sv, .hue, .alpha { position: relative; touch-action: none; }
   .sv { height: var(--pop-field); border-radius: var(--round); cursor: crosshair; background: linear-gradient(to top, var(--black), transparent), linear-gradient(to right, var(--white), var(--hue, #f00)); }
   .hue, .alpha { height: var(--pop-hue); border-radius: calc(var(--pop-hue) / 2); cursor: ew-resize; }
   .hue { background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
   .alpha { flex: 1; background: linear-gradient(to right, transparent, var(--solid, var(--black))), var(--checker); }
   /* RAL mode (Okay, 30 Oct 2026: "classified colors show up as a grid in gradient's place"; his drawing of 15:16:
-     "smaller, rounded color swatches, design system on off possible and group the color code with the swatch down
-     below"): in the field's place a family's colours on a fixed grid, a row a step of lightness (light at the top),
-     a column a step of chroma (grey at the left); the cells share the width, small and rounded; an empty step is
-     nothing. A Design System+ cell carries a white dot at its corner; under the grid the two kinds named, and the
-     Design switch. In the strip's place the nine families as fixed bands, named by their thousand under them, the
+     "smaller, rounded color swatches, design system on off possible"): in the field's place a family's colours on a
+     fixed grid, a row a step of lightness (light at the top), a column a step of chroma (grey at the left); the cells
+     share the width, small and rounded; an empty step is nothing. A Design System+ cell carries a white dot at its
+     corner. Under the grid the chart pill, flush left, smaller type, each choice with the tiles it shows. In the
+     strip's place the nine families as fixed bands, each named by its thousand inside it (dark on a light band), the
      chosen one ringed; a chosen cell is ringed like a chip. */
   .ralgrid { display: grid; grid-auto-rows: minmax(0, 1fr); gap: var(--u1); height: var(--pop-field); }
   .ralgrid .ralrow { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: var(--u1); }
   .ralgrid button { position: relative; height: auto; min-width: 0; padding: 0; border: 0; border-radius: var(--round-small); background: var(--c); }
-  .ralgrid button.design::after { content: ""; position: absolute; right: var(--u1); bottom: var(--u1); width: 3px; height: 3px; border-radius: 50%; background: var(--white); opacity: 0.8; }
+  .ralgrid button.design::after, .charts i.design::after { content: ""; position: absolute; right: var(--u1); bottom: var(--u1); width: 3px; height: 3px; border-radius: 50%; background: var(--white); opacity: 0.8; }
   .ralgrid button.on { outline: var(--thick) solid var(--white); outline-offset: var(--hair); z-index: 1; }
-  .rallegend { display: flex; align-items: center; gap: var(--u4); margin-top: calc(-1 * var(--u2)); font-size: var(--t-s); color: var(--grey); }
-  .rallegend .key { display: inline-flex; align-items: center; gap: var(--u2); }
-  .rallegend .key > i { position: relative; width: var(--u3); height: var(--u3); border-radius: var(--round-tiny); background: var(--pop-key); }      /* the shown family's band colour, set by colour.js */
-  .rallegend .key.design > i::after { content: ""; position: absolute; right: 1px; bottom: 1px; width: 2px; height: 2px; border-radius: 50%; background: var(--white); }
-  .rallegend .toggle { margin-left: var(--u1); }
-  .rallegend .toggle[aria-checked="false"] { background: var(--night-field); border-color: var(--grey); }      /* off, it still shows on the night (Okay, 15:28: "Visible when off") */
-  .bands { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: var(--u1); height: calc(var(--pop-hue) + var(--t-xs) + var(--u2)); }
-  .bands button { position: relative; height: auto; min-width: 0; padding: 0 0 calc(var(--t-xs) + var(--u2)); border: 0; background: none; color: var(--grey); font: var(--t-xs)/1 var(--mono); }
-  .bands button::before { content: ""; display: block; height: var(--pop-hue); background: var(--c); }      /* the band itself; its number stands under it */
-  .bands button > span { position: absolute; left: 0; right: 0; bottom: 0; }
-  .bands button:first-child::before { border-radius: calc(var(--pop-hue) / 2) 0 0 calc(var(--pop-hue) / 2); }
-  .bands button:last-child::before { border-radius: 0 calc(var(--pop-hue) / 2) calc(var(--pop-hue) / 2) 0; }
-  .bands button.on::before { outline: var(--thick) solid var(--white); outline-offset: var(--hair); }
-  .bands button.on { color: var(--ink); z-index: 1; }
-  /* the line in RAL mode: the swatch inside the code's box, then the name in a box that takes the rest and cuts a long
-     name (Okay: "İf name does not fit crop it"); Copy is the copy sign alone */
-  .asnumbers .ralcode { flex: none; display: inline-flex; align-items: center; gap: var(--u1); height: var(--control); padding-left: var(--u1); border: var(--hair) solid var(--rule); background: var(--field); }
-  .asnumbers .ralcode > .dot { flex: none; margin: 0; }
-  .asnumbers .ralcode > input { width: var(--col); border: 0; background: none; }
-  .asnumbers .ralname { flex: 1; min-width: 0; height: var(--control); padding: 0 var(--u1); line-height: var(--control); border: var(--hair) solid var(--rule); background: var(--field); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .asnumbers .copy.done { background: var(--ink); color: var(--paper); }
+  .charts { margin-top: calc(-1 * var(--u2)); }
+  .charts > button { display: inline-flex; align-items: center; gap: var(--u2); font-size: var(--t-xs); }
+  .charts i { position: relative; width: 9px; height: 9px; border-radius: var(--round-tiny); background: var(--pop-key); }      /* the tiles: the shown family's band colour, set by colour.js */
+  .charts i.design::after { right: 1px; bottom: 1px; width: 2px; height: 2px; }
+  .bands { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: var(--u1); height: var(--pop-hue); }
+  .bands button { height: auto; min-width: 0; padding: 0; border: 0; background: var(--c); color: rgba(255, 255, 255, 0.8); font: 10px/1 var(--mono); }
+  .bands button.light { color: rgba(0, 0, 0, 0.6); }
+  .bands button:first-child { border-radius: calc(var(--pop-hue) / 2) 0 0 calc(var(--pop-hue) / 2); }
+  .bands button:last-child { border-radius: 0 calc(var(--pop-hue) / 2) calc(var(--pop-hue) / 2) 0; }
+  .bands button.on { outline: var(--thick) solid var(--white); outline-offset: var(--hair); z-index: 1; }
   /* handles: a white ring with a dark one round it, so they show on any colour. On the field a disc; on a strip a pill. */
   .sv i, .hue i, .alpha i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 var(--thick) var(--white), 0 0 0 calc(var(--thick) + var(--thumb-eye-edge) / 2) var(--night); pointer-events: none; }
   :is(.hue, .alpha) i { top: 50%; width: calc(var(--knob) * 0.5); height: calc(var(--pop-hue) + var(--u1)); border-radius: var(--knob); }
   .alpha i { background: var(--solid, var(--black)); }
   .alpharow { display: flex; align-items: center; gap: var(--gap); }
   .alpharow input { flex: none; width: var(--col); text-align: center; }
-  .asnumbers { display: flex; gap: var(--chip-gap); align-items: center; font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
+  /* the line (Okay's drawings, 30 Oct 2026, 15:48–16:00): RGB · HEX · CMYK · RAL, then one box — the colour's swatch,
+     plain, then the values in cells divided by black rules, a small grey letter over each (HEX · R G B · C M Y K ·
+     RAL NAME); RAL's name cell twice a code's and cut when long — then Copy, a square as small as its sign. The letters
+     stand above the box, so the line is a letter taller. */
+  .asnumbers { display: flex; gap: var(--chip-gap); align-items: end; margin-top: calc(var(--t-xs) + var(--u2)); font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
   .asnumbers .segs { flex: none; }
   .asnumbers .segs > button { flex: none; padding: 0 var(--unit); }
-  .asnumbers .dot { margin: 0 var(--u1) 0 var(--unit); }
-  .asnumbers .numbers { flex: 1; min-width: 0; display: flex; gap: var(--chip-gap); }
-  .asnumbers .numbers input { padding: 0 var(--u1); text-align: center; text-transform: uppercase; }
+  .valuebox { flex: 1; min-width: 0; display: flex; align-items: center; height: var(--control); border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); }
+  .valuebox > .dot { flex: none; width: var(--dot); height: var(--dot); margin: 0 var(--u2); border: 0; border-radius: var(--round-tiny); }
+  .valuebox .numbers { flex: 1; min-width: 0; display: flex; height: 100%; }
+  .valuebox .cell { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; border-left: var(--hair) solid var(--black); }
+  .valuebox .cell.name { flex: 2; }
+  .valuebox .cell::before { content: attr(data-l); position: absolute; left: 0; right: 0; bottom: calc(100% + var(--u1) + var(--hair)); font-size: var(--t-xs); line-height: 1; color: var(--grey); text-align: center; text-transform: uppercase; letter-spacing: 0.08em; }
+  .valuebox .cell > input { height: 100%; border: 0; background: none; padding: 0 var(--u1); text-align: center; text-transform: uppercase; font-family: var(--mono); }
+  .valuebox .cell > span { min-width: 0; padding: 0 var(--u1); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .asnumbers .copy { flex: none; display: inline-grid; place-items: center; width: var(--control); min-width: 0; padding: 0; }      /* Copy: a square as small as its sign (Okay, 30 Oct 2026: "Copy gets an icon"; "Copy box as small as the icon") */
+  .asnumbers .copy.done { background: var(--ink); color: var(--paper); }
   /* wide: twice the size (app.js sets the width and the field's height). */
 }
 
@@ -7466,7 +7471,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.0.1 beta";
+var VERSION = "v1.0.2 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15136,6 +15141,14 @@ function ral_nearest([r, g, b], with_design = true) {
   const exact = rgb_of(best.hex).every((v, i2) => Math.abs(v - [r, g, b][i2]) < 1 / 255);
   return { colour: best, exact };
 }
+var by_hex = null;
+function ral_exact(hex3) {
+  if (!by_hex) {
+    by_hex = /* @__PURE__ */ new Map();
+    for (const c of [...design(), ...classic]) by_hex.set(c.hex.toUpperCase(), c);
+  }
+  return by_hex.get(String(hex3).toUpperCase()) || null;
+}
 function ral_by_code(text) {
   const m = /^\s*(?:ral)?\s*(\d{4}|\d{1,3}\s+\d{1,3}\s+\d{1,3})\s*$/i.exec(String(text));
   if (!m) return null;
@@ -15167,6 +15180,10 @@ var cmyk_rgb = ([c, m, y, k]) => [(1 - c) * (1 - k), (1 - m) * (1 - k), (1 - y) 
 function parse_hex(text) {
   const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(text).trim());
   return m ? "#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]).toUpperCase() : null;
+}
+function colour_word(c) {
+  const hex3 = to_hex(c).toUpperCase(), ral = ral_exact(hex3);
+  return ral ? "R" + ral.code.replace(/ /g, "-") : hex3;
 }
 var COLOUR = {
   /** this dial's colours: every part that has one, each colour once — in the order the Colours pane lists them (rings
@@ -15213,18 +15230,18 @@ var COLOUR = {
     });
     P2.design = true;
     P2.ral = el("div", { className: "ralgrid", id: "pop-ralgrid", title: "RAL: down, darker; across, more vivid", hidden: true });
-    P2.design_switch = this.line_toggle("pop-design", "Design System+ colours too", () => P2.design, (on) => {
+    const chart = (id, on, ...kids) => el("button", { type: "button", id, onclick: () => {
       P2.design = on;
       this.pop_refresh();
-    });
-    P2.legend = el(
+    } }, ...kids);
+    P2.charts = el(
       "div",
-      { className: "rallegend", id: "pop-legend", hidden: true },
-      el("span", { className: "key" }, el("i"), el("span", { textContent: "Classic" })),
-      el("span", { className: "key design" }, el("i"), el("span", { textContent: "Design System+ \xB7 not stock" }), P2.design_switch.el)
+      { className: "pillswitch charts", id: "pop-charts", role: "radiogroup", ariaLabel: "Which RAL colours", hidden: true },
+      chart("pop-classic", false, el("i"), el("span", { textContent: "RAL Classic" })),
+      chart("pop-design", true, el("i"), el("span", { textContent: "Classic & " }), el("i", { className: "design" }), el("span", { textContent: "Design System+" }))
     );
     P2.bands = el("div", { className: "bands", id: "pop-bands", hidden: true }, ...RAL_FAMILIES.map(([digit, name]) => {
-      const b = el("button", { type: "button", id: "pop-band-" + digit, title: `${name} (RAL ${digit}000)`, ariaLabel: `${name}, RAL ${digit}000`, onclick: () => {
+      const b = el("button", { type: "button", id: "pop-band-" + digit, className: ral_lightness(ral_family_colour(digit)) > 60 ? "light" : "", title: `${name} (RAL ${digit}000)`, ariaLabel: `${name}, RAL ${digit}000`, onclick: () => {
         P2.family = digit;
         this.pop_refresh();
       } }, el("span", { textContent: digit + "000" }));
@@ -15270,11 +15287,11 @@ var COLOUR = {
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P2.palette_chips),
       P2.field,
       P2.ral,
-      P2.legend,
+      P2.charts,
       P2.hues,
       P2.bands,
       P2.alpha_row,
-      el("div", { className: "asnumbers" }, P2.modes, P2.dot, P2.numbers, P2.copy)
+      el("div", { className: "asnumbers" }, P2.modes, el("span", { className: "valuebox" }, P2.dot, P2.numbers), P2.copy)
     );
     P2.el.setAttribute("role", "dialog");
     P2.el.onkeydown = (e) => {
@@ -15317,7 +15334,7 @@ var COLOUR = {
     pill.setAttribute("aria-expanded", "false");
     pill.show = (c) => {
       paint(dot, c);
-      hex3.textContent = to_hex(c).toUpperCase();
+      hex3.textContent = colour_word(c);
       if (title) pill.ariaLabel = `${title} ${hex3.textContent}`;
     };
     return pill;
@@ -15408,10 +15425,11 @@ var COLOUR = {
     const colour = P2.at.swatch.isConnected ? P2.at.read() : null;
     if (!Array.isArray(colour)) return this.pop_close();
     const rgb2 = colour.slice(0, 3), value = to_hex(rgb2).toUpperCase();
+    const before = P2.el.getBoundingClientRect();
     P2.title.textContent = P2.at.label();
     const put = (c) => P2.pick(c);
     const chip = (c) => {
-      const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => put(c) });
+      const ral2 = ral_exact(c), b = el("button", { type: "button", className: ral2 ? "ral" : "", title: ral2 ? `RAL ${ral2.code} ${ral2.name}` : c, ariaLabel: ral2 ? `RAL ${ral2.code} ${ral2.name}` : c, onclick: () => put(c) });
       b.style.background = c;
       b.dataset.colour = c;
       return b;
@@ -15438,7 +15456,7 @@ var COLOUR = {
     for (const b of P2.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
     const ral = this.colour_mode === "RAL", near2 = ral ? ral_nearest(rgb2, P2.design) : null;
     P2.field.hidden = P2.hues.hidden = ral;
-    P2.ral.hidden = P2.legend.hidden = P2.bands.hidden = !ral;
+    P2.ral.hidden = P2.charts.hidden = P2.bands.hidden = !ral;
     if (ral) {
       const family = P2.family || near2.colour.family, shown = family + (P2.design ? "+" : "");
       if (P2.ral.dataset.shown !== shown) {
@@ -15453,8 +15471,12 @@ var COLOUR = {
       }
       for (const b of P2.ral.querySelectorAll("button")) b.classList.toggle("on", near2.exact && b.dataset.code === near2.colour.code);
       for (const b of P2.bands.children) b.classList.toggle("on", b.dataset.family === family);
-      P2.legend.style.setProperty("--pop-key", ral_family_colour(family));
-      P2.design_switch.refresh();
+      P2.charts.style.setProperty("--pop-key", ral_family_colour(family));
+      for (const b of P2.charts.children) {
+        const on = b.id === "pop-design" === P2.design;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", String(on));
+      }
     }
     const fresh = rgb_hsv(rgb2);
     if (to_hex(hsv_rgb(P2.hsv)).toUpperCase() !== value) P2.hsv = [fresh[1] > 0 && fresh[2] > 0 ? fresh[0] : P2.hsv[0], fresh[2] > 0 ? fresh[1] : P2.hsv[1], fresh[2]];
@@ -15471,7 +15493,6 @@ var COLOUR = {
     P2.alpha.firstChild.style.left = `${a * 100}%`;
     if (!has_focus(P2.alpha_field)) P2.alpha_field.value = `${Math.round(a * 100)}%`;
     paint(P2.dot, P2.at.alpha ? colour : rgb2);
-    P2.dot.hidden = ral;
     const mode = this.colour_mode;
     [...P2.modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
     if (P2.mode !== mode) {
@@ -15496,22 +15517,20 @@ var COLOUR = {
         P2.put(next);
         this.pop_refresh();
       };
-      P2.numbers.replaceChildren(...(mode === "HEX" ? ["hex"] : mode === "RAL" ? ["ral"] : [...mode]).map((letter, i2) => {
-        const f2 = el("input", { type: "text", inputMode: mode === "HEX" ? "text" : "numeric", ariaLabel: letter, id: "pop-" + letter, spellcheck: false, onchange: commit });
-        f2.dataset.i = i2;
-        return f2;
-      }));
-      if (mode === "RAL") {
-        const code = P2.numbers.querySelector("input");
-        P2.numbers.replaceChildren(el("span", { className: "ralcode" }, P2.ralswatch = el("i", { className: "dot" }), code), el("span", { className: "ralname", id: "pop-ral-name" }));
-      }
+      const cell = (letter, i2, kid) => {
+        const c = el("span", { className: "cell" + (letter === "name" ? " name" : "") }, kid);
+        c.dataset.l = letter;
+        kid.dataset.i = i2;
+        return c;
+      };
+      const field = (letter, i2) => cell(letter, i2, el("input", { type: "text", inputMode: mode === "HEX" || mode === "RAL" ? "text" : "numeric", ariaLabel: letter, id: "pop-" + letter, spellcheck: false, onchange: commit }));
+      P2.numbers.replaceChildren(...mode === "HEX" ? [field("hex", 0)] : mode === "RAL" ? [field("ral", 0), cell("name", 1, el("span", { id: "pop-ral-name" }))] : [...mode].map((letter, i2) => field(letter, i2)));
     }
-    const values = mode === "HEX" ? [value] : mode === "RAL" ? [(near2.exact ? "" : "\u2248 ") + near2.colour.code] : mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100));
+    const values = mode === "HEX" ? [value] : mode === "RAL" ? [(near2.exact ? "" : "\u2248 ") + near2.colour.code, near2.colour.name] : mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100));
     for (const f2 of P2.numbers.querySelectorAll("input")) if (!has_focus(f2)) f2.value = values[f2.dataset.i];
-    if (mode === "RAL") {
-      $("#pop-ral-name").textContent = near2.colour.name;
-      paint(P2.ralswatch, rgb2);
-    }
+    if (mode === "RAL") $("#pop-ral-name").textContent = values[1];
+    const grown = P2.el.getBoundingClientRect().height - before.height;
+    if (grown && !P2.el.hidden && !this.pop_is_sheet() && before.top + before.height / 2 > innerHeight / 2) this.pop_place(before.left, before.top - grown);
   },
   /** a setting changed outside set_value (a colour in a list): show it. shapes = the dial's shapes changed too. */
   changed(shapes = false) {
