@@ -33,6 +33,7 @@ const PICTURED = [
   { host: /^eye-box/, widths: [1], why: "the dial alone's eye: its old way-out X, 1 thick, kept in the drawing and hidden (24 Oct 2026: the eye is the dial alone's)" },
   { host: /^value-pop-(plus|minus)$/, widths: [3.57], why: "the controller's − and +, 3.57 thick (6 × 70 % × 85 %, 24 Oct 2026: \"plus minus and number line 70% of now\"; \"a bit more smaller %15\"), square ends, white on their discs (controller 2.svg, 18 Oct 2026; round ends from his drawing of 17 Oct, 3 from 16 Oct)" },
   { host: /^(Skip where|Knock out): /, widths: [3], why: "Give way's drawing: this ring's ticks, a dial's ticks pictured, thick (Okay, 18 Oct 2026: \"thicker indices\")" },
+  { host: /^settings$/, widths: [1], why: "Settings' cog, thinner than the four widths on purpose (Okay, 31 Oct 2026, 03:20: \"cog, thinner line\")" },
   { host: /^logo$/, widths: [1, 1.375], why: "Okay's own mark, at his weights: lines 1, ring 1.375 (15 Oct 2026, 03:06: \"a bit thinner\")" },
 ];
 const near = (a, b) => Math.abs(a - b) < 0.006;

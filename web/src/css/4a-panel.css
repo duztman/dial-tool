@@ -76,7 +76,7 @@
      outline gets black"), open the cog filled ink with its dot in paper ("Active cog itself gets black") — an exception
      to the chosen look, for this one icon. */
   .unit { position: relative; z-index: 6; margin-left: auto; }      /* a layer of its own, as the mast's: its translate (level_title) makes it one, and at 0 its box fell under the rows below (Okay, 16 Oct 2026: "Thou falls under") */
-  .cog { display: grid; place-items: center; padding: var(--u1); border: 0; background: none; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); }
+  .cog { display: grid; place-items: center; padding: var(--u1); border: 0; background: none; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 100%), var(--paper)); }      /* at rest the Gallery pill's grey, solid (03:20: "same color as gallery, no opacity") */
   @media (hover: hover) { .cog:hover { color: var(--ink); } }
   .cog[aria-expanded="true"] { color: var(--ink); }
   .cog[aria-expanded="true"] .body { fill: currentColor; }

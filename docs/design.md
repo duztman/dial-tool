@@ -197,7 +197,7 @@ alignment to these rules as well."*
   way. `.picks` in `3-controls.css`; `--across` (windows.js) is never less than four.
 - **The Settings box** (#554; Okay, 31 Oct 2026, 02:24: "Congratulations rules for settings is set as so"). Opened by the
   cog in the header's top right. The cog: 8 broad teeth, an outline with a dot at its centre,
-  drawn at 20, `DENSE`; never framed or grounded; at rest the grey the unit box had, under the pointer its outline ink, open
+  drawn at 20, its line 1 (thinner than the four widths, his word); never framed or grounded; at rest the Gallery pill's grey, solid, under the pointer its outline ink, open
   filled ink with its dot in paper (an exception to the chosen look, his word). The box: hung from the cog's right edge,
   as wide as what it holds; on the panel's grey (`--well`), so its row lines are `--line-on-grey`, white; a hairline
   `--ink` edge; padding `--u4`, and `2 × --gap` on the left. Rows on two columns: the names in ink, right-aligned,

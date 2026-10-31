@@ -205,7 +205,7 @@
 | `--p` · the window's | `—` |  | 3-controls, 4f-rings ×2 | read by panel.js, set by ui.js |
 | `--panel` | `calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap))` |  | 1-tokens ×2, 4g-fonts, 7-bar |  |
 | `--panel-w` | `calc(var(--panel) + var(--hair))` | the panel's column: its lines and its right hairline | 2-base ×2, 4a-panel ×5, 6-preview ×4 | 2-base `.showing` → `var(--show-panel-w)` |
-| `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×7, 4b-lines-tabs, 4e-colour ×3, 4f-rings ×6, 4g-fonts, 5-chosen, 6-preview ×7, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
+| `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×8, 4b-lines-tabs, 4e-colour ×3, 4f-rings ×6, 4g-fonts, 5-chosen, 6-preview ×7, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
 | `--picked` · the window's | `—` |  | 6-preview | set by rings.js |
 | `--pill` | `calc(1em + 2 * var(--pill-gap))` | its height. The swatch is as high as the hex is set (1em) | 4e-colour |  |
 | `--pill-gap` | `var(--unit)` | a colour pill (and the font name line beside its swatch): this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these | 1-tokens ×2, 4e-colour ×2, 4g-fonts |  |

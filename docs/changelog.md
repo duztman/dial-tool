@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## v1.1.4 beta · 31 Oct 2026 — the cog thinner, in the Gallery pill's grey
+
+Okay, 31 Oct 2026, 03:20: "cog, thinner line, same color as gallery, no opacity".
+
+- The cog's line 1.25 → 1 (two screen dots; listed in `icons/check.mjs` as his width). At rest it is the Gallery pill's grey (35 % ink), mixed with the paper, not see-through.
+
 ## v1.1.3 beta · 31 Oct 2026 — Settings in the mm box's place; the bar's time squeezed
 
 Okay, 31 Oct 2026, 02:29: "Ok now build the settings and the new clock" — both drawn first on the real page (`test/sketch.mjs`) and approved round by round; 02:32: "Do not change its system, it worked".
