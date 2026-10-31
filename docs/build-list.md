@@ -10,14 +10,10 @@ v1 is out: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay
 | # | Item | From | Status |
 |---|---|---|---|
 | 548 | A visitor counter on the live site | 27 Oct 2026; 1 Nov 2026 — "yes do that, move it up" | build |
+| 52 | Named instances of variable fonts: the designer's style names as tabs where Regular · Bold stand | 1 Nov 2026 — "Up to Now" | build |
 | 494 | Compare at one size, as large as the canvas holds, and a real-size switch | 21 Oct 2026 — "One big, as big as what fits on the canvas, one real size option in preview" | build |
 | 552 | The Type pane opening jumps the panel's scroll | 31 Oct 2026 — "it should open in place, without moving up"; 1 Nov 2026: iPad, Safari | open — Safari only; try `overflow-anchor: none` on the panel's scroller |
 
-## Answer (Okay)
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 294 | Off the scale as found |  | open |
 
 ## Verify on Okay's Mac, iPad and phone
 
@@ -44,7 +40,6 @@ v1 is out: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay
 | 535 | Sliders that stop short, one slider at a time | 24 Oct 2026 — "Only where I hit it" | open |
 | 531 | Hand bevels: the join options Normal · Miter · Round |  | open (bring-back done, 4.92.10) |
 | 526 | The sun's picture on show mode's Light tab; the guides' list's foot | 24 Oct 2026 | open (the Shadows pane built) |
-| 52 | Named instances of variable fonts in the font box |  | open |
 | 83 | Positions law |  | open |
 | 484 | Square and rounded-square dials, as an Apple Watch's |  | open |
 | 404 | Dauphine and leaf hands: hubs as on a real movement | 19 Oct 2026 — "dauphin and leaf get life accurate movement connecting circles" | open |
@@ -84,7 +79,7 @@ Three places are made ready, each with a note that an SVG will go there: the moo
 | # | Item | From | Status |
 |---|---|---|---|
 | 540 | Font sheet, Okay's notes of 25 Oct 2026 | 25 Oct 2026 | open |
-| 398 | The stylesheet's values off the scale | 25 Oct 2026 | open |
+| 398 | The stylesheet's values off the scale (R32; #294 folded in): put on the scale as each file is touched, look changes shown in that push's round | 25 Oct 2026; 1 Nov 2026 — "Why is this even a question?" | as touched |
 | 505 | The panel's colours from the Show Case | 21 Oct 2026 — "This is also a rule for show case when it comes" | open |
 | 75 | Usability review, the other tabs | 12 Oct 2026 | open |
 
