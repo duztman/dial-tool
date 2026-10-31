@@ -36,3 +36,16 @@ for (const [name, w] of [["hexagon", { da_on: true, da_shape: 3, da_sides: 6, da
   console.log(`${ok ? "ok  " : "FAIL"}  a stroke as a grown outline: outside 0.2 on a 2 × 1 box reaches ${box(miter).join(" ")}, Miter's corner sharp, Round's and Bevel's cut; Inside stays within the shape, Middle half out`);
   if (!ok) process.exitCode = 1;
 }
+{ // a stroke round overlapping pieces (Okay, 31 Oct 2026, 03:20, Montserrat's figures with a Miter stroke: "Is there a way
+  // to fix this?"): each figure is one outline before it is grown, so a crossing of two pieces doesn't poke out as a spike.
+  // Montserrat draws its 5 from overlapping flag, stem and bowl; grown piece by piece the spikes reached 2.9 widths out
+  const fs = await import("fs");
+  G.add_font(fs.readFileSync("fonts/Montserrat-wght.ttf"), 0, true);
+  const S = G.fresh_settings();
+  S.rings = [{ ...G.RING_BASE, kind: 2, count: 12, labels: 6, custom: "55,52,53,54,51,50,56,57,58,59,5,5", size: 3, stroke: true, stroke_w: 0.2 }];
+  const parts = G.build_static(S).rings[0].parts, w = 0.2;
+  const reach = Math.max(...parts.map((p) => { const b = p.bounds(), c = G.stroke_outline(p, w, "Outside", "Miter").bounds(); return Math.max(b[0] - c[0], b[1] - c[1], c[2] - b[2], c[3] - b[3]) / w; }));
+  const ok = reach < 1.45;      // a true corner's miter reaches √2 widths at most on a slant
+  console.log(`${ok ? "ok  " : "FAIL"}  Montserrat's figures with a 0.2 Miter stroke outside: it reaches ${reach.toFixed(2)} widths beyond the letters at most (spikes reached 2.9)`);
+  if (!ok) process.exitCode = 1;
+}

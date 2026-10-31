@@ -109,6 +109,7 @@ From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Oka
 | 535 | Sliders that stop short | 24 Oct 2026 | open |
 | 536 | Help page and bug reports | 24 Oct 2026 | now |
 | 548 | A visitor counter on the live site | 27 Oct 2026 | open — not built until Okay says build |
+| 556 | Strokes for ticks and markers | 31 Oct 2026 — "Also indices and markers get outlines"; 03:33 "Yes to all" | drawing first (`web/test/sketches/`), then build |
 | 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane (4.94.4) and the Light tab's sun box (4.94.9) built; the guides' foot open |
 | 528 | Dramatic lighting more dramatic |  | built (4.94.19); the darkness to confirm |
 | 530 | SVG imports after v1 |  | decided |

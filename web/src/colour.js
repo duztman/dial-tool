@@ -490,6 +490,7 @@ export const COLOUR = {
           const from = now(), was = from.hex, to = G.ink_hex(v);
           for (const p of from.parts) {
             if (p.kind === "frame") { G.windows_of(S())[p.i].ink = v; continue; }
+            if (p.kind === "stroke") { S().rings[p.i].stroke_c = v; continue; }
             const R = S().rings[p.i];
             if (Array.isArray(R.c) && G.ink_hex(R.c) === was) R.c = v;
             for (const at of Object.keys(R.cs || {})) if (Array.isArray(R.cs[at]) && G.ink_hex(R.cs[at]) === was) R.cs = { ...R.cs, [at]: v };
@@ -506,7 +507,7 @@ export const COLOUR = {
         // an ink of two parts has nothing to choose: split, its first part is A and its second B (Okay, 25 Oct 2026, 21:23:
         // "Switch stays, but on two item lists leave them text only")
         const pair = (parts) => parts.length === 2;
-        const set_b = (p, b) => { if (p.kind === "frame") G.windows_of(S())[p.i].frame_b = b; else S().rings[p.i].ink_b = b; };
+        const set_b = (p, b) => this.part_b(p, b);
         const toggle = open ? this.line_toggle(`ink-${n}-two`, "Two inks", () => G.ink_of(S(), now().hex).two, (on) => { entry(now().hex).two = on; const parts = now().parts; if (on && pair(parts)) parts.forEach((p, m) => set_b(p, m === 1)); this.changed(); }) : null;
         if (toggle) rows.push(toggle);
         // closed: its height on its line. Open: Two inks at the line's right end, its word stuck to it, and each part
@@ -519,7 +520,7 @@ export const COLOUR = {
         kids.push(el("div", { className: "row showline inkline" + (open ? " open" : "") }, chev, mark(), label, pill, end));      // open: Two inks in the number's place, its word against it
         if (!open) return;
         ink.parts.forEach((p, m) => {
-          const on_b = () => (p.kind === "frame" ? G.windows_of(S())[p.i].frame_b : S().rings[p.i].ink_b);
+          const on_b = () => this.part_b(p);
           const letter = () => (G.ink_of(S(), now().hex).two && on_b() ? "b" : "h");      // A's height is the ink's own
           const name = p.name + (p.sectors > 1 ? ` · ${p.sectors} sectors` : p.sectors === 1 ? " · 1 sector" : "");
           const pill = one.two && !pair(ink.parts) ? this.ab_pill(p, n, on_b) : null;
@@ -551,7 +552,7 @@ export const COLOUR = {
     out.refresh = () => {
       // built again when what is listed changes (an ink more or less, a part moving ink, an ink opened or split), not
       // when a colour only moves: an open pop-out keeps its swatch
-      const sig = JSON.stringify([G.dial_inks(this.S).map((ink) => [ink.parts.map((p) => [p.kind, p.i, p.sectors, p.kind === "frame" ? Boolean(G.windows_of(this.S)[p.i].frame_b) : Boolean(this.S.rings[p.i].ink_b)]), this.ink_open.has(ink.hex), G.ink_of(this.S, ink.hex).two]),
+      const sig = JSON.stringify([G.dial_inks(this.S).map((ink) => [ink.parts.map((p) => [p.kind, p.i, p.sectors, Boolean(this.part_b(p))]), this.ink_open.has(ink.hex), G.ink_of(this.S, ink.hex).two]),
         G.windows_of(this.S).map((w, k) => [w.on, w.kind, w.at, w.at_deg, w.neighbours, w.look, w.ampm_form, G.disc_of(this.S, k) ? 1 : 0])]);
       if (wrap.dataset.list !== sig) { wrap.dataset.list = sig; build(); }
       for (const r of rows) r.refresh(this.S);
@@ -559,9 +560,16 @@ export const COLOUR = {
     };
   },
 
+  /** whether an ink's part is printed with ink B — a window's frame, a ring's stroke or the ring itself; with b, set it */
+  part_b(p, b) {
+    const on = p.kind === "frame" ? G.windows_of(this.S)[p.i] : this.S.rings[p.i], key = p.kind === "frame" ? "frame_b" : p.kind === "stroke" ? "stroke_b" : "ink_b";
+    if (b === undefined) return on[key];
+    on[key] = b;
+  },
+
   /** a part's A | B under a split ink: a pill of two words, the chosen one filled */
   ab_pill(p, n, on_b) {
-    const put = (b) => { if (p.kind === "frame") G.windows_of(this.S)[p.i].frame_b = b; else this.S.rings[p.i].ink_b = b; this.changed(); };
+    const put = (b) => { this.part_b(p, b); this.changed(); };
     const group = el("span", { className: "pillswitch ab", role: "radiogroup", ariaLabel: `${p.name}: ink A or B` });
     const a = el("button", { type: "button", id: `ink-${n}-${p.kind}-${p.i}-a`, textContent: "A", onclick: () => put(false) }), b = el("button", { type: "button", id: `ink-${n}-${p.kind}-${p.i}-b`, textContent: "B", onclick: () => put(true) });
     group.append(a, b);

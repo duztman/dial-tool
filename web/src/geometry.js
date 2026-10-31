@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.4 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.5 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -87,6 +87,7 @@ export const RING_BASE = {
   from: 0,                                         // ticks, markers, bands: what the radius measures to, a place in FROM — the mark's or band's outer end, its middle, or its inner end (Okay's notes, p. 9, #257: "resize from"). Starting at outer, every link draws as before (R31)
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
   ink_d: 0,                                        // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
+  stroke_b: false,                                 // show mode's Inks: its stroke's colour split into two inks, the stroke printed with ink B (as ink_b; not in the link)
   ink_b: false,                                    // show mode's Inks (#545): with its colour split into two inks, this ring is printed with ink B; the file and the session, not the link (R7)
   // a stroke round the numerals or letters (#551; Okay, 30 Oct 2026: "good strokes, uniform. And round/sharp/miter
   // options"; 31 Oct: "Stroke on off, miter round sharp, inside middle outside of vector, and its color"): drawn as a
@@ -640,12 +641,12 @@ function differing(d, base) {
 
 /** the settings, without everything that still has its starting value and without the window's own state. */
 /** the watch's own keys (show mode): kept in the file and the session, never in a link (Okay, 22 Oct 2026) */
-export const NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "frame_b", "print_h", "da_frame_b", "da_print_h"].includes(k);      // the inks' split and heights (#545) are show mode's too
+export const NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h"].includes(k);      // the inks' split and heights (#545) are show mode's too
 export function lean(S) {
   const out = {};
   for (const k in S) {
     if (k.startsWith("ui_") || k === "version" || NOT_IN_LINK(k) || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
-    if (k === "rings") out.rings = S.rings.map((r) => { const d = differing(r, RING_BASE); delete d.ink_d; delete d.ink_b; return d; });      // a ring's ink is show mode's: not in the link (R7)
+    if (k === "rings") out.rings = S.rings.map((r) => { const d = differing(r, RING_BASE); delete d.ink_d; delete d.ink_b; delete d.stroke_b; return d; });      // a ring's ink is show mode's: not in the link (R7)
     else if (k === "windows") out.windows = S.windows.map((w) => { const d = differing(w, WINDOW_BASE); delete d.frame_b; delete d.print_h; return d; });
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
     else out[k] = S[k];
@@ -996,8 +997,14 @@ export function offset(p, d, join = "Round") {
 
 /** a stroke round a shape as a filled outline (R4): w mm wide, on the inside, the middle or the outside of the edge,
  *  its corners by join. The shape itself stays as it is; the stroke is a path of its own, drawn over it. */
+/** does the ring draw a stroke round its letters? (#551: numerals and text only) */
+export const has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && (KINDS[ring.kind] === "numerals" || KINDS[ring.kind] === "text"));
+
 export function stroke_outline(p, w, side, join) {
   if (empty(p) || !(w > 0)) return null;
+  // one outline first: a font draws a figure from overlapping pieces (Montserrat's 5: flag, stem and bowl), and grown
+  // piece by piece their crossings poked out of the stroke as spikes (Okay, 31 Oct 2026, 03:20: "Is there a way to fix this?")
+  p = p.copy().removeOverlap();
   if (side === "Inside") return p.difference(offset(p, -w, join));
   if (side === "Middle") return offset(p, w / 2, join).difference(offset(p, -w / 2, join));
   return offset(p, w, join).difference(p);
@@ -1973,6 +1980,7 @@ export function dial_inks(S) {
     const name = r.name || kind_of(r);
     if (kind_of(r) === "band" && positions_of(r).length > 1) for (const at of positions_of(r)) put(sector_colour(r, at), { kind: "ring", i, name, sectors: 1 });
     else put(r.c, { kind: "ring", i, name, sectors: 0 });
+    if (has_stroke(r)) put(r.stroke_c, { kind: "stroke", i, name: name + " stroke", sectors: 0 });      // its stroke is printed in its own colour, so it is an ink's part too (Okay, 31 Oct 2026, 03:31: "it has color, will go into a ink group in showcase")
   });
   windows_of(S).forEach((w, i) => { if (w.on) put(w.ink, { kind: "frame", i, name: window_name(w) + " frame", sectors: 0 }); });
   return [...inks.values()];
@@ -1986,6 +1994,9 @@ export function ink_mm(S, x) {
   if (x.role === "ring" || x.role === "date frame") {
     const ink = ink_of(S, ink_hex(x.fill)), on_b = x.role === "ring" ? x.ring?.ring?.ink_b : windows_of(S)[x.window]?.frame_b;
     h = ink.two && on_b ? ink.b : ink.h;
+  } else if (x.role === "ring stroke") {
+    const ink = ink_of(S, ink_hex(x.fill));
+    h = ink.two && x.ring?.ring?.stroke_b ? ink.b : ink.h;
   } else if (x.role === "date number" || x.role === "date picture" || x.role === "disc print") h = windows_of(S)[x.window]?.print_h ?? INK_MM;
   return Math.max(0, Math.min(INK_MOST, h + (+S.w_ink_all || 0)));
 }
@@ -1997,6 +2008,7 @@ export function inks_of(S) {
     if (!ring.on) continue;
     out.push(ink_hex(ring.c));
     if (KINDS[ring.kind] === "band" || has_text(ring)) for (const c of Object.values(ring.cs || {})) out.push(ink_hex(c));      // a sector's or one numeral's own colour (#513) is an ink too: it gets its film (found 25 Oct 2026)
+    if (has_stroke(ring)) out.push(ink_hex(ring.stroke_c));      // its stroke's colour gets its film
   }
   for (const w of windows_of(S)) if (w.on) out.push(ink_hex(w.ink || INK));
   return [...new Set(out)];

@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.5 beta · 31 Oct 2026 — strokes without spikes; a stroke's colour is an ink
+
+Okay, 31 Oct 2026, 03:20, on Montserrat's figures with a Miter stroke: "Is there a way to fix this?"; 03:31: "it has color, will go into a ink group in showcase"; 03:33: "Yes to all".
+
+- A stroke is grown round each figure as one outline (`stroke_outline` merges first). A font that draws a figure from overlapping pieces (Montserrat's 5) no longer throws spikes where the pieces cross: measured, the stroke reaches 1.32 widths beyond the letters at most, where the spikes reached 2.9 (`test/frames.mjs`).
+- A ring's stroke colour is an ink: on show mode's Inks list as "… stroke" under its colour, recoloured there, split to A or B (`stroke_b`, show mode's like `ink_b`, not in the link), its own film when the export is one ink per film, its height from its ink.
+
 ## v1.1.4 beta · 31 Oct 2026 — the cog thinner, in the Gallery pill's grey
 
 Okay, 31 Oct 2026, 03:20: "cog, thinner line, same color as gallery, no opacity".

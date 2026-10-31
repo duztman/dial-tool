@@ -2440,6 +2440,23 @@ await shot("10-bar");
     return { first: lines[0], plate: Boolean(r("#colour-plate")?.checkVisibility()), disc: Boolean(r("#colour-window-0-disc")?.checkVisibility()) || !window.dial_tool.S.da_on }; });
   check(plates.first === "Dial" && plates.plate && plates.disc,
     `show mode's colours start with the Dial's (the plate) and give each window's disc its swatch (${plates.first}; disc ${plates.disc}) (Okay, 23 Oct 2026: "Disk behind each window and plate color")`);
+  { // a ring's stroke is an ink's part (Okay, 31 Oct 2026, 03:31: "it has color, will go into a ink group in showcase"): its
+    // colour on the Inks list, "… stroke" among its parts; recoloured there, the stroke takes it; split, it can be B
+    const r = await page.evaluate(() => { const t = window.dial_tool, S = t.S, all = (s) => [...document.querySelectorAll(s)].filter((e) => e.checkVisibility());
+      const keep = JSON.stringify([S.rings, S.w_inks]), i = S.rings.findIndex((x) => x.kind === 2 || x.kind === 4);
+      Object.assign(S.rings[i], { stroke: true, stroke_w: 0.1, stroke_c: [0.6, 0.2, 0.8, 1] }); t.changed();
+      const line = all(".inklist .inkline").find((l) => /9933CC/.test(l.textContent)); if (!line) { [S.rings, S.w_inks] = JSON.parse(keep); t.changed(); return null; }
+      line.querySelector(".chev").click();
+      const parts = all(".inklist .inkpart label").map((e) => e.textContent);
+      document.querySelector(".inklist .inkline.open .toggle").click();
+      const pill = all(".inklist .pillswitch.ab")[0], letter = all(".inklist .inkpart .letter").map((e) => e.textContent).join("");
+      if (pill) pill.lastElementChild.click();
+      const b = S.rings[i].stroke_b === true || letter.length > 0;
+      const out = { parts, b };
+      [S.rings, S.w_inks] = JSON.parse(keep); t.ink_open.clear(); t.changed();
+      return out; });
+    check(r && r.parts.length === 1 && / stroke$/.test(r.parts[0]) && r.b, `a numerals ring's stroke colour stands on the Inks list as an ink of its own, its part "${r && r.parts[0]}", and can be split to B`);
+  }
   { // #545: Colours · Inks · Hands, drawn and locked 25 Oct 2026 ("All colors editable … via different places, through inks and colors. Switch on off for a double color on inks")
     const r = await page.evaluate(() => { const t = window.dial_tool, S = t.S, q = (s) => document.querySelector(s), all = (s) => [...document.querySelectorAll(s)].filter((e) => e.checkVisibility());
       const keep = JSON.stringify([S.rings, S.w_inks, S.w_ink_all]);
