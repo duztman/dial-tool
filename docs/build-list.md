@@ -27,30 +27,25 @@ v1 is out: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay
 
 ### Features
 
-#169 is the one Okay called core ("very very good… prioritize this", "core to our mission").
+Order when building resumes (Okay, 1 Nov 2026: "#184 first"): #184, then #169 (his "core to our mission") and #175; #83 with the complications (#346).
 
 | # | Item | From | Status |
 |---|---|---|---|
 | 169 | One strip for every position | — "very very good… prioritize this" | open |
 | 175 | A hand as a stack | 21 Oct 2026 — "bump up in importance" | open |
-| 184 | Snapping | 14 Oct 2026, on #85 | open |
+| 184 | Snapping | 14 Oct 2026, on #85; 1 Nov 2026 — first of the three | open — first |
 | 559 | Hover lights its part, sitewide: a ring's or window's row lights that thing on the dial | 18 Oct 2026 — "these preview gestures are sitewide"; split from #329 on 1 Nov 2026 | open |
 | 558 | Bracelet photo lighting: one snapshot-like light on any backdrop, soft outlines, many gradients | 24 Oct 2026, his photo; 26 Oct — "529 push to future"; split from #529 on 1 Nov 2026 | open |
 | 502 | Notices: every warning, error and note in the app looked through | 21 Oct 2026 | open |
 | 535 | Sliders that stop short, one slider at a time | 24 Oct 2026 — "Only where I hit it" | open |
 | 531 | Hand bevels: the join options Normal · Miter · Round |  | open (bring-back done, 4.92.10) |
 | 526 | The sun's picture on show mode's Light tab; the guides' list's foot | 24 Oct 2026 | open (the Shadows pane built) |
-| 83 | Positions law |  | open |
+| 83 | Positions law: even · reciprocal · logarithmic · table · squeeze | 1 Nov 2026 — "this might help us adding in complications … chronometer subdials etc." | open, with #346 |
 | 484 | Square and rounded-square dials, as an Apple Watch's |  | open |
 | 404 | Dauphine and leaf hands: hubs as on a real movement | 19 Oct 2026 — "dauphin and leaf get life accurate movement connecting circles" | open |
 | 421 | Keep a hand's details in the lit picture |  | open |
 | 346 | Complications, systematized |  | open |
 | 349 | Each marker selectable and editable |  | open |
-| 497 | Resize Ring from on the canvas | 21 Oct 2026 | note |
-| 467 | A moon window's disc, as a date window's | 20 Oct 2026 | open |
-| 252 | Nudge's picker |  | open |
-| 339 | Nudge one numeral more intuitive |  | open |
-| 496 | A universal settings panel | 21 Oct 2026 | collecting |
 | 522 | Paint finishes in show mode | 24 Oct 2026 | open |
 | 532 | Okay's list of 24 Oct 2026 for after v1: paint textures, dial finishes, print-like edges, lume view, the bezel, 3D indices, hand bevels, a 3D model | 24 Oct 2026 | collecting |
 
