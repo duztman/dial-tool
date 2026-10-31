@@ -14,7 +14,7 @@ export const PREVIEW = {
   dial_alone(on) {
     const app = $("#app");
     this.eye_button.setAttribute("aria-pressed", String(on));
-    if (this.unit_open) this.unit_open(false);
+    if (this.settings_open) this.settings_open(false);
     app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");      // undo · redo stop short of the title
     app.style.setProperty("--bar-h", $(".bar").offsetHeight + "px");      // a phone: the panel's row is what the bar leaves
     this.fitted = true;

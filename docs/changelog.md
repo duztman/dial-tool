@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.3 beta · 31 Oct 2026 — Settings in the mm box's place; the bar's time squeezed
+
+Okay, 31 Oct 2026, 02:29: "Ok now build the settings and the new clock" — both drawn first on the real page (`test/sketch.mjs`) and approved round by round; 02:32: "Do not change its system, it worked".
+
+- **Settings** (#554): a cog at the header's top right where the unit box was (20, `DENSE`, never boxed; ink under the pointer, filled ink when open). Its box: Unit (mm · pt · in · lig · thou — the same `ui_unit`, conversions and typed units) and Colours (`ui_colour_as`: the mode the colour pop-out opens in, HEX to start). Design canon §6 *The Settings box*. The unit box, its menu and its sizing code are gone.
+- **The bar's time** (#553): figures with a split hairline for each colon, 4 px (`--clock-gap`) from the figures' ink either side; the box padded `--u2`; the typing field over it, shown when typed in. AM · PM as narrow as its word at `--t-m` 13. The speed slider 81 → 113.
+- **ink.js**: a label's line box is laid as Chromium does, the face's ascent and descent rounded to whole pixels, and the text measured as drawn (text-transform): AM and NOW sit on the time's ink middle within a pixel (were 1.5 and 1.25 over).
+- `test/sketch.mjs`: sketch rounds on the real page — a tune file over the app, before and tuned with pixel rulers, `ink()` read off the screen, states (closed · hover · open).
+
 ## v1.1.2 beta · 31 Oct 2026 — the Stroke part on the column edge, the joins as pictures alone
 
 Okay, 31 Oct 2026, 00:55: "The column left edge, everything within is flush left to line. Including on"; 01:00: "Join BUTTONS: NO LABEL, LARGER icon"; 01:09: "Bingo on stroke".

@@ -327,7 +327,7 @@ export const RINGS = {
    *  it draws) · its colour · how big one of its things is · its radius. Each of the last three stands over the
    *  drawer's button for it, so the row is the read-out and the drawer under it the controls. "How big" is what you
    *  would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's size, a band's width.
-   *  Lengths in the unit box's unit, without trailing zeros. → {kind, size, r} as text */
+   *  Lengths in Settings' unit, without trailing zeros. → {kind, size, r} as text */
   ring_summary(ring) {
     const kind = G.kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = G.positions_of(ring).length;
     const one = G.has_text(ring) ? ring.size : kind === "band" ? ring.width : G.SHAPES[ring.shape] === "dot" ? ring.w : ring.len;

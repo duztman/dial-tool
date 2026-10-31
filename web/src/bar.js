@@ -4,7 +4,6 @@
 import * as G from "./geometry.js";
 import { offset as ink_offset } from "./ink.js";
 import { el, fmt_time } from "./ui.js";
-import { UNIT_INK } from "./rows.js";
 import { ARCADE } from "./icons.js";
 
 // the day slider's steps: every hour (10:10 left the timeline: Okay, 23 Oct 2026, "10:10 was a good joke while it lasted")
@@ -51,6 +50,7 @@ export const BAR = {
       this.date_button.ariaLabel = `Date ${d}/${m}/${y.slice(-2)}${this.S.date ? "" : ", today"}`;
     }
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
+    this.sync_clock();
     // centred on its ink, measured with every figure a 0, so it stands still while its figures change (ink.js)
     const zeros = this.time_field.value.replace(/[0-9]/g, "0");
     if (zeros !== this.time_zeros) {
@@ -64,6 +64,40 @@ export const BAR = {
     for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
     const word = this.half() ? "PM" : "AM";
     if (this.half_button.textContent !== word) this.half_button.textContent = word;
+  },
+
+  /** the time as shown (#553): "10:09:36" as three pairs of figures with a split hairline between, each line --clock-gap
+   *  from the ink of the figure before it and after it (Okay, 31 Oct 2026, 01:35: "Notice the gaps"; 01:41: "The hr gaps
+   *  before after line segments should be equal"). A figure's ink is narrower than its advance, by a different amount
+   *  each side and for each figure, so each line's margins are worked out from the figures beside it, read off the
+   *  face (a canvas's measure of each figure). Centred top to bottom on the figures' ink, measured as zeros so it
+   *  stands still (ink.js); the lines on the box's middle, which is that
+   *  ink's middle. */
+  sync_clock() {
+    const words = fmt_time(this.S.t).split(":"), cs = getComputedStyle(this.clock), font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const key = words.join(":") + "|" + font;
+    if (key === this.clock_shown || !parseFloat(cs.fontSize)) return;
+    this.clock_shown = key;
+    const [h, , m, , s] = this.clock_parts;
+    [h, m, s].forEach((e, i) => { if (e.textContent !== words[i]) e.textContent = words[i]; });
+    const pen = this.clock_pen || (this.clock_pen = document.createElement("canvas").getContext("2d"));
+    pen.font = `${cs.fontWeight} ${parseFloat(cs.fontSize) * 10}px ${cs.fontFamily}`;      // ten times larger and scaled back: at its own size the canvas rounds the ink to whole pixels (as ink.js)
+    const bear = (ch) => { const t = pen.measureText(ch); return { left: -t.actualBoundingBoxLeft / 10, right: (t.width - t.actualBoundingBoxRight) / 10 }; };      // room between the advance's edge and the ink, each side
+    const gap = parseFloat(cs.getPropertyValue("--clock-gap")) || 0, track = parseFloat(cs.letterSpacing) || 0;
+    [[1, 0, 1], [3, 1, 2]].forEach(([at, a, b]) => {
+      const line = this.clock_parts[at].style;
+      line.marginLeft = (gap - bear(words[a].slice(-1)).right - track) + "px";      // the tracking after a pair's last figure is room too
+      line.marginRight = (gap - bear(words[b][0]).left) + "px";
+    });
+    // each line on whole screen dots, so it is drawn crisp and the room either side stays as worked out: the half dot it
+    // would straddle taken from its left margin and given to its right
+    const dot = 1 / (window.devicePixelRatio || 1);
+    for (const at of [1, 3]) {
+      const line = this.clock_parts[at], x = line.getBoundingClientRect().left, off = x - Math.round(x / dot) * dot;
+      if (Math.abs(off) > 1e-3) { line.style.marginLeft = (parseFloat(line.style.marginLeft) - off) + "px"; line.style.marginRight = (parseFloat(line.style.marginRight) + off) + "px"; }
+    }
+    const [, dy] = ink_offset(words.join("").replace(/[0-9]/g, "0"), cs);
+    this.clock.style.setProperty("--ink-dy", dy + "px");
   },
 
   set_time(t) {
@@ -118,32 +152,6 @@ export const BAR = {
     this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1000).toFixed(4));      // where the thumb stands
     this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.1× to 720×)`;
     this.speeds.classList.toggle("real", k === 1);
-  },
-
-  /** the unit box round its word's ink, 2 px from every side (Okay, 16 Oct 2026, #302). The ink's size and place on its
-   *  line come from Dial Mono's outlines (UNIT_INK); where the browser puts the line's baseline is measured, with a dot
-   *  on it — browsers round a face's ascent and descent each their own way (counted 16 Oct 2026: 8 px down a 10 px line
-   *  in Chromium, where the face's figures say 8.6; on Okay's screen "mm" stood on the box's bottom line) */
-  size_unit() {
-    const word = this.unit()[0], ink = UNIT_INK[word] || UNIT_INK.mm, box = this.unit_button, b = box.style;
-    const span = el("span", { className: "word", textContent: word }), dot = el("span");
-    box.replaceChildren(span);
-    dot.style.cssText = "display:inline-block;width:0;height:0";
-    span.append(dot);
-    const line = span.getBoundingClientRect(), base = dot.getBoundingClientRect().top - line.top;
-    dot.remove();
-    if (!line.height) return;      // not shown (a phone's squeezed line): placed when it is
-    // in whole screen dots, so the line is crisp and the room the same on every side: the box round the ink, the ink's
-    // leftover fraction shared out, the word placed so its ink starts the padding in
-    const size = parseFloat(getComputedStyle(box).fontSize), dots = window.devicePixelRatio || 1, snap = (v) => Math.round(v * dots) / dots;
-    // its width the word's own; its height mm's for every unit, on mm's baseline, so a unit's ascenders and descenders
-    // reach into the padding (Okay, on 4.44.3: "Others use the same height, width can change")
-    const [l, w] = ink.map((v) => v * size), [, , t, h] = UNIT_INK.mm.map((v) => v * size), W = Math.round(w * dots) / dots, H = Math.round(h * dots) / dots;
-    b.setProperty("--ink-w", W + "px");
-    b.setProperty("--ink-h", H + "px");
-    b.setProperty("--word-x", snap((W - w) / 2 - l) + "px");      // from the padding's inner edge to the word's line
-    b.setProperty("--word-y", snap((H - h) / 2 + t - base) + "px");
-    requestAnimationFrame(() => this.level_title());      // a box of another height: its word on the title's baseline again
   },
 
   /** how much of the speed track the slow steps take: two thumbs of the thumb's travel (#283: "at least as wide as two

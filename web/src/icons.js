@@ -296,6 +296,12 @@ export const EYE_RAYS = 16, EYE_RAY = 0.75, RAY_REACH = 240;      // RAY_REACH: 
 // other darker, by as much as the light comes from the side; preview only (R5, R26)
 export const BEVEL = { light: 0.22, dark: 0.26 };
 
+// Settings' cog (#554; Okay, 31 Oct 2026, 02:19: "A is what i wanted … Larger icon … thinner lines"): on 20, eight broad
+// teeth (tops a quarter of the pitch, feet 0.36), outer radius 8.75 round 10.25, the line's edge 19.6 inside the box;
+// DENSE throughout; the dot at its centre a fill, r 1.5 (pictured, not a line). The body is .body and the dot .dot,
+// so the stylesheet can fill the body when the box is open (4a-panel.css)
+export const COG = `<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" ${sw(DENSE)} stroke-linejoin="round"><path class="body" d="M8.437 4.008L8.543 1.668A8.75 8.75 0 0 1 11.957 1.668L12.063 4.008A6.5 6.5 0 0 1 13.381 4.554L15.111 2.975A8.75 8.75 0 0 1 17.525 5.389L15.946 7.119A6.5 6.5 0 0 1 16.492 8.437L18.832 8.543A8.75 8.75 0 0 1 18.832 11.957L16.492 12.063A6.5 6.5 0 0 1 15.946 13.381L17.525 15.111A8.75 8.75 0 0 1 15.111 17.525L13.381 15.946A6.5 6.5 0 0 1 12.063 16.492L11.957 18.832A8.75 8.75 0 0 1 8.543 18.832L8.437 16.492A6.5 6.5 0 0 1 7.119 15.946L5.389 17.525A8.75 8.75 0 0 1 2.975 15.111L4.554 13.381A6.5 6.5 0 0 1 4.008 12.063L1.668 11.957A8.75 8.75 0 0 1 1.668 8.543L4.008 8.437A6.5 6.5 0 0 1 4.554 7.119L2.975 5.389A8.75 8.75 0 0 1 5.389 2.975L7.119 4.554A6.5 6.5 0 0 1 8.437 4.008Z"/><circle class="dot" cx="10.25" cy="10.25" r="1.5" fill="currentColor" stroke="none"/></svg>`;
+
 export const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)

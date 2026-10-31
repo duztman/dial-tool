@@ -483,9 +483,6 @@ export const sheet_says = (S) => {
   return `${n} ${n === 1 ? "copy" : "copies"} on ${L.paper[0]}${L.staggered ? ", rows staggered" : ""}${+S.out_copies > 0 && +S.out_copies > L.fits ? ` — ${L.fits} fit` : +S.out_copies > 0 ? "" : " — as many as fit (Copies 0)"}.`;
 };
 
-// each unit's ink in Dial Mono, in em, from its outlines (fonts/ui/mono_font.py prints it): [left of the advance's
-// start, width, top over the baseline, height]. The unit box is drawn round it (size_unit, #302)
-export const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
 
 // ── show mode's tabs (#509; the Show Case's column, re-hosted in the tool's rows). Their numbers in SECTIONS come after the dial side's (R9) ──
 ROWS["Show dial"] = [

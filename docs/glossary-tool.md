@@ -26,7 +26,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Pill switch** | A choice of a few words as pills in one rounded outline, the chosen one ink (`.pillswitch`); **free pills** are single pills wrapping (`free`). |
 | **Toggle** | A small track with a travelling dot standing for on and off without words (`seg` with `bool`). |
 | **Tick** (control) | A box with its name beside it; what it does goes in a note under it (design canon §6). |
-| **Unit box** | At the title line's right: mm, points, inches, lignes, thou; settings stay mm. **Ligne** 2.2558 mm, **thou** 0.0254 mm. |
+| **Settings** · **Unit** | The cog at the title line's right opens **Settings**: **Unit** (mm, points, inches, lignes, thou — every length the app shows and reads; settings stay mm) and **Colours** (the mode the colour pop-out opens in). **Ligne** 2.2558 mm, **thou** 0.0254 mm. |
 | **Mark · bio** | Okay's logo left of the title; opens the **bio**. |
 | **Tag** | The small label a wordless button shows on hover (`.tag`). |
 | **Reach** | The unseen touch area round a small control (R32). |
@@ -138,5 +138,5 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Box rule** | A framed thing spans from the labels' start to the pane's right line, `--frame-pad` inside (design canon §10). |
 | **Scale** (of spaces) | Every space a step of the unit (5.5): `--u1` ½ … `--u8` 4 units (R32). |
 | **Icon** | A small SVG drawn in `icons.js` by R33: the **icon grid** (one unit a point, lines on **quarter points**), four widths **LINE · SLANT · CURVE · DENSE**, a **pictured width** kept as drawn, a **rim** an ordinary line, a line's **look** read by `icons/look.py`. |
-| **Dial Mono** · **Dial Time** · **Pixel font** | The tool's own packed fonts: JetBrains Mono with a plain 0, the interface's mono — `--mono` — in two weights (the unit box, the row's numbers, the bar with its time and AM · PM, the log, links, a hex), Barlow Condensed Light (the bar's time), Silkscreen (stickers, tiny numbers). Not dial fonts. |
+| **Dial Mono** · **Dial Time** · **Pixel font** | The tool's own packed fonts: JetBrains Mono with a plain 0, the interface's mono — `--mono` — in two weights (the the row's numbers, the bar with its time and AM · PM, the log, links, a hex), Barlow Condensed Light (the bar's time), Silkscreen (stickers, tiny numbers). Not dial fonts. |
 | **Imported file** | An SVG, PDF or AI as a marker or hand shape (R23; not built, #50). |

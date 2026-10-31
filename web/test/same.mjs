@@ -113,7 +113,7 @@ async function walk(page, screen, with_pointer) {
   const look = async (name) => { await snap(page, S(name)); if (with_pointer) await pointer(page, S(name)); };
   await look("Dial");
   await attempt("dial folded", async () => { await page.click(".pinned .fold h2"); await snap(page, S("Dial, first pane folded")); await page.click(".pinned .fold h2"); });
-  await attempt("unit menu", async () => { await page.click("#unit"); await look("unit menu"); await page.click("#unit"); });
+  await attempt("settings box", async () => { await page.click("#settings"); await look("settings box"); await page.click("#settings"); });
   await attempt("colour pop-out", async () => {
     await page.click("#global-c-plate-Plate"); await look("colour pop-out");
     await page.click("#pop-as-HEX"); await snap(page, S("colour pop-out, HEX"));

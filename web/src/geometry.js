@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.2 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.3 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -187,6 +187,7 @@ export const DEFAULTS = {
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
   ui_unit: 0,                                      // the unit lengths are shown and typed in: a place in UNITS. Settings stay in mm (R1)
+  ui_colour_as: 1,                                 // the mode the colour pop-out opens in: a place in COLOUR_MODES, HEX to start (Settings, #554)
   ui_scale: false,                                 // changing the diameter scales everything on the dial with it (the window's state: not in a link)
   ui_weight: 100,                                  // Weight % (#88): every width on the dial times this, from the widths as they were when it was last moved; the widths carry it, so it is the window's state, not in a link
   // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
@@ -262,6 +263,7 @@ export const DEFAULTS = {
 /** units a length can be shown and typed in: [short name, name, how many make a millimetre, extra decimals].
  *  Only for the window: every setting, link and file stays in mm (R1). The list only grows at its end (R9).
  *  A ligne is the watchmakers' unit for movement sizes: 2.2558 mm. */
+export const COLOUR_MODES = ["RGB", "HEX", "CMYK", "RAL"];      // how a colour is written in the colour pop-out; Settings says which it opens in (#554)
 export const UNITS = [["mm", "Millimetres", 1, 0], ["pt", "Points", 72 / 25.4, 0], ["in", "Inches", 1 / 25.4, 2], ["lig", "Lignes", 1 / 2.2558, 1],
   ["thou", "Thou", 1 / 0.0254, -1]];      // thou: a thousandth of an inch (Okay, 16 Oct 2026, #299); one decimal fewer than mm. Only grows at its end (R9)
 
@@ -307,7 +309,7 @@ export const GUIDE_MORE = ["line", "crosshair", "circle"];
 /** the case each `bezel` number draws (R9: numbers keep their meaning; a new kind is appended) and the number the menu writes for a kind */
 export const CASE_OF_BEZEL = ["dress", "diver", "field", "dress", "field", "emre01"];
 export const BEZEL_OF_CASE = { dress: 3, diver: 1, field: 2, emre01: 5 };
-export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit",
+export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit", "ui_colour_as",
   "w_style", "w_lighting", "w_view", "w_metal", "c_metal", "w_nato", "c_nato", "w_insert", "c_insert", "w_ink", "w_inks", "w_ink_all", "w_flare_on", "w_bevels", "w_flare", "w_fl_size", "w_fl_tint", "w_fl_bright", "w_glass_fat", "w_glass_len", "w_glass_op", "c_backdrop2", "w_grounds", "w_ground_auto", "out_watch_px", "ui_show", "ui_show_section", "ui_edit_section", "ui_effects", "ui_grey_panel", "ui_case"];
 /** a set of files (#171): its tick's key, its words, the kind export() writes, and what it writes it as — the colour
  *  files plain (not a mask, not mirrored), the masks as said; the print sheet as Print says. */

@@ -8,7 +8,7 @@ Notation: **Region** `selector` — the one rule · levers → where the full wo
 
 The grid: a toggle column (`--eye`) and six columns (`--col`, `--gap`) between two margins (`--margin`); every line runs margin to margin, over the eyes · canon §3; the figures in `1-tokens.css` under *the panel's columns*.
 
-- **Header** `.panel > header`, `.mast`: mark, title, version, Help, unit box, Gallery pill — the title keeps its place; the unit box is `.unitbox` (Dial Mono) · glossary-tool *Unit box*, *Mark · bio*.
+- **Header** `.panel > header`, `.mast`: mark, title, version, Help, Gallery pill, Settings' cog `#settings` and its box `#settings-box` (`.unit`; canon §6 *The Settings box*) — the title keeps its place · glossary-tool *Settings · Unit*, *Mark · bio*.
 - **Section tabs** `.tabs`: five round signs; the chosen one fills ink (`5-chosen.css`) · R33, canon §9.
 - **Pinned part** `.pinned`: lines always in view (hand tabs `.handsbar`, window cards `.windowcards`, the Rings pane) · glossary-tool *Pinned line*; a `.tab` draws itself in two clipped layers (R32) · `4b-lines-tabs.css`.
   - **Show box** `.form > .showbox`: the one tick Show, on the words' first line · canon §6 *Tick rows*.

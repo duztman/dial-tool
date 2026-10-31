@@ -868,46 +868,47 @@ await shot("4c4-guides-dark");
 await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
 check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Page","Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has four panes (Reset last since 4.41.25): Dial stays in view, Page and Colours scroll under it (Okay, 20 Oct 2026, 03:41: 'Page moves to gray area'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
-// units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
-// the unit box round its word's ink, 2 px all round and a line (#302): [word, width, height, from the column's end, the room
-// between its line and its letters — top, bottom, left, right — counted on its own picture, in px (a canvas's measure of
-// the ink is not trusted: it is what disagreed with the screen, 4.44.1)
-const unit_box = async () => {
-  await page.mouse.move(700, 500);
-  const b = await (await page.$("#unit")).boundingBox(), png = await page.screenshot({ clip: { x: b.x - 2, y: b.y - 2, width: b.width + 4, height: b.height + 4 } });
-  const room = await page.evaluate(async (src) => {
-    const img = new Image(); img.src = "data:image/png;base64," + src; await img.decode();
-    const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const x = c.getContext("2d"); x.drawImage(img, 0, 0);
-    const d = x.getImageData(0, 0, c.width, c.height).data, W = c.width, H = c.height, bg = d[0], ink = (i, j) => d[(j * W + i) * 4] < bg - 30;
-    const rows = [], cols = [];      // the line: rows and columns mostly ink
-    for (let j = 0; j < H; j++) { let n = 0; for (let i = 0; i < W; i++) n += ink(i, j); if (n > W * 0.6) rows.push(j); }
-    for (let i = 0; i < W; i++) { let n = 0; for (let j = 0; j < H; j++) n += ink(i, j); if (n > H * 0.6) cols.push(i); }
-    const top = Math.max(...rows.filter((j) => j < H / 2)) + 1, bottom = Math.min(...rows.filter((j) => j > H / 2)) - 1, left = Math.max(...cols.filter((i) => i < W / 2)) + 1, right = Math.min(...cols.filter((i) => i > W / 2)) - 1;
-    let t = Infinity, u = -1, l = Infinity, r = -1;
-    for (let j = top; j <= bottom; j++) for (let i = left; i <= right; i++) if (ink(i, j)) { t = Math.min(t, j); u = Math.max(u, j); l = Math.min(l, i); r = Math.max(r, i); }
-    return [t - top, bottom - u, l - left, right - r].map((v) => v / devicePixelRatio);
-  }, png.toString("base64"));
-  return page.$eval("#unit", (e, room) => { const r = e.getBoundingClientRect(), row = document.querySelector(".form .row").getBoundingClientRect(); return [e.textContent, Math.round(r.width), Math.round(r.height), Math.round(row.right - r.right), room]; }, room);
-};
-const as_mm = await unit_box();
-check(as_mm[0] === "mm" && as_mm[3] === 0 && await page.isHidden("#unit-menu"), "the unit box says mm and ends on the panel's last column");
-await page.click("#unit");
-check(JSON.stringify(await page.$$eval("#unit-menu button span:first-child", (b) => b.map((x) => x.textContent))) === '["Millimetres","Points","Inches","Lignes","Thou"]', "its menu: millimetres, points, inches, lignes, thou (#299)");
-await page.click("#unit-in");
-const as_in = await unit_box();
-check(as_in[0] === "in" && as_mm[4].every((v) => v >= 3.5 && v <= 4.5) && as_in[2] === as_mm[2] && as_in[4].every((v) => v >= 2) && await page.isHidden("#unit-menu"), `Inches: the box says in; mm's box stands 4 px round its letters, to a screen dot, counted on its picture (top · bottom · left · right: ${as_mm[4].join(" · ")}); every unit's box mm's height, its own width (in: ${as_in[1]} × ${as_in[2]}, its dot ${as_in[4][0]} from the top; #302, 4.44.4)`);
-check(await page.inputValue("#global-dial-d-Diameter") === "1.181" && await S("S.dial_d") === 30, "a 30 mm diameter shows as 1.181; the setting is still 30");
+// Settings (#554; Okay, 31 Oct 2026, 01:49: "a settings icon. In place of mm … Inside two settings: unit … Colors";
+// approved 02:24): a cog at the panel's top right, never boxed; pressed, a box with Unit and Colours. Lengths are shown
+// and typed in the unit, kept in mm (R1)
+const cog_look = () => page.$eval("#settings", (e) => { const c = getComputedStyle(e), body = getComputedStyle(e.querySelector(".body")); return { border: c.borderTopWidth, ground: c.backgroundColor, colour: c.color, fill: body.fill, w: e.querySelector("svg").getAttribute("width") }; });
+const cog_rest = await cog_look();
+check(cog_rest.border === "0px" && cog_rest.ground === "rgba(0, 0, 0, 0)" && cog_rest.fill === "none" && cog_rest.w === "20" && await page.isHidden("#settings-box"), `the cog at rest: drawn at 20, no frame, no ground, an outline (Okay, 31 Oct 2026, 02:19: "Larger icon, do not box the icon ever") (${JSON.stringify(cog_rest)})`);
+await page.hover("#settings");
+const cog_hover = await cog_look();
+check(cog_hover.border === "0px" && cog_hover.ground === "rgba(0, 0, 0, 0)" && cog_hover.colour === "rgb(17, 17, 17)" && cog_hover.fill === "none", `under the pointer its outline ink, still no frame or ground ("Hover outline gets black"; 02:16: "Hover icon no bg") (${JSON.stringify(cog_hover)})`);
+await page.click("#settings");
+const cog_open = await cog_look();
+check(cog_open.border === "0px" && cog_open.ground === "rgba(0, 0, 0, 0)" && cog_open.fill === "rgb(17, 17, 17)" && await page.isVisible("#settings-box"), `open: the cog itself filled ink, no square ("Active cog itself gets black") (${JSON.stringify(cog_open)})`);
+const set_box = await page.evaluate(() => { const b = document.querySelector("#settings-box"), cog = document.querySelector("#settings").getBoundingClientRect(), r = b.getBoundingClientRect(), c = getComputedStyle(b);
+  const rows = [...b.querySelectorAll(".row")];
+  return { units: [...b.querySelectorAll("#settings-unit button, .row.seg")].length && [...rows[0].querySelectorAll("button")].map((x) => x.textContent), modes: [...rows[2].querySelectorAll("button")].map((x) => x.textContent),
+    names: rows.filter((x) => x.querySelector("label")).map((x) => [x.querySelector("label").textContent, getComputedStyle(x.querySelector("label")).color]), notes: rows.filter((x) => x.classList.contains("note")).map((x) => [x.textContent, getComputedStyle(x.querySelector(".quiet")).fontSize]),
+    right: Math.round(cog.right - r.right), ground: c.backgroundColor, line: getComputedStyle(rows[0]).boxShadow.startsWith("rgb(255, 255, 255)"), pad: [c.paddingTop, c.paddingLeft] }; });
+check(JSON.stringify(set_box.units) === '["mm","pt","in","lig","thou"]' && JSON.stringify(set_box.modes) === '["RGB","HEX","CMYK","RAL"]' && set_box.names.every(([, c]) => c === "rgb(17, 17, 17)") && set_box.notes.every(([, f]) => f === "11px") && set_box.notes[0][0] === "Every length in the app" && set_box.right >= -1 && set_box.right <= 4 && set_box.ground === "rgb(236, 236, 232)" && set_box.line && set_box.pad[0] === "11px" && set_box.pad[1] === "24px",
+  `the box: Unit lists the app's own five units, thou with them (Okay, 02:32: "Do not change its system"), Colours RGB · HEX · CMYK · RAL; the names in ink, the notes at 11 ("Bump down one size colors and unit titles get black"); hung from the cog's right; on the grey with white lines; padding 11, the left 24 ("2x its inner padding") (${JSON.stringify(set_box)})`);
+await page.click("#settings-unit-2");
+check(await page.inputValue("#global-dial-d-Diameter") === "1.181" && await S("S.dial_d") === 30 && await S("S.ui_unit") === 2, "Unit: Inches — a 30 mm diameter shows as 1.181; the setting is still 30");
 await enter_value("#global-dial-d-Diameter", "1.5");
 check(near(await S("S.dial_d"), 38.1, 1e-6), "1.5 typed in inches is 38.1 mm");
-await page.click("#unit"); await page.click("#unit-pt");
+await page.click("#settings");
+await page.click("#settings"); await page.click("#settings-unit-1");
 check(await page.inputValue("#global-dial-d-Diameter") === "108.0", "in points it reads 108.0");
 await shot("4b-units");
-await page.click("#unit"); await page.mouse.click(640, 30);
-check(await page.isHidden("#unit-menu"), "a press outside the menu puts it away");
-await page.click("#unit");
-check(await page.evaluate(() => { const b = document.querySelector("#unit-menu button:last-child").getBoundingClientRect(), hit = document.elementFromPoint(b.right - 8, b.top + b.height / 2); return !!hit && !!hit.closest("#unit-menu"); }), "the unit menu stands over the rows under it: its last line (Thou) is pressed, not a row's minus or plus (Okay, 16 Oct 2026: \"Thou falls under\")");
 await page.mouse.click(640, 30);
-await page.click("#unit"); await page.click("#unit-mm");
+check(await page.isHidden("#settings-box"), "a press outside the box puts it away");
+await page.click("#settings");
+check(await page.evaluate(() => { const b = document.querySelector("#settings-box .row:last-child").getBoundingClientRect(), hit = document.elementFromPoint(b.right - 8, b.top + b.height / 2); return !!hit && !!hit.closest("#settings-box"); }), "the box stands over the rows under it (Okay, 16 Oct 2026: \"Thou falls under\")");
+await page.click("#settings-colours-3");
+check(await S("S.ui_colour_as") === 3, "Colours: RAL is kept");
+await page.mouse.click(640, 30);
+await page.click(".pinned .colour"); await page.waitForTimeout(150);
+check(await page.evaluate(() => document.querySelector("#pop-as-RAL").classList.contains("on")), "the colour pop-out opens in RAL, as Settings says (Okay, 01:49: \"opens the color selector box to open default as\")");
+await page.click("#pop-as-HEX");
+check(await page.evaluate(() => document.querySelector("#pop-as-HEX").classList.contains("on")), "the other modes still a press away (\"other colors still allowed\")");
+await page.keyboard.press("Escape"); await page.mouse.click(640, 30);
+await page.evaluate(() => window.dial_tool.pop_close());
+await page.click("#settings"); await page.click("#settings-colours-1"); await page.click("#settings-unit-0"); await page.mouse.click(640, 30);
 await enter_value("#global-dial-d-Diameter", "30");
 // scale everything with the diameter: off, the rings stay; on, every measure follows, and comes back
 const measures = () => S("[S.rings[0].r, S.rings[0].size, S.rings[1].len, S.ha_hour.len, S.ha_cap, S.rings[0].count, S.margin]");
@@ -1120,12 +1121,12 @@ await page.click("#hand-tab-0");
   check(hole.includes("Marker · Hole · Hole length · Hole width · ") && hole.includes("Inside the disc · Round ends") && mark.includes("Marker · Mark · Mark length · Mark width · Mark ink · ") && as === 1,
     `a disc's marker is a Hole or a Mark; its rows say which (${mark.split(" · ").slice(3, 8).join(" · ")}), and a mark has its colour (#300)`);
 }
-{ // the top: undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (Okay, 21 Oct 2026, 23:29); the title's small letters centred in its row; the unit box's and the Gallery pill's words on the title's baseline, as Help's are (#285: "same baseline")
+{ // the top: undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (Okay, 21 Oct 2026, 23:29); the title's small letters centred in its row; the Gallery pill's word on the title's baseline, as Help's are (#285: "same baseline")
   const line = await page.evaluate(() => { const mid = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return r.top + r.height / 2; }, h = document.querySelector("h1");
     const base_of = (e) => { const probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; e.append(probe); const y = probe.getBoundingClientRect().top; probe.remove(); return y; };
     const base = base_of(h), c = getComputedStyle(h), pen = document.createElement("canvas").getContext("2d"); pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
     const R = (q) => document.querySelector(q).getBoundingClientRect(), m = R("main"), tabs = R(".tabs"), hd = R(".panel > header");
-    return { mids: [base - pen.measureText("x").actualBoundingBoxAscent / 2, hd.top + hd.height / 2], gaps: [R("#undo").left - m.left, R("#undo").top - m.top, R("#guides").top - m.top], bottoms: [tabs.top + 1, R("#undo").bottom, R("#guides").bottom], bases: [base, base_of(document.querySelector(".mast .help")), base_of(document.querySelector("#unit")), base_of(document.querySelector("#to-gallery"))] }; });
+    return { mids: [base - pen.measureText("x").actualBoundingBoxAscent / 2, hd.top + hd.height / 2], gaps: [R("#undo").left - m.left, R("#undo").top - m.top, R("#guides").top - m.top], bottoms: [tabs.top + 1, R("#undo").bottom, R("#guides").bottom], bases: [base, base_of(document.querySelector(".mast .help")), base_of(document.querySelector("#to-gallery"))] }; });
   check(Math.abs(line.mids[0] - line.mids[1]) < 0.6 && line.gaps.every((g) => Math.abs(g - line.gaps[0]) < 0.6) && line.bottoms.every((y) => Math.abs(y - line.bottoms[0]) < 0.6) && line.bases.every((y) => Math.abs(y - line.bases[0]) < 0.6), `undo and Guides as far from the canvas's top as from its side (${line.gaps.map((y) => +y.toFixed(1)).join(" · ")}), their bottom on the title's line (${line.bottoms.map((y) => +y.toFixed(1)).join(" · ")}); the title's small letters centred in its row (${line.mids.map((y) => +y.toFixed(1)).join(" · ")}); Help's, the unit box's and the Gallery pill's words stand on the title's baseline (${line.bases.map((y) => +y.toFixed(1)).join(" · ")})`);
 }
 { // the line between All hands and the hand tabs starts and ends where the tabs do (Okay, 16 Oct 2026, #260)
@@ -2327,13 +2328,12 @@ await tab("Export");
   }
   { // the way to the Gallery from the panel's top line: right after Help, as far from it as Help is from the version, as high as the unit box, darker than it and lighter than Help (Okay, 16 Oct 2026, #285; centred between Help and the unit box from 15 Oct, 07:45); pressed, Export with the Gallery in view
     await tab("Dial");
-    const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), version = r(".mast .title > .quiet:not(.help)"), help = r(".mast .help"), u = r("#unit"), p = r("#to-gallery");
+    const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), version = r(".mast .title > .quiet:not(.help)"), help = r(".mast .help"), p = r("#to-gallery");
       const shade = (q) => { const s = getComputedStyle(document.querySelector(q)).color, n = s.match(/[\d.]+/g).map(Number), rgb = (s.startsWith("color(") ? n.slice(0, 3).map((x) => x * 255) : n.slice(0, 3)), a = n.length > 3 ? n[3] : 1; return Math.round((rgb[0] + rgb[1] + rgb[2]) / 3 * a + 251.3 * (1 - a)); };      // how light it reads on the paper
-      const uc = getComputedStyle(document.querySelector("#unit"));
-      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], high: p.height > u.height && uc.fontFamily.startsWith('"Dial Mono"') && document.fonts.check('10px "Dial Mono"') && uc.textTransform === "none" && uc.paddingTop === "4px" && uc.paddingLeft === "4px" && uc.borderTopColor === uc.color, shades: [shade("#unit"), shade("#to-gallery"), shade(".mast .help")] }; });
+      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], shades: [shade("#to-gallery"), shade(".mast .help")] }; });
     await page.click("#to-gallery"); await page.waitForTimeout(900);
     const at = await page.evaluate(() => { const g = document.querySelector(".gallery").getBoundingClientRect(), f = document.querySelector(".form").getBoundingClientRect(); return [window.dial_tool.S.ui_section, g.top < f.bottom && g.bottom > f.top]; });
-    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.high && w.shades[0] > w.shades[1] && w.shades[1] > w.shades[2] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), taller than the unit box, whose word is in Dial Mono (packed), small letters, 4 px all round mm, its line the word's colour (#302), darker than mm and lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
+    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.shades[0] > w.shades[1] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
   }
   { // see-through shadows (Okay, 16 Oct 2026, #295): a see-through hand casts a lighter shadow, in its colour; a solid one as it always did; each multiplied onto the plate
     const s = await page.evaluate(async () => { const t = window.dial_tool, was = t.S.ha_minute.c.slice(); t.S.ha_minute.c = [1, 0, 0, 0.5]; t.changed(); t.render(); await new Promise((r) => setTimeout(r, 400));
@@ -2359,12 +2359,24 @@ await tab("Export");
 }
 
 // ── the bar (Okay, 14 Oct 2026, 23:19, #190), and a phone ──
-{ // the speed box clears its thumb at either end as much as above and below it; mm as light as a dead switch (Okay, 15 Oct 2026, 03:18)
-  const m = await page.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), box = r(".bar .speeds"), track = r(".bar .speedtrack"), c = getComputedStyle(document.querySelector("#unit"));
+{ // the bar's time box squeezed (#553; Okay, 31 Oct 2026, 01:26–01:49, approved as drawn in test/sketches/bar-time.js): a split
+  // hairline for each colon, AM's box as narrow as its word and its word one size over NOW's, the room to the speed slider;
+  // typed in, the field shows its words and the widest time fits
+  const c = await page.evaluate(async () => { const t = window.dial_tool, q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect();
+    t.set_time(12 * 3600); await new Promise((f) => requestAnimationFrame(() => f()));
+    const parts = [...q(".bar .clock").children].map((e) => e.tagName + (e.textContent || "")), line = getComputedStyle(q(".bar .clock > i"));
+    const f = q("#time"); f.focus(); f.value = "12:00:00"; const fits = f.scrollWidth <= f.clientWidth + 0.5, shows = getComputedStyle(f).color !== "rgba(0, 0, 0, 0)", hides = getComputedStyle(q(".bar .clock")).visibility === "hidden"; f.blur(); t.sync_time();
+    return { parts: parts.join(" "), split: line.backgroundImage.includes("rgba(0, 0, 0, 0)"), am: [Math.round(r("#ampm").width), getComputedStyle(q("#ampm")).fontSize], well: Math.round(r(".bar .timewell").width), slider: Math.round(r(".bar .speedtrack").width), fits, shows, hides, unseen: getComputedStyle(f).color === "rgba(0, 0, 0, 0)" }; });
+  await page.evaluate(() => window.dial_tool.set_time(10 * 3600 + 9 * 60 + 36));
+  check(c.parts === "SPAN12 I SPAN00 I SPAN00" && c.split && c.am[0] <= 30 && c.am[1] === "13px" && c.well <= 104 && c.slider >= 110 && c.fits && c.shows && c.hides && c.unseen,
+    `the bar's time: figures with a split hairline for each colon (Okay: "Vertical rules: lines have gap between them"), AM's box ${c.am[0]} wide at ${c.am[1]} ("Am text one px larger"), the time's box ${c.well}, the speed slider ${c.slider} ("I need a wider time slider"); typed in, the field shows its words over the hidden clock and 12:00:00 fits`);
+}
+{ // the speed box clears its thumb at either end as much as above and below it (Okay, 15 Oct 2026, 03:18)
+  const m = await page.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), box = r(".bar .speeds"), track = r(".bar .speedtrack");
     const thumb = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--speed-thumb"));
-    return { side: [+(track.left - box.left - 1).toFixed(2), +(box.right - 1 - track.right).toFixed(2)], top: (box.height - 2 - thumb) / 2, unit: [c.color, c.borderTopColor] }; });
-  check(m.side[0] === m.top && m.side[1] === m.top && m.unit[0] === m.unit[1],
-    `the speed thumb at an end stands as far from the box's wall (${m.side.join(" · ")}) as from its top (${m.top}); mm's word and line one light colour (${m.unit[0]})`);
+    return { side: [+(track.left - box.left - 1).toFixed(2), +(box.right - 1 - track.right).toFixed(2)], top: (box.height - 2 - thumb) / 2 }; });
+  check(m.side[0] === m.top && m.side[1] === m.top,
+    `the speed thumb at an end stands as far from the box's wall (${m.side.join(" · ")}) as from its top (${m.top})`);
 }
 const look = await page.evaluate(() => { const q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect(), c = (s) => getComputedStyle(q(s));
   return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], time: c("#time").fontFamily.startsWith('"Dial Mono"') && document.fonts.check('400 17px "Dial Mono"'), names_over: r(".steps12").bottom <= r(".ruler").top + 0.5,
@@ -2486,7 +2498,7 @@ await shot("10-bar");
   const was_sun = await page.evaluate(() => [window.dial_tool.S.sh_from, window.dial_tool.S.sh_rise]);
   const look = await page.evaluate(() => { const t = window.dial_tool, r = (q) => document.querySelector(q), [w, h] = t.size(), svg = t.svg.getBoundingClientRect(), panel = r(".panel").getBoundingClientRect();
     return { shown: ["#undo", "#versions"].every((q) => r(q).checkVisibility() && r(q).getBoundingClientRect().left < 200), gone: ["#guides", "#guides-more", "#shadows", "#shadows-more"].every((q) => !r(q).checkVisibility()),
-      title: getComputedStyle(r(".title h1"), "::after").content, header: ["#to-gallery", "#unit"].every((q) => !r(q).checkVisibility()), under: svg.right > panel.left + 100, w: Math.round(w), left: Math.round(panel.left - svg.left),
+      title: getComputedStyle(r(".title h1"), "::after").content, header: ["#to-gallery", "#settings"].every((q) => !r(q).checkVisibility()), under: svg.right > panel.left + 100, w: Math.round(w), left: Math.round(panel.left - svg.left),
       sign: getComputedStyle(r(".tabs button.on .sign")).color }; });
   await page.mouse.move(200, 200); await page.mouse.down(); await page.mouse.move(180, 180, { steps: 3 }); await page.mouse.up(); await frame();
   const sun = await page.evaluate(() => [window.dial_tool.S.sh_from, window.dial_tool.S.sh_rise]);
@@ -2669,15 +2681,15 @@ const narrow = await page.evaluate(() => ({ wide: document.documentElement.scrol
 check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothing wider than the screen, the eyes in view, the bar on top");
 { // a phone's title line (Okay, 15 Oct 2026, 07:59): full at the drawer's top (Gallery pill, unit box); scrolled, squeezed and held on top with the tabs under it; full again back at the top
   const m = () => page.evaluate(() => { const panel = document.querySelector(".panel"), h = panel.querySelector(":scope > header").getBoundingClientRect(), t = panel.querySelector(".tabs").getBoundingClientRect(), shown = (q) => !!document.querySelector(q).offsetParent;
-    return { sq: panel.classList.contains("squeezed"), high: Math.round(h.height), on_top: Math.round(h.top - panel.getBoundingClientRect().top), tabs_under: Math.round(t.top - h.bottom), pill: shown("#to-gallery"), unit: shown("#unit") }; });
+    return { sq: panel.classList.contains("squeezed"), high: Math.round(h.height), on_top: Math.round(h.top - panel.getBoundingClientRect().top), tabs_under: Math.round(t.top - h.bottom), pill: shown("#to-gallery"), unit: shown("#settings") }; });
   const set = (y) => page.evaluate((y) => { document.querySelector(".panel").scrollTop = y; }, y).then(() => page.waitForTimeout(200));
   await set(0); const a = await m(); await set(400); const b = await m(); await set(0); const c = await m();
   const ok = [!a.sq && a.pill && a.unit && a.high > b.high, b.sq && !b.pill && !b.unit && b.high === 40 && b.on_top <= 1 && b.tabs_under === 0, JSON.stringify(c) === JSON.stringify(a)];
-  check(ok.every(Boolean), `a phone's title line: full at the top with Gallery and mm (${a.high}), squeezed and held on top once scrolled (${b.high}, the tabs under it), full again back at the top (${ok.join(" ")})`);
+  check(ok.every(Boolean), `a phone's title line: full at the top with Gallery and the cog (${a.high}), squeezed and held on top once scrolled (${b.high}, the tabs under it), full again back at the top (${ok.join(" ")})`);
 }
-{ // a phone's bar row (Okay, 15 Oct 2026, 07:45): the time at the bar's text size, the red dot with as much room left as right
+{ // a phone's bar row (Okay, 15 Oct 2026, 07:45): the time at its phone size, the red dot with as much room left as right
   const b = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { font: getComputedStyle(document.querySelector(".bar .time")).fontSize, half: getComputedStyle(document.querySelector(".bar .timebox .half")).fontSize, left: r(".bar .lead .play").left, right: r(".bar .speeds").left - r(".bar .lead .play").right }; });
-  check(b.font === b.half && Math.abs(b.left - b.right) < 0.5 && b.left > 14, `a phone's bar: the time as large as AM (${b.font}), the red dot ${b.left.toFixed(1)} from the edge and ${b.right.toFixed(1)} from how fast`);
+  check(b.font === "17px" && b.half === "13px" && Math.abs(b.left - b.right) < 0.5 && b.left > 14, `a phone's bar: the time at 17 (${b.font}), AM one size over NOW as everywhere (${b.half}; #553: "Am text one px larger"), the red dot ${b.left.toFixed(1)} from the edge and ${b.right.toFixed(1)} from how fast`);
 }
 { // a phone (Okay, 15 Oct 2026, 06:20–06:27): the switches fold to their signs and a tap on the backdrop unfolds them; the
   // drawer has a gripper on its top line — a tap makes it taller, and tall it holds its top still; the lists open as sheets

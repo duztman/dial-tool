@@ -70,13 +70,23 @@
      it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
   .bar .timebox { display: flex; }
-  .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
+  .bar .timewell { position: relative; display: grid; height: var(--bar-control); padding: 0 var(--u2); overflow: hidden; border: var(--hair) solid var(--bar-light); }      /* as narrow as the figures allow, the room to the speed slider (#553; Okay, 31 Oct 2026, 00:58: "Squeeze this box to minimum") */
   @media (hover: hover) { .bar .timewell:hover { background: var(--bar-field); } }
-  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
-  /* AM · PM in the same face and size as the time, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am
-     attached to time and same size barlow"), one width for both words. A frame,
-     never filled (Okay, 15 Oct 2026, 00:18); little room beside its word (#306: "Reds reduce hor padding") */
-  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
+  /* the time as shown (#553, approved 31 Oct 2026, 01:49): three pairs of figures, a split hairline for each colon,
+     --clock-gap from the figures' ink either side and between its two halves (bar.js sync_clock sets each line's
+     margins from the figures beside it). The figures centred on their ink top to bottom (--ink-dy, measured as zeros);
+     the lines on the box's middle, which is that ink's middle */
+  .bar .lead .timewell .clock { display: flex; align-items: center; height: 100%; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); pointer-events: none; white-space: nowrap; }
+  .bar .lead .timewell .clock > span { translate: 0 var(--ink-dy, 0); }
+  .bar .lead .timewell .clock > i { flex: none; width: var(--hair); height: 0.75em; background: linear-gradient(var(--bar-light) calc(50% - var(--clock-gap) / 2), transparent 0 calc(50% + var(--clock-gap) / 2), var(--bar-light) 0); }
+  /* the field to type in lies over it, its words unseen until it is typed in; then they show and the clock steps aside */
+  .bar .lead .timewell .time { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); text-align: center; color: transparent; caret-color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timewell .time:focus { color: var(--bar-light); letter-spacing: 0; }      /* typed in, untracked, so the widest time (12:00:00) fits the squeezed box with its colons */
+  .bar .lead .timewell:focus-within .clock { visibility: hidden; }
+  /* AM · PM in the time's face, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am attached to time"),
+     as narrow as its word with --u2 each side and its word one size over NOW's (#553). A frame, never filled (Okay, 15
+     Oct 2026, 00:18); centred on its ink (ink.js), so its middle is the time's ink's middle, as NOW's is */
+  .bar .lead .timebox .half { box-sizing: content-box; height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-m); font-weight: 400; letter-spacing: var(--track-50); background: none; color: var(--bar-light); }      /* AM · PM as narrow as its word, --u2 each side, one size over NOW's (#553; Okay, 31 Oct 2026, 01:26: "we need am's box narrower. Am text one px larger") */
   /* the date (Okay, 18 Oct 2026: "short date … stacked … next to am, touching"; 19 Oct: no year, "better fit inside
      the bounding box"): day over month in Inter SemiBold ("try inter with appropriate weight for that size"), its box
      touching AM · PM's as AM's touches the time's. A press

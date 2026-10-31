@@ -243,7 +243,7 @@ class DialTool {
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
     if (this.history_open && !$("#history-list").hidden && !on(".undopair")) this.history_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
-    if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
+    if (this.settings_open && !$("#settings-box").hidden && !on(".unit")) this.settings_open(false);
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
@@ -269,7 +269,7 @@ class DialTool {
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${G.VERSION} · dev` : G.VERSION }), el("a", { className: "quiet help", href: HELP, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${G.VERSION} · dev` : G.VERSION }), el("a", { className: "quiet help", href: HELP, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.settings_box()),
       this.tabs, this.pinned, this.form, this.shenanigans_box());
     this.finger_anchor(panel);
 
@@ -298,7 +298,7 @@ class DialTool {
     this.preview_events();
 
     this.time_field = el("input", { id: "time", className: "time", type: "text", title: "Time shown, h:mm:ss" });
-    if (document.fonts) document.fonts.ready.then(() => { this.time_zeros = null; this.sync_time(); });      // Dial Time arrived: measure the time's ink again
+    if (document.fonts) document.fonts.ready.then(() => { this.time_zeros = null; this.clock_shown = null; this.sync_time(); });      // the face arrived: measure the time's ink again
     this.time_field.onchange = () => { const t = parse_time(this.time_field.value, this.S.t >= 43200); if (t !== null) this.set_time(t); else this.sync_time(); this.time_field.value = fmt_time(this.S.t); };      // "15:20" reads back as 3:20:00, PM
     // which half of the day: the hands can't say, an am · pm window can (it follows the time shown). Typing "15:20" or "3:20 pm" sets it too.
     this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am · pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
@@ -315,7 +315,11 @@ class DialTool {
     // Plusminus for both. No controller"): the day written out between − and + (a day each), the time between its − and +
     // (an hour each); a press on the day opens the system's date picker. In Barlow Regular ("Try barlow not condensed").
     this.date_button.onclick = () => this.date_pop_open(!this.date_pop || this.date_pop.hidden);
-    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button, el("span", { className: "datewell" }, this.date_button, this.date_pick, this.date_pop_box()));
+    // the time as it is shown (#553; Okay, 31 Oct 2026, 01:39–01:49, approved as drawn): its figures with a split hairline
+    // for each colon, the same ink distance either side; the field lies over it, unseen until it is typed in (sync_time)
+    this.clock_parts = [el("span"), el("i"), el("span"), el("i"), el("span")];
+    this.clock = el("span", { className: "clock", ariaHidden: "true" }, ...this.clock_parts);
+    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.clock, this.time_field), this.half_button, el("span", { className: "datewell" }, this.date_button, this.date_pick, this.date_pop_box()));
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
     this.play_button = el("button", { type: "button", className: "icon play", id: "play", onclick: () => this.play(!this.playing) });

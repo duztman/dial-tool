@@ -5,7 +5,7 @@
 import * as G from "./geometry.js";
 
 import { OPENER } from "./opener.js";
-import { BIG, SIGNS, STEP, TOOL_ICONS, eye, icon, pic } from "./icons.js";
+import { BIG, COG, SIGNS, STEP, TOOL_ICONS, eye, icon, pic } from "./icons.js";
 import { $, HOLE_LIVE_MS, KEY, POP_FADE_MS, POP_LINGER_MS, SHEET, WORDS_MS, clamp, css_colour, decimals, el, filled, fmt, is_length, label_of, paint, parse_number, round_step, to_hex, token } from "./ui.js";
 import { ROWS, SECTIONS, SVG_LATER, TILE_WORDS, chevron_box, menu_arrow } from "./rows.js";
 
@@ -99,22 +99,25 @@ export const PANEL = {
     // baseline (Okay, 15 Oct 2026, 04:26: "align icon better"; it was on the header's middle, a point low)
     const logo = $("#logo"), cap = pen.measureText("D").actualBoundingBoxAscent, moved = header.top + header.height / 2 - (baseline - x_height / 2);
     if (logo && cap) { logo.style.translate = ""; const r = logo.getBoundingClientRect(); logo.style.translate = `0 ${(baseline + moved - cap / 2 - (r.top + r.height / 2)).toFixed(2)}px`; }
-    // the Gallery pill and the unit box: their words on the title's baseline, as Help's are (Okay, 16 Oct 2026: "same
-    // baseline"). Each is moved as a whole (its menu with it); one that isn't shown (a phone's squeezed line) stays put
-    for (const box of document.querySelectorAll(".panel > header :is(.galleryway, .unit)")) {
+    // Settings' cog: centred on the title's capitals, as the mark is (its box moves with it)
+    const cog = $("#settings"), wrap = cog && cog.closest(".unit");
+    if (wrap && cap) { wrap.style.translate = ""; const r = cog.getBoundingClientRect(); if (r.height) { const dots = window.devicePixelRatio || 1; wrap.style.translate = `0 ${Math.round((baseline + moved - cap / 2 - (r.top + r.height / 2)) * dots) / dots}px`; } }
+    // the Gallery pill: its word on the title's baseline, as Help's is (Okay, 16 Oct 2026: "same baseline"); not shown
+    // (a phone's squeezed line), it stays put
+    for (const box of document.querySelectorAll(".panel > header .galleryway")) {
       box.style.translate = "";
-      const word = box.querySelector("button .word") || box.querySelector("button"), dot = el("span");      // the unit box: its word's own line
+      const word = box.querySelector("button"), dot = el("span");
       dot.style.cssText = "display:inline-block;width:0;height:0";
       word.append(dot);
       const at = dot.getBoundingClientRect();
       dot.remove();
       if (at.height === 0 && at.top === 0) continue;
       const dots = window.devicePixelRatio || 1;
-      box.style.translate = `0 ${Math.round((baseline + moved - at.top) * dots) / dots}px`;      // in whole screen dots: a hairline box stays crisp (the unit box, #302)
+      box.style.translate = `0 ${Math.round((baseline + moved - at.top) * dots) / dots}px`;      // in whole screen dots: a hairline box stays crisp
     }
   },
 
-  /** a menu's list (menu_press): its choices as the unit box's list is drawn (.unitmenu), under the menu's box — over it
+  /** a menu's list (menu_press): its choices drawn as a small menu (.unitmenu), under the menu's box — over it
    *  when the room is above — at least as wide, scrolled to the chosen one. A choice sets the menu and tells it, as the
    *  browser's list would (a change event); a press elsewhere or Escape puts it away. One list for every menu (R34). */
   menu_list(select) {
@@ -161,25 +164,37 @@ export const PANEL = {
     if (this.menus_away) document.removeEventListener("pointerdown", this.menus_away, true);
   },
 
-  unit_box() {
-    const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
-    menu.setAttribute("role", "menu");
-    this.unit_button = el("button", { type: "button", className: "unitbox", id: "unit", title: "The unit lengths are shown in" });
-    this.unit_button.setAttribute("aria-haspopup", "menu");
-    if (document.fonts) document.fonts.load('10px "Dial Mono"').then(() => this.size_unit(), () => {});      // measured again once Dial Mono is in (fonts.ready can come before a face is even asked for)
-    const open = (on) => { menu.hidden = !on; this.unit_button.setAttribute("aria-expanded", String(on)); };
-    this.unit_open = open;
-    this.unit_button.onclick = () => open(menu.hidden);
-    this.unit_items = G.UNITS.map(([short, name], i) => {
-      const b = el("button", { type: "button", id: "unit-" + short, onclick: () => { this.S.ui_unit = i; open(false); this.sync_rows(); this.render(); } }, el("span", { textContent: name }), el("span", { className: "quiet", textContent: short }));
-      b.setAttribute("role", "menuitemradio");
-      menu.append(b);
-      return b;
-    });
-    const box = el("div", { className: "unit" }, this.unit_button, menu);
-    box.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); this.unit_button.focus(); } };
+  /** Settings (#554; Okay, 31 Oct 2026, 01:49: "a settings icon. In place of mm … Opens a white box. Inside two
+   *  settings: unit, explain this applies everywhere on app. Colors … opens the color selector box to open default as,
+   *  other colors still allowed"; its look approved 02:24, design canon §6 *The Settings box*). A cog at the header's
+   *  top right; pressed, a box hung from its right edge with two rows: Unit (the window's lengths) and Colours (the mode
+   *  the colour pop-out opens in). Both are the window's, not the dial's: kept with the rest of the window's state,
+   *  never in a link. Neither is an undo step (put: they change how things are shown, not the dial). */
+  settings_box() {
+    const box = el("div", { className: "settingsbox", id: "settings-box", hidden: true });
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-label", "Settings");
+    this.settings_button = el("button", { type: "button", className: "cog", id: "settings", title: "Settings", innerHTML: COG });
+    this.settings_button.setAttribute("aria-haspopup", "dialog");
+    const open = (on) => { box.hidden = !on; this.settings_button.setAttribute("aria-expanded", String(on)); };
+    this.settings_open = open;
+    this.settings_button.onclick = () => open(box.hidden);
+    const shown = () => { this.sync_rows(); this.render(); };
+    const rows = [
+      { kind: "seg", key: "ui_unit", text: "Unit", items: G.UNITS.map((u) => u[0]), id: "settings-unit", put: (app, v) => { app.S.ui_unit = v; shown(); } },
+      { kind: "note", text: "Every length in the app" },
+      { kind: "seg", key: "ui_colour_as", text: "Colours", items: G.COLOUR_MODES, id: "settings-colours", put: (app, v) => { app.S.ui_colour_as = v; app.colour_mode = G.COLOUR_MODES[v]; shown(); } },
+      { kind: "note", text: "The colour pop-out opens in it" },
+    ].map((row) => this.build_row(row));
+    for (const r of rows) {      // a row and its note are one box, the note just below the pill (sync_rows does this for the panel's rows)
+      box.append(r.el);
+      if (r.row.kind === "note") { r.el.previousElementSibling.classList.add("noted"); r.el.dataset.after = "field"; }
+    }
+    this.settings_rows = rows;
+    const wrap = el("div", { className: "unit" }, this.settings_button, box);      // .unit: the header's place for it (hidden in show mode, first to fade as the mast slides)
+    wrap.onkeydown = (e) => { if (e.key === "Escape" && !box.hidden) { open(false); this.settings_button.focus(); } };
     open(false);
-    return box;
+    return wrap;
   },
 
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
@@ -260,8 +275,7 @@ export const PANEL = {
     if (this.shen_rows) for (const r of this.shen_rows) r.refresh(this.S);
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop); this.backdrop_dot.style.background = this.S.ui_show && this.S.c_backdrop2 ? `linear-gradient(135deg, ${css_colour(this.S.c_backdrop)}, ${css_colour(this.S.c_backdrop2)})` : "";      // a gradient shows as one
-    if (this.unit_button.textContent !== this.unit()[0]) this.size_unit();
-    this.unit_items.forEach((b, i) => { b.classList.toggle("on", i === this.S.ui_unit); b.setAttribute("aria-checked", String(i === this.S.ui_unit)); });
+    if (this.settings_rows) for (const r of this.settings_rows) r.refresh(this.S);      // Settings' two pills follow a reload or another window
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T, this.S, this)) : true;      // a row's show sees its own settings and the dial's (a hand's Bevel needs Bevels %)

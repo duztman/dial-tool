@@ -49,7 +49,9 @@ export function offset(text, style) {
     const ink_x = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
     // top to bottom: the ink rectangle's centre against the middle of the font's own box (the line box's middle)
     const ink_y = (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
-    const box_y = (m.fontBoundingBoxDescent - m.fontBoundingBoxAscent) / 2;
+    // the line box as the browser lays it: the face's ascent and descent each rounded to whole pixels at the label's own
+    // size (Chromium does; measured 31 Oct 2026: unrounded, AM and NOW on the bar stood 1–1.5 px over the time's ink)
+    const box_y = (Math.round(m.fontBoundingBoxDescent) - Math.round(m.fontBoundingBoxAscent)) / 2;
     const dot = 1 / (window.devicePixelRatio || 1);
     const snap = (v) => Math.round(v / dot) * dot;          // whole screen dots, so the type stays sharp
     // with tracking the box is wider by a letter-space after each letter; the ink by one fewer: half a space to the right
@@ -57,6 +59,8 @@ export function offset(text, style) {
   }
   return known.get(key);
 }
+
+const cased = (text, how) => how === "uppercase" ? text.toUpperCase() : how === "lowercase" ? text.toLowerCase() : text;      // what is drawn, not what is written: NOW is "Now" in the page
 
 /** wrap and place one label; a box with anything but plain text in it is left alone. */
 function centre(box) {
@@ -68,7 +72,7 @@ function centre(box) {
     span.textContent = box.textContent;
     box.replaceChildren(span);
   }
-  const [dx, dy] = offset(span.textContent, getComputedStyle(span));
+  const style = getComputedStyle(span), [dx, dy] = offset(cased(span.textContent, style.textTransform), style);
   span.style.setProperty("--ink-dx", dx + "px");
   span.style.setProperty("--ink-dy", dy + "px");
 }

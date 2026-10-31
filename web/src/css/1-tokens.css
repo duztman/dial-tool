@@ -51,7 +51,6 @@
     --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
-    --unit-face: "Dial Mono", var(--mono);       /* the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) */
     --line: 34px;                                  /* a row's height */
     /* show mode's column (the Show Case's measures, #509; Okay, 22 Oct 2026: "The width of the showcase less wide"): its six
        columns at 42 px and its side margins at 16 (21 Oct 2026, 23:38: "the column narrower, for more canvas") */
@@ -92,8 +91,7 @@
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
     --time-face: var(--mono);                      /* the time and AM · PM in the house mono (Okay, 30 Oct 2026, 18:31: "make the time and ampm mono too"); Dial Time stays packed for the Show Case */
-    --time-figure: 0.6em; --time-colon: 0.6em; --time-pm: 1.2em;      /* a mono's advance: every character 0.6 em, "AM" two of them */ --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
-    --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" */
+    --time-track: 0.04em;                          /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures) */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
@@ -195,6 +193,9 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    --clock-gap: 4px;                              /* the bar's time: a colon's split hairline this far from the ink of the figure either side, and its own gap the same (Okay, 31 Oct 2026, 01:35: "Notice the gaps"; 01:41: "The hr gaps before after line segments should be equal"; approved 01:49) */
+    --settings-note-drop: 2px;                     /* Settings' notes: their words this much lower than the canon's note under a field, so pill → words is 4 px on the ink, as line → pill (same words, 02:06) */
+    --settings-note-end: 1.6px;                    /* Settings' notes: room under the words, so words → next line ≈ pill → words, 4 px on the ink (Okay, 31 Oct 2026, 02:06: "reduce, equalize with line and its after"; measured) */
     --three-quarter: 0.75px;                       /* lines a little heavier than a hairline (Okay, 19 Oct 2026: "Line thicknesses .75 thicker"): Positions' lines, the slider knob's eye edge */
     --guide-pill-pad: var(--u2);                   /* a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) */
     /* the Shadows pane, as measured from Okay's drawing of 25 Oct 2026 ("Just made things pixel perfect", dial-tool-shadows-pane-4.93_O.pdf) */
@@ -227,7 +228,7 @@
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: calc(41px * var(--num-pop-k));                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026) */
     --t-date: 10px; --date-line: 11px; --date-track: 0.02em; --date-face: "Dial Date", var(--sans);      /* the bar's stacked date: day over month, 10 on 11, so 3 clear above and below in the bar's 28 inside (Okay, 19 Oct 2026: the year "i don't want it there, better fit inside the bounding box"), Inter SemiBold (Okay: "try inter with appropriate weight for that size") */
-    --t-time-narrow: 17px;                         /* the time and AM · PM on a phone: the desktop's 20 leaves how fast too little room, 12 was "too small" */
+    --t-time-narrow: 17px;                         /* the time on a phone (Okay, 18 Oct 2026, 21:20: "Time and am too small"); AM · PM is --t-m everywhere (#553) */
     --tag-max: 240px;                              /* a tag's longest line: longer words wrap (Okay, 18 Oct 2026, 21:20: "constrict the width to avoid these unreadable lines") */
     --tiny-round: 18px; --tiny-cast: 8px; --tiny-shade: rgb(0 0 0 / 0.22);      /* the Tiny Preview's corners and its hard shadow, down and right (#337, Okay's picture in notes 2) */
     --link-pill: 14px;                             /* the LINK pill on the line between width and height (#358): the pixel font at 8 with three over and under */
@@ -241,7 +242,6 @@
     --show-tick-gap: calc(var(--u3) - 2px);       /* the Show box's ticks to their words (Show, Bevel): 2 px closer than a unit and a half (Okay, 19 Oct 2026, 20:37: "closer"; 20 Oct 2026, 00:08: "Show and bevel 2px closer to tick boxes") */
     --show-tick: 9px;                              /* the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom") */
     --font-label: calc(6.5em + var(--btn-pad));    /* the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest */
-    --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
        kept when Okay looks through this list (#294) */

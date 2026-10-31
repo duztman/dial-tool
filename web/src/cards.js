@@ -12,9 +12,9 @@ import { INSTANCES_MOST, dial_picture, dial_text, entry_settings, instances_read
 
 export const CARDS = {
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
-  /** a way to the Gallery from the panel's top line: a pill dressed as the unit box, centred in the room between the
-   *  version and the unit box (Okay, 15 Oct 2026, 07:45: "a shortcut to the gallery centered between beta blabla and mm.
-   *  A pill of mm complexion"). Pressed: the Export tab, the Gallery pane open and brought into view */
+  /** a way to the Gallery from the panel's top line: a small pill after Help (Okay, 15 Oct 2026, 07:45: "a shortcut to
+   *  the gallery"; 16 Oct: "put it after help with equal gap"). Pressed: the Export tab, the Gallery pane open and
+   *  brought into view */
   gallery_way() {
     const go = el("button", { type: "button", className: "gallerypill", id: "to-gallery", textContent: "Gallery", title: "Dials to open and take apart" });
     go.onclick = () => {

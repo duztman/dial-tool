@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.2 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.3 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -86,7 +86,6 @@
     --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
-    --unit-face: "Dial Mono", var(--mono);       /* the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) */
     --line: 34px;                                  /* a row's height */
     /* show mode's column (the Show Case's measures, #509; Okay, 22 Oct 2026: "The width of the showcase less wide"): its six
        columns at 42 px and its side margins at 16 (21 Oct 2026, 23:38: "the column narrower, for more canvas") */
@@ -127,8 +126,7 @@
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
     --time-face: var(--mono);                      /* the time and AM · PM in the house mono (Okay, 30 Oct 2026, 18:31: "make the time and ampm mono too"); Dial Time stays packed for the Show Case */
-    --time-figure: 0.6em; --time-colon: 0.6em; --time-pm: 1.2em;      /* a mono's advance: every character 0.6 em, "AM" two of them */ --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
-    --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" */
+    --time-track: 0.04em;                          /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures) */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
@@ -230,6 +228,9 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    --clock-gap: 4px;                              /* the bar's time: a colon's split hairline this far from the ink of the figure either side, and its own gap the same (Okay, 31 Oct 2026, 01:35: "Notice the gaps"; 01:41: "The hr gaps before after line segments should be equal"; approved 01:49) */
+    --settings-note-drop: 2px;                     /* Settings' notes: their words this much lower than the canon's note under a field, so pill → words is 4 px on the ink, as line → pill (same words, 02:06) */
+    --settings-note-end: 1.6px;                    /* Settings' notes: room under the words, so words → next line ≈ pill → words, 4 px on the ink (Okay, 31 Oct 2026, 02:06: "reduce, equalize with line and its after"; measured) */
     --three-quarter: 0.75px;                       /* lines a little heavier than a hairline (Okay, 19 Oct 2026: "Line thicknesses .75 thicker"): Positions' lines, the slider knob's eye edge */
     --guide-pill-pad: var(--u2);                   /* a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) */
     /* the Shadows pane, as measured from Okay's drawing of 25 Oct 2026 ("Just made things pixel perfect", dial-tool-shadows-pane-4.93_O.pdf) */
@@ -262,7 +263,7 @@
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: calc(41px * var(--num-pop-k));                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026) */
     --t-date: 10px; --date-line: 11px; --date-track: 0.02em; --date-face: "Dial Date", var(--sans);      /* the bar's stacked date: day over month, 10 on 11, so 3 clear above and below in the bar's 28 inside (Okay, 19 Oct 2026: the year "i don't want it there, better fit inside the bounding box"), Inter SemiBold (Okay: "try inter with appropriate weight for that size") */
-    --t-time-narrow: 17px;                         /* the time and AM · PM on a phone: the desktop's 20 leaves how fast too little room, 12 was "too small" */
+    --t-time-narrow: 17px;                         /* the time on a phone (Okay, 18 Oct 2026, 21:20: "Time and am too small"); AM · PM is --t-m everywhere (#553) */
     --tag-max: 240px;                              /* a tag's longest line: longer words wrap (Okay, 18 Oct 2026, 21:20: "constrict the width to avoid these unreadable lines") */
     --tiny-round: 18px; --tiny-cast: 8px; --tiny-shade: rgb(0 0 0 / 0.22);      /* the Tiny Preview's corners and its hard shadow, down and right (#337, Okay's picture in notes 2) */
     --link-pill: 14px;                             /* the LINK pill on the line between width and height (#358): the pixel font at 8 with three over and under */
@@ -276,7 +277,6 @@
     --show-tick-gap: calc(var(--u3) - 2px);       /* the Show box's ticks to their words (Show, Bevel): 2 px closer than a unit and a half (Okay, 19 Oct 2026, 20:37: "closer"; 20 Oct 2026, 00:08: "Show and bevel 2px closer to tick boxes") */
     --show-tick: 9px;                              /* the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom") */
     --font-label: calc(6.5em + var(--btn-pad));    /* the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest */
-    --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
        kept when Okay looks through this list (#294) */
@@ -552,14 +552,26 @@
   .bio a { color: var(--white); text-decoration: underline; text-underline-offset: 0.15em; }
   .panel .title { display: flex; align-items: baseline; gap: var(--u4); }
   .mast .help { text-decoration: underline; text-underline-offset: 0.15em; }      /* Help, beside the version: the version's type, underlined (Okay, 15 Oct 2026, 12:50) */
-  /* units: a small box at the panel's top right saying the unit lengths are shown in, by its short name, at Help's size
-     and on the title's baseline (placed by level_title), one width whatever it says (Okay, 16 Oct 2026: "Make mm a
-     smaller button, as big as help, same baseline, much smaller box, flush right"; one column wide and 32 high until
-     then). Its menu hangs under it, the units by their full names, a hairline between them. */
-  .unit { position: relative; z-index: 6; margin-left: auto; }      /* a layer of its own, as the mast's: its translate (level_title) makes it one, and at 0 its menu fell under the rows below (Okay, 16 Oct 2026: "Thou falls under") */
-  .unitbox { position: relative; box-sizing: content-box; width: var(--ink-w, 1.1em); height: var(--ink-h, 0.6em); padding: var(--unit-pad); border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); font: 400 var(--t-xxs)/1 var(--unit-face); letter-spacing: 0; text-transform: none; }      /* the word in Dial Mono, small letters, its box round their ink (size_unit), its stems as thick as its line, one colour (#302; the pixel font in capitals until 4.44.1) */
-  .unitbox > .word { position: absolute; left: calc(var(--unit-pad) + var(--word-x, 0px)); top: calc(var(--unit-pad) + var(--word-y, 0px)); line-height: 1; white-space: nowrap; }      /* its ink the padding from every side, placed by size_unit, whatever the browser does with a button's word (4.44.3) */      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
-  @media (hover: hover) { .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); } }
+  /* Settings (#554; design canon §6 *The Settings box*; Okay, 31 Oct 2026, 01:49–02:24): a cog at the header's top
+     right on the title's line, and the box it opens, hung from its right edge. The cog is never framed or grounded
+     (02:19: "do not box the icon ever"): at rest the grey the unit box had, under the pointer its outline ink ("Hover
+     outline gets black"), open the cog filled ink with its dot in paper ("Active cog itself gets black") — an exception
+     to the chosen look, for this one icon. */
+  .unit { position: relative; z-index: 6; margin-left: auto; }      /* a layer of its own, as the mast's: its translate (level_title) makes it one, and at 0 its box fell under the rows below (Okay, 16 Oct 2026: "Thou falls under") */
+  .cog { display: grid; place-items: center; padding: var(--u1); border: 0; background: none; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); }
+  @media (hover: hover) { .cog:hover { color: var(--ink); } }
+  .cog[aria-expanded="true"] { color: var(--ink); }
+  .cog[aria-expanded="true"] .body { fill: currentColor; }
+  .cog[aria-expanded="true"] .dot { fill: var(--paper); }
+  /* the box: as wide as what it holds, on the panel's grey, so its row lines are the grey's (white); padding --u4, the
+     left twice --gap (02:21: "2x its inner padding"); two columns, the names in ink right against their pills (02:10,
+     02:24), each pill's note under it at --t-xs (02:24: "Bump down one size"); the line over a row, the pill, the note's
+     words and the next line 4 px apart on the ink (02:06: "reduce, equalize with line and its after") */
+  .settingsbox { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; display: grid; grid-template-columns: max-content max-content; width: max-content; padding: var(--u4) var(--u4) var(--u4) calc(2 * var(--gap)); border: var(--hair) solid var(--ink); background: var(--well); --row-rule: var(--line-on-grey); }
+  .settingsbox > .row { grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: var(--u2); }
+  .settingsbox > .row > label:first-child { grid-column: 1; justify-self: end; text-align: right; color: var(--ink); }
+  .settingsbox > .row > :not(label) { grid-column: 2; }
+  .settingsbox > .row.note[data-after] > .quiet { grid-column: 2; margin-top: calc((var(--control) - var(--line)) / 2 + var(--settings-note-drop)); padding-bottom: var(--settings-note-end); font-size: var(--t-xs); }      /* the words just under the pill (the canon's note under a field, 4c-rows.css), the next line as near under them */
   /* the way to the Gallery: a small pill right after Help, as far from it as Help from the version, at Help's size and
      on the title's baseline (placed by level_title), as high as the unit box; darker than the unit box, lighter than
      Help (Okay, 16 Oct 2026: "Do the same to Gallery pill and put it after help with equal gap. Gallery gets darker
@@ -567,7 +579,7 @@
   .galleryway { flex: none; margin-left: var(--u4); }
   .gallerypill { padding: var(--gallery-lift) var(--u2) 0; border: var(--hair) solid currentColor; border-radius: var(--round-pill); color: color-mix(in srgb, var(--ink) calc(var(--faint) * 100%), transparent); white-space: nowrap; }
   @media (hover: hover) { .gallerypill:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); } }
-  /* a small menu hanging under its button (the units; the kinds of ring to add): lines a row high, a hairline between them */
+  /* a small menu hanging under its button (the kinds of ring to add; the menus' lists and the languages share its look): lines a row high, a hairline between them */
   :is(.unitmenu, .addmenu) { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
   :is(.unitmenu, .addmenu) button { display: flex; align-items: center; gap: var(--gap); width: 100%; height: var(--line); padding: 0 var(--u4); white-space: nowrap; }
   :is(.unitmenu, .addmenu) button + button { border-top: var(--hair) solid var(--rule); }
@@ -1536,7 +1548,7 @@
    (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it; a tab (.tab) draws its own. */
 @layer chosen {
   .segs > button.on, .pillswitch > button.on, .btnline > button.on, .circles > button.on, .pickt.on, .tile[aria-pressed="true"], .sticker.ui[aria-pressed="true"], .filterpill[aria-pressed="true"],
-  .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
+  .headtools .sign[aria-expanded="true"],
   .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .headtools .sign[aria-expanded="true"] .rim { stroke: var(--ink); }
   @media (hover: hover) { :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); } }      /* a chosen tile under the pointer: a shade lighter */
@@ -2041,13 +2053,23 @@
      it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
   .bar .timebox { display: flex; }
-  .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
+  .bar .timewell { position: relative; display: grid; height: var(--bar-control); padding: 0 var(--u2); overflow: hidden; border: var(--hair) solid var(--bar-light); }      /* as narrow as the figures allow, the room to the speed slider (#553; Okay, 31 Oct 2026, 00:58: "Squeeze this box to minimum") */
   @media (hover: hover) { .bar .timewell:hover { background: var(--bar-field); } }
-  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
-  /* AM · PM in the same face and size as the time, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am
-     attached to time and same size barlow"), one width for both words. A frame,
-     never filled (Okay, 15 Oct 2026, 00:18); little room beside its word (#306: "Reds reduce hor padding") */
-  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
+  /* the time as shown (#553, approved 31 Oct 2026, 01:49): three pairs of figures, a split hairline for each colon,
+     --clock-gap from the figures' ink either side and between its two halves (bar.js sync_clock sets each line's
+     margins from the figures beside it). The figures centred on their ink top to bottom (--ink-dy, measured as zeros);
+     the lines on the box's middle, which is that ink's middle */
+  .bar .lead .timewell .clock { display: flex; align-items: center; height: 100%; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); pointer-events: none; white-space: nowrap; }
+  .bar .lead .timewell .clock > span { translate: 0 var(--ink-dy, 0); }
+  .bar .lead .timewell .clock > i { flex: none; width: var(--hair); height: 0.75em; background: linear-gradient(var(--bar-light) calc(50% - var(--clock-gap) / 2), transparent 0 calc(50% + var(--clock-gap) / 2), var(--bar-light) 0); }
+  /* the field to type in lies over it, its words unseen until it is typed in; then they show and the clock steps aside */
+  .bar .lead .timewell .time { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); text-align: center; color: transparent; caret-color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timewell .time:focus { color: var(--bar-light); letter-spacing: 0; }      /* typed in, untracked, so the widest time (12:00:00) fits the squeezed box with its colons */
+  .bar .lead .timewell:focus-within .clock { visibility: hidden; }
+  /* AM · PM in the time's face, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am attached to time"),
+     as narrow as its word with --u2 each side and its word one size over NOW's (#553). A frame, never filled (Okay, 15
+     Oct 2026, 00:18); centred on its ink (ink.js), so its middle is the time's ink's middle, as NOW's is */
+  .bar .lead .timebox .half { box-sizing: content-box; height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-m); font-weight: 400; letter-spacing: var(--track-50); background: none; color: var(--bar-light); }      /* AM · PM as narrow as its word, --u2 each side, one size over NOW's (#553; Okay, 31 Oct 2026, 01:26: "we need am's box narrower. Am text one px larger") */
   /* the date (Okay, 18 Oct 2026: "short date … stacked … next to am, touching"; 19 Oct: no year, "better fit inside
      the bounding box"): day over month in Inter SemiBold ("try inter with appropriate weight for that size"), its box
      touching AM · PM's as AM's touches the time's. A press
@@ -2146,8 +2168,8 @@
     .bar .lead { padding-left: var(--u6); }      /* the red dot with room either side, as much left as right (Okay, 15 Oct 2026, 07:45: "red dot with more space on both sides"); was: the row started at the margin */
     .bar .lead .play { margin-right: calc(var(--u6) - var(--u2)); }      /* the row's own gap (u2) makes the rest */
     /* the time at the size of everything else in the bar, AM and FIT (07:45: "smaller, 'same size with all' digi
-       clock"); its field shrinks with it (--time-chars counts its own characters) and how fast takes the room */
-    .bar .lead :is(.timewell .time, .timebox .half) { font-size: var(--t-time-narrow); }      /* the time and AM · PM, one size here too (Okay, 18 Oct 2026, 21:20, on the phone: "Time and am too small"); how fast gives up the room */
+       clock"); its box shrinks with it and how fast takes the room */
+    .bar .lead :is(.timewell .time, .timewell .clock) { font-size: var(--t-time-narrow); }      /* the time and AM · PM, one size here too (Okay, 18 Oct 2026, 21:20, on the phone: "Time and am too small"); how fast gives up the room */
     .bar .humpname { display: none; }               /* the bar's top line is too close here for "1×" over the ball */
     /* here the speed is written in the thumb itself, in the pixel face, black on its grey, in place of its eye (Okay,
        15 Oct 2026, 06:54: "write the speed in silkscreen into this guy instead of the dot") */
@@ -7483,7 +7505,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.2 beta";
+var VERSION = "v1.1.3 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7837,6 +7859,8 @@ var DEFAULTS = {
   ui_window: 0,
   ui_unit: 0,
   // the unit lengths are shown and typed in: a place in UNITS. Settings stay in mm (R1)
+  ui_colour_as: 1,
+  // the mode the colour pop-out opens in: a place in COLOUR_MODES, HEX to start (Settings, #554)
   ui_scale: false,
   // changing the diameter scales everything on the dial with it (the window's state: not in a link)
   ui_weight: 100,
@@ -7990,6 +8014,7 @@ var DEFAULTS = {
   gd_sel_strength: 95,
   gd_sel_w: 1.5
 };
+var COLOUR_MODES = ["RGB", "HEX", "CMYK", "RAL"];
 var UNITS = [
   ["mm", "Millimetres", 1, 0],
   ["pt", "Points", 72 / 25.4, 0],
@@ -8065,6 +8090,7 @@ var NOT_GEOMETRY = [
   "ui_preview",
   "ui_scale",
   "ui_unit",
+  "ui_colour_as",
   "w_style",
   "w_lighting",
   "w_view",
@@ -11450,13 +11476,14 @@ function offset2(text, style) {
     for (const k of ["width", "actualBoundingBoxLeft", "actualBoundingBoxRight", "actualBoundingBoxAscent", "actualBoundingBoxDescent", "fontBoundingBoxAscent", "fontBoundingBoxDescent"]) m[k] = big[k] / scale;
     const ink_x = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
     const ink_y = (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
-    const box_y = (m.fontBoundingBoxDescent - m.fontBoundingBoxAscent) / 2;
+    const box_y = (Math.round(m.fontBoundingBoxDescent) - Math.round(m.fontBoundingBoxAscent)) / 2;
     const dot = 1 / (window.devicePixelRatio || 1);
     const snap = (v) => Math.round(v / dot) * dot;
     known.set(key, [snap(m.width / 2 - ink_x + track2 / 2), snap(box_y - ink_y)]);
   }
   return known.get(key);
 }
+var cased = (text, how) => how === "uppercase" ? text.toUpperCase() : how === "lowercase" ? text.toLowerCase() : text;
 function centre(box3) {
   let span = box3.firstElementChild;
   if (!(span && span.classList.contains("ink") && box3.childNodes.length === 1)) {
@@ -11466,7 +11493,7 @@ function centre(box3) {
     span.textContent = box3.textContent;
     box3.replaceChildren(span);
   }
-  const [dx, dy] = offset2(span.textContent, getComputedStyle(span));
+  const style = getComputedStyle(span), [dx, dy] = offset2(cased(span.textContent, style.textTransform), style);
   span.style.setProperty("--ink-dx", dx + "px");
   span.style.setProperty("--ink-dy", dy + "px");
 }
@@ -12236,6 +12263,7 @@ var EYE_RAYS = 16;
 var EYE_RAY = 0.75;
 var RAY_REACH = 240;
 var BEVEL = { light: 0.22, dark: 0.26 };
+var COG = `<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" ${sw(DENSE)} stroke-linejoin="round"><path class="body" d="M8.437 4.008L8.543 1.668A8.75 8.75 0 0 1 11.957 1.668L12.063 4.008A6.5 6.5 0 0 1 13.381 4.554L15.111 2.975A8.75 8.75 0 0 1 17.525 5.389L15.946 7.119A6.5 6.5 0 0 1 16.492 8.437L18.832 8.543A8.75 8.75 0 0 1 18.832 11.957L16.492 12.063A6.5 6.5 0 0 1 15.946 13.381L17.525 15.111A8.75 8.75 0 0 1 15.111 17.525L13.381 15.946A6.5 6.5 0 0 1 12.063 16.492L11.957 18.832A8.75 8.75 0 0 1 8.543 18.832L8.437 16.492A6.5 6.5 0 0 1 7.119 15.946L5.389 17.525A8.75 8.75 0 0 1 2.975 15.111L4.554 13.381A6.5 6.5 0 0 1 4.008 12.063L1.668 11.957A8.75 8.75 0 0 1 1.668 8.543L4.008 8.437A6.5 6.5 0 0 1 4.554 7.119L2.975 5.389A8.75 8.75 0 0 1 5.389 2.975L7.119 4.554A6.5 6.5 0 0 1 8.437 4.008Z"/><circle class="dot" cx="10.25" cy="10.25" r="1.5" fill="currentColor" stroke="none"/></svg>`;
 var TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -12867,7 +12895,6 @@ var sheet_says = (S) => {
   if (!n) return `A ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}.`;
   return `${n} ${n === 1 ? "copy" : "copies"} on ${L.paper[0]}${L.staggered ? ", rows staggered" : ""}${+S.out_copies > 0 && +S.out_copies > L.fits ? ` \u2014 ${L.fits} fit` : +S.out_copies > 0 ? "" : " \u2014 as many as fit (Copies 0)"}.`;
 };
-var UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };
 ROWS["Show dial"] = [
   // three panes, two ways of seeing one set of colours (#545; Okay, 25 Oct 2026, drawn and locked on a complex dial):
   // Colours by what a part is, Inks by what a printer sees, Hands with their heights; a swatch in any of them is the
@@ -15252,7 +15279,7 @@ var COLOUR = {
     } catch (e) {
     }
     if (!Array.isArray(this.palette)) this.palette = PALETTE.slice();
-    this.colour_mode = "HEX";
+    this.colour_mode = COLOUR_MODES[this.S.ui_colour_as] || "HEX";
     const put = (rgb2) => P2.at.write(rgb2.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([P2.at.read()[3] ?? 1]));
     P2.put = put;
     P2.pick = (hex3) => put(from_hex(hex3).slice(0, 3));
@@ -15307,7 +15334,7 @@ var COLOUR = {
     P2.alpha_row = el("div", { className: "alpharow" }, P2.alpha, P2.alpha_field);
     P2.dot = el("i", { className: "dot" });
     P2.modes = el("span", { className: "segs" });
-    for (const mode of ["RGB", "HEX", "CMYK", "RAL"]) P2.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => {
+    for (const mode of COLOUR_MODES) P2.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => {
       this.colour_mode = mode;
       this.pop_refresh();
     } }));
@@ -15412,6 +15439,7 @@ var COLOUR = {
     if (P2.at) P2.at.swatch.setAttribute("aria-expanded", "false");
     P2.at = { ...colour, swatch };
     P2.family = null;
+    this.colour_mode = COLOUR_MODES[this.S.ui_colour_as] || "HEX";
     swatch.setAttribute("aria-expanded", "true");
     P2.el.hidden = false;
     this.pop_wide(false);
@@ -17077,9 +17105,18 @@ var PANEL = {
       const r = logo.getBoundingClientRect();
       logo.style.translate = `0 ${(baseline + moved - cap / 2 - (r.top + r.height / 2)).toFixed(2)}px`;
     }
-    for (const box3 of document.querySelectorAll(".panel > header :is(.galleryway, .unit)")) {
+    const cog = $("#settings"), wrap = cog && cog.closest(".unit");
+    if (wrap && cap) {
+      wrap.style.translate = "";
+      const r = cog.getBoundingClientRect();
+      if (r.height) {
+        const dots = window.devicePixelRatio || 1;
+        wrap.style.translate = `0 ${Math.round((baseline + moved - cap / 2 - (r.top + r.height / 2)) * dots) / dots}px`;
+      }
+    }
+    for (const box3 of document.querySelectorAll(".panel > header .galleryway")) {
       box3.style.translate = "";
-      const word = box3.querySelector("button .word") || box3.querySelector("button"), dot = el("span");
+      const word = box3.querySelector("button"), dot = el("span");
       dot.style.cssText = "display:inline-block;width:0;height:0";
       word.append(dot);
       const at = dot.getBoundingClientRect();
@@ -17089,7 +17126,7 @@ var PANEL = {
       box3.style.translate = `0 ${Math.round((baseline + moved - at.top) * dots) / dots}px`;
     }
   },
-  /** a menu's list (menu_press): its choices as the unit box's list is drawn (.unitmenu), under the menu's box — over it
+  /** a menu's list (menu_press): its choices drawn as a small menu (.unitmenu), under the menu's box — over it
    *  when the room is above — at least as wide, scrolled to the chosen one. A choice sets the menu and tells it, as the
    *  browser's list would (a change event); a press elsewhere or Escape puts it away. One list for every menu (R34). */
   menu_list(select) {
@@ -17151,39 +17188,58 @@ var PANEL = {
     this.menus_for = null;
     if (this.menus_away) document.removeEventListener("pointerdown", this.menus_away, true);
   },
-  unit_box() {
-    const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
-    menu.setAttribute("role", "menu");
-    this.unit_button = el("button", { type: "button", className: "unitbox", id: "unit", title: "The unit lengths are shown in" });
-    this.unit_button.setAttribute("aria-haspopup", "menu");
-    if (document.fonts) document.fonts.load('10px "Dial Mono"').then(() => this.size_unit(), () => {
-    });
+  /** Settings (#554; Okay, 31 Oct 2026, 01:49: "a settings icon. In place of mm … Opens a white box. Inside two
+   *  settings: unit, explain this applies everywhere on app. Colors … opens the color selector box to open default as,
+   *  other colors still allowed"; its look approved 02:24, design canon §6 *The Settings box*). A cog at the header's
+   *  top right; pressed, a box hung from its right edge with two rows: Unit (the window's lengths) and Colours (the mode
+   *  the colour pop-out opens in). Both are the window's, not the dial's: kept with the rest of the window's state,
+   *  never in a link. Neither is an undo step (put: they change how things are shown, not the dial). */
+  settings_box() {
+    const box3 = el("div", { className: "settingsbox", id: "settings-box", hidden: true });
+    box3.setAttribute("role", "dialog");
+    box3.setAttribute("aria-label", "Settings");
+    this.settings_button = el("button", { type: "button", className: "cog", id: "settings", title: "Settings", innerHTML: COG });
+    this.settings_button.setAttribute("aria-haspopup", "dialog");
     const open = (on) => {
-      menu.hidden = !on;
-      this.unit_button.setAttribute("aria-expanded", String(on));
+      box3.hidden = !on;
+      this.settings_button.setAttribute("aria-expanded", String(on));
     };
-    this.unit_open = open;
-    this.unit_button.onclick = () => open(menu.hidden);
-    this.unit_items = UNITS.map(([short, name], i2) => {
-      const b = el("button", { type: "button", id: "unit-" + short, onclick: () => {
-        this.S.ui_unit = i2;
+    this.settings_open = open;
+    this.settings_button.onclick = () => open(box3.hidden);
+    const shown = () => {
+      this.sync_rows();
+      this.render();
+    };
+    const rows = [
+      { kind: "seg", key: "ui_unit", text: "Unit", items: UNITS.map((u) => u[0]), id: "settings-unit", put: (app, v) => {
+        app.S.ui_unit = v;
+        shown();
+      } },
+      { kind: "note", text: "Every length in the app" },
+      { kind: "seg", key: "ui_colour_as", text: "Colours", items: COLOUR_MODES, id: "settings-colours", put: (app, v) => {
+        app.S.ui_colour_as = v;
+        app.colour_mode = COLOUR_MODES[v];
+        shown();
+      } },
+      { kind: "note", text: "The colour pop-out opens in it" }
+    ].map((row) => this.build_row(row));
+    for (const r of rows) {
+      box3.append(r.el);
+      if (r.row.kind === "note") {
+        r.el.previousElementSibling.classList.add("noted");
+        r.el.dataset.after = "field";
+      }
+    }
+    this.settings_rows = rows;
+    const wrap = el("div", { className: "unit" }, this.settings_button, box3);
+    wrap.onkeydown = (e) => {
+      if (e.key === "Escape" && !box3.hidden) {
         open(false);
-        this.sync_rows();
-        this.render();
-      } }, el("span", { textContent: name }), el("span", { className: "quiet", textContent: short }));
-      b.setAttribute("role", "menuitemradio");
-      menu.append(b);
-      return b;
-    });
-    const box3 = el("div", { className: "unit" }, this.unit_button, menu);
-    box3.onkeydown = (e) => {
-      if (e.key === "Escape" && !menu.hidden) {
-        open(false);
-        this.unit_button.focus();
+        this.settings_button.focus();
       }
     };
     open(false);
-    return box3;
+    return wrap;
   },
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
    *  which can be folded. Each section remembers how far it was scrolled. */
@@ -17283,11 +17339,7 @@ var PANEL = {
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop);
     this.backdrop_dot.style.background = this.S.ui_show && this.S.c_backdrop2 ? `linear-gradient(135deg, ${css_colour(this.S.c_backdrop)}, ${css_colour(this.S.c_backdrop2)})` : "";
-    if (this.unit_button.textContent !== this.unit()[0]) this.size_unit();
-    this.unit_items.forEach((b, i2) => {
-      b.classList.toggle("on", i2 === this.S.ui_unit);
-      b.setAttribute("aria-checked", String(i2 === this.S.ui_unit));
-    });
+    if (this.settings_rows) for (const r of this.settings_rows) r.refresh(this.S);
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T, this.S, this)) : true;
@@ -18523,7 +18575,7 @@ var RINGS = {
    *  it draws) · its colour · how big one of its things is · its radius. Each of the last three stands over the
    *  drawer's button for it, so the row is the read-out and the drawer under it the controls. "How big" is what you
    *  would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's size, a band's width.
-   *  Lengths in the unit box's unit, without trailing zeros. → {kind, size, r} as text */
+   *  Lengths in Settings' unit, without trailing zeros. → {kind, size, r} as text */
   ring_summary(ring) {
     const kind = kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = positions_of(ring).length;
     const one = has_text(ring) ? ring.size : kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
@@ -19491,7 +19543,7 @@ var PREVIEW = {
   dial_alone(on) {
     const app = $("#app");
     this.eye_button.setAttribute("aria-pressed", String(on));
-    if (this.unit_open) this.unit_open(false);
+    if (this.settings_open) this.settings_open(false);
     app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
     app.style.setProperty("--bar-h", $(".bar").offsetHeight + "px");
     this.fitted = true;
@@ -21075,6 +21127,7 @@ var BAR = {
       this.date_button.ariaLabel = `Date ${d}/${m}/${y.slice(-2)}${this.S.date ? "" : ", today"}`;
     }
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
+    this.sync_clock();
     const zeros = this.time_field.value.replace(/[0-9]/g, "0");
     if (zeros !== this.time_zeros) {
       this.time_zeros = zeros;
@@ -21087,6 +21140,45 @@ var BAR = {
     for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
     const word = this.half() ? "PM" : "AM";
     if (this.half_button.textContent !== word) this.half_button.textContent = word;
+  },
+  /** the time as shown (#553): "10:09:36" as three pairs of figures with a split hairline between, each line --clock-gap
+   *  from the ink of the figure before it and after it (Okay, 31 Oct 2026, 01:35: "Notice the gaps"; 01:41: "The hr gaps
+   *  before after line segments should be equal"). A figure's ink is narrower than its advance, by a different amount
+   *  each side and for each figure, so each line's margins are worked out from the figures beside it, read off the
+   *  face (a canvas's measure of each figure). Centred top to bottom on the figures' ink, measured as zeros so it
+   *  stands still (ink.js); the lines on the box's middle, which is that
+   *  ink's middle. */
+  sync_clock() {
+    const words = fmt_time(this.S.t).split(":"), cs = getComputedStyle(this.clock), font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const key = words.join(":") + "|" + font;
+    if (key === this.clock_shown || !parseFloat(cs.fontSize)) return;
+    this.clock_shown = key;
+    const [h, , m, , s] = this.clock_parts;
+    [h, m, s].forEach((e, i2) => {
+      if (e.textContent !== words[i2]) e.textContent = words[i2];
+    });
+    const pen2 = this.clock_pen || (this.clock_pen = document.createElement("canvas").getContext("2d"));
+    pen2.font = `${cs.fontWeight} ${parseFloat(cs.fontSize) * 10}px ${cs.fontFamily}`;
+    const bear = (ch) => {
+      const t = pen2.measureText(ch);
+      return { left: -t.actualBoundingBoxLeft / 10, right: (t.width - t.actualBoundingBoxRight) / 10 };
+    };
+    const gap = parseFloat(cs.getPropertyValue("--clock-gap")) || 0, track2 = parseFloat(cs.letterSpacing) || 0;
+    [[1, 0, 1], [3, 1, 2]].forEach(([at, a, b]) => {
+      const line = this.clock_parts[at].style;
+      line.marginLeft = gap - bear(words[a].slice(-1)).right - track2 + "px";
+      line.marginRight = gap - bear(words[b][0]).left + "px";
+    });
+    const dot = 1 / (window.devicePixelRatio || 1);
+    for (const at of [1, 3]) {
+      const line = this.clock_parts[at], x2 = line.getBoundingClientRect().left, off = x2 - Math.round(x2 / dot) * dot;
+      if (Math.abs(off) > 1e-3) {
+        line.style.marginLeft = parseFloat(line.style.marginLeft) - off + "px";
+        line.style.marginRight = parseFloat(line.style.marginRight) + off + "px";
+      }
+    }
+    const [, dy] = offset2(words.join("").replace(/[0-9]/g, "0"), cs);
+    this.clock.style.setProperty("--ink-dy", dy + "px");
   },
   set_time(t) {
     this.S.t = t;
@@ -21137,27 +21229,6 @@ var BAR = {
     this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1e3).toFixed(4));
     this.speed_slider.title = `How fast time runs: ${speed_word(k)}\xD7 (0.1\xD7 to 720\xD7)`;
     this.speeds.classList.toggle("real", k === 1);
-  },
-  /** the unit box round its word's ink, 2 px from every side (Okay, 16 Oct 2026, #302). The ink's size and place on its
-   *  line come from Dial Mono's outlines (UNIT_INK); where the browser puts the line's baseline is measured, with a dot
-   *  on it — browsers round a face's ascent and descent each their own way (counted 16 Oct 2026: 8 px down a 10 px line
-   *  in Chromium, where the face's figures say 8.6; on Okay's screen "mm" stood on the box's bottom line) */
-  size_unit() {
-    const word = this.unit()[0], ink = UNIT_INK[word] || UNIT_INK.mm, box3 = this.unit_button, b = box3.style;
-    const span = el("span", { className: "word", textContent: word }), dot = el("span");
-    box3.replaceChildren(span);
-    dot.style.cssText = "display:inline-block;width:0;height:0";
-    span.append(dot);
-    const line = span.getBoundingClientRect(), base = dot.getBoundingClientRect().top - line.top;
-    dot.remove();
-    if (!line.height) return;
-    const size = parseFloat(getComputedStyle(box3).fontSize), dots = window.devicePixelRatio || 1, snap = (v) => Math.round(v * dots) / dots;
-    const [l, w] = ink.map((v) => v * size), [, , t, h] = UNIT_INK.mm.map((v) => v * size), W2 = Math.round(w * dots) / dots, H2 = Math.round(h * dots) / dots;
-    b.setProperty("--ink-w", W2 + "px");
-    b.setProperty("--ink-h", H2 + "px");
-    b.setProperty("--word-x", snap((W2 - w) / 2 - l) + "px");
-    b.setProperty("--word-y", snap((H2 - h) / 2 + t - base) + "px");
-    requestAnimationFrame(() => this.level_title());
   },
   /** how much of the speed track the slow steps take: two thumbs of the thumb's travel (#283: "at least as wide as two
    *  thumbs"), a fifth to a half of it; before the bar is laid out, two fifths */
@@ -21221,9 +21292,9 @@ var GALLERY = [{ "name": "First dial", "note": "The guide's First dial: the dial
 // src/cards.js
 var CARDS = {
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
-  /** a way to the Gallery from the panel's top line: a pill dressed as the unit box, centred in the room between the
-   *  version and the unit box (Okay, 15 Oct 2026, 07:45: "a shortcut to the gallery centered between beta blabla and mm.
-   *  A pill of mm complexion"). Pressed: the Export tab, the Gallery pane open and brought into view */
+  /** a way to the Gallery from the panel's top line: a small pill after Help (Okay, 15 Oct 2026, 07:45: "a shortcut to
+   *  the gallery"; 16 Oct: "put it after help with equal gap"). Pressed: the Export tab, the Gallery pane open and
+   *  brought into view */
   gallery_way() {
     const go = el("button", { type: "button", className: "gallerypill", id: "to-gallery", textContent: "Gallery", title: "Dials to open and take apart" });
     go.onclick = () => {
@@ -26158,7 +26229,7 @@ var DialTool = class _DialTool {
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
     if (this.history_open && !$("#history-list").hidden && !on(".undopair")) this.history_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
-    if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
+    if (this.settings_open && !$("#settings-box").hidden && !on(".unit")) this.settings_open(false);
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
@@ -26190,7 +26261,7 @@ var DialTool = class _DialTool {
       "aside",
       { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${VERSION} \xB7 dev` : VERSION }), el("a", { className: "quiet help", href: HELP, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${VERSION} \xB7 dev` : VERSION }), el("a", { className: "quiet help", href: HELP, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.settings_box()),
       this.tabs,
       this.pinned,
       this.form,
@@ -26233,6 +26304,7 @@ var DialTool = class _DialTool {
     this.time_field = el("input", { id: "time", className: "time", type: "text", title: "Time shown, h:mm:ss" });
     if (document.fonts) document.fonts.ready.then(() => {
       this.time_zeros = null;
+      this.clock_shown = null;
       this.sync_time();
     });
     this.time_field.onchange = () => {
@@ -26251,7 +26323,9 @@ var DialTool = class _DialTool {
       this.date_pop_sync();
     };
     this.date_button.onclick = () => this.date_pop_open(!this.date_pop || this.date_pop.hidden);
-    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button, el("span", { className: "datewell" }, this.date_button, this.date_pick, this.date_pop_box()));
+    this.clock_parts = [el("span"), el("i"), el("span"), el("i"), el("span")];
+    this.clock = el("span", { className: "clock", ariaHidden: "true" }, ...this.clock_parts);
+    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.clock, this.time_field), this.half_button, el("span", { className: "datewell" }, this.date_button, this.date_pick, this.date_pop_box()));
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
     this.play_button = el("button", { type: "button", className: "icon play", id: "play", onclick: () => this.play(!this.playing) });

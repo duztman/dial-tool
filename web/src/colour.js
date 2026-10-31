@@ -63,7 +63,7 @@ export const COLOUR = {
     const P = this.pop = { at: null, hsv: [0, 0, 0], used: "", mode: "", wide: false };
     try { this.palette = JSON.parse(localStorage.getItem(PALETTE_KEY)); } catch (e) { /* not kept */ }
     if (!Array.isArray(this.palette)) this.palette = PALETTE.slice();
-    this.colour_mode = "HEX";
+    this.colour_mode = G.COLOUR_MODES[this.S.ui_colour_as] || "HEX";      // as Settings says (#554)
     const put = (rgb) => P.at.write(rgb.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([P.at.read()[3] ?? 1]));
     P.put = put;
     P.pick = (hex) => put(from_hex(hex).slice(0, 3));
@@ -108,7 +108,7 @@ export const COLOUR = {
     P.alpha_row = el("div", { className: "alpharow" }, P.alpha, P.alpha_field);
     P.dot = el("i", { className: "dot" });      // the colour's own swatch, inside the values' box (Okay, 30 Oct 2026: "Incorporate swatches into the color code boxes, no stroke for them")
     P.modes = el("span", { className: "segs" });
-    for (const mode of ["RGB", "HEX", "CMYK", "RAL"]) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => { this.colour_mode = mode; this.pop_refresh(); } }));
+    for (const mode of G.COLOUR_MODES) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => { this.colour_mode = mode; this.pop_refresh(); } }));
     P.numbers = el("span", { className: "numbers" });
     // Copy: the copy sign alone (Okay, 30 Oct 2026: "Copy gets an icon, color name area grows"); copied, it fills for a moment; failed, it says NO
     P.copy = el("button", { type: "button", className: "btn copy", id: "pop-copy", title: "Copy the values shown", ariaLabel: "Copy the values shown", onclick: async () => {
@@ -178,6 +178,7 @@ export const COLOUR = {
     if (P.at) P.at.swatch.setAttribute("aria-expanded", "false");
     P.at = { ...colour, swatch };
     P.family = null;      // RAL mode starts at the family of the colour in hand
+    this.colour_mode = G.COLOUR_MODES[this.S.ui_colour_as] || "HEX";      // it opens as Settings says; the others a press away (Okay, 31 Oct 2026: "opens the color selector box to open default as, other colors still allowed")
     swatch.setAttribute("aria-expanded", "true");
     P.el.hidden = false;
     this.pop_wide(false);
