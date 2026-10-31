@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.6 beta · built 2026-10-31 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.7 beta · built 2026-10-31 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7505,7 +7505,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.6 beta";
+var VERSION = "v1.1.7 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -9147,7 +9147,7 @@ function offset(p, d, join = "Round") {
   const band = p.expandStroke(2 * abs(d), join);
   return d > 0 ? p.union(band) : p.difference(band);
 }
-var has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && ["numerals", "text", "ticks", "markers"].includes(KINDS[ring.kind]));
+var has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && ["numerals", "text", "ticks", "markers", "band"].includes(KINDS[ring.kind]));
 function stroke_outline(p, w, side, join) {
   if (empty(p) || !(w > 0)) return null;
   p = p.copy().removeOverlap();
@@ -12595,13 +12595,13 @@ var ROWS = {
     num2("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
     // a stroke round each mark (#556; Okay, 31 Oct 2026, 03:31: "Also indices and markers get outlines"; 03:57, on the
-    // drawing: "Place is good. Move up color after width"): a pane of its own after Shapes, On on its heading line, then
-    // the font box's Stroke rows — Width, Colour, Join, Side
-    hdr("Stroke", { folded: true, show: kind_in("ticks", "markers") }),
+    // drawing: "Place is good. Move up color after width"; 04:05: "Add them to bands as well"): a pane of its own after
+    // Shapes (a band's after its Sector colours), On on its heading line, then the font box's Stroke rows — Width, Colour, Join, Side
+    hdr("Stroke", { folded: true, show: kind_in("ticks", "markers", "band") }),
     chk("stroke", "On", {
       head: true,
       id: "ring-stroke-on-marks",
-      show: kind_in("ticks", "markers"),
+      show: kind_in("ticks", "markers", "band"),
       put: (app, v) => {
         app.set_value("ring", "stroke", v);
         const pane = v && app.rows.find((r) => r.fold && r.row.text === "Stroke");
@@ -12609,10 +12609,10 @@ var ROWS = {
       }
     }),
     // ticked, its pane opens, as the font box's Stroke part does
-    num2("stroke_w", "Width", 0.02, 1, 0.01, { id: "ring-stroke-w-marks", show: kind_in("ticks", "markers") }),
-    col("stroke_c", "Colour", { id: "ring-stroke-c-marks", show: kind_in("ticks", "markers") }),
-    pick("stroke_join", "Join", STROKE_JOINS, (i2) => PICS.join[i2], { bare: true, id: "ring-stroke-join-marks", show: kind_in("ticks", "markers") }),
-    seg("stroke_side", "Side", STROKE_SIDES, { id: "ring-stroke-side-marks", show: kind_in("ticks", "markers") }),
+    num2("stroke_w", "Width", 0.02, 1, 0.01, { id: "ring-stroke-w-marks", show: kind_in("ticks", "markers", "band") }),
+    col("stroke_c", "Colour", { id: "ring-stroke-c-marks", show: kind_in("ticks", "markers", "band") }),
+    pick("stroke_join", "Join", STROKE_JOINS, (i2) => PICS.join[i2], { bare: true, id: "ring-stroke-join-marks", show: kind_in("ticks", "markers", "band") }),
+    seg("stroke_side", "Side", STROKE_SIDES, { id: "ring-stroke-side-marks", show: kind_in("ticks", "markers", "band") }),
     // Positions (Okay's notes, p. 5, #251, 4.50.1): at the left a round preview of the ring's positions, like the hand's
     // box — the used ones as marks, the skipped ones faint, the first one marked; beside it the numbers as quiet rows
     // (R15 form B: "none of these need slider"), their sliders in the controller a name or a number opens
