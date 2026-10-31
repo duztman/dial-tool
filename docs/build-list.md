@@ -31,11 +31,11 @@ Order when building resumes (Okay, 1 Nov 2026): #184, then #169 (his "core to ou
 
 | # | Item | From | Status |
 |---|---|---|---|
+| 184 | Snapping | 14 Oct 2026, on #85; 1 Nov 2026 — first of the three | open — first |
 | 169 | One strip for every position | — "very very good… prioritize this" | open |
 | 175 | A hand as a stack | 21 Oct 2026 — "bump up in importance" | open |
 | 346 | Complications, systematized: subdials, chronograph counters, one mechanism | 1 Nov 2026 — "Up with the big three, after #175" | open — fourth |
 | 83 | Positions law: even · reciprocal · logarithmic · table · squeeze | 1 Nov 2026 — "this might help us adding in complications … chronometer subdials etc." | open, with #346 |
-| 184 | Snapping | 14 Oct 2026, on #85; 1 Nov 2026 — first of the three | open — first |
 | 559 | Hover lights its part, sitewide: a ring's or window's row lights that thing on the dial | 18 Oct 2026 — "these preview gestures are sitewide"; split from #329 on 1 Nov 2026 | open |
 | 558 | Bracelet photo lighting: one snapshot-like light on any backdrop, soft outlines, many gradients | 24 Oct 2026, his photo; 26 Oct — "529 push to future"; split from #529 on 1 Nov 2026 | open |
 | 502 | Notices: every warning, error and note in the app looked through | 21 Oct 2026 | open |
