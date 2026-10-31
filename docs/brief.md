@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 21 Oct 2026 (§4 moved to `docs/decisions.md`; v1 drafted in the build list; square dials after v1; §3 and §6 brought up to beta 4.90).*
+*Started 3 Oct 2026. Last updated 1 Nov 2026 (the docs' audit: §5–§8 brought in line with the build list; v1 is behind us — a beta counts as v1).*
 
 ## 1 · Goal
 
@@ -35,50 +35,31 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 | Watch | APK | A Wear OS watch face to sideload (Export → Wear OS) |
 | Sharing | a link · a settings file (JSON) | A link carries what differs from the starting values (R31); a file keeps everything |
 
-Not built: imported SVG, PDF and AI shapes for markers and hands (#50, R23).
+Not built: SVG import — a picture, a logo, marker and hand shapes, a moon's picture, a template (#173, R23).
 
 ## 4 · Decisions
 
-The dated record of decisions and their reasons is `docs/decisions.md` (moved 21 Oct 2026). Read it when you need to know why something is as it is; the last ~25 rows show the recent work.
+The dated record of decisions and their reasons is `docs/decisions.md`. Read it when you need to know why something is as it is; the last ~25 rows show the recent work. A decision made in a session goes there the same day, as a row with Okay's words.
 
 ## 5 · Open questions
 
-1. **Movement** — which one? It fixes the real dial diameter, hand lengths, the date window's position and size (date wheel), and the feet positions.
-3. **Minimum line width and clearance** per production method (toner-transfer etching, pad print, laser). Should become rules the tool can warn about (build list #12).
-4. **Eastern Arabic and Chinese labels** — HarfBuzz has no automatic fallback, so a script the font lacks draws nothing: a fallback-font control (build list #15; Okay, 17 Oct 2026: "not necessary, we run on fonts").
-5. Do the tool's SVG and PDF open in Illustrator at **exact size**, with usable layers and groups, and does the SVG's live text land where the outlines do? Not yet looked at on a Mac (build list #16).
-8. **Imported shapes with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours — when imports are built (build list #50).
-14. **Okay's Mac clone** (`~/Desktop/dial-maker/dial-tool-github-repo/`): no session since 16 Oct has been linked to his Mac, so it has not been pulled since 4.40–4.45. Okay, 17 Oct: "if you can reach mc do clone if not never bother anymore" — **not to be raised again**; he pulls it himself when he wants it (and `tools/versions.sh tag` there).
-
 Numbers are never reused; a settled question is deleted here and its decision stands in `docs/decisions.md`.
+
+1. **Movement** — which one? It fixes the real dial diameter, hand lengths, the date window's position and size (date wheel), and the feet positions (#89 waits on it).
+5. Do the tool's SVG and PDF open in Illustrator at **exact size**, with usable layers and groups, and does the SVG's live text land where the outlines do? Not yet looked at on a Mac (#16).
+8. **Imported shapes with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours — to settle when import is built (#173).
+14. **Okay's Mac clone** (`~/Desktop/dial-maker/dial-tool-github-repo/`): his; he pulls it himself when he wants it (Okay, 17 Oct 2026: "if you can reach mc do clone if not never bother anymore") — **not to be raised again**.
 
 ## 6 · Avenues (ideas, not commitments)
 
-- Subdials (small seconds, chronograph registers) — perhaps as further ring kinds (build list #20).
-- Surface finishes on bands: sunray, grain, guilloché (Okay: flat for now; #33).
-- Variation grid: one rule set, many dials on one sheet (#17; a sheet of saved dials exists, Versions › Sheet).
-- More hand styles: cathedral (through file import); lume plots (#19).
-- Plotter output via LightBurn for the pen plotter (AxiDraw clone; #21).
-- Production warnings: flag lines thinner than the method allows (#12; the Export log already names the thinnest line, #225).
-- An Apple Watch preview (#362); non-round dials — square and rounded square after v1 (#484), the rest later (#363).
+Every avenue is a row in `docs/build-list.md`, under Later; this section only says which: a variation grid from one rule set (#17 left this open; Versions › Sheet exists), finishes and materials (#522), non-round dials (#363), an Apple Watch preview (#362), plotter output for the pen plotter (#21), movement numbers (#89). Production warnings (#12) were dropped: the Export log names the thinnest line (#225) and production doesn't limit design (§2).
 
 ## 7 · Workflow
 
-1. Claude changes the web version (`web/src/`), runs `cd web && npm test` and looks at the pictures in `web/test/out/` (R19), builds `web/dial-tool.html`.
-2. Work happens on `dev`, one push per small change, the version number in `web/src/geometry.js`. For Okay to see a change, `tools/release.sh <version>` puts the build on the live page (https://duztman.github.io/dial-tool/) and writes its row in `docs/versions.md`; `tools/release.sh main` releases.
-3. Okay opens it in Chrome on a Mac or Safari on the iPad and reports back with screenshots, notes and the Export section's log.
-4. Every version has a changelog entry; decisions go to `docs/decisions.md` and the build list the same day.
+The loop of a push — set up, change, test, docs, bump, release, reply — is `CLAUDE.md`; how a session goes with Okay (rounds, crops, his notes, the archive) is `docs/working-with-okay.md`. In short: work on `dev`; a small push goes to the /dev/ page, a step to the released page on Okay's word (R19); he tests in Chrome on a Mac and Safari on the iPad and answers with marked-up screenshots and the Export log; every version has a changelog section, every decision a row in `decisions.md` and its line in the build list, the same day.
 
 ## 8 · Parked
 
-- Editing on the preview with movers and shifters (spread the numerals…), after Illustrator's radial Repeat and Gradient tools; detailed settings stay in the panel. Parked by Okay on 11 Oct 2026 (build list #61); the ring and hand handles exist (#345).
-- Snapping lengths and radii to rings' edges while dragged; a hand's tip set to a ring's edge (build list #85, #184; Okay, 14 Oct 2026: "a bigger question for later").
-- A background image on the plate — only its button exists (build list #73; Okay, 12 Oct 2026: "Just the button").
-- Persistent groupings for every section (build list #77; Okay, 12 Oct 2026: "Park for now").
-- The LINK pill on pairs other than a window's width and height (build list #358; Okay, 18 Oct 2026: "Common sense or park for now").
-- From the research atlas (13 Oct 2026, https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH), Okay's No's worth keeping (kept on Claude's proposal; Okay has not confirmed this list):
-  - **Snail tachymeter** (atlas 1.6): a reciprocal scale wound into a spiral — a fifth positions law where the radius falls with the angle. Comes back only after the positions law (#83).
-  - **Disorder with a seed** (atlas 7.14, Vera Molnár): a disorder % per ring with a typed seed, so a link redraws the same dial.
-  - The other No's stay in the atlas only: 6.21 the ring as a sentence · 7.6 Citroën CX satellites · 7.7 Apian's volvelles · 7.11 Mengenlehreuhr · 7.12 case outline (TWELVE, ROKU) · 7.18 Powers of Ten · 7.20 Kenya Hara's emptiness. 2.10 is a decision, not a parked idea (§4).
-- From the same review, Okay's Yes's that Claude proposes to park (build list #90, #91): the ring edited flat (atlas 7.16) and the sliding strip for Count (atlas 7.5).
-- Gerstner's programme (build list #180; Okay: "park for now, remind when applicable" — when #169 exists).
+What is parked is the Parked section of `docs/build-list.md`, with Okay's words: editing on the preview (#61), persistent groupings (#77), the LINK pill on other pairs (#358), a fallback font (#15), Gerstner's programme (#180, back when #169 exists), placing dials in the Packer's discs (#395). Snapping (#184) is no longer parked: it is first of the features (Okay, 1 Nov 2026).
+
+From the research atlas (13 Oct 2026, https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH), Okay's No's worth keeping — kept on Claude's proposal, not confirmed by him: the **snail tachymeter** (atlas 1.6), a fifth positions law after #83; **disorder with a seed** (atlas 7.14, Vera Molnár), a disorder % per ring with a typed seed. The other No's stay in the atlas. Of his Yes's, two are parked on Claude's proposal: the ring edited flat (7.16) and the sliding strip for Count (7.5).

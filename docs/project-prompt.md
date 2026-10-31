@@ -1,6 +1,6 @@
 # Dial Tool — Claude Project instructions
 
-*Updated 21 Oct 2026 (the decision log is `docs/decisions.md`). Paste the block below into the Claude Project's instructions and set its description to "A watch-dial design tool that runs in the browser." Add the repo from GitHub (`duztman/dial-tool`, branch `dev`) as the Project's source; nothing needs uploading.*
+*Updated 1 Nov 2026 (the build list's order; the session start). Paste the block below into the Claude Project's instructions and set its description to "A watch-dial design tool that runs in the browser." Add the repo from GitHub (`duztman/dial-tool`, branch `dev`) as the Project's source; nothing needs uploading.*
 
 ---
 
@@ -17,4 +17,5 @@
 > - I test on my Mac and iPad and send screenshots plus the Export section's log.
 > - Commit to `dev`; `tools/release.sh X "first line"` puts a version on the live page; `main` only when I say release.
 > - Simplest approach that works. Nothing unprompted. Third attempt at the same fix → stop and ask.
-> - "**Future map**" = assemble from the build list and brief §5–§8, ordered v1 → After v1 → Later → Parked.
+> - "**Future map**" = the build list's order (Now → Next → Later → Parked) with brief §5 and §8 beside it.
+> - At the start of a session: say the model, trigger every permission at once (the repo with push, my Mac folder, Drive), and tell me to choose "always allow". Research before building; nothing asked that the docs already answer.

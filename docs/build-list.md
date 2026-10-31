@@ -1,134 +1,90 @@
 # Dial Tool — build list
 
-Numbered, never renumbered. Status: **open** · **verify** · **ask** · **parked**. Done and removed items move to `docs/build-list-done.md`; the DrawBot version's to `archive/drawbot/build-list-drawbot.md`.
-*Last updated 1 Nov 2026, v1.1.7 beta. Rows here are one line each; a row's full text, by number, is `build-list-notes.md`. Where an item came from is in its own words and dates.*
+One line per open item, in the order it will be done: **the first column is that order**, now → future, and within a group easier → harder. The **#** is the item's name for citing, never reused and never renumbered; a row's full text, by #, is `build-list-notes.md`. Done, folded and dropped items: `build-list-done.md`; the DrawBot version's: `archive/drawbot/build-list-drawbot.md`.
 
-v1 is out: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026: "We are past v1 as you know, beta counts as v1"). The "before v1" groups are dissolved into the ones below; the guide has a schedule of its own (Okay, 1 Nov 2026: "Guide will happen when it happens, not now. No link to a version just a sub project with its own loose schedule").
+Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-## Now
+*Last updated 1 Nov 2026 (v1.1.8 beta): the list audited — folded rows, stale statuses and finished items taken out, one order for everything.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
-| # | Item | From | Status |
-|---|---|---|---|
-| 548 | A visitor counter on the live site | 27 Oct 2026; 1 Nov 2026 — "yes do that, move it up" | build |
-| 52 | Named instances of variable fonts: the designer's style names as tabs where Regular · Bold stand | 1 Nov 2026 — "Up to Now" | build |
-| 494 | Compare at one size, as large as the canvas holds, and a real-size switch | 21 Oct 2026 — "One big, as big as what fits on the canvas, one real size option in preview" | build |
-| 552 | The Type pane opening jumps the panel's scroll | 31 Oct 2026 — "it should open in place, without moving up"; 1 Nov 2026: iPad, Safari | open — Safari only; try `overflow-anchor: none` on the panel's scroller |
+## Now — Okay said build
 
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| 1 | 548 | A visitor counter on the live site (which counter, and whether /dev and /show-case count, are his to choose; the path only, never the dial's query) | 27 Oct 2026; 1 Nov 2026 — "yes do that, move it up" | build |
+| 2 | 552 | The Type pane opening jumps the panel's scroll — iPad Safari only; try `overflow-anchor: none` on the panel's scroller, one fix (R20) | 31 Oct 2026 — "it should open in place, without moving up" | build |
+| 3 | 52 | Named instances of variable fonts: the designer's style names as tabs where Regular · Bold stand | 1 Nov 2026 — "Up to Now" | build |
+| 4 | 494 | Compare at one size, as large as the canvas holds, and a real-size switch | 21 Oct 2026 — "One big, as big as what fits on the canvas, one real size option in preview" | build |
 
-## Verify on Okay's Mac, iPad and phone
+## Verify — built, for Okay's Mac, iPad and phone
 
-| # | Item | From | Status |
-|---|---|---|---|
-| 16 | Live text in the SVG |  | verify |
-| 439 | Backdrop's swatch loses its outline at times |  | verify |
-| 528 | Dramatic lighting: the darkness to confirm |  | built (4.94.19); verify |
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| 5 | 528 | Dramatic lighting: is the darkness right (×0.57 at the rim, Claude's reading of "darker") | 24 Oct 2026 | verify (4.94.19) |
+| 6 | 439 | Backdrop's swatch loses its outline at times (old Safari, iPad; `background-clip: padding-box` taken) | 23 Oct 2026 | verify |
+| 7 | 16 | Live text in the SVG: open one in Illustrator — numerals where the outlines are, cuts as clipping masks | | verify |
 
-## Open
+## Next — the features, in Okay's order, then easier → harder
 
-### Features
+Okay, 1 Nov 2026: "#184 first", then #169 ("core to our mission"), #175 ("bump up in importance"), then #346 with #83 ("Up with the big three, after #175").
 
-Order when building resumes (Okay, 1 Nov 2026): #184, then #169 (his "core to our mission"), #175, then #346 with #83 ("Up with the big three, after #175").
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| 8 | 184 | Snapping: lengths and radii snap to rings' edges while dragged | 14 Oct 2026, on #85; 1 Nov 2026 — "#184 first" | open |
+| 9 | 169 | One strip for every position: a per-position value per setting as a strip of cells under a ring; a drawn line sets the ends; a typed rhythm repeats. Draw first, show Okay, then build | — "very very good… prioritize this" | open |
+| 10 | 175 | A hand as a stack: caps, windows, lume openings | 21 Oct 2026 — "bump up in importance" | open |
+| 11 | 346 | Complications, systematized — one mechanism for subdials and chronograph registers (#20 folded in), the moon's own disc, the am · pm disc as a ring of its own (#177 folded in), a big date's two discs in X-ray, an SVG for a complication's picture | 1 Nov 2026 — "Up with the big three, after #175" | open |
+| 12 | 83 | Positions law: even · reciprocal · logarithmic · table · squeeze, chosen on the Positions heading line; only `ring_angles()` changes. Built with #346 | 1 Nov 2026 — "this might help us adding in complications" | open, with #346 |
+| 13 | 526 | The sun's picture on top of show mode's Light tab, the long text behind (i); the guides' list's foot | 24 Oct 2026; locked 25 Oct 2026, 17:46 | open |
+| 14 | 531 | Hand bevels: the join options Normal · Miter · Round (his drawing, *Bevel* beside Show) | 24 Oct 2026 | open |
+| 15 | 559 | Hover lights its part, sitewide: a ring's or window's row — pointed at, focused, controller open — lights that thing on the dial, as a Hands row does | 18 Oct 2026 — "these preview gestures are sitewide"; split from #329, 1 Nov 2026 | open |
+| 16 | 502 | Notices: every warning, error and note in the app looked through — inventory first, then Okay sorts them into kinds, then one look per kind | 21 Oct 2026; 1 Nov 2026 — "Keep, ordinary priority" | open |
+| 17 | 404 | Every hand gets a real hub, life-accurate at the cannon pinion; dauphine and leaf first, their details kept in the lit picture (#421 folded in) | 19 Oct 2026; 21 Oct 2026 — "All hands get hubs." | open |
+| 18 | 349 | Each marker selectable and editable: first press the ring, second the mark or numeral; Nudge works on ticks and markers | | open |
+| 19 | 558 | Bracelet photo lighting: one snapshot-like light on any backdrop, soft outlines, many gradients; "Let's workshop this" | 24 Oct 2026, his photo; split from #529, 1 Nov 2026 | open |
 
-| # | Item | From | Status |
-|---|---|---|---|
-| 184 | Snapping | 14 Oct 2026, on #85; 1 Nov 2026 — first of the three | open — first |
-| 169 | One strip for every position | — "very very good… prioritize this" | open |
-| 175 | A hand as a stack | 21 Oct 2026 — "bump up in importance" | open |
-| 346 | Complications, systematized: subdials, chronograph counters, one mechanism | 1 Nov 2026 — "Up with the big three, after #175" | open — fourth |
-| 83 | Positions law: even · reciprocal · logarithmic · table · squeeze | 1 Nov 2026 — "this might help us adding in complications … chronometer subdials etc." | open, with #346 |
-| 559 | Hover lights its part, sitewide: a ring's or window's row lights that thing on the dial | 18 Oct 2026 — "these preview gestures are sitewide"; split from #329 on 1 Nov 2026 | open |
-| 558 | Bracelet photo lighting: one snapshot-like light on any backdrop, soft outlines, many gradients | 24 Oct 2026, his photo; 26 Oct — "529 push to future"; split from #529 on 1 Nov 2026 | open |
-| 502 | Notices: every warning, error and note in the app looked through | 21 Oct 2026 | open |
-| 535 | Sliders that stop short, one slider at a time | 24 Oct 2026 — "Only where I hit it" | open |
-| 531 | Hand bevels: the join options Normal · Miter · Round |  | open (bring-back done, 4.92.10) |
-| 526 | The sun's picture on show mode's Light tab; the guides' list's foot | 24 Oct 2026 | open (the Shadows pane built) |
-| 404 | Dauphine and leaf hands: hubs as on a real movement | 19 Oct 2026 — "dauphin and leaf get life accurate movement connecting circles" | open |
-| 421 | Keep a hand's details in the lit picture |  | open |
-| 349 | Each marker selectable and editable |  | open |
+## Housekeeping — as touched, never a push of its own
 
-### Show mode's Dial tab — settled, built on Okay's word only (25 Oct 2026: "Stop asking to build, I'll tell you when")
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| — | 398 | The stylesheet's values off the scale (R32): put on the scale when their file is edited for something else; a look change shown in that round | 1 Nov 2026 — "Why is this even a question?" | as touched |
+| — | 535 | Sliders that stop short: widen a slider's track where Okay meets its end, a dot on the track at 0 when it crosses zero | 24 Oct 2026 — "Only where I hit it" | as touched |
 
-| # | Item | From | Status |
-|---|---|---|---|
-| 545 | Show mode's Dial tab: Colours · Inks · Hands | 25 Oct 2026 | locked, not built |
-| 546 | Its look: one swatch column, a lone colour spelled out | 25 Oct 2026 | settled, not built |
-| 547 | A line's show/hide as a dot | 25 Oct 2026 | settled, not built |
+## Later — easier → harder
 
-### SVG import
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| 20 | 403 | Playwright 1.56 → 1.64: a session of its own; re-measure the window test, save the look again | | open |
+| 21 | 543 | `same.mjs`: two states differ between two runs of one build (the corner switches' words still folding; a hover left by a click) | 25 Oct 2026 | open |
+| 22 | 407 | The window test in sections that stand alone, so a small push runs only the sections it touches | 19 Oct 2026 | open (`window-only.mjs` runs chosen sections) |
+| 23 | 132 | The font box's preview follows the switches (a slashed zero shows in the 0; fractions show 1/2) | 13 Oct 2026 — "notes for later" | open |
+| 24 | 176 | A fit section under Dial's sizes, so rings and windows fit | | open |
+| 25 | 63 | Live text in the PDF (the font built into the file) | 11 Oct 2026 — "SVG now, PDF later"; 1 Nov 2026 — not to be asked again | open |
+| 26 | 100 | The whole interface smaller on an iPad, about 80 % — one factor on the tokens, or the page's zoom | 13 Oct 2026 — "note for later" | open |
+| 27 | 491 | Ink thicknesses for show mode's Engineer style | — "You can tackle ink thicknesses next" | open |
+| 28 | 21 | Plotter output for the pen plotter via LightBurn: a centre-line or hatched SVG, a new output under Export → Print | | open |
+| 29 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time | 12 Oct 2026; 1 Nov 2026 — "Keep, Later" | open |
+| 30 | 14 | Heavy dials: redraw on mouse-up if dragging feels slow (a slider step on the worst ring 40 ms in Chromium; the Intel Mac is slower) | | open |
+| 31 | 135 | Weekday and month names by language, built into the tool (which languages: ask); non-Latin scripts need #15 | 13 Oct 2026 | open |
+| 32 | 362 | An Apple Watch preview: at least the dial in an Apple Watch's frame (a real face is not open to third parties) | 18 Oct 2026 — "some kind of preview for apple watch?" | open |
+| 33 | 173 | SVG import, one mechanism (R34; R23 says how a file is read): a picture on the dial, a logo (#72), imported marker and hand shapes (#50; cathedral hands with them, #19), a moon window's Custom… (#466), a blank template file (#405). The moon, am · pm and dial places are readied with a note | 24 Oct 2026 — "spaces set. Moon, ampm, dial only"; 1 Nov 2026 — "One row" | open |
+| 34 | 89 | Movement numbers: a *Size from movement* menu for windows, the feet as a guide — blocked until Okay reads the movement drawings on a Mac | | open, blocked |
+| 35 | 53 | Better interface overall: research how good parametric tools lay out lists, inspectors and export, then propose; an export panel that shows what will be written (#171) | 11 Oct 2026 — "learn and implement" | open |
+| 36 | 522 | Finishes and materials in show mode, one row: paint finishes and textures, dial finishes and a preview pipeline, sunray · grain · guilloché on bands (#33 folded in), print-like edges, lume view and lume plots (#19), the bezel, 3D indices, a 3D model | 24 Oct 2026; 1 Nov 2026 — "Merge into one: finishes and materials, Later" | open |
+| 37 | 363 | Non-round dials, one row: square and rounded-square as an Apple Watch's first, then rectangle, rounded rectangle, diamond; the plan is `docs/plan-non-round.md` | 18 Oct 2026; 1 Nov 2026 — "Merge into one, keep in Later" | open |
 
-| # | Item | From | Status |
-|---|---|---|---|
-| 173 | SVG import, one mechanism (R34; R23): a picture on the dial, a logo (#72), imported shapes (#50), a moon window's Custom… (#466), a blank template file (#405); the moon, am·pm and dial places readied with a note | 24 Oct 2026 — "spaces set. Moon, ampm, dial only"; 1 Nov 2026 — one row | open |
+## The guide — its own schedule, outside the order
 
-### Interface and look
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| — | 93 | Guidebook, edition 2 (R25): rebuilt from the current app on Okay's word; the human reader round, his look at the pages, the InDesign package | 1 Nov 2026 — "Guide will happen when it happens, not now. No link to a version just a sub project with its own loose schedule" | on his word |
 
-| # | Item | From | Status |
-|---|---|---|---|
-| 398 | The stylesheet's values off the scale (R32; #294 folded in): put on the scale as each file is touched, look changes shown in that push's round | 25 Oct 2026; 1 Nov 2026 — "Why is this even a question?" | as touched |
+## Parked — on Okay's word
 
-### Files
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 63 | Live text in the PDF | 11 Oct 2026 — "SVG now, PDF later" | open |
-
-### Code and tests
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 14 | Heavy dials |  | open |
-| 403 | Playwright 1.56 → 1.64 |  | open |
-| 407 | The window test in sections that stand alone | 19 Oct 2026 | open |
-| 543 | `same.mjs`: the *first pane folded* and *guides list, two added* states differ between two runs of one build | 25 Oct 2026 | open |
-
-## The guide — its own schedule (Okay, 1 Nov 2026)
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 93 | Guidebook for the web version: edition 2 | 1 Nov 2026 — "when it happens, not now" | on his word (R25) |
-
-## Later
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 522 | Finishes and materials in show mode: paint finishes, textures, dial finishes and a preview pipeline, print-like edges, lume view, the bezel, 3D indices, hand bevels, a 3D model | 24 Oct 2026; 1 Nov 2026 — "Merge into one: finishes and materials, Later" | later |
-| 75 | Usability review, the other tabs, one at a time | 12 Oct 2026; 1 Nov 2026 — "Keep, Later" | later |
-| 19 | More hand styles |  | open |
-| 20 | Subdials |  | open |
-| 21 | Plotter output for the pen plotter via LightBurn |  | open |
-| 33 | Surface finishes on bands |  | open |
-| 53 | Better interface overall | 11 Oct 2026 — "better ui overall, learn and implement. Move delete layers, export better." | open |
-| 100 | The whole interface smaller on an iPad | 13 Oct 2026 — "note for later" | open |
-| 132 | The font box's preview follows the switches | 13 Oct 2026 | open |
-| 135 | Weekday and month names by language, built into the tool | 13 Oct 2026 | open |
-| 89 | Movement numbers |  | open |
-| 176 | A fit section under Dial's sizes |  | later |
-| 177 | The am · pm disc as a ring of its own |  | later |
-| 362 | An Apple Watch preview | 18 Oct 2026 — "Future feature, some kind of preview for apple watch?" | open |
-| 363 | Non-round dials: square and rounded-square as an Apple Watch's first, then rectangle, rounded rectangle, diamond | 18 Oct 2026; 1 Nov 2026 — "Merge into one, keep in Later" | open |
-
-## Parked
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 15 | Fallback font for scripts the main font lacks | 17 Oct 2026 — "Fallback set is a good idea but not necessary, we run on fonts" | parked |
-| 77 | Persistent groupings for every section | 12 Oct 2026 | parked |
-| 180 | Gerstner's programme | — "park for now, remind when applicable" | parked |
-| 358 | The LINK pill on other linkable pairs | 18 Oct 2026 — "Common sense or park for now" | parked |
-| 61 | Editing on the preview | 11 Oct 2026 — "Park now" | parked |
-
-## Side products
-
-### Dial Packer (`packer/`, `packer/README.md`)
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 395 | Place dials in the discs | — "I will announce when to cross to placing dials" | waiting for Okay's word |
-| 396 | With the large discs off the sides, the band between them and an edge can stay thin and white |  | noted |
-
-### Dial Show Case (`show-case/` on the branch `show-case-app`; live at `/show-case/`) — merged into Dial Tool as show mode (#489, #509, #510)
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 491 | Ink thicknesses | — "You can tackle ink thicknesses next" | next |
-| 493 | Bracelet ends wrapped as round a wrist |  | parked |
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| — | 395 | Dial Packer: place dials in the discs | — "I will announce when to cross to placing dials" | parked |
+| — | 15 | Fallback font for scripts the main font lacks | 17 Oct 2026 — "a good idea but not necessary, we run on fonts" | parked |
+| — | 77 | Persistent groupings for every section | 12 Oct 2026 — "Park for now" | parked |
+| — | 358 | The LINK pill on other linkable pairs | 18 Oct 2026 — "Common sense or park for now" | parked |
+| — | 61 | Editing on the preview: movers and shifters on the dial itself | 11 Oct 2026 — "Park now" | parked |
+| — | 180 | Gerstner's programme — remind Okay when #169 exists | — "park for now, remind when applicable" | parked |

@@ -1,55 +1,65 @@
 # Rules — the index
 
-Every rule is binding and has a page of its own in `docs/rules/`; cite the number. Read the page the task touches, not the folder. A rule's page ends with how it is checked, when a test checks it. Numbers are never reused: the DrawBot version's own rules (R13, R14, R22, R24, R27) are in `archive/drawbot/rules-drawbot.md`; a new rule takes the next number, a part of a rule that outgrows its page takes a letter (R15a, R32a).
+Every rule is binding; cite it by its **R-number**, which never changes (code, tests and old notes cite it). The list below is the order to learn them in — **the number before the name is that order**, and the name is what to remember. Each rule has a page of its own in `docs/rules/`: the rule in one line on top, the details under it, how it is checked at the end. Read the page the task touches, not the folder.
 
-## Geometry
+Gaps in the R-numbers are the DrawBot version's rules (R13, R14, R22, R24, R27), in `archive/drawbot/rules-drawbot.md`. A new rule takes the next R-number; a part of a rule that outgrows its page takes a letter (R15a, R32a). Where a rule's words come from: the row in `decisions.md` of the same date.
 
-- **[R1](rules/R1-millimetres.md)** — All geometry is in millimetres; points appear only in a file.
-- **[R2](rules/R2-clock-angles.md)** — Clock angles: 0° at 12, growing clockwise; negated in one place.
-- **[R3](rules/R3-upright-then-place.md)** — Draw upright at the origin, then move to the radius and turn.
-- **[R4](rules/R4-filled-shapes.md)** — Only filled paths reach the files — no strokes.
-- **[R5](rules/R5-preview-only.md)** — Guides and the backdrop are preview-only — never in a file.
-- **[R6](rules/R6-geometry-pure.md)** — Geometry is a pure function of the settings (`set_today` for the date).
-- **[R23](rules/R23-imported-files.md)** — Imported files (SVG, PDF, AI): how they will be read when built (#50).
-- **[R26](rules/R26-one-scene.md)** — One scene: the files and the preview draw the same list of items.
+## How we work — the seven to know by heart
 
-## Settings
+| | Rule | Name | In one line |
+|---|---|---|---|
+| 1 | [R18](rules/R18-nothing-unprompted.md) | **Occam** | The simplest approach that works; nothing Okay didn't ask for. |
+| 2 | [R21](rules/R21-measure.md) | **Measure** | Measure, don't estimate — sizes and timings from real renders. |
+| 3 | [R20](rules/R20-third-attempt.md) | **Third time, stop** | Third attempt at the same fix → stop and ask. |
+| 4 | [R34](rules/R34-no-band-aids.md) | **One mechanism** | One need, one mechanism; a fix for one place is the sign to look again. |
+| 5 | [R19](rules/R19-test-before-handing-over.md) | **Test, then hand over** | A small push gets `npm run small`, a step `npm test`; look at the screenshots. |
+| 6 | [R25](rules/R25-guide.md) | **The guide waits** | The guide follows the app and is rebuilt only when Okay asks. |
+| 7 | [R36](rules/R36-archive.md) | **Pictures on the Mac** | Every picture kept, in Okay's Mac folder, none in the repo. |
 
-- **[R7](rules/R7-starting-values.md)** — Every setting has a starting value.
-- **[R8](rules/R8-key-names.md)** — Never rename a setting key.
-- **[R9](rules/R9-popup-index.md)** — Popups store an index, never a label.
+## The drawing
+
+| | Rule | Name | In one line |
+|---|---|---|---|
+| 8 | [R1](rules/R1-millimetres.md) | **Millimetres** | All geometry is in mm; points appear only in a file. |
+| 9 | [R2](rules/R2-clock-angles.md) | **Clock angles** | 0° at 12, growing clockwise; negated in one place. |
+| 10 | [R3](rules/R3-upright-then-place.md) | **Upright, then place** | Draw at the origin pointing up, then move to the radius and turn. |
+| 11 | [R4](rules/R4-filled-shapes.md) | **Filled shapes** | Only filled paths reach a file — no strokes. |
+| 12 | [R5](rules/R5-preview-only.md) | **Preview only** | Guides and the backdrop never reach a file. |
+| 13 | [R6](rules/R6-geometry-pure.md) | **Pure geometry** | Geometry is a function of the settings; it never touches the window or the clock. |
+| 14 | [R26](rules/R26-one-scene.md) | **One scene** | Files and every preview draw the same list of items. |
+| 15 | [R23](rules/R23-imported-files.md) | **Imported files** | How an SVG, PDF or AI will be read when import is built (#173). |
+
+## Settings, links and files
+
+| | Rule | Name | In one line |
+|---|---|---|---|
+| 16 | [R7](rules/R7-starting-values.md) | **Starting values** | Every setting has one, in one of four places. |
+| 17 | [R8](rules/R8-key-names.md) | **Keys keep their names** | Never rename a setting key; a dead key stays with a comment. |
+| 18 | [R9](rules/R9-popup-index.md) | **Index, not label** | A popup stores an index; a list of choices only grows at its end. |
+| 19 | [R30](rules/R30-web-version.md) | **The web is the tool** | `dial.py` is frozen; new keys are the web's alone. |
+| 20 | [R31](rules/R31-link-and-file.md) | **Link now, file to keep** | A link shares a dial now and may die; a settings file keeps one. |
 
 ## Type
 
-- **[R10](rules/R10-harfbuzz.md)** — Text is shaped by HarfBuzz and becomes outlines.
-- **[R11](rules/R11-tracking.md)** — Tracking is in 1/1000 em.
-- **[R12](rules/R12-features-differ.md)** — OpenType features store only what differs from the font's default.
+| | Rule | Name | In one line |
+|---|---|---|---|
+| 21 | [R10](rules/R10-harfbuzz.md) | **HarfBuzz** | Text is shaped by HarfBuzz and becomes outlines. |
+| 22 | [R11](rules/R11-tracking.md) | **Tracking** | Tracking is in 1/1000 em. |
+| 23 | [R12](rules/R12-features-differ.md) | **Only the difference** | OpenType features store only what differs from the font's default. |
+| 24 | [R35](rules/R35-font-list.md) | **Every font listed** | The font sheet lists every font from the start; files load on use; six filters; licences settled. |
 
-## Interface
+## The window
 
-- **[R15](rules/R15-number-forms.md)** — A number has three ways in — type, step, sweep — in listed forms (A, B, C, D, Words, Toggle).
-- **[R15a](rules/R15a-controller.md)** — The controller: the one popup every number form opens; its measures.
-- **[R16](rules/R16-hidden-not-disabled.md)** — What can't be used is hidden, not disabled.
-- **[R17](rules/R17-no-dead-ends.md)** — No dead ends: every risky call has a fallback or reports to the Export log.
-- **[R28](rules/R28-no-render-in-handler.md)** — Nothing renders inside a control's handler.
-- **[R30](rules/R30-web-version.md)** — The web version is the tool; `dial.py` is frozen; new keys are the web's alone.
-- **[R31](rules/R31-link-and-file.md)** — A dial's link is for sharing now; a settings file is for keeping.
-- **[R32](rules/R32-stylesheet.md)** — The stylesheet: cascade layers, tokens, the unit scale, the bans, hover under `(hover: hover)`.
-- **[R32a](rules/R32a-type-sizes.md)** — Sizes of type: the `--t-` tokens, `--t-pixel`, INKED labels.
-- **[R32b](rules/R32b-specials.md)** — The specials block in `1-tokens.css`: the only way off the scale.
-- **[R32c](rules/R32c-look-check.md)** — The look-check `test/same.mjs` proves a change that must not change the look.
-- **[R33](rules/R33-icons.md)** — Icons: one grid, one line weight, drawn through `web/icons/`.
-
-## Process
-
-- **[R18](rules/R18-nothing-unprompted.md)** — Simplest approach that works; nothing unprompted.
-- **[R19](rules/R19-test-before-handing-over.md)** — Test before handing over — `npm run small` for a small push, `npm test` for a step; look at the screenshots.
-- **[R34](rules/R34-no-band-aids.md)** — No band-aids: one need, one mechanism.
-- **[R20](rules/R20-third-attempt.md)** — Third attempt at the same fix → stop and ask.
-- **[R21](rules/R21-measure.md)** — Measure, don't estimate.
-- **[R25](rules/R25-guide.md)** — The guide follows the app; rebuilt only when Okay asks.
-- **[R35](rules/R35-font-list.md)** — The font list: every font from the start, files on use.
-- **[R36](rules/R36-archive.md)** — The archive: every picture kept, on Okay's Mac, none in the repo.
-- **[R29](rules/R29-design-canon.md)** — `docs/design.md` is the design canon.
-
-Where a rule's words come from: the row in `decisions.md` of the same date. How a rule came to be is the repo's history, not the page (docs state the present).
+| | Rule | Name | In one line |
+|---|---|---|---|
+| 25 | [R15](rules/R15-number-forms.md) | **Three ways in** | A number is typed, stepped or swept, in listed forms (A, B, C, D, Words, Toggle). |
+| 26 | [R15a](rules/R15a-controller.md) | **The controller** | The one popup every number form opens; its measures. |
+| 27 | [R16](rules/R16-hidden-not-disabled.md) | **Hidden, not disabled** | What can't be used is hidden; a pane with nothing that applies goes too. |
+| 28 | [R17](rules/R17-no-dead-ends.md) | **No dead ends** | Every risky call has a fallback or reports to the Export log. |
+| 29 | [R28](rules/R28-no-render-in-handler.md) | **One frame** | Nothing renders inside a handler; `render()` asks for a frame. |
+| 30 | [R29](rules/R29-design-canon.md) | **The canon** | `docs/design.md` is the design canon for anything shown. |
+| 31 | [R32](rules/R32-stylesheet.md) | **The stylesheet** | Cascade layers, tokens, the unit scale, the bans, hover under `(hover: hover)`. |
+| 32 | [R32a](rules/R32a-type-sizes.md) | **Type sizes** | The `--t-` tokens, `--t-pixel`, labels centred on their ink. |
+| 33 | [R32b](rules/R32b-specials.md) | **Specials** | The one block in `1-tokens.css` that may leave the scale. |
+| 34 | [R32c](rules/R32c-look-check.md) | **The look-check** | `test/same.mjs` proves a change that must not change the look. |
+| 35 | [R33](rules/R33-icons.md) | **Icons** | One grid, one line weight, drawn through `web/icons/`. |

@@ -1,4 +1,4 @@
-# Plan: square and rounded-square dials (#484, with #363)
+# Plan: square and rounded-square dials (#363, non-round dials — the Apple Watch shapes first)
 
 *Written 20 Oct 2026 for Okay's reading (beta 4.90, branch `wip-4.90`). A plan only: nothing here is built.*
 

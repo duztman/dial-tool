@@ -29,6 +29,7 @@ What the rules and the glossary don't say about how the work goes with him. Read
 - **Docs state the present** (19 Oct): never write "until 4.x it was…" into a doc, a rule or a code comment; keep his words as the reason, put the change in the changelog.
 
 - **A check leaves the window as it found it** (20 Oct 2026, night): a check that moves to another tab, turns a window on or changes the dial puts it back at its end, or every later check sees another window. `test/window-only.mjs` shows which sections don't yet stand alone.
+- **Read everything first, then act; don't ask what the docs answer** (1 Nov 2026, after a session that asked "many many same and redundant questions, without upfront research"): for an audit or a plan, read the repo's docs, git log and the gdoc whole before the first question; then decide and report, rather than ask. The docs' "slimness, directness and conviction matters more than pasting my replies in".
 - **Alone at night** (20 Oct 2026, 02:02–02:26): "Build functionality … noted and screenshotted for my approval later, not messing with current build"; "Batch these crazy checks and fittings separately"; "Display your in progress screenshots in the chat". So: a branch of its own, defaults that draw as before, crops in the chat as they are made, a review doc and a review page at the end.
 
 ## 2 · The sketch loop

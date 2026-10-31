@@ -61,7 +61,7 @@ What each word means **in this project**; Turkish where it is the trade word. On
 
 | Term | Meaning |
 |---|---|
-| **Shape** | baton · pencil · sword · dauphine · leaf · arrow · syringe · Breguet · lollipop · disc · file (imported; not built, #50). |
+| **Shape** | baton · pencil · sword · dauphine · leaf · arrow · syringe · Breguet · lollipop · disc · file (imported; not built, #173). |
 | **Tip length** | Length of the pointed end. |
 | **Head width · ring/disc Ø · …at %** | The arrow head or syringe barrel width; the Breguet ring or lollipop disc Ø; where it sits, % of length. |
 | **Round ends** | A hand's `round`: corner radius of its flat ends. Okay's "round caps". |

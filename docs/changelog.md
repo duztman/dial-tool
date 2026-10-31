@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## docs · 1 Nov 2026 — the build list and the rules made followable (no version)
+
+The build list is one ordered list (an order column now → future, easier → harder; the # stays the item's name), folded and finished rows out — #20, #177 into #346; #33, #19 into #522 and #173; #421 into #404; #493 done by #529; #396 a note on #395; #545–#547 (built 25 Oct) removed. The rules index gives each rule a learning order and a name; R-numbers unchanged. R19 (a beta counts as v1), R23 and R32b (#173, #398), R35 (100 families), R36 (#503 retired) updated; brief §5–§8, handoff §1, README, the glossaries, the Project prompt in line.
+
 ## v1.1.8 beta · 1 Nov 2026 — the font library complete (#501)
 
 Okay, 1 Nov 2026, 01:18: "Wiegel's are on github under another project, let's finish fonts up"; 01:33: "The 25 from October"; "I am declaring all the licenses are extremely availably and well knownly free to use and distribute"; "Do everything, drop if something comes up and report later".
