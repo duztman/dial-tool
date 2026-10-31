@@ -131,7 +131,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Font sheet** | Opens from the font in Type: fonts shown by numerals, search, filters, **Add fonts**, **Installed** (`queryLocalFonts`), Light · Dark. |
 | **Installed fonts** | The font sheet's **Installed** button: the computer's fonts (Chrome, Edge, `queryLocalFonts`). |
 | **Font box** | The font in Type: numerals, language button, name, styles as **hanging tabs**, Size, Tracking and axes; the parts that fold: OpenType features, **Stroke**. |
-| **Stroke** | A ring's letters outlined in a colour of their own, a part of the font box: On on its head line, then Width (mm), Join as three tiles (Miter · Round · Bevel), Side (Inside · Middle · Outside), Colour. A grown outline in the files, never a stroke (R4). |
+| **Stroke** | A ring's letters or marks outlined in a colour of their own: for numerals and text a part of the font box, for ticks and markers a pane after Shapes. On on its head line, then Width (mm), Colour, Join as three tiles (Miter · Round · Bevel), Side (Inside · Middle · Outside). A grown outline of the merged letters or marks; in the files, never a stroke (R4); its colour an ink of its own. |
 | **Ink centre** | A short label centred on the box its ink covers (`ink.js`, the `INKED` list). |
 | **Look-check** | `test/same.mjs`: every element's computed style, saved before and compared after a stylesheet change (R32c). |
 | **Special** | A value off the stylesheet's scale on purpose: a named token in the specials block of `1-tokens.css` (R32b). |
