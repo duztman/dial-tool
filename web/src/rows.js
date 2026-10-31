@@ -225,15 +225,15 @@ export const ROWS = {
     num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
     // a stroke round each mark (#556; Okay, 31 Oct 2026, 03:31: "Also indices and markers get outlines"; 03:57, on the
-    // drawing: "Place is good. Move up color after width"): a pane of its own after Shapes, On on its heading line, then
-    // the font box's Stroke rows — Width, Colour, Join, Side
-    hdr("Stroke", { folded: true, show: kind_in("ticks", "markers") }),
-    chk("stroke", "On", { head: true, id: "ring-stroke-on-marks", show: kind_in("ticks", "markers"),
+    // drawing: "Place is good. Move up color after width"; 04:05: "Add them to bands as well"): a pane of its own after
+    // Shapes (a band's after its Sector colours), On on its heading line, then the font box's Stroke rows — Width, Colour, Join, Side
+    hdr("Stroke", { folded: true, show: kind_in("ticks", "markers", "band") }),
+    chk("stroke", "On", { head: true, id: "ring-stroke-on-marks", show: kind_in("ticks", "markers", "band"),
       put: (app, v) => { app.set_value("ring", "stroke", v); const pane = v && app.rows.find((r) => r.fold && r.row.text === "Stroke"); if (pane && app.is_folded(pane)) app.fold(pane, false); } }),      // ticked, its pane opens, as the font box's Stroke part does
-    num("stroke_w", "Width", 0.02, 1, 0.01, { id: "ring-stroke-w-marks", show: kind_in("ticks", "markers") }),
-    col("stroke_c", "Colour", { id: "ring-stroke-c-marks", show: kind_in("ticks", "markers") }),
-    pick("stroke_join", "Join", G.STROKE_JOINS, (i) => PICS.join[i], { bare: true, id: "ring-stroke-join-marks", show: kind_in("ticks", "markers") }),
-    seg("stroke_side", "Side", G.STROKE_SIDES, { id: "ring-stroke-side-marks", show: kind_in("ticks", "markers") }),
+    num("stroke_w", "Width", 0.02, 1, 0.01, { id: "ring-stroke-w-marks", show: kind_in("ticks", "markers", "band") }),
+    col("stroke_c", "Colour", { id: "ring-stroke-c-marks", show: kind_in("ticks", "markers", "band") }),
+    pick("stroke_join", "Join", G.STROKE_JOINS, (i) => PICS.join[i], { bare: true, id: "ring-stroke-join-marks", show: kind_in("ticks", "markers", "band") }),
+    seg("stroke_side", "Side", G.STROKE_SIDES, { id: "ring-stroke-side-marks", show: kind_in("ticks", "markers", "band") }),
     // Positions (Okay's notes, p. 5, #251, 4.50.1): at the left a round preview of the ring's positions, like the hand's
     // box — the used ones as marks, the skipped ones faint, the first one marked; beside it the numbers as quiet rows
     // (R15 form B: "none of these need slider"), their sliders in the controller a name or a number opens

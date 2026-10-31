@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## v1.1.7 beta · 31 Oct 2026 — a stroke round bands
+
+Okay, 31 Oct 2026, 04:05: "Add them to bands as well".
+
+- A band ring has the Stroke pane too (after its Sector colours): On, Width · Colour · Join · Side; the stroke grown round the band's sectors, in its own colour and ink.
+
 ## v1.1.6 beta · 31 Oct 2026 — a stroke round ticks and markers
 
 Okay, 31 Oct 2026, 03:31: "Also indices and markers get outlines"; 03:57, on the drawing: "Place is good. Move up color after width. Implement".

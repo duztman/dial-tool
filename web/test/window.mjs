@@ -1494,6 +1494,10 @@ check(await page.$$eval(".form .fontrow", (rows) => rows.length) === 1 && await 
     return { after: names[names.indexOf("Stroke") - 1], head: Boolean(pane.querySelector(".headcontrol #ring-stroke-on-marks, #ring-stroke-on-marks")), open: pane.querySelector(".body").offsetHeight > 0, rows: rows.join(" · "), on: t.S.rings[t.S.ui_ring].stroke, items }; });
   check(m.after === "Shapes" && m.head && m.open && m.on && m.rows === "Width · Colour · Join · Side" && m.items >= 1,
     `a ticks ring: a Stroke pane after ${m.after}, On on its heading line, ticked it opens; its rows ${m.rows}; the dial draws ${m.items} ring's stroke`);
+  const band = await page.evaluate(async () => { const t = window.dial_tool; t.S.rings.unshift({ ...t.S.rings[0], kind: 3, r: 12, width: 0.8, count: 12, span: 360, fill: 50, stroke: true, stroke_w: 0.12 }); t.S.ui_ring = 0; t.static_dirty = true; t.changed(); t.show_section(); t.sync_rows(); t.render();
+    await new Promise((r) => setTimeout(r, 300));
+    return { pane: [...document.querySelectorAll(".form > .pane")].filter((p) => p.checkVisibility()).some((p) => p.querySelector("h2")?.textContent === "Stroke"), drawn: t.statik.rings.some((d) => d.kind === "band" && d.stroke) }; });
+  check(band.pane && band.drawn, `a band has the Stroke pane too and the dial draws its stroke (Okay, 31 Oct 2026, 04:05: "Add them to bands as well")`);
   await page.evaluate((was) => { const t = window.dial_tool; t.S.rings = JSON.parse(was[1]); t.S.ui_ring = was[0]; t.static_dirty = true; t.changed(); t.show_section(); t.sync_rows(); }, keep);
 }
 await page.click("#font-current");

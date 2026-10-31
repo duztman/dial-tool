@@ -540,3 +540,4 @@ The dated record of every decision, with Okay's words as the reason. Not read be
 | 31 Oct, 03:20 | **Settings' cog: line 1, under the four icon widths; at rest the Gallery pill's grey, solid.** | Okay: "cog, thinner line, same color as gallery, no opacity" |
 | 31 Oct, 03:31–03:33 | **Strokes merged before growing (no spikes); a stroke's colour an ink on show mode's Inks list; strokes for ticks and markers to be drawn first, then built.** | Okay: "Font is montserrat … it has color, will go into a ink group in showcase. Also indices and markers get outlines"; "Yes to all" |
 | 31 Oct, 03:57 | **Strokes for ticks and markers (#556) built as drawn: a Stroke pane after Shapes, On on its heading line; Colour moved up after Width, in the font box too.** | Okay: "Place is good. Move up color after width. Implement" |
+| 31 Oct, 04:05 | **Bands take a stroke too (the same Stroke pane).** | Okay: "Add them to bands as well" |

@@ -28,7 +28,7 @@
 6. **Release**: a small push `tools/release.sh dev "first line"` (pushes `dev`, copies the build to the /dev/ page); a step `tools/release.sh 1.1 "first line"` (the row in `docs/versions.md`, `main` moved to `dev`, the released page) — **on Okay's word only**, and a session's safety check may refuse it (a production deploy): then he runs it from his Mac. Tags and GitHub Releases can't be pushed from a session (`tools/versions.sh tag` from his Mac).
 7. **Reply**: short bullets — what changed, the values used, what is open. He reads on an iPad.
 
-**Version**: **v1.1.6 beta** on `dev` and /dev/ (<https://duztman.github.io/dial-tool/dev/>, a loader in `web/dev/index.html`, own browser storage); **v1.0 beta** on `main` and <https://duztman.github.io/dial-tool/>; 27 Oct 2026 (Okay: "call this a v1.0 beta version from now on"). Next: v1.1.7 beta for a small push, v1.2 beta for a step; the step to `main` is Okay's to run.
+**Version**: **v1.1.7 beta** on `dev` and /dev/ (<https://duztman.github.io/dial-tool/dev/>, a loader in `web/dev/index.html`, own browser storage); **v1.0 beta** on `main` and <https://duztman.github.io/dial-tool/>; 27 Oct 2026 (Okay: "call this a v1.0 beta version from now on"). Next: v1.1.8 beta for a small push, v1.2 beta for a step; the step to `main` is Okay's to run.
 
 ## Where things live, and what not to touch
 

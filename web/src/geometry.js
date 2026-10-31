@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.6 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.7 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -997,8 +997,8 @@ export function offset(p, d, join = "Round") {
 
 /** a stroke round a shape as a filled outline (R4): w mm wide, on the inside, the middle or the outside of the edge,
  *  its corners by join. The shape itself stays as it is; the stroke is a path of its own, drawn over it. */
-/** does the ring draw a stroke round its letters or marks? (a band has none) */
-export const has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && ["numerals", "text", "ticks", "markers"].includes(KINDS[ring.kind]));      // letters (#551), and marks (#556: "indices and markers get outlines")
+/** does the ring draw a stroke round its letters, marks or band? */
+export const has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && ["numerals", "text", "ticks", "markers", "band"].includes(KINDS[ring.kind]));      // letters (#551), marks (#556: "indices and markers get outlines") and bands ("Add them to bands as well")
 
 export function stroke_outline(p, w, side, join) {
   if (empty(p) || !(w > 0)) return null;
