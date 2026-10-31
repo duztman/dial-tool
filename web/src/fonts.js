@@ -481,8 +481,9 @@ export const FONTS = {
 
   /** the font's OpenType features, likewise a part of every font box. Only what differs from the font's default is stored (R12). */
   /** a stroke round the ring's letters (#551; Okay, 31 Oct 2026: "Stroke on off, miter round sharp, inside middle outside
-   *  of vector, and its color"): the switch, and with it on, its width in mm, its join, which side of the outline it
-   *  stands on, its colour. Drawn as a grown outline in the files (R4). */
+   *  of vector, and its color"): the switch, and with it on, its width in mm, its colour (03:57: "Move up color after
+   *  width"), its join, which side of the outline it stands on. A ticks or markers ring has the same rows in a pane
+   *  (rows.js, #556). Drawn as a grown outline in the files (R4). */
   stroke_part() {
     // On stands on the part's head line as a tick (Okay's drawing, 31 Oct 2026: "☑ on" beside Stroke); turned on, the part
     // opens; the eye opens it without turning it on, its rows showing either way
@@ -491,9 +492,9 @@ export const FONTS = {
     box.onchange = () => { this.set_value("ring", "stroke", box.checked); if (box.checked && out.open) out.open(); };
     const rows = [
       this.build_row({ ...num("stroke_w", "Width", 0.02, 1, 0.01), scope: "ring" }),
+      this.build_row({ ...col("stroke_c", "Colour"), scope: "ring" }),
       this.build_row({ ...pick("stroke_join", "Join", G.STROKE_JOINS, (i) => PICS.join[i], { bare: true }), scope: "ring" }),      // the joins as pictures alone (Okay, 31 Oct 2026: "NO LABEL, LARGER icon"): an L-shaped band, its corner sharp, round or cut
       this.build_row({ ...seg("stroke_side", "Side", G.STROKE_SIDES), scope: "ring" }),
-      this.build_row({ ...col("stroke_c", "Colour"), scope: "ring" }),
     ];
     const wrap = el("div", { className: "strokerows" }, ...rows.map((r) => r.el));
     const out = { el: wrap, on, refresh: (R, T) => { box.checked = Boolean(T.stroke); for (const r of rows) r.refresh(T); return true; } };

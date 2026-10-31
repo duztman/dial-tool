@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.5 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.6 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -997,8 +997,8 @@ export function offset(p, d, join = "Round") {
 
 /** a stroke round a shape as a filled outline (R4): w mm wide, on the inside, the middle or the outside of the edge,
  *  its corners by join. The shape itself stays as it is; the stroke is a path of its own, drawn over it. */
-/** does the ring draw a stroke round its letters? (#551: numerals and text only) */
-export const has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && (KINDS[ring.kind] === "numerals" || KINDS[ring.kind] === "text"));
+/** does the ring draw a stroke round its letters or marks? (a band has none) */
+export const has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && ["numerals", "text", "ticks", "markers"].includes(KINDS[ring.kind]));      // letters (#551), and marks (#556: "indices and markers get outlines")
 
 export function stroke_outline(p, w, side, join) {
   if (empty(p) || !(w > 0)) return null;
@@ -1527,8 +1527,8 @@ function build_rings(S, cut = null) {
     };
     const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d) => [key_of(d.ring), d.keep]), cut ? date_key(S) : null]);
     const d = { ring, kind, keep, taken, shape, at, parts, path: memo(key, final), ghost: !ring.on };
-    // a stroke round the letters (#551): a grown outline of the ring's final shape, drawn over it in its own colour
-    if ((kind === "numerals" || kind === "text") && ring.stroke && ring.stroke_w > 0) d.stroke = memo("stroke" + key, () => stroke_outline(d.path, ring.stroke_w, STROKE_SIDES[ring.stroke_side] || "Outside", STROKE_JOINS[ring.stroke_join] || "Miter"));
+    // a stroke round the letters (#551) or the marks (#556): a grown outline of the ring's final shape, drawn over it in its own colour
+    if (has_stroke(ring)) d.stroke = memo("stroke" + key, () => stroke_outline(d.path, ring.stroke_w, STROKE_SIDES[ring.stroke_side] || "Outside", STROKE_JOINS[ring.stroke_join] || "Miter"));
     // a band whose sectors have colours of their own is drawn as one shape per colour: the sectors of that
     // colour, cut like the whole ring. Which sectors go together is remembered, not which colour they have.
     if ((kind === "band" || kind === "numerals" || kind === "text") && at.some((i) => ring.cs && ring.cs[String(i)])) {      // a numeral's own colour too (#513): the same split

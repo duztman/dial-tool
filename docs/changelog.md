@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.6 beta · 31 Oct 2026 — a stroke round ticks and markers
+
+Okay, 31 Oct 2026, 03:31: "Also indices and markers get outlines"; 03:57, on the drawing: "Place is good. Move up color after width. Implement".
+
+- A ticks or markers ring has a **Stroke** pane after Shapes: On on its heading line (ticked, the pane opens), then Width · Colour · Join · Side. The marks' stroke is drawn as the letters' is — a grown outline of the ring's merged marks, in its own colour, an ink on show mode's Inks list and its own film.
+- The font box's Stroke part takes the same order: Width · Colour · Join · Side.
+
 ## v1.1.5 beta · 31 Oct 2026 — strokes without spikes; a stroke's colour is an ink
 
 Okay, 31 Oct 2026, 03:20, on Montserrat's figures with a Miter stroke: "Is there a way to fix this?"; 03:31: "it has color, will go into a ink group in showcase"; 03:33: "Yes to all".
