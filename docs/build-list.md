@@ -9,7 +9,6 @@ v1 is out: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay
 
 | # | Item | From | Status |
 |---|---|---|---|
-| 501 | The rest of the font library: Wiegel's other 25 from the Wiegel Archive and Railway Sans | 21 Oct 2026 — "a must"; 1 Nov 2026 — "let's finish fonts up" | build |
 | 548 | A visitor counter on the live site | 27 Oct 2026; 1 Nov 2026 — "yes do that, move it up" | build |
 | 494 | Compare at one size, as large as the canvas holds, and a real-size switch | 21 Oct 2026 — "One big, as big as what fits on the canvas, one real size option in preview" | build |
 | 552 | The Type pane opening jumps the panel's scroll | 31 Oct 2026 — "it should open in place, without moving up"; 1 Nov 2026: iPad, Safari | open — Safari only; try `overflow-anchor: none` on the panel's scroller |

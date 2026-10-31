@@ -1,6 +1,6 @@
 // fonts.mjs — the web version's own font list: fetches the files once, and writes src/font_list.js.
 //
-// The open-licence families that suit dial numerals (69, and Inter inside the page). The files live in web/fonts/ (and are
+// The open-licence families that suit dial numerals (100, and Inter inside the page). The files live in web/fonts/ (and are
 // published with the page), so choosing one never depends on another site staying as it is.
 // For each file this reads its names and axes with HarfBuzz and draws "1234567890" once, as a
 // small outline — the picker shows that, so no font has to be downloaded just to be looked at.
@@ -25,15 +25,18 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const DIR = path.join(here, "fonts");
 const GOOGLE_COMMIT = "bd8f81ddb5c74d5c8897b36ad88b440266245103";   // github.com/google/fonts as of 11 Oct 2026
 const DATTO_COMMIT = "e199c84";                                     // github.com/amcchord/datto-d-din: Datto's D-DIN_complete.zip as a repo (6 Oct 2022)
+const RAILWAY_COMMIT = "f57159b";                                   // github.com/googlefonts/railway-sans (Greg Fleming's Railway, OFL)
 const WIEGEL = (zip) => `https://www.peter-wiegel.de/Fonts/${zip}`;
 // a source: where a family's file is (font), where its licence is (licence: a URL, or [zip URL, file inside]; null = kept by hand), the licence file's suffix
 const SOURCES = {
   google: { font: (dir, file) => `https://raw.githubusercontent.com/google/fonts/${GOOGLE_COMMIT}/ofl/${dir}/${encodeURIComponent(file)}`, licence: (dir) => `https://raw.githubusercontent.com/google/fonts/${GOOGLE_COMMIT}/ofl/${dir}/OFL.txt`, suffix: "-OFL.txt" },
+  railway: { font: (dir, file) => `https://raw.githubusercontent.com/googlefonts/railway-sans/${RAILWAY_COMMIT}/fonts/TTF/${file}`, licence: () => `https://raw.githubusercontent.com/googlefonts/railway-sans/${RAILWAY_COMMIT}/LICENSE.txt`, suffix: "-OFL.txt" },
   routed: { font: (dir, file) => `https://raw.githubusercontent.com/dse/routed-gothic/365e340/dist/ttf/${file}`, licence: () => "https://raw.githubusercontent.com/dse/routed-gothic/365e340/LICENSE.md", suffix: "-OFL.txt" },
   wiegel: { font: (zip, file) => [WIEGEL(zip), file], licence: (zip) => [WIEGEL(zip), "Open Font License.txt"], suffix: "-OFL.txt" },
   gutenberg: { font: (zip, file) => [WIEGEL(zip), file], licence: () => null, suffix: "-free-software.txt" },
-  // Wiegel's fonts from Okay's own download of his CAT Fonts collection (25 Oct 2026; peter-wiegel.de is not reachable
-  // from a session): the files and their OFL are kept by hand in fonts/ and fonts/licences/, never fetched
+  // Wiegel's fonts from Okay's own download of his CAT Fonts collection (25 Oct 2026) and from his Wiegel Archive
+  // (1 Nov 2026, https://claude.ai/artifact/9XpQGH3LqFMUfXSGQkgQiG; peter-wiegel.de is not reachable from a session):
+  // the files and their OFL are kept by hand in fonts/ and fonts/licences/, never fetched
   catfonts: { font: () => null, licence: () => null, suffix: "-OFL.txt" },
   apache: { font: (dir, file) => `https://raw.githubusercontent.com/google/fonts/${GOOGLE_COMMIT}/apache/${dir}/${encodeURIComponent(file)}`, licence: (dir) => `https://raw.githubusercontent.com/google/fonts/${GOOGLE_COMMIT}/apache/${dir}/LICENSE.txt`, suffix: "-Apache.txt" },
   datto: { font: (dir, file) => `https://raw.githubusercontent.com/amcchord/datto-d-din/${DATTO_COMMIT}/${file}`, licence: () => `https://raw.githubusercontent.com/amcchord/datto-d-din/${DATTO_COMMIT}/OFL-1.1.txt`, suffix: "-OFL.txt" },
@@ -111,6 +114,32 @@ const FAMILIES = [
   ["CAT Robertson", "DIN-like single stroke", "catfonts", "", ["robertson.ttf", "Regular"]],
   ["CAT Stack", "inline, after the old Stack lettering", "catfonts", "", ["cat_stack.ttf", "Regular"]],
   ["Varieté", "heavy display", "catfonts", "", ["Variete.ttf", "Regular"]],
+  // Wiegel's, the rest of the middle tier, from the Wiegel Archive (#501; Okay, 1 Nov 2026: "let's finish fonts up")
+  ["Astrud", "art deco display, after Anna", "catfonts", "", ["Astrud.ttf", "Regular"]],
+  ["CAT Eckmann", "Jugendstil, after Eckmann's 1900 type", "catfonts", "", ["CAT-Eckmann.ttf", "Regular"]],
+  ["CAT North", "single-stroke sans", "catfonts", "", ["CAT_North.ttf", "Regular"]],
+  ["CAT Rhythmus", "bold sans, tabular figures", "catfonts", "", ["CATRhythmus.ttf", "Regular"]],
+  ["Centre Claws", "single-stroke sans", "catfonts", "", ["CentreClaws.ttf", "Regular"]],
+  ["Dante", "slab serif", "catfonts", "", ["Dante.ttf", "Regular"]],
+  ["DIN 1451 Fette Breitschrift", "wide DIN 1451, 1936", "catfonts", "", ["DIN1451-36breit.ttf", "Regular"]],
+  ["Eyechart", "eye-test chart letters", "catfonts", "", ["Eyechart.ttf", "Regular"]],
+  ["Fette Bauersche Antiqua", "heavy 19th-century serif", "catfonts", "", ["Fette_Bauersche_Antiqua_UNZ1.ttf", "Regular"]],
+  ["Göschen Fraktur", "Fraktur, 1889", "catfonts", "", ["Goeschen_UNZ1A.ttf", "Regular"]],
+  ["Isar CAT", "jobbing sans, Latin, Greek and Cyrillic", "catfonts", "", ["IsarCAT.ttf", "Regular"]],
+  ["Lucian Schönschrift", "show script", "catfonts", "", ["Lucian_Schoenschrift_CAT.ttf", "Regular"]],
+  ["Nürnberg", "poster Fraktur", "catfonts", "", ["Nuernberg.ttf", "Regular"]],
+  ["Omega CAT", "foundry display", "catfonts", "", ["Omega.ttf", "Regular"]],
+  ["Peter Obscure", "display, bold", "catfonts", "", ["PeterObscure.ttf", "Bold"]],
+  ["Rundkursiv", "round script", "catfonts", "", ["Rundkursiv.ttf", "Regular"]],
+  ["Rundspruch", "heavy sans", "catfonts", "", ["Rundspruch.ttf", "Regular"]],
+  ["Stage", "1920s display", "catfonts", "", ["Stage.ttf", "Regular"]],
+  ["Sylvar", "1980s display", "catfonts", "", ["Sylvar.ttf", "Regular"]],
+  ["Tartlers End", "display, the Krystal cut", "catfonts", "", ["Tartlers_End_Krystal.ttf", "Krystal"]],
+  ["Teutonic", "Jugendstil", "catfonts", "", ["Teutonic.ttf", "Regular"]],
+  ["Wattauchimma", "constructed sans, Cyrillic too", "catfonts", "", ["Wattauchimma.ttf", "Regular"]],
+  ["Xayax", "Jugendstil", "catfonts", "", ["XAYAX.ttf", "Regular"]],
+  ["Youlilee", "display experiment", "catfonts", "", ["Youbilee.ttf", "Regular"]],
+  ["Railway Sans", "rail DIN cousin, after British Rail lettering", "railway", "", ["Railway.ttf", "Regular"]],
   ["Reem Kufi", "Kufic Arabic, Arabic-Indic digits", "google", "reemkufi", ["ReemKufi[wght].ttf", "Regular"]],
   ["Noto Sans Bengali", "Bengali digits", "google", "notosansbengali", ["NotoSansBengali[wdth,wght].ttf", "Regular"]],
   ["Noto Sans Devanagari", "Devanagari digits", "google", "notosansdevanagari", ["NotoSansDevanagari[wdth,wght].ttf", "Regular"]],
@@ -138,6 +167,10 @@ const KINDS = {
   "Aboreto": "sans", "Anta": "sans", "Audiowide": "sans", "Big Shoulders Display": "sans condensed", "Black Ops One": "sans", "Courier Prime": "serif mono",
   "Gilda Display": "serif", "Julius Sans One": "sans", "Krona One": "sans", "Libre Caslon Display": "serif", "Limelight": "serif", "Major Mono Display": "sans mono",
   "Pathway Extreme": "sans", "Berliner Wand": "sans condensed", "Böcklins Universe": "", "CAT Childs": "serif", "CAT Robertson": "sans", "CAT Stack": "sans", "Varieté": "sans", "Sirin Stencil": "serif", "Stardos Stencil": "serif", "Syncopate": "sans", "Tenor Sans": "sans", "Zen Dots": "sans",
+  "Astrud": "sans", "CAT Eckmann": "", "CAT North": "sans", "CAT Rhythmus": "sans", "Centre Claws": "sans", "Dante": "serif",
+  "DIN 1451 Fette Breitschrift": "sans", "Eyechart": "sans", "Fette Bauersche Antiqua": "serif", "Göschen Fraktur": "", "Isar CAT": "sans",
+  "Lucian Schönschrift": "", "Nürnberg": "", "Omega CAT": "sans", "Peter Obscure": "", "Rundkursiv": "", "Rundspruch": "sans", "Stage": "sans",
+  "Sylvar": "sans", "Tartlers End": "sans", "Teutonic": "", "Wattauchimma": "sans", "Xayax": "", "Youlilee": "", "Railway Sans": "sans",
   "Reem Kufi": "sans nonlatin", "Noto Sans Bengali": "sans nonlatin", "Noto Sans Devanagari": "sans nonlatin", "Vazirmatn": "sans nonlatin",
   "Noto Sans Indic Siyaq Numbers": "nonlatin", "Noto Sans Mayan Numerals": "nonlatin", "Noto Serif Ottoman Siyaq": "serif nonlatin",
   "Noto Sans Tamil": "sans nonlatin", "Kanit": "sans nonlatin", "Noto Serif SC": "serif nonlatin",
@@ -244,7 +277,9 @@ peter-wiegel.de, and — D-DIN — from github.com/amcchord/datto-d-din, a copy 
 page is not reachable from a session); unchanged, only renamed (\`Jost[wght].ttf\` → \`Jost-wght.ttf\`, spaces to dashes).
 On 24 Oct 2026 (#501) the middle tier's and the non-Latin numeral fonts that are on google/fonts joined (\`apache/\` for
 Syncopate). On 25 Oct 2026 six of Wiegel's middle tier joined from Okay's own download of his CAT Fonts zip
-(kept by hand, source \`catfonts\`). Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
+(kept by hand, source \`catfonts\`), and on 1 Nov 2026 the other 24 of his middle tier from Okay's Wiegel Archive
+(the same source; every licence taken as free on Okay's word of 1 Nov 2026, the OFL that 21 of the files name in their own
+name table written beside each) with Railway Sans from github.com/googlefonts/railway-sans. Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
 — but one: Noto Serif SC (25 MB whole, OFL with no Reserved Font Name) is cut to the characters a dial uses (\`SUBSET\` in
 \`web/fonts.mjs\`: Latin, digits, Chinese numerals and the date's words).
 Inter, the page's stand-in font, is packed inside the page itself (also OFL). The list is written by \`web/fonts.mjs\`.

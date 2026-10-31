@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.8 beta · 1 Nov 2026 — the font library complete (#501)
+
+Okay, 1 Nov 2026, 01:18: "Wiegel's are on github under another project, let's finish fonts up"; 01:33: "The 25 from October"; "I am declaring all the licenses are extremely availably and well knownly free to use and distribute"; "Do everything, drop if something comes up and report later".
+
+- **24 more of Peter Wiegel's fonts in the list**, the rest of the middle tier: Astrud, CAT Eckmann, CAT North, CAT Rhythmus, Centre Claws, Dante, DIN 1451 Fette Breitschrift, Eyechart, Fette Bauersche Antiqua, Göschen Fraktur, Isar CAT, Lucian Schönschrift, Nürnberg, Omega CAT, Peter Obscure (its one cut, Bold), Rundkursiv, Rundspruch, Stage, Sylvar, Tartlers End (the Krystal cut, the one the archive holds as a file), Teutonic, Wattauchimma, Xayax, Youlilee (the file is *Youbilee*). The files come from Okay's Wiegel Archive (<https://claude.ai/artifact/9XpQGH3LqFMUfXSGQkgQiG>, source `catfonts`, kept by hand in `web/fonts/`), each with an OFL file in `licences/` carrying the font's own copyright line; 21 of the 24 name the OFL in their own name table, three (Astrud, Wattauchimma, DIN 1451 Fette Breitschrift) say only "all rights reserved" or nothing — taken as free on Okay's word above.
+- **Railway Sans** (Greg Fleming's Railway, OFL), fetched from github.com/googlefonts/railway-sans (`f57159b`; source `railway`).
+- Not in: **Rundgotisch Rauh** — the archive's file under that name is Tyskland 45 (CC BY-SA, Wiegel and Martin Schulz), not Rundgotisch; the real file is not in the published archive. Dropped, as Okay said to; a mix-up to fix in the archive.
+- The list: 100 families, 118 files, 18.4 MB; the list file 1.36 MB. The sheet's kinds for the new ones (`KINDS` in `fonts.mjs`) are Claude's reading: the scripts, blackletters and Jugendstil faces have none, so they show only with no filter pressed.
+- The small check (R19) has one failure that is older than this push — *a window turned with its radius stands 30° askew; its text turns with it, or stays level* fails on v1.1.7 as pushed too. Not touched; noted in the handoff.
+
 ## v1.1.7 beta · 31 Oct 2026 — a stroke round bands
 
 Okay, 31 Oct 2026, 04:05: "Add them to bands as well".

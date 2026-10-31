@@ -10,7 +10,9 @@ peter-wiegel.de, and — D-DIN — from github.com/amcchord/datto-d-din, a copy 
 page is not reachable from a session); unchanged, only renamed (`Jost[wght].ttf` → `Jost-wght.ttf`, spaces to dashes).
 On 24 Oct 2026 (#501) the middle tier's and the non-Latin numeral fonts that are on google/fonts joined (`apache/` for
 Syncopate). On 25 Oct 2026 six of Wiegel's middle tier joined from Okay's own download of his CAT Fonts zip
-(kept by hand, source `catfonts`). Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
+(kept by hand, source `catfonts`), and on 1 Nov 2026 the other 24 of his middle tier from Okay's Wiegel Archive
+(the same source; every licence taken as free on Okay's word of 1 Nov 2026, the OFL that 21 of the files name in their own
+name table written beside each) with Railway Sans from github.com/googlefonts/railway-sans. Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
 — but one: Noto Serif SC (25 MB whole, OFL with no Reserved Font Name) is cut to the characters a dial uses (`SUBSET` in
 `web/fonts.mjs`: Latin, digits, Chinese numerals and the date's words).
 Inter, the page's stand-in font, is packed inside the page itself (also OFL). The list is written by `web/fonts.mjs`.
@@ -82,6 +84,31 @@ Inter, the page's stand-in font, is packed inside the page itself (also OFL). Th
 | CAT Robertson | `robertson.ttf` | Copyright (c) 2015, CAT-Fonts, Peter Wiegel (http://www.catfonts.de | wiegel@peter-wiegel.de), | [licence](licences/CATRobertson-OFL.txt) |
 | CAT Stack | `cat_stack.ttf` | Copyright (c) 2009, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/CATStack-OFL.txt) |
 | Varieté | `Variete.ttf` | Copyright (c) 2009, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/Varieté-OFL.txt) |
+| Astrud | `Astrud.ttf` | Copyright (c) 1994 by P. Wiegel, Capitals by Earan Newman. All rights reserved. | [licence](licences/Astrud-OFL.txt) |
+| CAT Eckmann | `CAT-Eckmann.ttf` | Copyright (c) 2020 by CAT-Fonts Peter Wiegel. All rights reserved. | [licence](licences/CATEckmann-OFL.txt) |
+| CAT North | `CAT_North.ttf` | Copyright (c) 2014 by Peter Wiegel. All rights reserved. | [licence](licences/CATNorth-OFL.txt) |
+| CAT Rhythmus | `CATRhythmus.ttf` | Copyright (c) 2015 by . All rights reserved. | [licence](licences/CATRhythmus-OFL.txt) |
+| Centre Claws | `CentreClaws.ttf` | Copyright (c) 2009 by Peter Wiegel  Open Font under Terms of following Free Software Licenses: | [licence](licences/CentreClaws-OFL.txt) |
+| Dante | `Dante.ttf` | Copyright (c) 2018 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/Dante-OFL.txt) |
+| DIN 1451 Fette Breitschrift | `DIN1451-36breit.ttf` | Copyright (c) Peter Wiegel, www.peter-wiegel.de | [licence](licences/DIN1451FetteBreitschrift-OFL.txt) |
+| Eyechart | `Eyechart.ttf` | Copyright (c) 2017 by Peter Wiegel. All rights reserved. | [licence](licences/Eyechart-OFL.txt) |
+| Fette Bauersche Antiqua | `Fette_Bauersche_Antiqua_UNZ1.ttf` | Copyright (c) 2013 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/FetteBauerscheAntiqua-OFL.txt) |
+| Göschen Fraktur | `Goeschen_UNZ1A.ttf` | Copyright (c) 20109 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/GöschenFraktur-OFL.txt) |
+| Isar CAT | `IsarCAT.ttf` | Copyright (c) 2015 by CAT-Fonts, Peter Wiegel. All rights reserved. | [licence](licences/IsarCAT-OFL.txt) |
+| Lucian Schönschrift | `Lucian_Schoenschrift_CAT.ttf` | Copyright (c) 2015 by CAT-Fonts Peter Wiegel. All rights reserved. | [licence](licences/LucianSchönschrift-OFL.txt) |
+| Nürnberg | `Nuernberg.ttf` | Copyright (c) 2015 by CAT-Fonts . All rights reserved. | [licence](licences/Nürnberg-OFL.txt) |
+| Omega CAT | `Omega.ttf` | Copyright (c) 20154 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/OmegaCAT-OFL.txt) |
+| Peter Obscure | `PeterObscure.ttf` | Copyright Holder. This restriction only applies to the primary font name as | [licence](licences/PeterObscure-OFL.txt) |
+| Rundkursiv | `Rundkursiv.ttf` | Copyright (c) 2014 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/Rundkursiv-OFL.txt) |
+| Rundspruch | `Rundspruch.ttf` | Copyright (c) 2018 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/Rundspruch-OFL.txt) |
+| Stage | `Stage.ttf` | Copyright (c) 2009 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/Stage-OFL.txt) |
+| Sylvar | `Sylvar.ttf` | Copyright (c) 2016 by CAT-Fonts, Peter Wiegel. All rights reserved. | [licence](licences/Sylvar-OFL.txt) |
+| Tartlers End | `Tartlers_End_Krystal.ttf` | Copyright (c) 2013 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/TartlersEnd-OFL.txt) |
+| Teutonic | `Teutonic.ttf` | Copyright (c) 2014 by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/Teutonic-OFL.txt) |
+| Wattauchimma | `Wattauchimma.ttf` | Copyright (c) 2015 by CAT-Fonts . All rights reserved. | [licence](licences/Wattauchimma-OFL.txt) |
+| Xayax | `XAYAX.ttf` | Copyright (c) 2015 by Peter Wiegel. All rights reserved. | [licence](licences/Xayax-OFL.txt) |
+| Youlilee | `Youbilee.ttf` | Copyright (c) 2012  by Peter Wiegel.   Open Font under Terms of following Free Software Licenses: | [licence](licences/Youlilee-OFL.txt) |
+| Railway Sans | `Railway.ttf` | Copyright (c) 2012, Greg Fleming (gregt.fleming@googlemail.com), | [licence](licences/RailwaySans-OFL.txt) |
 | Reem Kufi | `ReemKufi-wght.ttf` | Copyright 2015-2022 The Reem Kufi Project Authors (https://github.com/aliftype/reem-kufi), with Reserved Font Name "Josefin Sans". | [licence](licences/ReemKufi-OFL.txt) |
 | Noto Sans Bengali | `NotoSansBengali-wdth-wght.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/bengali) | [licence](licences/NotoSansBengali-OFL.txt) |
 | Noto Sans Devanagari | `NotoSansDevanagari-wdth-wght.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/devanagari) | [licence](licences/NotoSansDevanagari-OFL.txt) |
