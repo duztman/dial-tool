@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.4 beta · built 2026-10-31 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.5 beta · built 2026-10-31 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7505,7 +7505,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.4 beta";
+var VERSION = "v1.1.5 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7598,6 +7598,8 @@ var RING_BASE = {
   // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
   ink_d: 0,
   // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
+  stroke_b: false,
+  // show mode's Inks: its stroke's colour split into two inks, the stroke printed with ink B (as ink_b; not in the link)
   ink_b: false,
   // show mode's Inks (#545): with its colour split into two inks, this ring is printed with ink B; the file and the session, not the link (R7)
   // a stroke round the numerals or letters (#551; Okay, 30 Oct 2026: "good strokes, uniform. And round/sharp/miter
@@ -8733,7 +8735,7 @@ function differing(d, base) {
   for (const k in d) if (JSON.stringify(d[k]) !== JSON.stringify(base[k])) out[k] = d[k];
   return out;
 }
-var NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "frame_b", "print_h", "da_frame_b", "da_print_h"].includes(k);
+var NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h"].includes(k);
 function lean(S) {
   const out = {};
   for (const k in S) {
@@ -8742,6 +8744,7 @@ function lean(S) {
       const d = differing(r, RING_BASE);
       delete d.ink_d;
       delete d.ink_b;
+      delete d.stroke_b;
       return d;
     });
     else if (k === "windows") out.windows = S.windows.map((w) => {
@@ -9144,8 +9147,10 @@ function offset(p, d, join = "Round") {
   const band = p.expandStroke(2 * abs(d), join);
   return d > 0 ? p.union(band) : p.difference(band);
 }
+var has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && (KINDS[ring.kind] === "numerals" || KINDS[ring.kind] === "text"));
 function stroke_outline(p, w, side, join) {
   if (empty(p) || !(w > 0)) return null;
+  p = p.copy().removeOverlap();
   if (side === "Inside") return p.difference(offset(p, -w, join));
   if (side === "Middle") return offset(p, w / 2, join).difference(offset(p, -w / 2, join));
   return offset(p, w, join).difference(p);
@@ -9936,6 +9941,7 @@ function dial_inks(S) {
     const name = r.name || kind_of(r);
     if (kind_of(r) === "band" && positions_of(r).length > 1) for (const at of positions_of(r)) put(sector_colour(r, at), { kind: "ring", i: i2, name, sectors: 1 });
     else put(r.c, { kind: "ring", i: i2, name, sectors: 0 });
+    if (has_stroke(r)) put(r.stroke_c, { kind: "stroke", i: i2, name: name + " stroke", sectors: 0 });
   });
   windows_of(S).forEach((w, i2) => {
     if (w.on) put(w.ink, { kind: "frame", i: i2, name: window_name(w) + " frame", sectors: 0 });
@@ -9951,6 +9957,9 @@ function ink_mm(S, x2) {
   if (x2.role === "ring" || x2.role === "date frame") {
     const ink = ink_of(S, ink_hex(x2.fill)), on_b = x2.role === "ring" ? x2.ring?.ring?.ink_b : windows_of(S)[x2.window]?.frame_b;
     h = ink.two && on_b ? ink.b : ink.h;
+  } else if (x2.role === "ring stroke") {
+    const ink = ink_of(S, ink_hex(x2.fill));
+    h = ink.two && x2.ring?.ring?.stroke_b ? ink.b : ink.h;
   } else if (x2.role === "date number" || x2.role === "date picture" || x2.role === "disc print") h = windows_of(S)[x2.window]?.print_h ?? INK_MM;
   return Math.max(0, Math.min(INK_MOST, h + (+S.w_ink_all || 0)));
 }
@@ -9960,6 +9969,7 @@ function inks_of(S) {
     if (!ring.on) continue;
     out.push(ink_hex(ring.c));
     if (KINDS[ring.kind] === "band" || has_text(ring)) for (const c of Object.values(ring.cs || {})) out.push(ink_hex(c));
+    if (has_stroke(ring)) out.push(ink_hex(ring.stroke_c));
   }
   for (const w of windows_of(S)) if (w.on) out.push(ink_hex(w.ink || INK));
   return [...new Set(out)];
@@ -15838,6 +15848,10 @@ var COLOUR = {
               windows_of(S())[p.i].ink = v;
               continue;
             }
+            if (p.kind === "stroke") {
+              S().rings[p.i].stroke_c = v;
+              continue;
+            }
             const R = S().rings[p.i];
             if (Array.isArray(R.c) && ink_hex(R.c) === was) R.c = v;
             for (const at of Object.keys(R.cs || {})) if (Array.isArray(R.cs[at]) && ink_hex(R.cs[at]) === was) R.cs = { ...R.cs, [at]: v };
@@ -15866,10 +15880,7 @@ var COLOUR = {
         const count = ink.parts.length === 1 ? "1 part" : `${ink.parts.length} parts`;
         const label = el("label", { className: "inkname", textContent: count });
         const pair = (parts) => parts.length === 2;
-        const set_b = (p, b) => {
-          if (p.kind === "frame") windows_of(S())[p.i].frame_b = b;
-          else S().rings[p.i].ink_b = b;
-        };
+        const set_b = (p, b) => this.part_b(p, b);
         const toggle = open ? this.line_toggle(`ink-${n}-two`, "Two inks", () => ink_of(S(), now().hex).two, (on) => {
           entry(now().hex).two = on;
           const parts = now().parts;
@@ -15885,7 +15896,7 @@ var COLOUR = {
         kids.push(el("div", { className: "row showline inkline" + (open ? " open" : "") }, chev, mark(), label, pill, end));
         if (!open) return;
         ink.parts.forEach((p, m) => {
-          const on_b = () => p.kind === "frame" ? windows_of(S())[p.i].frame_b : S().rings[p.i].ink_b;
+          const on_b = () => this.part_b(p);
           const letter = () => ink_of(S(), now().hex).two && on_b() ? "b" : "h";
           const name = p.name + (p.sectors > 1 ? ` \xB7 ${p.sectors} sectors` : p.sectors === 1 ? " \xB7 1 sector" : "");
           const pill2 = one.two && !pair(ink.parts) ? this.ab_pill(p, n, on_b) : null;
@@ -15934,7 +15945,7 @@ var COLOUR = {
     };
     out.refresh = () => {
       const sig = JSON.stringify([
-        dial_inks(this.S).map((ink) => [ink.parts.map((p) => [p.kind, p.i, p.sectors, p.kind === "frame" ? Boolean(windows_of(this.S)[p.i].frame_b) : Boolean(this.S.rings[p.i].ink_b)]), this.ink_open.has(ink.hex), ink_of(this.S, ink.hex).two]),
+        dial_inks(this.S).map((ink) => [ink.parts.map((p) => [p.kind, p.i, p.sectors, Boolean(this.part_b(p))]), this.ink_open.has(ink.hex), ink_of(this.S, ink.hex).two]),
         windows_of(this.S).map((w, k) => [w.on, w.kind, w.at, w.at_deg, w.neighbours, w.look, w.ampm_form, disc_of(this.S, k) ? 1 : 0])
       ]);
       if (wrap.dataset.list !== sig) {
@@ -15944,11 +15955,16 @@ var COLOUR = {
       for (const r of rows) r.refresh(this.S);
     };
   },
+  /** whether an ink's part is printed with ink B — a window's frame, a ring's stroke or the ring itself; with b, set it */
+  part_b(p, b) {
+    const on = p.kind === "frame" ? windows_of(this.S)[p.i] : this.S.rings[p.i], key = p.kind === "frame" ? "frame_b" : p.kind === "stroke" ? "stroke_b" : "ink_b";
+    if (b === void 0) return on[key];
+    on[key] = b;
+  },
   /** a part's A | B under a split ink: a pill of two words, the chosen one filled */
   ab_pill(p, n, on_b) {
     const put = (b3) => {
-      if (p.kind === "frame") windows_of(this.S)[p.i].frame_b = b3;
-      else this.S.rings[p.i].ink_b = b3;
+      this.part_b(p, b3);
       this.changed();
     };
     const group = el("span", { className: "pillswitch ab", role: "radiogroup", ariaLabel: `${p.name}: ink A or B` });
