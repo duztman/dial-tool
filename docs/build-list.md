@@ -54,26 +54,17 @@ Order when building resumes (Okay, 1 Nov 2026): #184, then #169 (his "core to ou
 | 546 | Its look: one swatch column, a lone colour spelled out | 25 Oct 2026 | settled, not built |
 | 547 | A line's show/hide as a dot | 25 Oct 2026 | settled, not built |
 
-### SVG import — one mechanism (R34; R23 says how a file is read)
-
-Three places are made ready, each with a note that an SVG will go there: the moon window's picture, the am·pm window, the dial (Okay, 24 Oct 2026: "spaces set. Moon, ampm, dial only"); #530 decided it.
+### SVG import
 
 | # | Item | From | Status |
 |---|---|---|---|
-| 173 | Image or SVG import onto the dial |  | open |
-| 72 | Logo |  | open |
-| 50 | Imported shapes |  | open |
-| 466 | A moon window's Picture gets Custom…, which takes an SVG |  | open |
-| 405 | SVG inserts: a blank template file |  | open |
+| 173 | SVG import, one mechanism (R34; R23): a picture on the dial, a logo (#72), imported shapes (#50), a moon window's Custom… (#466), a blank template file (#405); the moon, am·pm and dial places readied with a note | 24 Oct 2026 — "spaces set. Moon, ampm, dial only"; 1 Nov 2026 — one row | open |
 
 ### Interface and look
 
 | # | Item | From | Status |
 |---|---|---|---|
-| 540 | Font sheet, Okay's notes of 25 Oct 2026 | 25 Oct 2026 | open |
 | 398 | The stylesheet's values off the scale (R32; #294 folded in): put on the scale as each file is touched, look changes shown in that push's round | 25 Oct 2026; 1 Nov 2026 — "Why is this even a question?" | as touched |
-| 505 | The panel's colours from the Show Case | 21 Oct 2026 — "This is also a rule for show case when it comes" | open |
-| 75 | Usability review, the other tabs | 12 Oct 2026 | open |
 
 ### Files
 
@@ -101,6 +92,7 @@ Three places are made ready, each with a note that an SVG will go there: the moo
 | # | Item | From | Status |
 |---|---|---|---|
 | 522 | Finishes and materials in show mode: paint finishes, textures, dial finishes and a preview pipeline, print-like edges, lume view, the bezel, 3D indices, hand bevels, a 3D model | 24 Oct 2026; 1 Nov 2026 — "Merge into one: finishes and materials, Later" | later |
+| 75 | Usability review, the other tabs, one at a time | 12 Oct 2026; 1 Nov 2026 — "Keep, Later" | later |
 | 19 | More hand styles |  | open |
 | 20 | Subdials |  | open |
 | 21 | Plotter output for the pen plotter via LightBurn |  | open |
