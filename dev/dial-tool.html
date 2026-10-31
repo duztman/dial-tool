@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.3 beta · built 2026-10-30 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.4 beta · built 2026-10-31 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -558,7 +558,7 @@
      outline gets black"), open the cog filled ink with its dot in paper ("Active cog itself gets black") — an exception
      to the chosen look, for this one icon. */
   .unit { position: relative; z-index: 6; margin-left: auto; }      /* a layer of its own, as the mast's: its translate (level_title) makes it one, and at 0 its box fell under the rows below (Okay, 16 Oct 2026: "Thou falls under") */
-  .cog { display: grid; place-items: center; padding: var(--u1); border: 0; background: none; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); }
+  .cog { display: grid; place-items: center; padding: var(--u1); border: 0; background: none; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 100%), var(--paper)); }      /* at rest the Gallery pill's grey, solid (03:20: "same color as gallery, no opacity") */
   @media (hover: hover) { .cog:hover { color: var(--ink); } }
   .cog[aria-expanded="true"] { color: var(--ink); }
   .cog[aria-expanded="true"] .body { fill: currentColor; }
@@ -7505,7 +7505,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.3 beta";
+var VERSION = "v1.1.4 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -12263,7 +12263,7 @@ var EYE_RAYS = 16;
 var EYE_RAY = 0.75;
 var RAY_REACH = 240;
 var BEVEL = { light: 0.22, dark: 0.26 };
-var COG = `<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" ${sw(DENSE)} stroke-linejoin="round"><path class="body" d="M8.437 4.008L8.543 1.668A8.75 8.75 0 0 1 11.957 1.668L12.063 4.008A6.5 6.5 0 0 1 13.381 4.554L15.111 2.975A8.75 8.75 0 0 1 17.525 5.389L15.946 7.119A6.5 6.5 0 0 1 16.492 8.437L18.832 8.543A8.75 8.75 0 0 1 18.832 11.957L16.492 12.063A6.5 6.5 0 0 1 15.946 13.381L17.525 15.111A8.75 8.75 0 0 1 15.111 17.525L13.381 15.946A6.5 6.5 0 0 1 12.063 16.492L11.957 18.832A8.75 8.75 0 0 1 8.543 18.832L8.437 16.492A6.5 6.5 0 0 1 7.119 15.946L5.389 17.525A8.75 8.75 0 0 1 2.975 15.111L4.554 13.381A6.5 6.5 0 0 1 4.008 12.063L1.668 11.957A8.75 8.75 0 0 1 1.668 8.543L4.008 8.437A6.5 6.5 0 0 1 4.554 7.119L2.975 5.389A8.75 8.75 0 0 1 5.389 2.975L7.119 4.554A6.5 6.5 0 0 1 8.437 4.008Z"/><circle class="dot" cx="10.25" cy="10.25" r="1.5" fill="currentColor" stroke="none"/></svg>`;
+var COG = `<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" ${sw(1)} stroke-linejoin="round"><path class="body" d="M8.437 4.008L8.543 1.668A8.75 8.75 0 0 1 11.957 1.668L12.063 4.008A6.5 6.5 0 0 1 13.381 4.554L15.111 2.975A8.75 8.75 0 0 1 17.525 5.389L15.946 7.119A6.5 6.5 0 0 1 16.492 8.437L18.832 8.543A8.75 8.75 0 0 1 18.832 11.957L16.492 12.063A6.5 6.5 0 0 1 15.946 13.381L17.525 15.111A8.75 8.75 0 0 1 15.111 17.525L13.381 15.946A6.5 6.5 0 0 1 12.063 16.492L11.957 18.832A8.75 8.75 0 0 1 8.543 18.832L8.437 16.492A6.5 6.5 0 0 1 7.119 15.946L5.389 17.525A8.75 8.75 0 0 1 2.975 15.111L4.554 13.381A6.5 6.5 0 0 1 4.008 12.063L1.668 11.957A8.75 8.75 0 0 1 1.668 8.543L4.008 8.437A6.5 6.5 0 0 1 4.554 7.119L2.975 5.389A8.75 8.75 0 0 1 5.389 2.975L7.119 4.554A6.5 6.5 0 0 1 8.437 4.008Z"/><circle class="dot" cx="10.25" cy="10.25" r="1.5" fill="currentColor" stroke="none"/></svg>`;
 var TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
