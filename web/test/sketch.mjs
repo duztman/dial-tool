@@ -9,6 +9,7 @@
 //   tab    = "Dial"                the tab to open first (optional)
 //   below  = 300                   optional: px more under the part, for a popup hanging from it
 //   css    = `...`                 rules laid over the stylesheet: use the tokens (docs/sectors.md, docs/css-map.md)
+//   setup  = async () => {…}       optional: run in every shot, as it is too (choose a ring, open a pane)
 //   states = ["closed", "open"]    optional: one tuned shot per state; build receives the state's name
 //   build  = async (state) => {…}  optional: anything CSS can't do (a new row from the app's own builders, a changed word);
 //                                  it may await ink(".selector") — the part's ink rectangle, read off the screen — to
@@ -59,8 +60,9 @@ async function shot(tuned, state = "") {
       return { left: r.x + x0 / k, right: r.x + x1 / k, top: r.y + y0 / k, bottom: r.y + y1 / k };
     }, [png, r]);
   });
-  const T = await page.evaluate(`(() => { let part = ".bar", tab = "Dial", css = "", build = null, below = 0, states = [""]; ${tune}; return { part, tab, css, below, states, build: build ? String(build) : null }; })()`);
+  const T = await page.evaluate(`(() => { let part = ".bar", tab = "Dial", css = "", build = null, setup = null, below = 0, states = [""]; ${tune}; return { part, tab, css, below, states, build: build ? String(build) : null, setup: setup ? String(setup) : null }; })()`);
   await page.click(`button[data-tab="${T.tab}"]`);
+  if (T.setup) await page.evaluate(`(${T.setup})()`);      // the same starting point in every shot, as it is too (which ring is chosen…)
   await page.evaluate(() => window.dial_tool.paint && window.dial_tool.paint());
   if (tuned) {
     await page.addStyleTag({ content: T.css });
