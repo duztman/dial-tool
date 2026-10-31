@@ -27,12 +27,14 @@ v1 is out: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay
 
 ### Features
 
-Order when building resumes (Okay, 1 Nov 2026: "#184 first"): #184, then #169 (his "core to our mission") and #175; #83 with the complications (#346).
+Order when building resumes (Okay, 1 Nov 2026): #184, then #169 (his "core to our mission"), #175, then #346 with #83 ("Up with the big three, after #175").
 
 | # | Item | From | Status |
 |---|---|---|---|
 | 169 | One strip for every position | — "very very good… prioritize this" | open |
 | 175 | A hand as a stack | 21 Oct 2026 — "bump up in importance" | open |
+| 346 | Complications, systematized: subdials, chronograph counters, one mechanism | 1 Nov 2026 — "Up with the big three, after #175" | open — fourth |
+| 83 | Positions law: even · reciprocal · logarithmic · table · squeeze | 1 Nov 2026 — "this might help us adding in complications … chronometer subdials etc." | open, with #346 |
 | 184 | Snapping | 14 Oct 2026, on #85; 1 Nov 2026 — first of the three | open — first |
 | 559 | Hover lights its part, sitewide: a ring's or window's row lights that thing on the dial | 18 Oct 2026 — "these preview gestures are sitewide"; split from #329 on 1 Nov 2026 | open |
 | 558 | Bracelet photo lighting: one snapshot-like light on any backdrop, soft outlines, many gradients | 24 Oct 2026, his photo; 26 Oct — "529 push to future"; split from #529 on 1 Nov 2026 | open |
@@ -40,14 +42,9 @@ Order when building resumes (Okay, 1 Nov 2026: "#184 first"): #184, then #169 (h
 | 535 | Sliders that stop short, one slider at a time | 24 Oct 2026 — "Only where I hit it" | open |
 | 531 | Hand bevels: the join options Normal · Miter · Round |  | open (bring-back done, 4.92.10) |
 | 526 | The sun's picture on show mode's Light tab; the guides' list's foot | 24 Oct 2026 | open (the Shadows pane built) |
-| 83 | Positions law: even · reciprocal · logarithmic · table · squeeze | 1 Nov 2026 — "this might help us adding in complications … chronometer subdials etc." | open, with #346 |
-| 484 | Square and rounded-square dials, as an Apple Watch's |  | open |
 | 404 | Dauphine and leaf hands: hubs as on a real movement | 19 Oct 2026 — "dauphin and leaf get life accurate movement connecting circles" | open |
 | 421 | Keep a hand's details in the lit picture |  | open |
-| 346 | Complications, systematized |  | open |
 | 349 | Each marker selectable and editable |  | open |
-| 522 | Paint finishes in show mode | 24 Oct 2026 | open |
-| 532 | Okay's list of 24 Oct 2026 for after v1: paint textures, dial finishes, print-like edges, lume view, the bezel, 3D indices, hand bevels, a 3D model | 24 Oct 2026 | collecting |
 
 ### Show mode's Dial tab — settled, built on Okay's word only (25 Oct 2026: "Stop asking to build, I'll tell you when")
 
@@ -103,6 +100,7 @@ Three places are made ready, each with a note that an SVG will go there: the moo
 
 | # | Item | From | Status |
 |---|---|---|---|
+| 522 | Finishes and materials in show mode: paint finishes, textures, dial finishes and a preview pipeline, print-like edges, lume view, the bezel, 3D indices, hand bevels, a 3D model | 24 Oct 2026; 1 Nov 2026 — "Merge into one: finishes and materials, Later" | later |
 | 19 | More hand styles |  | open |
 | 20 | Subdials |  | open |
 | 21 | Plotter output for the pen plotter via LightBurn |  | open |
@@ -115,7 +113,7 @@ Three places are made ready, each with a note that an SVG will go there: the moo
 | 176 | A fit section under Dial's sizes |  | later |
 | 177 | The am · pm disc as a ring of its own |  | later |
 | 362 | An Apple Watch preview | 18 Oct 2026 — "Future feature, some kind of preview for apple watch?" | open |
-| 363 | Non-round dials: square, rectangle, rounded rectangle, diamond | 18 Oct 2026 | open |
+| 363 | Non-round dials: square and rounded-square as an Apple Watch's first, then rectangle, rounded rectangle, diamond | 18 Oct 2026; 1 Nov 2026 — "Merge into one, keep in Later" | open |
 
 ## Parked
 
