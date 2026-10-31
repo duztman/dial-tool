@@ -1,60 +1,76 @@
 # Dial Tool — build list
 
-Numbered, never renumbered. Status: **open** · **verify** · **ask** · **parked**. Done items move to `docs/build-list-done.md`; the DrawBot version's to `archive/drawbot/build-list-drawbot.md`.
-*Last updated 25 Oct 2026, 4.94.9 (the docs made lean: rows here are one line each; the rows' full text, by number, is `build-list-notes.md`). Where an item came from is in its own words and dates.*
+Numbered, never renumbered. Status: **open** · **verify** · **ask** · **parked**. Done and removed items move to `docs/build-list-done.md`; the DrawBot version's to `archive/drawbot/build-list-drawbot.md`.
+*Last updated 1 Nov 2026, v1.1.7 beta. Rows here are one line each; a row's full text, by number, is `build-list-notes.md`. Where an item came from is in its own words and dates.*
 
-## v1 — settled with Okay, 21 Oct 2026
+v1 is out: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026: "We are past v1 as you know, beta counts as v1"). The "before v1" groups are dissolved into the ones below; the guide has a schedule of its own (Okay, 1 Nov 2026: "Guide will happen when it happens, not now. No link to a version just a sub project with its own loose schedule").
 
-Okay, 21 Oct 2026, 20:10: "Yes let's draft a definition and put square past v1. Now I believe we can release without square dials."
+## Now
 
-**v1 is the tool as it is, finished, plus SVG import** (Okay, 21 Oct 2026: SVG import in v1). Every question below answered or dropped, every dead end closed, the built things seen working on Okay's own machines, the words clean, then the full check (R19) and the name v1, without "beta", on Okay's word (brief §4, 20 Oct, 02:53). What is not in this section comes after v1.
+| # | Item | From | Status |
+|---|---|---|---|
+| 501 | The rest of the font library: Wiegel's other 25 from the Wiegel Archive and Railway Sans | 21 Oct 2026 — "a must"; 1 Nov 2026 — "let's finish fonts up" | build |
+| 548 | A visitor counter on the live site | 27 Oct 2026; 1 Nov 2026 — "yes do that, move it up" | build |
+| 494 | Compare at one size, as large as the canvas holds, and a real-size switch | 21 Oct 2026 — "One big, as big as what fits on the canvas, one real size option in preview" | build |
+| 552 | The Type pane opening jumps the panel's scroll | 31 Oct 2026 — "it should open in place, without moving up"; 1 Nov 2026: iPad, Safari | open — Safari only; try `overflow-anchor: none` on the panel's scroller |
 
-Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; the guide's next edition comes with v1; no brass dial before naming it; square dials after v1. The number: v1.0 (R19).
-
-### A · Answer (Okay)
+## Answer (Okay)
 
 | # | Item | From | Status |
 |---|---|---|---|
 | 294 | Off the scale as found |  | open |
 
-### B · Verify on Okay's Mac, iPad and phone
+## Verify on Okay's Mac, iPad and phone
 
 | # | Item | From | Status |
 |---|---|---|---|
 | 16 | Live text in the SVG |  | verify |
 | 439 | Backdrop's swatch loses its outline at times |  | verify |
-| 453 | FIT's left line on a phone | 21 Oct 2026 — "This fit losing border on mobile still an issue" | verify |
-| 552 | The Type pane opening jumps the panel's scroll | 31 Oct 2026 — "it should open in place, without moving up" | ask — not seen in Chromium; which machine and browser? |
-| 465 | Bevel not seen in 4.89.12 |  | verify |
-| 232 | Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch | 15 Oct 2026 | open |
-| 369 | "The preview gets these wonky orange parts" |  | verify |
+| 528 | Dramatic lighting: the darkness to confirm |  | built (4.94.19); verify |
 
-### C · Close the dead ends (R17)
+## Open
 
-| # | Item | From | Status |
-|---|---|---|---|
+### Features
 
-### D · Files and words
+#169 is the one Okay called core ("very very good… prioritize this", "core to our mission").
 
 | # | Item | From | Status |
 |---|---|---|---|
+| 169 | One strip for every position | — "very very good… prioritize this" | open |
+| 175 | A hand as a stack | 21 Oct 2026 — "bump up in importance" | open |
+| 184 | Snapping | 14 Oct 2026, on #85 | open |
+| 559 | Hover lights its part, sitewide: a ring's or window's row lights that thing on the dial | 18 Oct 2026 — "these preview gestures are sitewide"; split from #329 on 1 Nov 2026 | open |
+| 558 | Bracelet photo lighting: one snapshot-like light on any backdrop, soft outlines, many gradients | 24 Oct 2026, his photo; 26 Oct — "529 push to future"; split from #529 on 1 Nov 2026 | open |
+| 502 | Notices: every warning, error and note in the app looked through | 21 Oct 2026 | open |
+| 535 | Sliders that stop short, one slider at a time | 24 Oct 2026 — "Only where I hit it" | open |
+| 531 | Hand bevels: the join options Normal · Miter · Round |  | open (bring-back done, 4.92.10) |
+| 526 | The sun's picture on show mode's Light tab; the guides' list's foot | 24 Oct 2026 | open (the Shadows pane built) |
+| 52 | Named instances of variable fonts in the font box |  | open |
+| 83 | Positions law |  | open |
+| 484 | Square and rounded-square dials, as an Apple Watch's |  | open |
+| 404 | Dauphine and leaf hands: hubs as on a real movement | 19 Oct 2026 — "dauphin and leaf get life accurate movement connecting circles" | open |
+| 421 | Keep a hand's details in the lit picture |  | open |
+| 346 | Complications, systematized |  | open |
+| 349 | Each marker selectable and editable |  | open |
+| 497 | Resize Ring from on the canvas | 21 Oct 2026 | note |
+| 467 | A moon window's disc, as a date window's | 20 Oct 2026 | open |
+| 252 | Nudge's picker |  | open |
+| 339 | Nudge one numeral more intuitive |  | open |
+| 496 | A universal settings panel | 21 Oct 2026 | collecting |
+| 522 | Paint finishes in show mode | 24 Oct 2026 | open |
+| 532 | Okay's list of 24 Oct 2026 for after v1: paint textures, dial finishes, print-like edges, lume view, the bezel, 3D indices, hand bevels, a 3D model | 24 Oct 2026 | collecting |
 
-### E · With the release
+### Show mode's Dial tab — settled, built on Okay's word only (25 Oct 2026: "Stop asking to build, I'll tell you when")
 
 | # | Item | From | Status |
 |---|---|---|---|
-| 503 | The archive: screenshots, update pages, the progression strip | 21 Oct 2026 — "I want to be able to trace the progression later. A system for those as well?" | (3) open — with v1.0 |
-| 93 | Guidebook for the web version |  | in v1 |
+| 545 | Show mode's Dial tab: Colours · Inks · Hands | 25 Oct 2026 | locked, not built |
+| 546 | Its look: one swatch column, a lone colour spelled out | 25 Oct 2026 | settled, not built |
+| 547 | A line's show/hide as a dot | 25 Oct 2026 | settled, not built |
 
-### F · Changes from Okay's answers (21 Oct 2026)
+### SVG import — one mechanism (R34; R23 says how a file is read)
 
-| # | Item | From | Status |
-|---|---|---|---|
-| 494 | Compare at one size, as large as the canvas holds, and a real-size switch | 21 Oct 2026 — "One big, as big as what fits on the canvas, one real size option in preview" | build |
-
-### G · SVG import — after v1 (Okay, 24 Oct 2026: "Importing svg later")
-
-Every place an SVG can go, built as one mechanism (R34; R23 says how a file is read). The template file comes with it. For v1 only three places are made ready, each with a note that an SVG will go there: the moon window's picture, the am·pm window, and the dial (Okay, 24 Oct 2026: "spaces set. Moon, ampm, dial only"); #530.
+Three places are made ready, each with a note that an SVG will go there: the moon window's picture, the am·pm window, the dial (Okay, 24 Oct 2026: "spaces set. Moon, ampm, dial only"); #530 decided it.
 
 | # | Item | From | Status |
 |---|---|---|---|
@@ -64,89 +80,12 @@ Every place an SVG can go, built as one mechanism (R34; R23 says how a file is r
 | 466 | A moon window's Picture gets Custom…, which takes an SVG |  | open |
 | 405 | SVG inserts: a blank template file |  | open |
 
-### H · Small jobs, batch 1 (Okay, 21 Oct 2026: "Easy to do things: doing 10 of them and checking once is a solid job")
-
-Built in 4.91.3, with #149, #434, #495, #76, #231 from groups D and F and #453 (`docs/build-list-done.md`).
-
-| # | Item | From | Status |
-|---|---|---|---|
-
-### I · Medium, in v1 (Okay, 21 Oct 2026)
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 502 | Notices: every warning, error and note in the app looked through | 21 Oct 2026 | open |
-| 329 | Hovering a row lights its part on the picture at the left — "these preview gestures are sitewide" |  | v1 |
-| 52 | Named instances of variable fonts in the font box |  | v1 |
-| 398 | The stylesheet's values off the scale | 25 Oct 2026 | v1 |
-| 230 | Per-pane anchors from the app into the guide | 15 Oct 2026 — "Help next to beta number same font but underlined" | v1 |
-
-### J · Site and fonts (Okay, 21 Oct 2026)
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 501 | The rest of the font library in the list | 21 Oct 2026 — "Adding them into the site before v1 is a must" | in part |
-
-### K · Show mode — the Show Case merged into Dial Tool (Okay, 22 Oct 2026: "this is perfectly and mustly a part of v1 rollout. Most big and important part")
-
-The Show Case was built to be put into Dial Tool; its export stays. "Showcase UI is just to test the functionality … Logic will come from main. Only the color switching of the whole controls is well worked out. Delete the whole unnecessary stuff." In phases; before each, 10–20 questions, a report, then Okay's go. Elegance is the brief: "light as a feather … simplest, most elegant and lightweight way … without changing the looks and presentation".
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 489 | Dial Show Case into Dial Tool | 22 Oct 2026 | in v1 |
-| 506 | Phase 1, shadows |  | verify |
-| 509 | Phase 3 — show mode |  | built |
-
-### L · Before v1, Okay's notes of 24 Oct 2026 ("New crucial items before launch")
-
-From the gdoc "Dial tool notes", the Oct 24 block. Pictures are in the gdoc; Okay's words are quoted. Not built; ranked with him on Sunday 25 Oct.
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 513 | "Nudge one numeral" is named "Edit one numeral" and gets the ring's font, and with it colour |  | open |
-| 514 | The controller wider |  | built |
-| 522 | Paint finishes in show mode |  | after v1 |
-| 535 | Sliders that stop short | 24 Oct 2026 | open |
-| 536 | Help page and bug reports | 24 Oct 2026 | now |
-| 548 | A visitor counter on the live site | 27 Oct 2026 | open — not built until Okay says build |
-| 526 | The Sun's picture on the Light tab and the new Shadows popup | 24 Oct 2026 | the pane (4.94.4) and the Light tab's sun box (4.94.9) built; the guides' foot open |
-| 528 | Dramatic lighting more dramatic |  | built (4.94.19); the darkness to confirm |
-| 530 | SVG imports after v1 |  | decided |
-| 531 | Hand bevels lost on the tool side |  | done (bring back); the rest open |
-| 532 | After v1, from his list of 24 Oct |  | after v1 |
-| 540 | Font sheet, Okay's notes of 25 Oct 2026 | 25 Oct 2026 | open |
-
-## After v1
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 496 | A universal settings panel | 21 Oct 2026 | collecting |
-
-Open, in rough order of weight within each group. #169 is the one Okay called core ("very very good… prioritize this", "core to our mission"); #83 was marked Next on 13 Oct.
-
-### Features
-
-| # | Item | From | Status |
-|---|---|---|---|
-| 529 | Bracelets drawn half visible, round an imaginary wrist |  | after v1 (Okay, 26 Oct 2026: "529 push to future"); closed round a wrist built (4.94.18) |
-| 169 | One strip for every position | — "very very good… prioritize this" | after v1 |
-| 175 | A hand as a stack |  | after v1 |
-| 184 | Snapping | 14 Oct 2026, on #85 | after v1 |
-| 83 | Positions law |  | open |
-| 484 | Square and rounded-square dials, as an Apple Watch's |  | after v1 |
-| 404 | Dauphine and leaf hands: hubs as on a real movement | 19 Oct 2026 — "dauphin and leaf get life accurate movement connecting circles" | after v1 |
-| 421 | Keep a hand's details in the lit picture |  | after v1 |
-| 346 | Complications, systematized |  | after v1 |
-| 349 | Each marker selectable and editable |  | after v1 |
-| 497 | Resize Ring from on the canvas | 21 Oct 2026 | note |
-| 467 | A moon window's disc, as a date window's | 20 Oct 2026 | open |
-| 252 | Nudge's picker |  | open |
-| 339 | Nudge one numeral more intuitive |  | open |
-
 ### Interface and look
 
 | # | Item | From | Status |
 |---|---|---|---|
+| 540 | Font sheet, Okay's notes of 25 Oct 2026 | 25 Oct 2026 | open |
+| 398 | The stylesheet's values off the scale | 25 Oct 2026 | open |
 | 505 | The panel's colours from the Show Case | 21 Oct 2026 — "This is also a rule for show case when it comes" | open |
 | 75 | Usability review, the other tabs | 12 Oct 2026 | open |
 
@@ -160,10 +99,16 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | From | Status |
 |---|---|---|---|
-| 14 | Heavy dials |  | after v1 |
+| 14 | Heavy dials |  | open |
 | 403 | Playwright 1.56 → 1.64 |  | open |
 | 407 | The window test in sections that stand alone | 19 Oct 2026 | open |
 | 543 | `same.mjs`: the *first pane folded* and *guides list, two added* states differ between two runs of one build | 25 Oct 2026 | open |
+
+## The guide — its own schedule (Okay, 1 Nov 2026)
+
+| # | Item | From | Status |
+|---|---|---|---|
+| 93 | Guidebook for the web version: edition 2 | 1 Nov 2026 — "when it happens, not now" | on his word (R25) |
 
 ## Later
 
@@ -181,7 +126,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 176 | A fit section under Dial's sizes |  | later |
 | 177 | The am · pm disc as a ring of its own |  | later |
 | 362 | An Apple Watch preview | 18 Oct 2026 — "Future feature, some kind of preview for apple watch?" | open |
-| 363 | Non-round dials: square, rectangle, rounded rectangle, diamond | 18 Oct 2026 | after v1 |
+| 363 | Non-round dials: square, rectangle, rounded rectangle, diamond | 18 Oct 2026 | open |
 
 ## Parked
 
@@ -202,7 +147,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 395 | Place dials in the discs | — "I will announce when to cross to placing dials" | waiting for Okay's word |
 | 396 | With the large discs off the sides, the band between them and an edge can stay thin and white |  | noted |
 
-### Dial Show Case (`show-case/` on the branch `show-case-app`; live at `/show-case/`) — see group K above
+### Dial Show Case (`show-case/` on the branch `show-case-app`; live at `/show-case/`) — merged into Dial Tool as show mode (#489, #509, #510)
 
 | # | Item | From | Status |
 |---|---|---|---|
