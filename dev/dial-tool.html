@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.11 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.12 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -935,7 +935,7 @@
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
   .colour .dot { width: 1em; height: 1em; border-radius: var(--round-tiny); }      /* as large as its hex */
-  .colour .hex { display: inline-block; width: 7ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }      /* a hex's width whatever the word: R5015, or R210-50-3… cut (Okay, 30 Oct 2026: "pill size does not change, longer names get cropped") */
+  .colour .hex { display: inline-block; width: calc(7ch + var(--hair)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }      /* a hex's width whatever the word: R5015, or R210-50-3… cut (Okay, 30 Oct 2026: "pill size does not change, longer names get cropped"). Seven characters plus a hair: 7ch is the "0" advance rounded (Dial Mono, 12 px: 50.39), seven glyphs laid out are 50.41 — Safari showed "#F7F5E…" on the hair of overflow (Okay, 1 Nov 2026: "widen to incorporate all 7 chars") */
   .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: var(--round-tiny); vertical-align: calc(-1 * var(--hair)); }
   .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
   @media (hover: hover) { .swatch:hover { border-color: var(--ink); } }
@@ -7516,7 +7516,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.11 beta";
+var VERSION = "v1.1.12 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -18159,8 +18159,8 @@ var PANEL = {
     button.setAttribute("aria-expanded", "false");
   },
   /** keep what was pressed under the finger (Okay, 15 Oct 2026, 11:13: "Selecting reordering is impossible from
-   *  jumpiness"; 11:32, of the ways offered: "A and c together. Jumpiness is everywhere, not just on rings"). Safari,
-   *  on the iPad, has no scroll anchoring (caniuse, Oct 2026: no stable Safari nor iOS Safari has overflow-anchor), so
+   *  jumpiness"; 11:32, of the ways offered: "A and c together. Jumpiness is everywhere, not just on rings"). The
+   *  browser's own scroll anchoring is off on the form (overflow-anchor: none, 4a-panel.css); this does it, so
    *  when rows show, hide or move above what was pressed — the ring line moving to the ring just chosen, a "more" that
    *  opens — what is under the finger moves away. Here: a press in the rows (the pinned part or the scrolling form)
    *  notes where the pressed thing stands on screen; until a moment after the finger lifts, every frame scrolls the
@@ -18202,7 +18202,7 @@ var PANEL = {
         a = null;
         return;
       }
-      const row = t.closest("li.ring"), el2 = row || t.closest("button, input, label, .valueb, [role=radio]") || t;
+      const row = t.closest("li.ring"), fold = t.closest(".fold"), el2 = row || fold && fold.closest(".pane") || t.closest("button, input, label, .valueb, [role=radio]") || t;
       const going = !!a;
       a = { el: el2, y: el2.getBoundingClientRect().top, ring: row ? this.ring_rows().indexOf(row) : null, down: true, x0: e.clientX, y0: e.clientY, until: 0, holds: !!t.closest("input[type=range], .valueb") };
       if (!going) requestAnimationFrame(frame2);
