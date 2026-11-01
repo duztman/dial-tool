@@ -1,7 +1,7 @@
 # Dial Tool — build list, the notes
 
 The full text of every open row of `build-list.md`, in the list's order: what was asked, in Okay's words, what was tried and measured, what is open on it. Read a row here when you take its item up; the list itself is the one-line view. Done, folded and dropped items: `build-list-done.md`.
-*Last updated 1 Nov 2026 (v1.1.11 beta): #561 added; #552 built, to verify; #548 built, #16 closed, #560 added.*
+*Last updated 1 Nov 2026 (v1.1.12 beta): #561 added; #552 fixed, to verify; #548 built, #16 closed, #560 added.*
 
 ## Now — Okay said build
 
@@ -16,6 +16,7 @@ The full text of every open row of `build-list.md`, in the list's order: what wa
 |---|---|---|---|
 | 3 | 528 | **Dramatic lighting more dramatic**: a still spotlight, darker ground; the spotlight lights the ground to its real colour. Built 4.94.19: still and centred, the ground's own colour out to the case's edge, × 0.82 at 70 %, × 0.57 at the rim (`POOL_*` in `watch.js`). | verify: the darkness, Claude's reading of "darker" |
 | 4 | 439 | **Backdrop's swatch loses its outline at times** (Okay, 23:53: old Safari on an Intel Mac, the iPad too; his picture: the switch at rest on a dark red backdrop). Not reproduced in Chromium. Measured: the dot stands at x .25, y .5 of a pixel; its colour is painted under the outline too. Taken: `background-clip: padding-box` on the canvas's swatches (Backdrop, strap). If he still sees it, the dot onto whole pixels. | verify |
+| 5 | 552 | **The Type pane opening jumps the panel's scroll** (Okay, 31 Oct 2026, 00:25, his screenshot of the Rings tab with the ring drawer open: "This type pane opens and goes up to lose the scrolling and top padding, it should open in place, without moving up"; 1 Nov 2026, of the two readings offered — the ring list gives way, or the pane's heading stays put — "2"). The cause, measured in Chromium (`window.mjs`): the Type pane is bare (#319), so on opening its heading leaves the flow and its button moves down by (head − eye) / 2; the finger anchor (`finger_anchor`, `panel.js`) held *the button* where it was pressed and scrolled the form after it — the pane rode up 12 px, the form's scroll 0 → 12. Fixed v1.1.12 beta: a pressed heading anchors its pane, not its button; the check presses the Type pane's heading with the mouse and measures the pane's top before and after (0 px). Also on the form since v1.1.10: `overflow-anchor: none` (scroll anchoring shipped in Safari 27, caniuse Nov 2026; the tool keeps its own scroll). The earlier "not reproduced in Chromium" measured `scrollTop` around a programmatic fold, which never engages the anchor. | **fixed v1.1.12 beta, verify on the iPad** |
 
 ## Next — the features
 

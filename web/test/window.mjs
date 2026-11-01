@@ -1012,6 +1012,8 @@ check(/^true 0\.0 0\.0 0\.0 (\S+)\/\1$/.test(opened), `under the Show box a thin
 check(tick_up[0] === "hand-on-Show" && tick_up[1] === "Show" && tick_up[2] && tick_up[3] && tick_up[4] && show_under.every((u) => u === "0.0 0.0 0.0"), `the Show box (#261; 4.46.2): it grows down from the chosen tab, as wide as it, and goes with it (Hour, Seconds: ${show_under.join(" · ")}); a ground of its own, it holds Show; the hand's pane under it has no name line and no thick line`);
 const pill_gaps = await page.$eval(".form .colour", (e) => { const r = e.getBoundingClientRect(), d = e.querySelector(".dot").getBoundingClientRect(), h = e.querySelector(".hex").getBoundingClientRect(), row = e.closest(".row").getBoundingClientRect();
   return { gaps: [d.left - r.left, h.left - d.right, r.right - h.right, d.top - r.top, r.bottom - d.bottom, r.top - row.top, row.bottom - r.bottom], dot: d.height, type: parseFloat(getComputedStyle(e).fontSize) }; });
+const hex_fit = await page.$eval(".form .colour .hex", (h) => { const r = document.createRange(); r.selectNodeContents(h); return { text: h.textContent, box: h.getBoundingClientRect().width, ink: r.getBoundingClientRect().width }; });
+check(hex_fit.text.length === 7 && hex_fit.box >= hex_fit.ink, `a hex pill holds all seven characters, none cut to … (${hex_fit.text}: box ${hex_fit.box.toFixed(2)}, text ${hex_fit.ink.toFixed(2)}) (Okay, 1 Nov 2026: "widen to incorporate all 7 chars")`);
 check(pill_gaps.gaps.every((v) => Math.abs(v - 5.5) < 0.3) && pill_gaps.dot === pill_gaps.type, `a colour pill has one space seven times: beside, over and under its swatch, between swatch and hex, after the hex, from the pill to its row's two lines; the swatch is as high as the hex is set (${pill_gaps.gaps.map((v) => +v.toFixed(2)).join(" · ")}; ${pill_gaps.dot} = ${pill_gaps.type})`);
 await page.click("#hand-tab-2");
 check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.classList.contains("on")) && await page.$eval(".form .pane", (e) => e.classList.contains("headless")), "a tab chooses the hand; the tab names it, the pane under it has no name line (#261)");
@@ -2674,6 +2676,19 @@ await shot("10-bar");
   });
   check(r.shown && r.off && r.gone && r.lit && !r.cap_hour && r.cap_second,
     `a hand's Bevel beside Show while it is shown (${r.shown}; hidden with Show off: ${r.gone}), off to start (${r.off}), on: its hand bevelled (${r.lit}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
+}
+{ // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
+  const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });
+  const name = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_section = 1; t.S.ui_ring = t.S.rings.findIndex((r) => r.kind === 2); t.show_section(); t.sync_rows();
+    const r = t.rows.find((x) => x.fold && x.el.classList.contains("bare") && !x.el.hidden); t.fold(r, true); t.sync_rows(); return r.fold; });
+  await page.waitForTimeout(300);      // the fold's slide done, the form's height settled
+  const before = await page.evaluate((name) => { const t = window.dial_tool, r = t.rows.find((x) => x.fold === name);
+    const f = t.form.getBoundingClientRect(); t.form.scrollTop = Math.max(0, r.el.getBoundingClientRect().top - f.top + t.form.scrollTop - f.height / 3);      // the heading a third of the way down the form
+    const b = r.button.getBoundingClientRect(); return { x: b.left + 20, y: b.top + b.height / 2, top: r.el.getBoundingClientRect().top, scroll: t.form.scrollTop, name: r.fold }; }, name);
+  await page.mouse.click(before.x, before.y); await page.waitForTimeout(400);
+  const after = await page.evaluate((name) => { const t = window.dial_tool, r = t.rows.find((x) => x.fold === name); return { top: r.el.getBoundingClientRect().top, open: !t.is_folded(r), scroll: t.form.scrollTop }; }, before.name);
+  check(after.open && Math.abs(after.top - before.top) < 1, `the Type pane opens in place: its top at ${before.top.toFixed(1)} before the press, ${after.top.toFixed(1)} after, the form's scroll ${before.scroll} → ${after.scroll} (Okay, 31 Oct 2026: "it should open in place, without moving up"; #552)`);
+  await page.evaluate((w) => { const t = window.dial_tool; t.S.ui_section = w[0]; t.S.ui_ring = w[1]; t.show_section(); t.sync_rows(); t.form.scrollTop = w[2]; }, was);
 }
 { // every menu opens the tool's own list, a press anywhere on its box, never folding its pane (Okay, 20 Oct 2026, 01:05: "clicking 'centre' activates dropdown not collapse"; "the popping up thing on these, styled like mm dropdown. all around the site")
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring]; });

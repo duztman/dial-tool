@@ -8,7 +8,7 @@
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
   .colour .dot { width: 1em; height: 1em; border-radius: var(--round-tiny); }      /* as large as its hex */
-  .colour .hex { display: inline-block; width: 7ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }      /* a hex's width whatever the word: R5015, or R210-50-3… cut (Okay, 30 Oct 2026: "pill size does not change, longer names get cropped") */
+  .colour .hex { display: inline-block; width: calc(7ch + var(--hair)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }      /* a hex's width whatever the word: R5015, or R210-50-3… cut (Okay, 30 Oct 2026: "pill size does not change, longer names get cropped"). Seven characters plus a hair: 7ch is the "0" advance rounded (Dial Mono, 12 px: 50.39), seven glyphs laid out are 50.41 — Safari showed "#F7F5E…" on the hair of overflow (Okay, 1 Nov 2026: "widen to incorporate all 7 chars") */
   .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: var(--round-tiny); vertical-align: calc(-1 * var(--hair)); }
   .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
   @media (hover: hover) { .swatch:hover { border-color: var(--ink); } }

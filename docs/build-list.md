@@ -4,7 +4,7 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 1 Nov 2026 (v1.1.11 beta): #561 added; #552 built, to verify; #548 built, #16 closed, #560 added.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 1 Nov 2026 (v1.1.12 beta): #561 added; #552 fixed, to verify; #548 built, #16 closed, #560 added.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
@@ -19,7 +19,7 @@ Status words, four: **build** (Okay said build) · **verify** (built; Okay has n
 |---|---|---|---|---|
 | 3 | 528 | Dramatic lighting: is the darkness right (×0.57 at the rim, Claude's reading of "darker") | 24 Oct 2026 | verify (4.94.19) |
 | 4 | 439 | Backdrop's swatch loses its outline at times (old Safari, iPad; `background-clip: padding-box` taken) | 23 Oct 2026 | verify |
-| 5 | 552 | The Type pane opening jumps the panel's scroll on the iPad: `overflow-anchor: none` on the form (Safari 27 began anchoring); the one try (R20) | 31 Oct 2026 — "it should open in place, without moving up" | verify (v1.1.10) |
+| 5 | 552 | The Type pane rode up 12 px on opening (the finger anchor followed its heading's button, which moves when a bare pane opens); now the anchor holds the pane | 31 Oct 2026 — "it should open in place, without moving up"; 1 Nov 2026 — "2" | verify (v1.1.12) |
 
 ## Next — the features, in Okay's order, then easier → harder
 

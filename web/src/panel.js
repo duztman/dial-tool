@@ -904,8 +904,8 @@ export const PANEL = {
   },
 
   /** keep what was pressed under the finger (Okay, 15 Oct 2026, 11:13: "Selecting reordering is impossible from
-   *  jumpiness"; 11:32, of the ways offered: "A and c together. Jumpiness is everywhere, not just on rings"). Safari,
-   *  on the iPad, has no scroll anchoring (caniuse, Oct 2026: no stable Safari nor iOS Safari has overflow-anchor), so
+   *  jumpiness"; 11:32, of the ways offered: "A and c together. Jumpiness is everywhere, not just on rings"). The
+   *  browser's own scroll anchoring is off on the form (overflow-anchor: none, 4a-panel.css); this does it, so
    *  when rows show, hide or move above what was pressed — the ring line moving to the ring just chosen, a "more" that
    *  opens — what is under the finger moves away. Here: a press in the rows (the pinned part or the scrolling form)
    *  notes where the pressed thing stands on screen; until a moment after the finger lifts, every frame scrolls the
@@ -941,7 +941,8 @@ export const PANEL = {
     panel.addEventListener("pointerdown", (e) => {
       const t = e.target;
       if (!(t instanceof Element) || !t.closest(".form, .pinned") || t.closest("input[type=text], input:not([type]), textarea")) { a = null; return; }
-      const row = t.closest("li.ring"), el = row || t.closest("button, input, label, .valueb, [role=radio]") || t;
+      const row = t.closest("li.ring"), fold = t.closest(".fold"),
+        el = row || (fold && fold.closest(".pane")) || t.closest("button, input, label, .valueb, [role=radio]") || t;      // a heading pressed: the pane is what stays put, not the heading's button — a bare pane's heading moves when it opens (#552)
       const going = !!a;
       a = { el, y: el.getBoundingClientRect().top, ring: row ? this.ring_rows().indexOf(row) : null, down: true, x0: e.clientX, y0: e.clientY, until: 0, holds: !!t.closest("input[type=range], .valueb") };
       if (!going) requestAnimationFrame(frame);

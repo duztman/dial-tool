@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.12 beta · 1 Nov 2026 — the Type pane opens in place (#552); the hex pill whole
+
+Okay, 1 Nov 2026, 13:54: "2" (of: the ring list gives way, or the pane's heading stays put); 14:05: "widen to incorporate all 7 chars, see if it fucks up anywhere".
+
+- **A pressed heading anchors its pane** (`finger_anchor`, `panel.js`): the finger anchor used to hold the heading's *button* where it was pressed; a bare pane's button moves down by (head − eye) / 2 when the pane opens (its heading leaves the flow, #319), so the anchor scrolled the form after it and the pane rode up 12 px — the lost top padding. Measured in Chromium with a real press; now 0 px.
+- A check in `window.mjs` presses the Type pane's heading with the mouse and compares the pane's top before and after. It failed before the change (348.4 for 360.4) and passes after.
+- **The colour pill's hex holds all seven characters** (`4e-colour.css`): its box was `7ch`, the "0" advance rounded (50.39 px at 12 px Dial Mono); seven glyphs laid out are 50.41, and Safari cut the last to "…" on that hair of overflow. The box is `7ch` plus a hair (`--hair`). What moves (`same.mjs`): every colour pill and its hex 1 px wider, the colour pop-out 1 px with it; nothing else. A check in `window.mjs`: the hex's text no wider than its box.
+- Docs: #552's row in `build-list-notes.md` restored (dropped by the v1.1.10 edit).
+
 ## v1.1.11 beta · 1 Nov 2026 — the counter on Okay's code
 
 - `COUNTER_CODE` is `okayka`, his GoatCounter account (Okay, 1 Nov 2026, 13:27, his script tag: `https://okayka.goatcounter.com/count`). Nothing else changed.
