@@ -27,6 +27,7 @@ const INKED = [
   "#show-ten > .word",       // and its 10:10 pill (15 Oct 2026, 07:40)
   ".irisgo",                 // ACTIVATE SHOWCASE, beside the iris
   "#now",                    // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
+  ".gthick > button",        // the Guides list's Thickness 1 · 2 · 3 (Okay, 2 Nov 2026: "not ink centered")
 ].join(", ");
 
 const canvas = document.createElement("canvas");

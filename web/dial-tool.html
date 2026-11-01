@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.19 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.20 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -363,7 +363,7 @@
   .toggle { position: relative; flex: none; width: var(--toggle-w); height: var(--toggle-h); padding: 0; border: var(--hair) solid var(--uiblack, var(--ink)); border-radius: var(--round-pill); background: none; }      /* off: all black — its outline, its dot, its name (Okay, 24 Oct 2026, 19:40: "Off; colors all black") */
   .toggle > .knob { position: absolute; top: 50%; left: var(--u1); width: var(--toggle-dot); height: var(--toggle-dot); border-radius: 50%; background: var(--uiblack, var(--ink)); translate: 0 -50%; transition: left var(--iris-time) var(--view-ease), background var(--iris-time); }
   .toggle[aria-checked="true"] { background: var(--uiblack, var(--ink)); border-color: var(--uiblack, var(--ink)); }
-  .toggle[aria-checked="true"] > .knob { left: calc(100% - var(--u1) - var(--toggle-dot)); background: var(--white); }
+  .toggle[aria-checked="true"] > .knob { left: calc(100% - var(--u1) - var(--toggle-dot)); background: var(--uiknob, var(--white)); }      /* --uiknob: the knob on a dark ground, where the filled track is white (the Guides list) */
   /* free: each choice a pill of its own, wrapping, a half unit apart (#524; Okay, 24 Oct 2026: "Options can be free living single pills") */
   .pillswitch.free { flex-wrap: wrap; gap: var(--u1); padding: var(--u1) 0; border: 0; background: none; }
   .pillswitch.free > button { border: var(--hair) solid var(--rule); background: var(--field); }
@@ -1772,6 +1772,8 @@
   .guidesheet .guidesettings .pillswitch.free { flex-wrap: nowrap; gap: var(--u2); padding: 0; background: none; }
   .guidesheet .guidesettings .pillswitch.free > button { border: var(--hair) solid var(--rule); background: var(--paper); }
   .guidesheet .guidesettings .pillswitch:not(.free) > button { height: calc(100% - 2 * var(--u1)); margin: var(--u1) 0; }
+  .guidesheet .guidesettings .gthick > button { font-size: var(--t-m); }      /* 1 · 2 · 3 at the rows' size: the pill is taller than the words it had (Okay, 2 Nov 2026: "too small for these numbers"); centred on their ink (ink.js) */
+  .guidesheet .guidesettings { --uiblack: var(--white); --uiknob: var(--night); }      /* the Snap to guides toggle on the dark ground: a white outline and dot off; on, a white track with the dot dark (Okay, 2 Nov 2026: "Snap on disappears? Dot should be black?") */
   .guidesheet .guidesettings .pillswitch:not(.free) { padding: 0 var(--u1); }
   .guidelist.guidesheet .guidelast { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; column-gap: var(--u2); align-items: center; height: var(--guide-row); margin-inline: 0; padding: 0; background: none; }
   .guidelist.guidesheet .guidelast > label:first-child { color: var(--grey); }
@@ -7531,7 +7533,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.19 beta";
+var VERSION = "v1.1.20 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11595,8 +11597,10 @@ var INKED = [
   // and its 10:10 pill (15 Oct 2026, 07:40)
   ".irisgo",
   // ACTIVATE SHOWCASE, beside the iris
-  "#now"
+  "#now",
   // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
+  ".gthick > button"
+  // the Guides list's Thickness 1 · 2 · 3 (Okay, 2 Nov 2026: "not ink centered")
 ].join(", ");
 var canvas = document.createElement("canvas");
 var pen = canvas.getContext("2d");

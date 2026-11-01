@@ -36,7 +36,7 @@
   .toggle { position: relative; flex: none; width: var(--toggle-w); height: var(--toggle-h); padding: 0; border: var(--hair) solid var(--uiblack, var(--ink)); border-radius: var(--round-pill); background: none; }      /* off: all black — its outline, its dot, its name (Okay, 24 Oct 2026, 19:40: "Off; colors all black") */
   .toggle > .knob { position: absolute; top: 50%; left: var(--u1); width: var(--toggle-dot); height: var(--toggle-dot); border-radius: 50%; background: var(--uiblack, var(--ink)); translate: 0 -50%; transition: left var(--iris-time) var(--view-ease), background var(--iris-time); }
   .toggle[aria-checked="true"] { background: var(--uiblack, var(--ink)); border-color: var(--uiblack, var(--ink)); }
-  .toggle[aria-checked="true"] > .knob { left: calc(100% - var(--u1) - var(--toggle-dot)); background: var(--white); }
+  .toggle[aria-checked="true"] > .knob { left: calc(100% - var(--u1) - var(--toggle-dot)); background: var(--uiknob, var(--white)); }      /* --uiknob: the knob on a dark ground, where the filled track is white (the Guides list) */
   /* free: each choice a pill of its own, wrapping, a half unit apart (#524; Okay, 24 Oct 2026: "Options can be free living single pills") */
   .pillswitch.free { flex-wrap: wrap; gap: var(--u1); padding: var(--u1) 0; border: 0; background: none; }
   .pillswitch.free > button { border: var(--hair) solid var(--rule); background: var(--field); }

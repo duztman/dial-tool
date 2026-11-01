@@ -1,10 +1,10 @@
 # Handoff — where things stand
 
-*§1 is rewritten at every handover (last on 2 Nov 2026, v1.1.19 beta, the stroke's folds); §2 says how. Everything else a successor needs is in `CLAUDE.md` (the read order, the loop) and `working-with-okay.md`.*
+*§1 is rewritten at every handover (last on 2 Nov 2026, v1.1.20 beta, the Guides list's toggle); §2 says how. Everything else a successor needs is in `CLAUDE.md` (the read order, the loop) and `working-with-okay.md`.*
 
-## 1 · Where things stand (1 Nov 2026, 01:00; v1.1.19 beta on `dev` and /dev/, v1.0 beta on `main` and the released page)
+## 1 · Where things stand (1 Nov 2026, 01:20; v1.1.20 beta on `dev` and /dev/, v1.0 beta on `main` and the released page)
 
-- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **v1.1.19 beta**; <https://duztman.github.io/dial-tool/> and `main` are **v1.0 beta**. The step to `main` is Okay's to run (`tools/release.sh 1.2 "first line"`; a session's safety check refuses a production deploy). The Help page is at </help/> (`guide/help/`, published on his word with `guide/help/publish.sh`).
+- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **v1.1.20 beta**; <https://duztman.github.io/dial-tool/> and `main` are **v1.0 beta**. The step to `main` is Okay's to run (`tools/release.sh 1.2 "first line"`; a session's safety check refuses a production deploy). The Help page is at </help/> (`guide/help/`, published on his word with `guide/help/publish.sh`).
 - **The docs' audit (1 Nov 2026, night)**: the build list is one ordered list (the order column is now → future, easier → harder; the # stays the item's name), folded rows and finished items out; the rules index gives each rule a learning order and a name (R-numbers unchanged — code and tests cite them); brief §5–§8, the rule pages, the Project prompt and this page brought in line. Okay's instruction for the session: research first, docs only, no building, nothing asked that the docs already answer.
 - **The counter (#548) is built** (v1.1.9 beta), asleep until the step to `main`; Okay must make the GoatCounter account with the code `okayka` (or say his code: `COUNTER_CODE` in `web/build.mjs`).
 - **Now** is empty: every Now item of 1 Nov 2026 is built; #184 snapping is built with its switches (verify). **Okay said build**: #564 the font sheet's next round (#563 done); #562 (the sheet's head, his drawing) is next after those, not now. Then #169 (draw first). The whole window test passes (#561 mended).

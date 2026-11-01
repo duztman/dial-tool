@@ -207,6 +207,8 @@
   .guidesheet .guidesettings .pillswitch.free { flex-wrap: nowrap; gap: var(--u2); padding: 0; background: none; }
   .guidesheet .guidesettings .pillswitch.free > button { border: var(--hair) solid var(--rule); background: var(--paper); }
   .guidesheet .guidesettings .pillswitch:not(.free) > button { height: calc(100% - 2 * var(--u1)); margin: var(--u1) 0; }
+  .guidesheet .guidesettings .gthick > button { font-size: var(--t-m); }      /* 1 · 2 · 3 at the rows' size: the pill is taller than the words it had (Okay, 2 Nov 2026: "too small for these numbers"); centred on their ink (ink.js) */
+  .guidesheet .guidesettings { --uiblack: var(--white); --uiknob: var(--night); }      /* the Snap to guides toggle on the dark ground: a white outline and dot off; on, a white track with the dot dark (Okay, 2 Nov 2026: "Snap on disappears? Dot should be black?") */
   .guidesheet .guidesettings .pillswitch:not(.free) { padding: 0 var(--u1); }
   .guidelist.guidesheet .guidelast { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; column-gap: var(--u2); align-items: center; height: var(--guide-row); margin-inline: 0; padding: 0; background: none; }
   .guidelist.guidesheet .guidelast > label:first-child { color: var(--grey); }

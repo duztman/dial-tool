@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.20 beta · 2 Nov 2026 — the Guides list's toggle and numbers
+
+Okay, 2 Nov 2026, 00:29: "Snap on disappears? Dot should be black? These pills are too small for these numbers and they are not ink centered."
+
+- **The toggle on the dark ground** (`6-preview.css`, `3-controls.css`): the Guides list sets `--uiblack` white and a new `--uiknob` dark, so Snap to guides shows a white outline and dot off, and on, a white track with a dark dot — it had filled black on black.
+- **Thickness 1 · 2 · 3** at the rows' size (`--t-m`) and centred on their ink (`ink.js`, the pill's buttons listed).
+
 ## v1.1.19 beta · 2 Nov 2026 — the stroke's slivers in counters gone (#563)
 
 Okay, 1 Nov 2026, 23:39, his screenshot (Saira 800, stroke 0.28 outside): "The stroke at an exact point here gets a glitch inside shapes like 8 and 9".
