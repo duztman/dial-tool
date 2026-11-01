@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.18 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.19 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7531,7 +7531,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.18 beta";
+var VERSION = "v1.1.19 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -9175,8 +9175,47 @@ function sector(r_in, r_out, a0, a1) {
 }
 function offset(p, d, join = "Round") {
   if (empty(p) || abs(d) < 1e-6) return p;
-  const band = p.expandStroke(2 * abs(d), join);
-  return d > 0 ? p.union(band) : p.difference(band);
+  const area = (c) => {
+    const pts = c._points();
+    return pts.reduce((sum, q, i2) => sum + q[0] * pts[(i2 + 1) % pts.length][1] - pts[(i2 + 1) % pts.length][0] * q[1], 0);
+  };
+  const outers = new Path(), holes = new Path();
+  for (const c of p.contours()) (area(c) < 0 ? holes : outers).appendPath(c);
+  const moved = (q, s) => {
+    if (empty(q)) return q;
+    const band = q.expandStroke(2 * abs(s), join);
+    const out = new Path();
+    if (s > 0) {
+      const grown = q.union(band), cs = grown.contours();
+      if (cs.length < 2) return grown;
+      for (const c of cs) if (area(c) > 0) out.appendPath(c);
+      return out;
+    }
+    const box3 = (pts) => pts.reduce(([x0, y0, x1, y1], [x2, y]) => [min(x0, x2), min(y0, y), max(x1, x2), max(y1, y)], [Infinity, Infinity, -Infinity, -Infinity]);
+    const edges = q.contours().map((c) => {
+      const pts = c._points();
+      return { pts, box: box3(pts) };
+    }), reach = abs(s) * 0.97;
+    for (const c of q.difference(band).contours()) {
+      const pts = c._points();
+      if (pts.length < 3) continue;
+      const [x0, y0, x1, y1] = box3(pts), r = abs(s) * 1.05;
+      const near2 = edges.filter((e) => e.box[0] <= x1 + r && e.box[2] >= x0 - r && e.box[1] <= y1 + r && e.box[3] >= y0 - r).map((e) => e.pts);
+      if (pts.every((pt) => distance_to(pt, near2) >= reach)) out.appendPath(c);
+    }
+    return out;
+  };
+  const o = moved(outers, d), h = moved(holes, -d);
+  return empty(h) ? o : o.difference(h);
+}
+function distance_to(pt, outlines) {
+  let best = Infinity;
+  for (const pts of outlines) for (let i2 = 0, j = pts.length - 1; i2 < pts.length; j = i2++) {
+    const [ax, ay] = pts[j], [bx, by] = pts[i2], dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
+    const k = len2 ? Math.max(0, Math.min(1, ((pt[0] - ax) * dx + (pt[1] - ay) * dy) / len2)) : 0;
+    best = Math.min(best, Math.hypot(pt[0] - (ax + k * dx), pt[1] - (ay + k * dy)));
+  }
+  return best;
 }
 var has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && ["numerals", "text", "ticks", "markers", "band"].includes(KINDS[ring.kind]));
 function stroke_outline(p, w, side, join) {
