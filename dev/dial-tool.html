@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.15 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.16 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7520,7 +7520,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.15 beta";
+var VERSION = "v1.1.16 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -9453,6 +9453,25 @@ function text_band(ring) {
   const h = cap_box(ring, ring.size), cap = h ? h[3] - h[1] : ring.size * 0.7;
   const mid = ring.r + band_side(ring) * cap / 2;
   return [max(mid - cap / 2, 0), mid + cap / 2];
+}
+function ring_edges(ring) {
+  const kind = kind_of(ring);
+  if (has_text(ring)) {
+    const [inner, outer2] = text_band(ring);
+    return [ring.r, inner, outer2];
+  }
+  const ext = kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
+  const outer = ring.r + from_shift(ring, ext);
+  return [ring.r, outer - ext, outer];
+}
+function snap_radii(S, except = -1) {
+  const out = /* @__PURE__ */ new Set();
+  S.rings.forEach((ring, i2) => {
+    if (ring.on && i2 !== except) {
+      for (const r of ring_edges(ring)) if (r > 0) out.add(+r.toFixed(3));
+    }
+  });
+  return [...out].sort((a, b) => a - b);
 }
 var band_side = (ring) => ({ "outer edge": -1, "inner edge": 1 })[ANCHORS[ring.anchor]] || 0;
 function radius_kept(ring, key, to) {
@@ -11536,8 +11555,8 @@ function offset2(text, style) {
     const ink_y = (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
     const box_y = (Math.round(m.fontBoundingBoxDescent) - Math.round(m.fontBoundingBoxAscent)) / 2;
     const dot = 1 / (window.devicePixelRatio || 1);
-    const snap = (v) => Math.round(v / dot) * dot;
-    known.set(key, [snap(m.width / 2 - ink_x + track2 / 2), snap(box_y - ink_y)]);
+    const snap2 = (v) => Math.round(v / dot) * dot;
+    known.set(key, [snap2(m.width / 2 - ink_x + track2 / 2), snap2(box_y - ink_y)]);
   }
   return known.get(key);
 }
@@ -11681,6 +11700,12 @@ var LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => 
 var is_day = (T) => Boolean(T && T.on && WINDOW_KINDS[T.kind] === "am \xB7 pm");
 var moon_look = (T) => T && T.on && WINDOW_KINDS[T.kind] === "moon phase" ? T.look || 0 : -1;
 var KIND_TAB_KEYS = Object.keys(WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));
+var SNAP_PX = 6;
+var snap = (value, targets, reach) => {
+  let best = null;
+  for (const t of targets) if (Math.abs(t - value) <= reach && (best === null || Math.abs(t - value) < Math.abs(best - value))) best = t;
+  return best === null ? { v: value, hit: false } : { v: best, hit: true };
+};
 var HANDLE_AXIS = 4;
 var HANDLE_R = 5.5;
 var HANDLE_OUT = 14;
@@ -19316,7 +19341,8 @@ var HANDS3 = {
       const out = { len: d.lying ? dx : -dy, tail: d.lying ? -dx : dy, w1: d.lying ? -dy : -dx, w2: d.lying ? dy : dx }[d.name];
       const v = d.v0 + (d.key === "w" || d.key === "disc_d" ? 2 * out : out);
       const R = d.row, step = R.step;
-      this.set_value("hand", d.key, +clamp(Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
+      const s = d.key === "len" ? snap(v, snap_radii(this.S), SNAP_PX / d.scale) : { v, hit: false };
+      this.set_value("hand", d.key, +clamp(s.hit ? s.v : Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
     });
     const end = () => {
       if (!this.hand_drag) return;
@@ -20098,9 +20124,14 @@ var PREVIEW = {
       d.angle = ((d.angle + turned2 * (round2 ? fine : 1)) % 360 + 360) % 360;
       d.last_d = d_now;
       d.last_a = a_now;
-      const dist = d.dist, angle = d.angle;
+      const angle = d.angle;
+      const dist = round2 ? d.dist : (() => {
+        const s = snap(d.dist, snap_radii(this.S, this.S.ui_ring), SNAP_PX / this.z);
+        this.snapped_to = s.hit ? s.v : null;
+        return s.v;
+      })();
       this.guides_live();
-      if (d.what === "radius") return this.set_value("ring", "r", +Math.max(dist, 0.05).toFixed(2));
+      if (d.what === "radius") return this.set_value("ring", "r", +Math.max(dist, 0.05).toFixed(3));
       if (d.what === "size") {
         const reach = Math.max((dist - d.r0) * d.side, 0.02);
         return this.set_value("ring", d.key, +(d.v0 * reach / d.reach).toFixed(3));
@@ -20116,6 +20147,7 @@ var PREVIEW = {
     const end = () => {
       this.handle_drag = null;
       this.more_drag = null;
+      this.snapped_to = null;
       H2.classList.remove("dragging");
     };
     H2.addEventListener("pointerup", end);
@@ -20195,6 +20227,7 @@ var PREVIEW = {
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
     } else if (!S.ui_show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };
     else if (!S.ui_show && !S.guides && S.ui_section === 1 && this.ring()?.on) S = { ...S, guides: true, gd_axes: false, gd_hole: false, gd_rings: false, gd_sel: true, gd_wins: false, gd_wsel: false, gd_more: [] };
+    if (this.snapped_to && !S.ui_show) S = { ...S, guides: true, gd_more: [...S.gd_more || [], { kind: GUIDE_MORE.indexOf("circle"), r: this.snapped_to, k: S.gd_k_sel ?? 0 }] };
     this.guides_drawn = S.guides;
     const day = shows_day(S) ? day_hour(S) : null;
     if (day !== this.day_drawn) {
