@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.8 beta · built 2026-10-31 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.9 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -2276,6 +2276,14 @@ globalThis.__DIAL = {
   bytes(name) { const s = atob(this.packed[name]), out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; },      // a plain loop: Uint8Array.from with a function was the page's single largest cost at start (154 ms of 740, measured 25 Oct 2026)
 };
 window.addEventListener("error", (e) => { const a = document.getElementById("app"); if (a && a.textContent.startsWith("Starting")) a.innerHTML = '<p class="starting">Dial Tool couldn’t start: ' + e.message + '</p>'; });
+// The visitor counter (#548): GoatCounter, no cookies, on the released page only (Okay, 1 Nov 2026: "goat counter is
+// good, we only count main"). It runs when this page is https://duztman.github.io/dial-tool/ and nowhere else — not
+// on /dev/ (its loader keeps that address), /show-case/, /help/, nor a file opened from disk. It sends the path only:
+// a dial's link carries the whole dial after ? and #, and none of that leaves the page.
+if (location.host === "duztman.github.io" && /^\/dial-tool\/(index\.html)?$/.test(location.pathname)) {
+  window.goatcounter = { path: location.pathname, title: "Dial Tool" };
+  const s = document.createElement("script"); s.async = true; s.src = "https://gc.zgo.at/count.js"; s.dataset.goatcounter = "https://dial-tool.goatcounter.com/count"; document.head.append(s);
+}
 </script>
 <script type="module">
 var __create = Object.create;
@@ -7505,7 +7513,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.8 beta";
+var VERSION = "v1.1.9 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
