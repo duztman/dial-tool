@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.16 beta · 1 Nov 2026 — snapping to rings' edges (#184)
+
+Okay, 14 Oct 2026 (on #85): "while resizing that, it would be nice if it could 'snap' places"; 1 Nov 2026: "#184 first"; "Yep go".
+
+- **Snapping on the drag handles**: a ring's radius handle and size handle (`preview.js`) and a hand's Length grip (`hands.js`) land exactly on another ring's edge when within **6 screen points** of it (`SNAP_PX`, `ui.js`); farther, they move freely. The edges: where each shown ring's radius measures to, and the inner and outer ends of what it draws — a mark's length, a dot's Ø, a band's width, a numeral's cap band (`ring_edges`, `snap_radii` in `geometry.js`); the ring being dragged is left out of its own targets. Sliders and typed numbers do not snap (Okay's reading: "while dragged").
+- **The edge shows while it holds**: a ring handle snapped draws that edge as a guide circle in the selected ring's colour, gone when the pointer leaves it or lets go.
+- A hand's snapped Length is kept whole (the 0.05 step would carry it off the edge again). #85, Max Bill's tip on a ring's edge, is this.
+- A check in `window.mjs`: the radius handle dragged to 4 px past ring 1's radius lands on it (14.4 mm) and shows it; 30 px on it is free again. The hand's grip tried by hand in Chromium: 8.25 → 13.83 mm, the tick ring's radius.
+
 ## v1.1.15 beta · 1 Nov 2026 — the axis rows ruled apart; the wheel on the style tabs
 
 Okay, 1 Nov 2026, 21:47: "Mouse scroll scrolls the tabs on fonts. Why don't you draw the lines between these, it's a rule, no?"

@@ -125,6 +125,9 @@ export const moon_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "moon p
 
 export const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
 
+export const SNAP_PX = 6;          // snapping (#184): a dragged radius or length within this many screen points of a ring's edge lands on it
+/** the nearest of `targets` within `reach` of `value`, else `value` itself. → {v, hit}: hit true when it snapped */
+export const snap = (value, targets, reach) => { let best = null; for (const t of targets) if (Math.abs(t - value) <= reach && (best === null || Math.abs(t - value) < Math.abs(best - value))) best = t; return best === null ? { v: value, hit: false } : { v: best, hit: true }; };
 export const HANDLE_AXIS = 4;      // a hand's width handle (#368, 4.80): how far it is dragged, in screen points, before it is known whether across or along
 
 export const HANDLE_R = 5.5, HANDLE_OUT = 14, HANDLE_REACH = 14, HANDLE_SEAT = 10;      // HANDLE_SEAT: the radius of the disc a handle sits in (#486)      // a guide handle (4.65): its half-size, how far beyond the ring's outer edge the angle handles stand, the radius a press reaches it within — screen points at any zoom

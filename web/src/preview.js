@@ -6,7 +6,7 @@ import * as G from "./geometry.js";
 import { svg_document } from "./output.js";
 import { frame, KINDS } from "./watch.js";
 import * as SHOW from "./show.js";      // show mode: the watch round the dial, its tabs, its export (#509)
-import { $, FINE, FINE_FREE, HANDLE_OUT, HANDLE_R, HANDLE_REACH, HANDLE_SEAT, HOLE_LIVE_MS, TINY_EVERY, clamp, el, from_hex, paint, svg_el, to_hex } from "./ui.js";
+import { $, FINE, FINE_FREE, HANDLE_OUT, HANDLE_R, HANDLE_REACH, HANDLE_SEAT, HOLE_LIVE_MS, SNAP_PX, TINY_EVERY, clamp, el, from_hex, paint, snap, svg_el, to_hex } from "./ui.js";
 import { SIGNS, TOOL_ICONS, eye, icon } from "./icons.js";
 import { merges_of } from "./rows.js";
 
@@ -349,9 +349,12 @@ export const PREVIEW = {
       const fine = FINE(Math.max(stray - FINE_FREE, 0));
       d.dist = Math.max(d.dist + (d_now - d.last_d) * (round ? 1 : fine), 0); d.angle = ((d.angle + turned * (round ? fine : 1)) % 360 + 360) % 360;
       d.last_d = d_now; d.last_a = a_now;
-      const dist = d.dist, angle = d.angle;
+      const angle = d.angle;
+      // snapping (#184): the radius, or the edge the size handle moves, lands on another ring's edge when within SNAP_PX
+      // of it on screen (this.z: screen points per mm); the snapped-to edge is shown by the guides (snapped_to)
+      const dist = round ? d.dist : (() => { const s = snap(d.dist, G.snap_radii(this.S, this.S.ui_ring), SNAP_PX / this.z); this.snapped_to = s.hit ? s.v : null; return s.v; })();
       this.guides_live();
-      if (d.what === "radius") return this.set_value("ring", "r", +Math.max(dist, 0.05).toFixed(2));
+      if (d.what === "radius") return this.set_value("ring", "r", +Math.max(dist, 0.05).toFixed(3));
       if (d.what === "size") {                       // the edge follows the pointer: the value grows as its reach from the dotted line does
         const reach = Math.max((dist - d.r0) * d.side, 0.02);
         return this.set_value("ring", d.key, +(d.v0 * reach / d.reach).toFixed(3));
@@ -363,7 +366,7 @@ export const PREVIEW = {
       d.prev = span = Math.min(Math.max(Math.round(span), 1), 360);
       this.set_value("ring", "span", span);
     });
-    const end = () => { this.handle_drag = null; this.more_drag = null; H.classList.remove("dragging"); };
+    const end = () => { this.handle_drag = null; this.more_drag = null; this.snapped_to = null; H.classList.remove("dragging"); };
     H.addEventListener("pointerup", end);
     H.addEventListener("pointercancel", end);
   },
@@ -436,6 +439,7 @@ export const PREVIEW = {
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
     } else if (!S.ui_show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };      // a number being slid: the guides as set; a numeral being nudged: none (guides_live)
     else if (!S.ui_show && !S.guides && S.ui_section === 1 && this.ring()?.on) S = { ...S, guides: true, gd_axes: false, gd_hole: false, gd_rings: false, gd_sel: true, gd_wins: false, gd_wsel: false, gd_more: [] };      // on the Rings tab the selected ring's guide shows with its handles, the guides off or on (Okay, 04:52: "Handles and guides show together at all times")
+    if (this.snapped_to && !S.ui_show) S = { ...S, guides: true, gd_more: [...(S.gd_more || []), { kind: G.GUIDE_MORE.indexOf("circle"), r: this.snapped_to, k: S.gd_k_sel ?? 0 }] };      // a handle snapped to a ring's edge (#184): that edge drawn as a guide circle while it holds
     this.guides_drawn = S.guides;      // the handles show when the guides do (draw_handles)
     const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
     if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }

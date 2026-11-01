@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.15 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.16 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -1350,6 +1350,25 @@ export function text_band(ring) {
   const mid = ring.r + band_side(ring) * cap / 2;
   return [max(mid - cap / 2, 0), mid + cap / 2];
 }
+/** every edge a ring has, in mm from the centre: where its radius measures to and the inner and outer ends of what it
+ *  draws (a mark's length, a dot's Ø, a band's width, a numeral's cap band). → [r, inner, outer], the same twice when
+ *  they fall together. */
+export function ring_edges(ring) {
+  const kind = kind_of(ring);
+  if (has_text(ring)) { const [inner, outer] = text_band(ring); return [ring.r, inner, outer]; }
+  const ext = kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
+  const outer = ring.r + from_shift(ring, ext);
+  return [ring.r, outer - ext, outer];
+}
+
+/** the radii a dragged length or radius snaps to (#184; Okay, 14 Oct 2026: lengths and radii "snap to rings' edges
+ *  while dragged"): every edge of every ring shown, but the ring being dragged (`except`, its index). Sorted, no doubles. */
+export function snap_radii(S, except = -1) {
+  const out = new Set();
+  S.rings.forEach((ring, i) => { if (ring.on && i !== except) for (const r of ring_edges(ring)) if (r > 0) out.add(+r.toFixed(3)); });
+  return [...out].sort((a, b) => a - b);
+}
+
 /** −1 the outer circle holds still (the band lies inside it), +1 the inner, 0 the middle */
 const band_side = (ring) => ({ "outer edge": -1, "inner edge": 1 })[ANCHORS[ring.anchor]] || 0;
 

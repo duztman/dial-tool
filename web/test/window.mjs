@@ -3065,6 +3065,26 @@ await touch.close();
   check(look[0] >= 3 && look[0] === look[1] && r1 - r0 > 0.05 && r1 - r0 < 0.8 && even.every((w) => w === even[0]) && chev[1] === String(chev[0]),
     `with the guides off the selected ring's ${look[0]} handles show, each on a disc (#486); a mm out at 80 px to the side moves its radius ${(r1 - r0).toFixed(2)} mm, not 1 (#486, as #406); the steps' chevron pale when there are no steps (${chev.join(" ")}; #481); Settings' buttons one width (${even.join(" ")}; #482)`);
 }
+{ // snapping (#184; Okay, 14 Oct 2026: lengths and radii "snap to rings' edges while dragged"): a radius handle dragged to within 6 px of another ring's edge lands on it exactly, and that edge is drawn while it holds
+  await tab("Rings");
+  const snapped = await page.evaluate(() => { const t = window.dial_tool, S = t.S; t.S.guides = false; t.select_ring(0); t.render();
+    const other = S.rings.map((r, i) => [r, i]).find(([r, i]) => r.on && i !== 0 && Math.abs(r.r - S.rings[0].r) > 1.5);      // a ring whose radius differs from the selected one's
+    return { r0: S.rings[0].r, target: other[0].r, idx: other[1] }; });
+  const h = await page.evaluate(() => { const r = document.querySelector('.handles .handle[data-handle="radius"] .seat').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+  const c = await page.evaluate(() => { const b = document.querySelector("main svg").getBoundingClientRect(), t = window.dial_tool; return [b.left + t.c[0], b.top + t.c[1], t.z]; });
+  const u = [h[0] - c[0], h[1] - c[1]], l = Math.hypot(...u), out = [u[0] / l, u[1] / l];
+  const aim = snapped.target * c[2] + 4;      // the pointer 4 px past the target's edge, in screen points from the centre — inside the 6 px reach
+  await page.mouse.move(...h); await page.mouse.down();
+  for (let k = 1; k <= 12; k++) { const d = l + (aim - l) * k / 12; await page.mouse.move(c[0] + out[0] * d, c[1] + out[1] * d); }
+  await frame();
+  const held = await page.evaluate(() => [window.dial_tool.S.rings[0].r, window.dial_tool.snapped_to]);
+  await page.mouse.move(c[0] + out[0] * (aim + 30), c[1] + out[1] * (aim + 30)); await frame();      // 30 px on: off the edge again, free
+  const freed = await page.evaluate(() => [window.dial_tool.S.rings[0].r, window.dial_tool.snapped_to]);
+  await page.mouse.up(); await frame();
+  await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), snapped.r0);
+  check(held[0] === snapped.target && held[1] === snapped.target && freed[1] === null && Math.abs(freed[0] - snapped.target) > 0.3,
+    `a radius handle dragged to 4 px past ring ${snapped.idx}'s radius (${snapped.target} mm) snaps to it (${held[0]}) and that edge is shown while it holds (${held[1]}); 30 px on it is free again (${freed[0]}, ${freed[1]}) (#184)`);
+}
 { // the windows' discs (4.72, #346; 4.88 — Okay, 19 Oct 2026: "Xray makes the unseen full visible, sensible z height differences (not editable) and a stacking order. Selected shows above all others. Top is 100% opacity, with a white dotted outline, below gets -15 opacity gradually"): X-ray, a switch under Guides while a date, day or am · pm window is on, draws every disc whole in a stack — the selected window's on top, full, dotted white; the hands, the face and the other discs each 15 % fainter than the one above; the disc's edges are dashed guides; physics on, a disc past the case turns its outer edge red and the panel says by how much
   await tab("Date");
   const was = await page.evaluate(() => { const t = window.dial_tool; return JSON.stringify([t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.da_r, t.S.da_physics, t.S.xray]); });

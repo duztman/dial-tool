@@ -3,7 +3,7 @@
 
 import * as G from "./geometry.js";
 import { BEVEL, hand_detail, hand_part } from "./icons.js";
-import { HANDLE_AXIS, HANDLE_REACH, clamp, el, svg_el } from "./ui.js";
+import { HANDLE_AXIS, HANDLE_REACH, SNAP_PX, clamp, el, snap, svg_el } from "./ui.js";
 import { ROWS, chevron_box } from "./rows.js";
 
 export const HANDS = {
@@ -189,7 +189,10 @@ export const HANDS = {
       const out = { len: d.lying ? dx : -dy, tail: d.lying ? -dx : dy, w1: d.lying ? -dy : -dx, w2: d.lying ? dy : dx }[d.name];
       const v = d.v0 + (d.key === "w" || d.key === "disc_d" ? 2 * out : out);      // both edges move: the width grows twice the travel
       const R = d.row, step = R.step;
-      this.set_value("hand", d.key, +clamp(Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
+      // snapping (#184; #85, Max Bill's hand tip on a ring's edge): a dragged Length lands on a ring's edge when within
+      // SNAP_PX of it in the picture (d.scale: screen points per mm); a snapped length is kept whole, not stepped
+      const s = d.key === "len" ? snap(v, G.snap_radii(this.S), SNAP_PX / d.scale) : { v, hit: false };
+      this.set_value("hand", d.key, +clamp(s.hit ? s.v : Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
     });
     const end = () => {
       if (!this.hand_drag) return;
