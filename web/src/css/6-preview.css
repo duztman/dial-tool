@@ -176,6 +176,11 @@
   .guidesheet .guidehead.gap { margin-top: var(--u4); }      /* a group after a group: air over its heading (Okay, 24 Oct 2026, 23:21: "close repeating lines need more space") */
   .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-circle) var(--guide-circle); column-gap: var(--u2); margin-left: var(--guide-inset); }      /* the tier: a group's lines inset under their heading (their group's box carries the list's side room) */
   .guidesheet .guidekind.selected > .name { justify-self: start; max-width: 100%; box-sizing: border-box; height: var(--guide-circle); line-height: var(--guide-circle); padding: 0 var(--u3); border-radius: var(--round-pill); background: var(--ink); color: var(--paper); font-weight: 400; }      /* the selected ring or window: its name in a filled pill, the chosen word's look (Okay, 25 Oct 2026: "Selected one gets its own personally tailored one word pill") */
+  .guidesheet .guidekind.added { grid-template-columns: calc(var(--guide-inset) - var(--u2)) minmax(0, 1fr) var(--guide-circle) var(--guide-circle); margin-left: 0; }      /* the first column plus the gap is the indent: the name starts where every line's does */      /* an added guide's line: its − in the indent every line keeps (Okay, 2 Nov 2026) */
+  .guidesheet .guidekind.added > .minus { justify-self: start; }
+  .guidehead .plus { position: relative; }
+  .guidehead .plus > .sign { display: contents; }      /* the sign is the grid item, centred as the −'s is */      /* Added's +: the round button, the hidden select over it that the tool's list opens from */
+  .guidehead .plus > .hiddenselect { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; appearance: none; border: 0; }
   .guideadded .guidekind:last-child { box-shadow: none; }      /* the last line meets the foot's edge: no rule of its own there */
   .gdot, .gchev { width: var(--guide-circle); height: var(--guide-circle); border-radius: 50%; display: grid; place-items: center; justify-self: center; }      /* each in a circle of its own, concentric (Okay: "If something can be a circle, is") */
   .gdot::before { content: ""; width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
@@ -184,8 +189,8 @@
   .gchev[aria-expanded="true"] { color: var(--ink); }
   @media (hover: hover) { .gchev:hover { color: var(--ink); } }
   .gchev[aria-expanded="true"] svg { rotate: 180deg; }
-  .guidehead .minus { display: grid; place-items: center; width: var(--guide-circle); height: var(--guide-circle); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
-  @media (hover: hover) { .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); } }
+  .guidehead .minus, .guidekind .minus { display: grid; place-items: center; width: var(--guide-circle); height: var(--guide-circle); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
+  @media (hover: hover) { :is(.guidehead, .guidekind) .minus:hover { border-color: var(--ink); color: var(--ink); } }
   /* a heading's menu, Selected · All · None: the tool's chevron box, round here, as high as a circle */
   .gmenu { height: var(--guide-circle); border-radius: var(--round-pill); }
   .gmenu > .v { padding-left: var(--u3); }

@@ -110,12 +110,12 @@
 | `--ground-chip` · special | `calc((var(--shade-w) - 2 * var(--shade-pad) - (var(--ground-cols) - 1) * var(--pop-chip-gap)) / var(--ground-cols))` | one square: what the row leaves after its gaps | 6-preview ×2 |  |
 | `--ground-cols` · special | `8` | show mode's Backdrop: squares to a row across the Shadows pane's width; a gradient takes two (#510) | 1-tokens ×2, 6-preview |  |
 | `--guide` · the window's | `—` |  | 4f-rings ×4 | set by rings.js |
-| `--guide-circle` | `20px` | the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading | 6-preview ×14 |  |
+| `--guide-circle` | `20px` | the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading | 1-tokens, 6-preview ×16 |  |
 | `--guide-dim` | `0.4` | a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches") | 6-preview |  |
 | `--guide-dot` · special | `7px` | a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar | 3-controls, 6-preview | 1-tokens `:root` → `11px` |
 | `--guide-edge` | `65%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 4f-rings ×2 |  |
 | `--guide-gap` · special | `7px` | the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next: 2 + 3 of ring; notes 2, 18 Oct 2026: "closer") | 3-controls ×2, 6-preview | 1-tokens `:root` → `13px` |
-| `--guide-inset` | `var(--u4)` | the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading | 6-preview |  |
+| `--guide-inset` | `calc(var(--guide-circle) + var(--u2))` | the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading | 6-preview ×2 |  |
 | `--guide-list` | `240px` | the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading | 6-preview |  |
 | `--guide-name` | `106px` | the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) | 6-preview ×4 |  |
 | `--guide-none` | `14px` | a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar | 3-controls, 6-preview ×5 |  |
@@ -398,9 +398,9 @@
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×4 |  |
 | `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4f-rings, 7-bar ×2 |  |
 | `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×9, 4f-rings ×9, 4g-fonts ×8, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
-| `--u2` · special | `var(--unit)` |  | 1-tokens, 3-controls ×2, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×10, 4f-rings ×6, 4g-fonts, 6-preview ×16, 7-bar ×7, 8-narrow ×2 |  |
+| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×2, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×10, 4f-rings ×6, 4g-fonts, 6-preview ×17, 7-bar ×7, 8-narrow ×2 |  |
 | `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour, 4f-rings ×9, 4g-fonts ×5, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
-| `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×4, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×5, 4d-hands ×2, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
+| `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×5, 4d-hands ×2, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
 | `--u5` | `calc(2.5 * var(--unit))` |  | 8-narrow ×2 |  |
 | `--u6` | `calc(3 * var(--unit))` |  | 1-tokens ×4, 4a-panel, 4g-fonts ×3, 6-preview, 8-narrow ×2 |  |
 | `--u8` | `calc(4 * var(--unit))` |  | 4g-fonts, 7-bar ×2 |  |

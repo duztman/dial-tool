@@ -237,7 +237,7 @@ class DialTool {
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
-    if (this.guides_open && !$("#guide-list").hidden && !on(".guides, .handles [data-more]")) this.guides_open(false);      // an added guide's handle is the list's too (#527)
+    if (this.guides_open && !$("#guide-list").hidden && !on(".guides, .handles [data-more], #menu-list")) this.guides_open(false);      // an added guide's handle is the list's too (#527); so is the tool's list that Added's + drops (2 Nov 2026)
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows, #shadow-list, #value-pop")) this.shadows_open(false);      // the pane lives on the body, over the panel
     if (this.ground_open && !$("#ground-pop").hidden && !on(".backdrops, #colour-pop")) this.ground_open(false);
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);

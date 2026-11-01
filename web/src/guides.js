@@ -36,8 +36,8 @@ export const GUIDES = {
     this.guides_open = open;
     // the list (#539; Okay, 25 Oct 2026, from his marks on the drawing): one column, 240 wide — Dial (the centre hole,
     // the centre lines); Rings with its menu on its heading and a line per ring; Windows with its menu and a line per
-    // window; Added with a minus that takes the last added away, and a line per added guide. Under it, on the foot's
-    // ground, always in view: Add · Line · Crosshair · Circle; Thickness 1 · 2 · 3 · Reset All.
+    // window; Added with a + that opens Line · Crosshair · Circle, and a line per added guide, each with its own −. Under
+    // it, on the foot's ground, always in view: Thickness 1 · 2 · 3; Snap to guides · Reset All.
     // A guide is one line: its name, its colour as a dot (a press opens None and the eight colours by it), and a tick
     // that shows or hides it, keeping its colour for when it comes back.
     const pop = el("div", { className: "guidepop dots", id: "guide-pop", role: "radiogroup", hidden: true });
@@ -113,9 +113,20 @@ export const GUIDES = {
     const head = (word, ...rest) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: word }), ...rest);
     this.guide_windows_head = head("Windows", this.guide_which_w.box);
     this.guide_windows_head.classList.add("gap");      // a group after a group: a unit of air over its heading
-    const last_gone = el("button", { type: "button", className: "minus", id: "guide-more-last", title: "Take the last added guide away", ariaLabel: "Take the last added guide away", onclick: () => { this.S.gd_more = (this.S.gd_more || []).slice(0, -1); this.sync_rows(); this.render(); } });
-    last_gone.innerHTML = icon(`<path d="M3 6H9" ${sw(LINE)}/>`, 12);
-    this.guide_more_head = head("Added", last_gone);
+    // Added's + (Okay, 2 Nov 2026: "Plus button remains, becomes a dropdown (in our rules for there) remove the add line"):
+    // a round button that opens the tool's own list — Line · Crosshair · Circle — over a hidden select, as every menu does
+    const add_select = el("select", { id: "guide-add", ariaLabel: "Add a guide", className: "hiddenselect" });
+    add_select.append(el("option", { value: "", textContent: "Add a guide", hidden: true, selected: true }), ...G.GUIDE_MORE.map((kind, i) => el("option", { value: String(i), textContent: kind[0].toUpperCase() + kind.slice(1) })));
+    add_select.onchange = () => {
+      if (add_select.value === "") return;
+      const i = +add_select.value, used = new Set((this.S.gd_more || []).map((g) => g.k));
+      this.S.gd_more = [...(this.S.gd_more || []), { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
+      add_select.value = "";
+      this.sync_rows(); this.render();
+    };
+    const plus_sign = el("span", { className: "sign" }); plus_sign.innerHTML = icon(`<path d="M3 6H9M6 3V9" ${sw(LINE)}/>`, 12);
+    const plus = el("span", { className: "minus plus", id: "guide-more-add", title: "Add a guide" }, plus_sign, add_select);      // the select kept as the element it is: its change handler lives on it
+    this.guide_more_head = head("Added", plus);
     // one column, four groups, each a bold heading over its lines inset a unit (#539; Okay, 25 Oct 2026: "One column layout
     // now and always"; "might have inset tiered layer system"): Dial · Rings · Windows · Added
     const rings_head = head("Rings", this.guide_which.box);
@@ -123,15 +134,7 @@ export const GUIDES = {
     this.guide_more_head.classList.add("gap");
     this.guide_added = el("div", { className: "guideadded" }, this.guide_more_head, this.guide_more);
     const scroll = el("div", { className: "guidescroll" }, head("Dial"), el("div", { className: "guiderings" }, ...this.guide_kinds.map((d) => d.line)), rings_head, this.guide_rings, this.guide_windows_head, this.guide_windows, this.guide_added, pop);
-    // guides you add: a line, a crosshair, a circle (Okay: "add an option to add others, crosshair, straight line etc."),
-    // as free pills (canon §6)
-    const adds = el("span", { className: "pillswitch free" });
-    G.GUIDE_MORE.forEach((kind, i) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
-      const used = new Set((this.S.gd_more || []).map((g) => g.k));
-      this.S.gd_more = [...(this.S.gd_more || []), { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
-      this.sync_rows(); this.render();
-    } })));
-    const settings = el("div", { className: "guidesettings" }, head("Add", adds));
+    const settings = el("div", { className: "guidesettings" });      // the foot: Thickness, then Snap to guides · Reset All (the adding moved up to Added's +, 2 Nov 2026)
     list.append(scroll, settings);
     list.classList.add("guidesheet");
     list.addEventListener("pointerdown", (e) => { if (!pop.hidden && !e.target.closest("#guide-pop, .gdot, .gchev")) pop_shut(); });
@@ -421,12 +424,17 @@ export const GUIDES = {
         };
         const fields = [...(kind !== "circle" ? [field("a", "°", false)] : []), ...(kind !== "line" ? [field("r", "r", true)] : [])];
         d.label.replaceChildren(el("span", { className: "word", textContent: d.label.textContent }), ...fields.map((f) => f.el));
+        // its own − at the left, in the indent every line keeps for it (Okay, 2 Nov 2026: "Move indents in to fit the minus
+        // button for each new guide … all indented lines follow the space needed for minus buttons")
+        const gone = el("button", { type: "button", className: "minus", id: `guide-more-${i}-gone`, title: "Take this guide away", ariaLabel: "Take this guide away", onclick: () => { this.S.gd_more = (this.S.gd_more || []).filter((_, k) => k !== i); this.sync_rows(); this.render(); } });
+        gone.innerHTML = icon(`<path d="M3 6H9" ${sw(LINE)}/>`, 12);
+        d.line.prepend(gone);
         d.line.classList.add("added");
         return { ...d, fields };
       });
       this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
     }
-    this.guide_added.hidden = !(S.gd_more || []).length;      // "Added" over the guides added by hand, when there are any (4.79)
+    this.guide_more.hidden = !(S.gd_more || []).length;      // the added guides' lines, when there are any; the Added heading stays, its + is where a guide is added (2 Nov 2026)
     this.guide_more_lines.forEach((d, i) => {
       d.refresh();
       for (const f of d.fields) if (document.activeElement !== f.input) { f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1)); f.input.style.width = `${Math.max(1, f.input.value.length)}ch`; }

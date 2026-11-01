@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.22 beta · 2 Nov 2026 — the Guides list's Added rows (#566)
+
+Okay, 2 Nov 2026, 00:37: "Move indents in to fit the minus button for each new guide. Plus button remains, becomes a dropdown (in our rules for there) remove the add line."; 00:45: "all indented lines follow the space needed for minus buttons."
+
+- **Every line's indent** is a − button's circle and a unit (`--guide-inset`, 25.5 px, was 11): the Dial, Rings, Windows and Added lines all start there, and an added guide's line carries its own − in that room, inside the list (`guides.js`, `6-preview.css`).
+- **Added's +** opens the tool's own list — Line · Crosshair · Circle — over a hidden select, as every menu does (`menu_list`); the Added heading stays even with no guide added, since the + is where one is added. A press on that list no longer closes the Guides list (`pressed`, `app.js`).
+- **The foot's Add line is gone**: Thickness, then Snap to guides · Reset All remain.
+- The checks in `window.mjs` follow: adding through the menu, the indent shared by every line, a middle guide's own −, the foot without Add.
+
 ## v1.1.21 beta · 2 Nov 2026 — the font sheet: the alphabet through the family's styles, Barlow one family, the name column (#564, #562)
 
 Okay, 1 Nov 2026, 23:39: "The font popup previews get the rest of the alphabet, cropped … Font names, get the family name only for fonts, do not include design indicators like condensed and combine fonts … extend the name column … if adding 3 chars width and we gain 10 more fonts that have …, do it. Previews: if a font has bolds and other stuff, namely; named versions, the alphabet gets them gradually, Aa light Bb regular Cc bold Dd black and cycling to the end."; 2 Nov, 00:29: "File growth is fine"; 00:31: "just lower the height as in my drawing".
