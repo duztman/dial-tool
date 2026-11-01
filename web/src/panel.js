@@ -144,6 +144,7 @@ export const PANEL = {
       return b;
     });
     list.replaceChildren(...items);
+    list.classList.toggle("inner", Boolean(select.closest(".guidelist, .colourpop, .settingsbox, .shadelist, .picker, .versionlist, .numpop")));      // a dropdown inside a popup: the nearer shadow (Okay, 2 Nov 2026)
     list.hidden = false;
     const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));      // the stylesheet's unit: a unit off the box and the window's edges
     const box = (select.closest(".menubox, .popgroup, .casebox, .menulabel") || select.parentElement || select).getBoundingClientRect();

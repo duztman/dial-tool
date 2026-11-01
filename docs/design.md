@@ -307,3 +307,7 @@ How the panel's parts are laid out, in the stylesheet's terms (R32 names the tok
   "top gap stays same").
 - **A number's row lays its tracks out in full** (`--num-columns`: columns, gaps, then the two tiles) rather than
   nudging its field and stepper.
+
+## Popups and dropdowns: the shadow
+
+Every dropdown and popup casts one solid shadow, 5 px right and down, black at 30 % (`--shadow-pop`): the Guides and Shadows lists, the colour pop-out, the undo and Versions lists, Settings, a value pop, the font sheet, the bar's date, a menu's list. A dropdown or list that opens *inside* a popup casts the nearer one, 3 px (`--shadow-pop-in`): the Guides list's colour list, a menu dropped inside a popup, the font sheet's legend (Okay, 2 Nov 2026: "All dropdowns and popups get 5px solid black shadow 30%opacity. Dropdowns inside popups get 3px shadows."). The undo list has a hairline outline in grey as well.

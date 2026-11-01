@@ -161,7 +161,7 @@
     --night-grey: #78786F;                         /* a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
-    --guide-list: 240px; --guide-circle: 20px; --guide-inset: calc(var(--guide-circle) + var(--u2));      /* the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading */
+    --guide-list: calc(240px + var(--guide-inset)); --guide-circle: 20px; --guide-inset: calc(var(--guide-circle) + var(--u2));      /* 240 plus the first column (eyes, minuses; Okay, 2 Nov 2026: "Popup gets wider: minuses get their own column before the names") */      /* the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading */
     --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches") */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
@@ -178,6 +178,7 @@
     --shadow: calc(-2 * var(--unit)) 0 6px rgba(0, 0, 0, 0.28);
     --shadow-solid: calc(-2 * var(--unit)) calc(2 * var(--unit)) 0 rgba(0, 0, 0, 0.5);      /* the font sheet's: solid, no blur, to the left and down, as far as --shadow reaches (Okay, 24 Oct 2026, 21:39: "font popups shadow looks out of place. make it solid 50% opacity. no fancy, static left plus bottom") */
     --shadow-solid-near: calc(-1 * var(--unit)) var(--unit) 0 rgba(0, 0, 0, 0.5);      /* the same over the font sheet (its legend), half as far */
+    --shadow-pop: 5px 5px 0 rgba(0, 0, 0, 0.3); --shadow-pop-in: 3px 3px 0 rgba(0, 0, 0, 0.3);      /* every dropdown and popup (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"); a dropdown inside a popup, 3 */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 26px;                              /* a font's numerals in the font list, when the browser sets them (as the outlines, app.js sample(): Okay, 24 Oct 2026, "ENLARGE NUMS") */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */

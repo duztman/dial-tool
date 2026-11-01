@@ -62,7 +62,7 @@
   .logo { border-radius: 50%; }
   .logo[aria-expanded="true"] { color: var(--white); background: var(--night); box-shadow: 0 0 0 var(--logo-disc) var(--night); }
   /* its text stands on the title’s line, the column after the mark (less its own edge); the list's bullets hang left of it (Okay, 03:06) */
-  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--pop-top) var(--pop-pad) calc(var(--pop-pad) - var(--u1)) calc(var(--eye) + var(--gap) - var(--hair)); font-size: var(--t-m); line-height: 1.45; }
+  .bio { box-shadow: var(--shadow-pop); position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--pop-top) var(--pop-pad) calc(var(--pop-pad) - var(--u1)) calc(var(--eye) + var(--gap) - var(--hair)); font-size: var(--t-m); line-height: 1.45; }
   .bio h3 { margin: var(--pop-gap) 0 var(--u1); font-size: var(--t-m); }
   .bio p { margin: 0 0 var(--unit); }
   .bio ul { margin: 0; padding-left: 0; }
@@ -85,7 +85,7 @@
      left twice --gap (02:21: "2x its inner padding"); two columns, the names in ink right against their pills (02:10,
      02:24), each pill's note under it at --t-xs (02:24: "Bump down one size"); the line over a row, the pill, the note's
      words and the next line 4 px apart on the ink (02:06: "reduce, equalize with line and its after") */
-  .settingsbox { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; display: grid; grid-template-columns: max-content max-content; width: max-content; padding: var(--u4) var(--u4) var(--u4) calc(2 * var(--gap)); border: var(--hair) solid var(--ink); background: var(--well); --row-rule: var(--line-on-grey); }
+  .settingsbox { box-shadow: var(--shadow-pop); position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; display: grid; grid-template-columns: max-content max-content; width: max-content; padding: var(--u4) var(--u4) var(--u4) calc(2 * var(--gap)); border: var(--hair) solid var(--ink); background: var(--well); --row-rule: var(--line-on-grey); }
   .settingsbox > .row { grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: var(--u2); }
   .settingsbox > .row > label:first-child { grid-column: 1; justify-self: end; text-align: right; color: var(--ink); }
   .settingsbox > .row > :not(label) { grid-column: 2; }
@@ -106,7 +106,8 @@
   .unitmenu button.on { font-weight: 600; }
   .unitmenu button.on .quiet { color: var(--ink); }
   /* every menu's list (menu_list in app.js): the unit list's look, fixed to the window under or over its menu, scrolling when long */
-  .unitmenu.floating { position: fixed; z-index: 40; top: auto; right: auto; overflow-y: auto; }
+  .unitmenu.floating { position: fixed; z-index: 40; top: auto; right: auto; overflow-y: auto; box-shadow: var(--shadow-pop); }      /* a dropdown's shadow; inside a popup, the nearer one (menu_list sets .inner) */
+  .unitmenu.floating.inner { box-shadow: var(--shadow-pop-in); }
 
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }

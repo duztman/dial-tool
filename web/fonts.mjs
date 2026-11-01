@@ -20,7 +20,7 @@ import os from "os";
 import path from "path";
 import { execFileSync } from "child_process";
 import * as HB from "harfbuzzjs";
-import { fvar_instances } from "./src/geometry.js";
+import { fvar_instances, ladder_order } from "./src/geometry.js";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const DIR = path.join(here, "fonts");
@@ -203,7 +203,7 @@ const sample_of = (numerals, members) => {
   if (!nums) return null;
   // the styles to cycle: a variable font's weight ladder (its other axes at rest), else the files by weight
   const ladder = first.instances.filter((x) => x.axes.wght != null && Object.entries(x.axes).every(([tag, v]) => tag === "wght" || !first.axes[tag] || Math.abs(v - first.axes[tag].default) < 1e-6)).sort((a, b) => a.axes.wght - b.axes.wght);
-  const styles = ladder.length > 1 ? ladder.map((x) => ({ member: first, wght: x.axes.wght })) : [...members].sort((a, b) => weight_of(a.style) - weight_of(b.style)).map((m) => ({ member: m }));
+  const styles = ladder.length > 1 ? ladder_order(ladder, (x) => x.axes.wght, (x) => x.name).map((x) => ({ member: first, wght: x.axes.wght })) : ladder_order(members, (m) => weight_of(m.style), (m) => m.style).map((m) => ({ member: m }));      // Thin just before Regular (ui.js)
   const set_weight = (member, wght) => member.font.setVariations(Object.entries({ ...member.start, ...(wght == null ? {} : { wght }) }).map(([tag, v]) => new HB.Variation(tag, v)));
   let d = nums.d, x = nums.w;
   const space = first.outline(" ", true, x); if (!space) return nums; x = space.w;

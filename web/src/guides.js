@@ -3,9 +3,11 @@
 
 import * as G from "./geometry.js";
 
-import { LINE, SIGNS, SLANT, TOOL_ICONS, icon, none_dot, sw } from "./icons.js";
+import { LINE, SIGNS, SLANT, TOOL_ICONS, eye, icon, none_dot, sw } from "./icons.js";
 import { $, token, GUIDE_STEP, clamp, el, parse_number, svg_el } from "./ui.js";
 import { chevron_box, chk, num } from "./rows.js";
+
+const GUIDE_NAMES = ["Pink", "Cyan", "Green", "Yellow", "Orange", "Violet", "Black", "White"];      // the guide colours' names (GUIDE_COLOURS, R9), for the colour list
 
 export const GUIDES = {
   /** guides, at the preview's top right (Okay, 19 Oct 2026): a switch (a bullseye and the word; solid outline = on,
@@ -46,7 +48,9 @@ export const GUIDES = {
     none.dataset.k = "none";
     // None and seven colours, two lines of four: black is left out, near invisible on the dark ground (Okay, 24 Oct
     // 2026: "Drop the black"); it stays in GUIDE_COLOURS (R9), so a guide already black stays black
-    pop.append(none, ...G.GUIDE_COLOURS.map((hex, i) => [hex, i]).filter(([hex]) => hex !== "#111111").map(([hex, i]) => { const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex }); b.style.setProperty("--c", hex); b.dataset.k = i; return b; }));
+    // one column, each colour with its name, in the undo list's style (Okay, 2 Nov 2026: "This menu style, rounded corners, list names like the undo menu")
+    none.append(el("span", { className: "cname", textContent: "None" }));
+    pop.append(none, ...G.GUIDE_COLOURS.map((hex, i) => [hex, i]).filter(([hex]) => hex !== "#111111").map(([hex, i]) => { const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: GUIDE_NAMES[i] }, el("span", { className: "cdot" }), el("span", { className: "cname", textContent: GUIDE_NAMES[i] })); b.style.setProperty("--c", hex); b.dataset.k = i; return b; }));
     for (const b of pop.children) b.setAttribute("role", "radio");
     let pop_for = null;
     const pop_shut = () => { if (pop_for) pop_for.chev.setAttribute("aria-expanded", "false"); pop.hidden = true; pop_for = null; };
@@ -60,19 +64,25 @@ export const GUIDES = {
     // a guide's line (Okay's drawing, 24 Oct 2026: "All the ticks chevrons, they open up small rounded corner boxes"):
     // its name, its colour as a dot, and a chevron that opens None and the colours in a small box under the line. A
     // hidden guide (None) shows its dot as an empty ring and its name grey.
-    const guide_line = (name, get, set, id = "") => {
+    // restore: a guide's colour when its eye opens it again with none remembered (the dial's own: the colour kept; a ring's
+    // or a window's: -1, its colour by place); no restore, no eye (an added guide has its − there)
+    const guide_line = (name, get, set, id = "", restore = null) => {
       const label = el("span", { className: "name", textContent: name, title: name });
       const dot = el("button", { type: "button", className: "gdot", id: id ? id + "-colour" : "", tabIndex: -1, ariaHidden: "true" });
       const chev = el("button", { type: "button", className: "gchev", id, title: "Its colour, or none", ariaLabel: name + ": its colour" });
       chev.innerHTML = icon(SIGNS.down);
       chev.setAttribute("aria-expanded", "false");
-      const line = el("div", { className: "guidekind" }, label, dot, chev);
-      const d = { line, label, dot, chev,
+      // the eye in the first column (Okay, 2 Nov 2026: "Put eyes next to defaults on guides on the newly erected column"): shut, the
+      // guide is hidden (as None does) with its colour remembered for when it opens again
+      const eye_b = restore ? el("button", { type: "button", className: "geye", id: id ? id + "-eye" : "", title: "Show or hide this guide", ariaLabel: name + ": show or hide" }) : null;
+      const line = el("div", { className: "guidekind" }, ...(eye_b ? [eye_b] : []), label, dot, chev);
+      const d = { line, label, dot, chev, last_k: null,
         choose: (k) => { set(k); this.sync_rows(); this.render(); },
         refresh: () => {
           const k = get();
           dot.style.setProperty("--c", k === null ? "transparent" : G.GUIDE_COLOURS[k] || G.GUIDE_COLOURS[0]);
           line.classList.toggle("off", k === null);
+          if (eye_b) { eye_b.innerHTML = eye(k !== null); eye_b.setAttribute("aria-pressed", String(k !== null)); }
           if (pop_for === d) for (const b of pop.children) { const on = b.dataset.k === "none" ? k === null : +b.dataset.k === k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); }
         } };
       const open = () => {
@@ -83,17 +93,19 @@ export const GUIDES = {
         pop.hidden = false;
         d.refresh();
         const scroll = list.querySelector(".guidescroll"), l = scroll.getBoundingClientRect(), r = line.getBoundingClientRect();      // under its line, its right edge on the chevron's, kept inside the list
-        pop.style.top = `${r.bottom - l.top + scroll.scrollTop}px`;
+        const below = r.bottom - l.top + pop.offsetHeight <= scroll.clientHeight || r.top - l.top < pop.offsetHeight;      // over its line instead when the list's foot would cut it (the eight named colours are tall)
+        pop.style.top = `${(below ? r.bottom - l.top : r.top - l.top - pop.offsetHeight) + scroll.scrollTop}px`;
         pop.style.left = `${Math.max(0, chev.getBoundingClientRect().right - l.left - pop.offsetWidth)}px`;
       };
       chev.onclick = open;
       dot.onclick = open;
+      if (eye_b) eye_b.onclick = () => { const k = get(); if (k === null) d.choose(d.last_k ?? restore()); else { d.last_k = k; d.choose(null); } };
       return d;
     };
     this.guide_dots = guide_line;
     // the dial's own: the centre hole (first, Okay, 16 Oct 2026, #267) and the centre lines
     this.guide_kinds = [G.GUIDE_KINDS[5], G.GUIDE_KINDS[1]].map(([show, colour, name]) =>
-      guide_line(name, () => (this.S[show] ? this.S[colour] : null), (k) => { if (k === null) this.S[show] = false; else { this.S[show] = true; this.S[colour] = k; } }, "guide-" + show));
+      guide_line(name, () => (this.S[show] ? this.S[colour] : null), (k) => { if (k === null) this.S[show] = false; else { this.S[show] = true; this.S[colour] = k; } }, "guide-" + show, () => this.S[colour]));
     // which rings and which windows show their guides: a chevron box on the heading (R15: every menu is one; Okay, 25 Oct
     // 2026: "Selected/all etc can be a dropdown to gain width"), Selected · All · None, opening the tool's own list
     const which_menu = (id, title, get, set) => {
@@ -388,7 +400,7 @@ export const GUIDES = {
     if (this.guide_rings.dataset.rings !== rings) {
       this.guide_rings.dataset.rings = rings;
       this.guide_ring_lines = S.rings.map((ring, i) => {
-        const d = this.guide_dots(ring.name || G.kind_of(ring), () => G.ring_guide(this.S, i), (k) => { this.S.rings[i].guide = k === null ? -2 : k; }, "guide-ring-" + i);
+        const d = this.guide_dots(ring.name || G.kind_of(ring), () => G.ring_guide(this.S, i), (k) => { this.S.rings[i].guide = k === null ? -2 : k; }, "guide-ring-" + i, () => -1);
         d.line.classList.add("ring");
         return d;
       });
@@ -400,7 +412,7 @@ export const GUIDES = {
     if (this.guide_windows.dataset.wins !== wins) {
       this.guide_windows.dataset.wins = wins;
       this.guide_window_lines = shown.map((i) => {
-        const d = this.guide_dots(`Window at ${G.window_place(G.windows_of(this.S)[i])}`, () => G.window_guide(this.S, i), (k) => { G.windows_of(this.S)[i].guide = k === null ? -2 : k; }, "guide-window-" + i);
+        const d = this.guide_dots(`Window at ${G.window_place(G.windows_of(this.S)[i])}`, () => G.window_guide(this.S, i), (k) => { G.windows_of(this.S)[i].guide = k === null ? -2 : k; }, "guide-window-" + i, () => -1);
         d.line.classList.add("ring");
         d.index = i;
         return d;

@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.24 beta · 2 Nov 2026 — the Guides list's eyes and named colours, the shadows, the sheet's head, Thin before Regular
+
+Okay, 2 Nov 2026, 01:34 (iPad: "all tests pass"), six notes, each a line below.
+
+- **Thin just before Regular** (`ladder_order`, `geometry.js`): a family's styles stand by weight, light to black, but Thin after the lights — in the font box's tabs and in the sheet's samples (regenerated).
+- **The sheet's head** (`4g-fonts.css`): Fonts, the Light · Dark pill beside it, Find at the right with its glass inside; under them one rounded light-grey band the head's width holding the six filter pills on one line, dark grey, the chosen one black; then the tabs — his drawing (#562).
+- **The Guides list** (`guides.js`, `6-preview.css`): a first column on every line — an eye for the dial's, the rings' and the windows' guides (shut, the guide is hidden as None does, its colour kept for when it opens), the − for an added guide; every name on the second column; the list wider by that column (`--guide-list`). Thickness's pill as tall as show mode's (32). The colour list in the undo list's style: near black, rounded, one row per colour with its name — None, Pink, Cyan, Green, Yellow, Orange, Violet, White — the chosen one's dot ringed; it opens over its line when the foot would cut it; the line's dot carries an outline while its list is open.
+- **Shadows** (`--shadow-pop`, `--shadow-pop-in`; design canon, *Popups and dropdowns*): every popup and dropdown 5 px right and down, black at 30 %; inside a popup, 3 px. The undo list has a grey hairline outline too. The font sheet's old left-down shadow is this one now.
+- The checks in `window.mjs` follow each change.
+
 ## v1.1.23 beta · 2 Nov 2026 — the ring handles after Okay's drawing (#568)
 
 Okay, 2 Nov 2026, 00:45, his sketch on the preview: "Let's try this design on the side for these handles. Active they are filled in with thicker stroke."

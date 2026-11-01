@@ -205,7 +205,7 @@ export const FONTS = {
           const side = this.font_side(own), H = this.target(side.scope), now = (H.axes || {}).wght ?? side.base_axis(H, "wght", a), bold = Math.min(700, a.max);
           const put = (v) => { const all = { ...(this.target(side.scope).axes || {}) }; if (Math.abs(v - side.base_axis(this.target(side.scope), "wght", a)) < 1e-6) delete all.wght; else all.wght = v; this.set_value(side.scope, "axes", all); };
           const ladder = (info.instances || []).filter((x) => x.axes.wght != null && Object.entries(x.axes).every(([tag, v]) => tag === "wght" || !axes[tag] || Math.abs(v - axes[tag].default) < 1e-6));      // the weight ladder: the other axes at their defaults
-          tabs = ladder.length > 1 ? ladder.map((x, i) => tab(x.name, Math.abs(now - x.axes.wght) < 1, () => put(x.axes.wght), `${pre}font-style-${i}`))
+          tabs = ladder.length > 1 ? G.ladder_order(ladder, (x) => x.axes.wght, (x) => x.name).map((x, i) => tab(x.name, Math.abs(now - x.axes.wght) < 1, () => put(x.axes.wght), `${pre}font-style-${i}`))
             : [tab("Regular", now < 600, () => put(a.default), `${pre}font-style-0`), tab("Bold", now >= 600, () => put(bold), `${pre}font-style-1`)];
         }
       }

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.23 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.24 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -1137,6 +1137,16 @@ export function fvar_instances(bytes, index, name) {
     }
     return out.filter((x) => x.name);
   } catch (e) { return []; }
+}
+
+/** the order a family's styles stand in — tabs, the sheet's sample: by weight, light to black, but Thin just before Regular
+ *  (Okay, 2 Nov 2026: "Thin looks thicker than lights, so it should move before the regular"). `weight(x)` reads an item's
+ *  weight, `name(x)` its name. */
+export function ladder_order(items, weight, name) {
+  const sorted = [...items].sort((a, b) => weight(a) - weight(b));
+  const thin = sorted.filter((x) => /\b(thin|hairline)\b/i.test(name(x))), rest = sorted.filter((x) => !thin.includes(x));
+  const at = rest.findIndex((x) => weight(x) >= 400);
+  return at < 0 ? [...rest, ...thin] : [...rest.slice(0, at), ...thin, ...rest.slice(at)];
 }
 
 /** a font's variable axes: tag → {min, default, max, name}. */
