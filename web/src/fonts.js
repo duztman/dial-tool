@@ -154,6 +154,8 @@ export const FONTS = {
     const shown_cell = el("div", { className: "currentwrap" }, current);
     const named = el("div", { className: "fontname", title: "Choose a font", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, el("span", { className: "namecol" }, name, swatch), ...(lang ? [lang.el] : []));      // the name runs to the colour; the colour ends a gap before EN (#408)
     const styles = el("div", { className: "styles", role: "tablist", ariaLabel: "Style" });      // tabs hanging from the name's line (#275, 4.51)
+    // more tabs than fit slide sideways; a mouse wheel's up and down moves them along (Okay, 1 Nov 2026: "Mouse scroll scrolls the tabs on fonts")
+    styles.addEventListener("wheel", (e) => { if (styles.scrollWidth > styles.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { styles.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(SIGNS.copy) + "<span>Same font as <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,      // "Copy style of" until 4.52.1: it never copied, it gives the window the ring's font again (Okay, 18 Oct 2026: "Same font as hours, yes")
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); } });

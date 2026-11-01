@@ -1629,11 +1629,22 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
       document.querySelector("#font-style-3").click(); t.frame(); const semi = [tabs(), (t.ring().axes || {}).wght];
       document.querySelector("#font-style-2").click(); t.frame(); const back = [tabs(), (t.ring().axes || {}).wght];
       t.set_value("ring", "axes", { wght: 450 }); t.frame(); const off = tabs();
+      const rows = [...document.querySelectorAll(".fontbox .axes > .row")], ruled = rows.slice(1).every((r) => getComputedStyle(r).borderTopWidth === "1px") && getComputedStyle(rows[0]).borderTopWidth === "0px";
       const steps = document.querySelectorAll("#axis-wght + .numbox .steps > .step, .axes .row .numbox .steps > .step").length; document.querySelector("#axis-wght").closest(".row").querySelector(".steps > .step:last-child").click(); const plus = (t.ring().axes || {}).wght;
       const prior = [...t.catalog.values()].find((e) => e.ps === was.ps); if (prior) await t.use_font(prior); t.set_value("ring", "axes", was.axes || {}); t.frame();
-      return { ladder, semi, back, off, steps, plus }; });
-    check(named.ladder === "Thin Light Regular* SemiBold Bold" && named.semi[0] === "Thin Light Regular SemiBold* Bold" && named.semi[1] === 600 && named.back[0] === named.ladder && named.back[1] === undefined && named.off === "Thin Light Regular SemiBold Bold" && named.steps === 2 && named.plus === 460,
-      `a variable font's own styles are the tabs — Antonio: ${named.ladder}; SemiBold sets the weight to ${named.semi[1]} (${named.semi[0]}), Regular takes it off again (${named.back[1]}); a weight between two styles lights none (${named.off}) (#52; Okay, 1 Nov 2026: "Up to Now"); the axis row has − and + (${named.steps}), + takes 450 to ${named.plus} (Okay: "Why no plusminus on variable axis lines?")`);
+      return { ladder, semi, back, off, steps, plus, ruled, axes: rows.length }; });
+    // two axes, nine styles (Anybody): the axis rows ruled apart; the wheel slides the tabs along
+    const two = await page.evaluate(async () => { const t = window.dial_tool, R = t.ring(), was = { ps: R.ps, axes: R.axes };
+      const entry = [...t.catalog.values()].find((e) => e.ps === "Anybody-Thin"); await t.use_font(entry); t.frame();
+      const rows = [...document.querySelectorAll(".fontbox .axes > .row")], borders = rows.map((r) => getComputedStyle(r).borderTopWidth);
+      const s = document.querySelector(".font .styles"), overflow = s.scrollWidth > s.clientWidth, before = s.scrollLeft;
+      s.dispatchEvent(new WheelEvent("wheel", { deltaY: 120, bubbles: true, cancelable: true })); const after = s.scrollLeft;
+      const prior = [...t.catalog.values()].find((e) => e.ps === was.ps); if (prior) await t.use_font(prior); t.set_value("ring", "axes", was.axes || {}); t.frame();
+      return { borders, overflow, before, after }; });
+    check(two.borders.join(" ") === "0px 1px" && two.overflow && two.before === 0 && two.after > 0,
+      `Anybody's two axis rows ruled apart by a hairline (${two.borders.join(" · ")}; Okay, 1 Nov 2026: "it's a rule, no?"); its nine style tabs overflow and the wheel slides them (${two.before} → ${two.after}; Okay: "Mouse scroll scrolls the tabs on fonts")`);
+    check(named.ladder === "Thin Light Regular* SemiBold Bold" && named.semi[0] === "Thin Light Regular SemiBold* Bold" && named.semi[1] === 600 && named.back[0] === named.ladder && named.back[1] === undefined && named.off === "Thin Light Regular SemiBold Bold" && named.steps === 2 && named.plus === 460 && named.ruled,
+      `a variable font's own styles are the tabs — Antonio: ${named.ladder}; SemiBold sets the weight to ${named.semi[1]} (${named.semi[0]}), Regular takes it off again (${named.back[1]}); a weight between two styles lights none (${named.off}) (#52; Okay, 1 Nov 2026: "Up to Now"); the axis row has − and + (${named.steps}), + takes 450 to ${named.plus} (Okay: "Why no plusminus on variable axis lines?"); its ${named.axes} axis rows ruled apart by a hairline (Okay: "it's a rule, no?")`);
     await page.click("#font-name");
     await page.click("#font-ground-dark");
     const d = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#font-list").backgroundColor, c("#font-current").backgroundColor, c("#font-current").color, c("#font-ground-dark").backgroundColor, document.querySelector("#font-ground-dark").getAttribute("aria-checked"), sessionStorage.getItem("dial-tool-font-dark"), c(".fontbox").backgroundColor]; });

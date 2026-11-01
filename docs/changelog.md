@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.15 beta · 1 Nov 2026 — the axis rows ruled apart; the wheel on the style tabs
+
+Okay, 1 Nov 2026, 21:47: "Mouse scroll scrolls the tabs on fonts. Why don't you draw the lines between these, it's a rule, no?"
+
+- **A hairline between a font's axis rows** (`4g-fonts.css`): the box rules its direct children apart, and the axes' rows share one child, so Weight and Width stood with no line between them; now `.axes > .row + .row` carries the same line.
+- **A mouse wheel slides the style tabs** (`fonts.js`): up and down on the tabs' row moves it sideways when the tabs overflow (nine styles on Anybody); otherwise the wheel passes to the panel as before.
+
 ## v1.1.14 beta · 1 Nov 2026 — Compare's Real size (#494), the window check mended (#561), − + on the axis rows
 
 Okay, 1 Nov 2026, 19:01: "Compare at one size is a button on top of compare canvas, the dials resize in their place. Our small preview size for all. Failing window also do this time, all done."; 19:03: "Why no plusminus on varible axis lines?"
