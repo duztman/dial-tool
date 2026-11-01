@@ -185,6 +185,10 @@ export const PANEL = {
       { kind: "note", text: "Every length in the app" },
       { kind: "seg", key: "ui_colour_as", text: "Colours", items: G.COLOUR_MODES, id: "settings-colours", put: (app, v) => { app.S.ui_colour_as = v; app.colour_mode = G.COLOUR_MODES[v]; shown(); } },
       { kind: "note", text: "The colour pop-out opens in it" },
+      { kind: "seg", bool: true, key: "ui_snap", text: "Snap", id: "settings-snap", put: (app, v) => { app.S.ui_snap = v; shown(); } },      // a dragged handle lands on rings' edges (#184; Okay, 1 Nov 2026: "snap on off, snap to guides on off, in their own lines")
+      { kind: "note", text: "Dragged handles land on rings’ edges" },
+      { kind: "seg", bool: true, key: "ui_snap_guides", text: "Snap to guides", id: "settings-snap-guides", put: (app, v) => { app.S.ui_snap_guides = v; shown(); } },
+      { kind: "note", text: "…and on the added guide circles" },
     ].map((row) => this.build_row(row));
     for (const r of rows) {      // a row and its note are one box, the note just below the pill (sync_rows does this for the panel's rows)
       box.append(r.el);

@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.18 beta · 2 Nov 2026 — Snap and Snap to guides, in Settings and on the Guides list
+
+Okay, 1 Nov 2026, 23:39: "In settings: snap on off, snap to guides on off, in their own lines. Snap default is off, snap to guides on. On off is like pill and dot like apple's. Also put the snap to guides switcher on guides popup. Thickness gets a new line, pill spans the whole leftover place. this switch is next to reset, just, snap to guides."
+
+- **Snap is off to start** (`ui_snap`, the window's, never in a link): with it off a handle drags free. **Snap to guides** (`ui_snap_guides`, on to start) adds the added guide circles (Guides → Add → Circle) to the edges a handle lands on (`snap_radii`, `geometry.js`).
+- **Settings**: two more lines, *Snap* and *Snap to guides*, Apple-style toggles (the Shenanigans' kind), a note under each.
+- **The Guides list's foot**: Thickness on a line of its own, its 1 · 2 · 3 pill spanning to the right edge; under it *Snap to guides* — the same switch as Settings', mirrored — beside Reset All.
+- The snapping check extended: free with Snap off; the toggles' states; the Guides list's switch moving Settings'.
+
 ## v1.1.17 beta · 1 Nov 2026 — the font sheet's rows relaid; the font box's preview follows the type
 
 Okay, 1 Nov 2026, 23:22: "Make preview sync with weight, etc here as well? Not affecting the main list, default shows there. Font selection screen: font names in ui inter, column halved in width. This makes numbers move left, following the numbers as AaBbCcDdEeFf… until its cropped. Every font gets a second line listing all the stickers left to right."

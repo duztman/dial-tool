@@ -161,8 +161,14 @@ export const GUIDES = {
     });
     const question = el("span", { className: "ask", hidden: true }, el("span", { textContent: "Reset all guides?" }), el("span", { className: "answers" }, no, yes));
     question.onkeydown = (e) => { if (e.key === "Escape") { e.stopPropagation(); ask(false); reset.focus(); } };
-    const last = el("div", { className: "guidelast" }, el("label", { textContent: "Thickness" }), el("span", { className: "numcell" }, thick), el("span", { className: "resetall" }, reset), question);
-    settings.append(last);
+    // Thickness on a line of its own, its pill over the whole room (Okay, 1 Nov 2026: "Thickness gets a new line, pill spans the
+    // whole leftover place"); then the last line: Snap to guides — the Settings switch, here too, so a guide drawn to snap to
+    // can be armed where it is drawn — beside Reset All (Okay: "this switch is next to reset, just, snap to guides")
+    const thickline = el("div", { className: "guidelast thickline" }, el("label", { textContent: "Thickness" }), el("span", { className: "numcell" }, thick));
+    const snapper = el("button", { type: "button", id: "guides-snap", className: "toggle", role: "switch", ariaLabel: "Snap to guides", onclick: () => { this.S.ui_snap_guides = !this.S.ui_snap_guides; this.sync_rows(); this.render(); } }, el("span", { className: "knob" }));
+    this.guide_snap = snapper;
+    const last = el("div", { className: "guidelast snapline" }, el("label", { htmlFor: "guides-snap", textContent: "Snap to guides" }), snapper, el("span", { className: "resetall" }, reset), question);
+    settings.append(thickline, last);
     const box = el("div", { className: "guides" }, this.guides_tick, more, list);
     box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
     return box;
@@ -425,7 +431,8 @@ export const GUIDES = {
       d.refresh();
       for (const f of d.fields) if (document.activeElement !== f.input) { f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1)); f.input.style.width = `${Math.max(1, f.input.value.length)}ch`; }
     });
-    [...this.guide_thick.children].forEach((b, n) => { const on = Math.abs(S.gd_w - GUIDE_STEP * (n + 1)) < 1e-6; b.setAttribute("aria-checked", String(on)); b.classList.toggle("on", on); });      // the chosen one filled: the chosen layer's rule for a pill switch
+    [...this.guide_thick.children].forEach((b, n) => { const on = Math.abs(S.gd_w - GUIDE_STEP * (n + 1)) < 1e-6; b.setAttribute("aria-checked", String(on)); b.classList.toggle("on", on); });
+    if (this.guide_snap) this.guide_snap.setAttribute("aria-checked", String(Boolean(S.ui_snap_guides)));      // the Settings switch, mirrored here      // the chosen one filled: the chosen layer's rule for a pill switch
   },
 
   /** the shadows' switch and list show the settings. */

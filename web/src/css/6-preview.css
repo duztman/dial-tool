@@ -213,6 +213,12 @@
   .guidelist.guidesheet .guidelast > .numcell { display: contents; }
   .guidelist.guidesheet .guidelast > .resetall { grid-column: 3; align-self: stretch; display: grid; align-items: center; }      /* Reset All in the third column, as tall as the line */
   .guidelist.guidesheet .guidelast > .ask { grid-column: 1 / -1; }
+  .guidelist .guidelast.thickline { grid-template-columns: max-content minmax(0, 1fr); }      /* Thickness: its pill over the whole room left of the name (Okay, 1 Nov 2026) */
+  .guidelist .guidelast.thickline .gthick { width: 100%; justify-self: stretch; }
+  .guidelist .guidelast.thickline .gthick > button { flex: 1 1 0; }      /* 1 · 2 · 3 share the pill evenly */
+  .guidelist .guidelast.snapline { grid-template-columns: max-content auto minmax(0, 1fr); }      /* Snap to guides — its name, the switch — then Reset All at the right */
+  .guidelist .guidelast.snapline > .toggle { grid-column: 2; justify-self: start; }
+  .guidelist .guidelast.snapline > .resetall { grid-column: 3; justify-self: end; }
   .gword { padding: 0 0 0 var(--u2); font-size: var(--t-s); color: var(--grey); }
   @media (hover: hover) { .gword:hover { color: var(--ink); } }
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
