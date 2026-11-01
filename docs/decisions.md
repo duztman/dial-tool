@@ -553,3 +553,4 @@ The dated record of every decision, with Okay's words as the reason. Not read be
 | 1 Nov, 13:12 | **#560 noted (open, not build): live text in the vectors a session sends him for Illustrator; which fonts the SVG export still outlines with the tick on.** | Okay: "It would be nice to get live text in some ui elements that i ask vectors from you to work on in illustrator. Even svg outlines some fonts." |
 | 1 Nov, 13:23 | **#552 built, the one try: `overflow-anchor: none` on the form; the SVG's outlined fonts stay in #560 for later.** | Okay: "Svg for later. Do 552" |
 | 1 Nov, 13:27 | **The counter's code is `okayka`.** | Okay: his script tag, `https://okayka.goatcounter.com/count` — "this is the counter" |
+| 1 Nov, 13:32 | **#561: the turned window's failing check goes into Next, first.** | Okay: "Add the window problems to do nexts" |
