@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.21 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.22 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -196,7 +196,7 @@
     --night-grey: #78786F;                         /* a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
-    --guide-list: 240px; --guide-circle: 20px; --guide-inset: var(--u4);      /* the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading */
+    --guide-list: 240px; --guide-circle: 20px; --guide-inset: calc(var(--guide-circle) + var(--u2));      /* the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading */
     --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches") */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
@@ -1742,6 +1742,11 @@
   .guidesheet .guidehead.gap { margin-top: var(--u4); }      /* a group after a group: air over its heading (Okay, 24 Oct 2026, 23:21: "close repeating lines need more space") */
   .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-circle) var(--guide-circle); column-gap: var(--u2); margin-left: var(--guide-inset); }      /* the tier: a group's lines inset under their heading (their group's box carries the list's side room) */
   .guidesheet .guidekind.selected > .name { justify-self: start; max-width: 100%; box-sizing: border-box; height: var(--guide-circle); line-height: var(--guide-circle); padding: 0 var(--u3); border-radius: var(--round-pill); background: var(--ink); color: var(--paper); font-weight: 400; }      /* the selected ring or window: its name in a filled pill, the chosen word's look (Okay, 25 Oct 2026: "Selected one gets its own personally tailored one word pill") */
+  .guidesheet .guidekind.added { grid-template-columns: calc(var(--guide-inset) - var(--u2)) minmax(0, 1fr) var(--guide-circle) var(--guide-circle); margin-left: 0; }      /* the first column plus the gap is the indent: the name starts where every line's does */      /* an added guide's line: its − in the indent every line keeps (Okay, 2 Nov 2026) */
+  .guidesheet .guidekind.added > .minus { justify-self: start; }
+  .guidehead .plus { position: relative; }
+  .guidehead .plus > .sign { display: contents; }      /* the sign is the grid item, centred as the −'s is */      /* Added's +: the round button, the hidden select over it that the tool's list opens from */
+  .guidehead .plus > .hiddenselect { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; appearance: none; border: 0; }
   .guideadded .guidekind:last-child { box-shadow: none; }      /* the last line meets the foot's edge: no rule of its own there */
   .gdot, .gchev { width: var(--guide-circle); height: var(--guide-circle); border-radius: 50%; display: grid; place-items: center; justify-self: center; }      /* each in a circle of its own, concentric (Okay: "If something can be a circle, is") */
   .gdot::before { content: ""; width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
@@ -1750,8 +1755,8 @@
   .gchev[aria-expanded="true"] { color: var(--ink); }
   @media (hover: hover) { .gchev:hover { color: var(--ink); } }
   .gchev[aria-expanded="true"] svg { rotate: 180deg; }
-  .guidehead .minus { display: grid; place-items: center; width: var(--guide-circle); height: var(--guide-circle); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
-  @media (hover: hover) { .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); } }
+  .guidehead .minus, .guidekind .minus { display: grid; place-items: center; width: var(--guide-circle); height: var(--guide-circle); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
+  @media (hover: hover) { :is(.guidehead, .guidekind) .minus:hover { border-color: var(--ink); color: var(--ink); } }
   /* a heading's menu, Selected · All · None: the tool's chevron box, round here, as high as a circle */
   .gmenu { height: var(--guide-circle); border-radius: var(--round-pill); }
   .gmenu > .v { padding-left: var(--u3); }
@@ -7534,7 +7539,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.21 beta";
+var VERSION = "v1.1.22 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -20766,26 +20771,26 @@ var GUIDES = {
     const head = (word2, ...rest) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: word2 }), ...rest);
     this.guide_windows_head = head("Windows", this.guide_which_w.box);
     this.guide_windows_head.classList.add("gap");
-    const last_gone = el("button", { type: "button", className: "minus", id: "guide-more-last", title: "Take the last added guide away", ariaLabel: "Take the last added guide away", onclick: () => {
-      this.S.gd_more = (this.S.gd_more || []).slice(0, -1);
+    const add_select = el("select", { id: "guide-add", ariaLabel: "Add a guide", className: "hiddenselect" });
+    add_select.append(el("option", { value: "", textContent: "Add a guide", hidden: true, selected: true }), ...GUIDE_MORE.map((kind, i2) => el("option", { value: String(i2), textContent: kind[0].toUpperCase() + kind.slice(1) })));
+    add_select.onchange = () => {
+      if (add_select.value === "") return;
+      const i2 = +add_select.value, used = new Set((this.S.gd_more || []).map((g) => g.k));
+      this.S.gd_more = [...this.S.gd_more || [], { kind: i2, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
+      add_select.value = "";
       this.sync_rows();
       this.render();
-    } });
-    last_gone.innerHTML = icon(`<path d="M3 6H9" ${sw(LINE)}/>`, 12);
-    this.guide_more_head = head("Added", last_gone);
+    };
+    const plus_sign = el("span", { className: "sign" });
+    plus_sign.innerHTML = icon(`<path d="M3 6H9M6 3V9" ${sw(LINE)}/>`, 12);
+    const plus = el("span", { className: "minus plus", id: "guide-more-add", title: "Add a guide" }, plus_sign, add_select);
+    this.guide_more_head = head("Added", plus);
     const rings_head = head("Rings", this.guide_which.box);
     rings_head.classList.add("gap");
     this.guide_more_head.classList.add("gap");
     this.guide_added = el("div", { className: "guideadded" }, this.guide_more_head, this.guide_more);
     const scroll = el("div", { className: "guidescroll" }, head("Dial"), el("div", { className: "guiderings" }, ...this.guide_kinds.map((d) => d.line)), rings_head, this.guide_rings, this.guide_windows_head, this.guide_windows, this.guide_added, pop2);
-    const adds = el("span", { className: "pillswitch free" });
-    GUIDE_MORE.forEach((kind, i2) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
-      const used = new Set((this.S.gd_more || []).map((g) => g.k));
-      this.S.gd_more = [...this.S.gd_more || [], { kind: i2, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
-      this.sync_rows();
-      this.render();
-    } })));
-    const settings = el("div", { className: "guidesettings" }, head("Add", adds));
+    const settings = el("div", { className: "guidesettings" });
     list.append(scroll, settings);
     list.classList.add("guidesheet");
     list.addEventListener("pointerdown", (e) => {
@@ -21119,12 +21124,19 @@ var GUIDES = {
         };
         const fields = [...kind !== "circle" ? [field("a", "\xB0", false)] : [], ...kind !== "line" ? [field("r", "r", true)] : []];
         d.label.replaceChildren(el("span", { className: "word", textContent: d.label.textContent }), ...fields.map((f2) => f2.el));
+        const gone = el("button", { type: "button", className: "minus", id: `guide-more-${i2}-gone`, title: "Take this guide away", ariaLabel: "Take this guide away", onclick: () => {
+          this.S.gd_more = (this.S.gd_more || []).filter((_, k) => k !== i2);
+          this.sync_rows();
+          this.render();
+        } });
+        gone.innerHTML = icon(`<path d="M3 6H9" ${sw(LINE)}/>`, 12);
+        d.line.prepend(gone);
         d.line.classList.add("added");
         return { ...d, fields };
       });
       this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
     }
-    this.guide_added.hidden = !(S.gd_more || []).length;
+    this.guide_more.hidden = !(S.gd_more || []).length;
     this.guide_more_lines.forEach((d, i2) => {
       d.refresh();
       for (const f2 of d.fields) if (document.activeElement !== f2.input) {
@@ -26467,7 +26479,7 @@ var DialTool = class _DialTool {
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
-    if (this.guides_open && !$("#guide-list").hidden && !on(".guides, .handles [data-more]")) this.guides_open(false);
+    if (this.guides_open && !$("#guide-list").hidden && !on(".guides, .handles [data-more], #menu-list")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows, #shadow-list, #value-pop")) this.shadows_open(false);
     if (this.ground_open && !$("#ground-pop").hidden && !on(".backdrops, #colour-pop")) this.ground_open(false);
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
