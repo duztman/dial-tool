@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.18 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.19 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -992,8 +992,47 @@ export function sector(r_in, r_out, a0, a1) {
 /** the same shape grown (d > 0) or shrunk (d < 0) by d mm; its corners rounded, or mitred or bevelled (join: a word of STROKE_JOINS). */
 export function offset(p, d, join = "Round") {
   if (empty(p) || abs(d) < 1e-6) return p;
-  const band = p.expandStroke(2 * abs(d), join);   // a band of width 2|d| along the outline
-  return d > 0 ? p.union(band) : p.difference(band);
+  // The outer contours and the holes (counters) go separate ways: growing the shape grows an outer contour and shrinks a
+  // hole. A hole is shrunk by taking its band away from it, so a counter narrower than 2d closes whole — a stroked band
+  // through a narrow counter folds over itself, and its folds come back as slivers of hole that no union with the shape
+  // covers (#563; Okay, 1 Nov 2026: "a glitch inside shapes like 8 and 9"). The shape arrives wound (removeOverlap, _wound):
+  // a hole runs clockwise, so its signed area is negative.
+  const area = (c) => { const pts = c._points(); return pts.reduce((sum, q, i) => sum + q[0] * pts[(i + 1) % pts.length][1] - pts[(i + 1) % pts.length][0] * q[1], 0); };
+  const outers = new Path(), holes = new Path();
+  for (const c of p.contours()) (area(c) < 0 ? holes : outers).appendPath(c);
+  // The band itself misleads where the shape is narrower than the band: the stroker's inner edge folds over and the fold
+  // comes out as a hole in the band, so a thin counter or stem keeps a sliver it should have lost (#563). The slivers are
+  // told from true results by distance: every point of a shape shrunk by s lies at least s from the old outline, a sliver
+  // lies nearer; a shape grown by s has no holes of its own. So: grown, the result's holes are dropped; shrunk, a contour
+  // with a point nearer the old outline than s is dropped.
+  const moved = (q, s) => {
+    if (empty(q)) return q;
+    const band = q.expandStroke(2 * abs(s), join);      // a band of width 2|s| along the outline
+    const out = new Path();
+    if (s > 0) { const grown = q.union(band), cs = grown.contours(); if (cs.length < 2) return grown; for (const c of cs) if (area(c) > 0) out.appendPath(c); return out; }      // one contour alone is not wound (_wound): kept as it is
+    const box = (pts) => pts.reduce(([x0, y0, x1, y1], [x, y]) => [min(x0, x), min(y0, y), max(x1, x), max(y1, y)], [Infinity, Infinity, -Infinity, -Infinity]);
+    const edges = q.contours().map((c) => { const pts = c._points(); return { pts, box: box(pts) }; }), reach = abs(s) * 0.97;      // a little under s: the curves are measured as short straight pieces
+    for (const c of q.difference(band).contours()) {
+      const pts = c._points(); if (pts.length < 3) continue;
+      const [x0, y0, x1, y1] = box(pts), r = abs(s) * 1.05;      // only the outlines within reach of this contour are measured (a ring of sixty numerals: each against its own glyph, not all)
+      const near = edges.filter((e) => e.box[0] <= x1 + r && e.box[2] >= x0 - r && e.box[1] <= y1 + r && e.box[3] >= y0 - r).map((e) => e.pts);
+      if (pts.every((pt) => distance_to(pt, near) >= reach)) out.appendPath(c);      // every point of a true result keeps its distance; a fold's points stand nearer the far wall
+    }
+    return out;
+  };
+  const o = moved(outers, d), h = moved(holes, -d);      // the shape's outer contours move one way, its holes the other
+  return empty(h) ? o : o.difference(h);
+}
+
+/** how far a point lies from the nearest of several outlines, each a ring of points (straight pieces). */
+function distance_to(pt, outlines) {
+  let best = Infinity;
+  for (const pts of outlines) for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [ax, ay] = pts[j], [bx, by] = pts[i], dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
+    const k = len2 ? Math.max(0, Math.min(1, ((pt[0] - ax) * dx + (pt[1] - ay) * dy) / len2)) : 0;
+    best = Math.min(best, Math.hypot(pt[0] - (ax + k * dx), pt[1] - (ay + k * dy)));
+  }
+  return best;
 }
 
 /** a stroke round a shape as a filled outline (R4): w mm wide, on the inside, the middle or the outside of the edge,

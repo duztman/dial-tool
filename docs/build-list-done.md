@@ -6,6 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
+| 563 | The stroke round numerals glitches inside counters (an 8, a 9) at some widths | **done** (v1.1.19 beta): `offset` grows a shape's outer contours and shrinks its holes separately, and drops the stroker's folds — a result contour with a point nearer the old outline than the offset (Okay, 1 Nov 2026: "a glitch inside shapes like 8 and 9") |
 | 494 | Compare at one size, as large as the canvas holds, and a real-size switch | **done** (v1.1.14 beta): *Real size*, a switch centred on the canvas's top line while comparing; pressed, each dial at its own millimetres on the centre it had (Okay, 1 Nov 2026: "a button on top of compare canvas, the dials resize in their place. Our small preview size for all") |
 | 561 | The turned window's failing check | **done** (v1.1.14 beta): the tool was right; the check measured today's day — a narrow "1" turned 30° is no taller than level — so it sets the day to 28 and gives the bar's day back |
 | 52 | Named instances of variable fonts: the designer's style names as tabs where Regular · Bold stand | **done** (v1.1.13 beta): the `fvar` instances read from the file (`fvar_instances`, `geometry.js`); the weight ladder (the other axes at their defaults) as the tabs, each setting the weight; Regular · Bold only for a font without named styles |

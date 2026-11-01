@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.19 beta · 2 Nov 2026 — the stroke's slivers in counters gone (#563)
+
+Okay, 1 Nov 2026, 23:39, his screenshot (Saira 800, stroke 0.28 outside): "The stroke at an exact point here gets a glitch inside shapes like 8 and 9".
+
+- **Why**: a shape was grown by adding the stroker's band round its whole outline, and shrunk by taking it away. Where the shape is narrower than the band — a counter, a thin stem — the stroker's inner edge folds over itself, and PathKit's simplify leaves the fold as a hole in the band; no union with the shape covered it, so a sliver of the counter stayed open at exactly the widths where it should have closed. Reproduced headless at 0.2, 0.28, 0.3 and 0.33 mm.
+- **Fix** (`offset`, `geometry.js`): the outer contours and the holes move separately — growing the shape grows the outers and shrinks the holes (a hole narrower than twice the offset closes whole), shrinking does the reverse. The stroker's folds are then told from true results by distance: every point of a shape shrunk by *s* lies at least *s* from the old outline, a fold's points stand nearer the far wall, so a contour with such a point is dropped; a grown shape keeps no holes of its own. Only the outlines within reach of a contour are measured, so a ring of sixty numerals costs no more than before.
+- Every side (Inside, Middle, Outside) and join checked by eye at five widths; a check in `labels.mjs` (the 8's counters close whole at 0.28, stay open at 0.06; an inside stroke leaves the 9's body). Parity with `dial.py` and the whole suite pass; windows' frames and clear zones use the same `offset` and are unchanged.
+
 ## v1.1.18 beta · 2 Nov 2026 — Snap and Snap to guides, in Settings and on the Guides list
 
 Okay, 1 Nov 2026, 23:39: "In settings: snap on off, snap to guides on off, in their own lines. Snap default is off, snap to guides on. On off is like pill and dot like apple's. Also put the snap to guides switcher on guides popup. Thickness gets a new line, pill spans the whole leftover place. this switch is next to reset, just, snap to guides."

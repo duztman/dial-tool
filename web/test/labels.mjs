@@ -36,4 +36,17 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   const say = (S) => ["hour", "minute", "second"].map((h) => (S["ha_" + h].bevel ? 1 : 0)).join("");
   check(say(plain) === "000" && plain.sh_bevel === 100 && say(old) === "111" && say(again) === "100" && again.sh_bevel === 60, `Bevel per hand: none to start (${say(plain)}); an older dial with Bevels % keeps them on every hand (${say(old)}); a dial made since comes back as made (${say(again)})`);
 }
+// the stroke round letters in a narrow counter (#563; Okay, 1 Nov 2026: "The stroke at an exact point here gets a glitch
+// inside shapes like 8 and 9"): Saira at weight 800, an 8 of 1.66 mm, a stroke of 0.28 outside — the counters, narrower
+// than twice the stroke, close whole: the stroke is one contour round the 8, no sliver left inside; a thin stroke keeps
+// them open; a stroke inside the letter keeps the letter's body
+{
+  const fs = await import("fs");
+  const info = G.add_font(new Uint8Array(fs.readFileSync("fonts/Saira-wdth-wght.ttf")));
+  const t = { ...G.RING_BASE, ps: info.ps, axes: { wght: 800 }, features: {}, tracking: 0, lang: 0 };
+  const eight = G.text_path("8", t, 1.66), nine = G.text_path("9", t, 1.66);
+  const thick = G.stroke_outline(eight, 0.28, "Outside", "Miter").contours().length, thin = G.stroke_outline(eight, 0.06, "Outside", "Miter").contours().length;
+  const body = G.stroke_outline(nine, 0.1, "Inside", "Round"), kept = nine.difference(body).contours().length;      // the 9 less its inside stroke: its body remains
+  check(thick === 4 && thin === 6 && kept >= 1, `the stroke round an 8: at 0.28 outside the counters close whole, filled by the stroke (${thick} contours: outside, against the letter, the two counters — six with the folds that were); at 0.06 the counters stay open (${thin}); an inside stroke of 0.1 leaves the 9's body (${kept}) (#563)`);
+}
 process.exit(bad ? 1 : 0);
