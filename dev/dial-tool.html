@@ -1596,9 +1596,14 @@
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
-  .handles .handle { fill: var(--white); stroke: none; cursor: grab; pointer-events: all; }      /* the handle's sign in white on its disc */
+  /* a handle after Okay's drawing (2 Nov 2026, #568: "Let's try this design on the side for these handles. Active they are
+     filled in with thicker stroke"): a white disc with a ring in the guide's colour, its sign inside in that colour; held,
+     the disc fills with the colour, the ring thickens and the sign turns white */
+  .handles .handle { fill: var(--handle); stroke: none; cursor: grab; pointer-events: all; }
   .handles .handle .reach { fill: transparent; stroke: none; }
-  .handles .handle .seat { fill: var(--handle); stroke: var(--white); stroke-width: var(--glow-line); }      /* the disc a handle sits in: its guide's colour, solid, a white hairline round it (#486; Okay, 04:52: "No transparency on handles, backgrounds solid") */
+  .handles .handle .seat { fill: var(--white); stroke: var(--handle); stroke-width: var(--glow-line); }
+  .handles .handle.held { fill: var(--white); }
+  .handles .handle.held .seat { fill: var(--handle); stroke-width: calc(2 * var(--glow-line)); }      /* the disc a handle sits in: its guide's colour, solid, a white hairline round it (#486; Okay, 04:52: "No transparency on handles, backgrounds solid") */
   .handles.dragging .handle { cursor: grabbing; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
      everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
@@ -20083,6 +20088,7 @@ var PREVIEW = {
       if ("more:" + more.key !== this.handles_key) {
         this.handles_key = "more:" + more.key;
         H2.innerHTML = more.parts.join("");
+        this.hold_handle();
       }
       return;
     }
@@ -20113,6 +20119,13 @@ var PREVIEW = {
     });
     H2.style.setProperty("--handle", tone2);
     H2.innerHTML = parts.join("") + more.parts.join("");
+    this.hold_handle();
+  },
+  /** the handle being dragged keeps its held look across redraws (the layer is rewritten as the value moves, #568) */
+  hold_handle() {
+    const H2 = this.handles, d = this.handle_drag, m = this.more_drag;
+    const g = d ? H2.querySelector(`[data-handle="${d.what}"]`) : m ? H2.querySelector(`[data-more="${m.i}"]`) : null;
+    if (g) g.classList.add("held");
   },
   /** the guides added by hand, each with a handle in its own colour while the Guides list is open (#527; Okay, 24 Oct
    *  2026: placed "Both" ways — dragged here, and by the numbers in its line): a line by a triangle on it, turned round;
@@ -20141,6 +20154,7 @@ var PREVIEW = {
         this.more_drag = { i: +m.dataset.more, x: e.clientX, y: e.clientY, moved: false };
         H2.setPointerCapture(e.pointerId);
         H2.classList.add("dragging");
+        m.classList.add("held");
         this.tag_hide();
         return;
       }
@@ -20175,6 +20189,7 @@ var PREVIEW = {
       };
       H2.setPointerCapture(e.pointerId);
       H2.classList.add("dragging");
+      g.classList.add("held");
       this.tag_hide();
     });
     H2.addEventListener("pointermove", (e) => {
@@ -20228,6 +20243,7 @@ var PREVIEW = {
       this.more_drag = null;
       this.snapped_to = null;
       H2.classList.remove("dragging");
+      for (const g of H2.querySelectorAll(".held")) g.classList.remove("held");
     };
     H2.addEventListener("pointerup", end);
     H2.addEventListener("pointercancel", end);
