@@ -1617,6 +1617,18 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
       return [tabs.length, tabs.every((t) => t.classList.contains("hang") && t.getAttribute("role") === "tab"), on && on.textContent, on && getComputedStyle(on).color, Math.round(r(".font .styles").top - r(".fontname").bottom), Math.round(slider.width), Math.round(plain.width), Math.round(label)]; });
     check(h[0] >= 2 && h[1] && h[2] === "Regular" && h[3] === "rgb(255, 255, 255)" && h[4] <= 1 && h[5] > h[6] * 1.2 && h[7] < 110,
       `the family's ${h[0]} styles are tabs hanging from the name's line (${h[4]} apart; #275), the chosen one mid grey with white words (${h[2]}, ${h[3]}; Okay's drawing, 18 Oct 2026); the box's slider is ${h[5]} wide where a pane's is ${h[6]} (#274), its name column ${h[7]}`);
+    // a variable font's named styles as the tabs (#52): Antonio's five, the weight each sets; off the ladder, no tab is on
+    const named = await page.evaluate(async () => { const t = window.dial_tool, R = t.ring(), was = { ps: R.ps, family: R.family, axes: R.axes };
+      const entry = [...t.catalog.values()].find((e) => e.ps === "Antonio-Regular"); await t.use_font(entry); t.frame();
+      const tabs = () => [...document.querySelectorAll(".font .styles > .tab")].map((b) => b.textContent + (b.classList.contains("on") ? "*" : "")).join(" ");
+      const ladder = tabs();
+      document.querySelector("#font-style-3").click(); t.frame(); const semi = [tabs(), (t.ring().axes || {}).wght];
+      document.querySelector("#font-style-2").click(); t.frame(); const back = [tabs(), (t.ring().axes || {}).wght];
+      t.set_value("ring", "axes", { wght: 450 }); t.frame(); const off = tabs();
+      const prior = [...t.catalog.values()].find((e) => e.ps === was.ps); if (prior) await t.use_font(prior); t.set_value("ring", "axes", was.axes || {}); t.frame();
+      return { ladder, semi, back, off }; });
+    check(named.ladder === "Thin Light Regular* SemiBold Bold" && named.semi[0] === "Thin Light Regular SemiBold* Bold" && named.semi[1] === 600 && named.back[0] === named.ladder && named.back[1] === undefined && named.off === "Thin Light Regular SemiBold Bold",
+      `a variable font's own styles are the tabs — Antonio: ${named.ladder}; SemiBold sets the weight to ${named.semi[1]} (${named.semi[0]}), Regular takes it off again (${named.back[1]}); a weight between two styles lights none (${named.off}) (#52; Okay, 1 Nov 2026: "Up to Now")`);
     await page.click("#font-name");
     await page.click("#font-ground-dark");
     const d = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#font-list").backgroundColor, c("#font-current").backgroundColor, c("#font-current").color, c("#font-ground-dark").backgroundColor, document.querySelector("#font-ground-dark").getAttribute("aria-checked"), sessionStorage.getItem("dial-tool-font-dark"), c(".fontbox").backgroundColor]; });

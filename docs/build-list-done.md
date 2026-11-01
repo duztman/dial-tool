@@ -6,6 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
+| 52 | Named instances of variable fonts: the designer's style names as tabs where Regular · Bold stand | **done** (v1.1.13 beta): the `fvar` instances read from the file (`fvar_instances`, `geometry.js`); the weight ladder (the other axes at their defaults) as the tabs, each setting the weight; Regular · Bold only for a font without named styles |
 | 548 | A visitor counter on the live site | **done** (v1.1.9 beta): GoatCounter, in the build, awake only at https://duztman.github.io/dial-tool/, path only; counts once the step to `main` is run and Okay's account exists under the code `okayka` (Okay, 1 Nov 2026: "goat counter is good, we only count main") |
 | 16 | Live text in the SVG: open one in Illustrator | **closed** (Okay, 1 Nov 2026: "pdf/svg q closed"; his finding: "No live text available on dial exports in any format"; what he sees with the tick on is #560) |
 | 20 | Subdials (small seconds, chronograph registers) | **folded** into #346 (1 Nov 2026, the list's audit: one mechanism for every complication) |

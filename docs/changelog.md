@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.13 beta · 1 Nov 2026 — a variable font's own styles as the tabs (#52)
+
+Okay, 1 Nov 2026, 14:30: "Go on" (the list's next item).
+
+- **The designer's named styles as the font box's tabs** (`fonts.js`): a variable font's instances come from the file's `fvar` table, read by `fvar_instances` in `geometry.js` (HarfBuzz does not hand them over; the reader is thirty lines: the table directory, the axes, then a name id and one value per axis for each instance). The tabs are the weight ladder — the instances whose other axes sit at their defaults (Antonio: Thin · Light · Regular · SemiBold · Bold; Anybody: nine, sliding sideways as the row already does) — and each sets the weight; a style that also moves width or optical size stays with that axis's slider. The tab on is the one within 1 of the current weight; a weight between two styles lights none. A font with a weight axis and no named styles keeps Regular · Bold.
+- A check in `window.mjs`: Antonio's five, SemiBold setting 600, Regular taking the weight off, a weight of 450 lighting no tab.
+
 ## v1.1.12 beta · 1 Nov 2026 — the Type pane opens in place (#552); the hex pill whole
 
 Okay, 1 Nov 2026, 13:54: "2" (of: the ring list gives way, or the pane's heading stays put); 14:05: "widen to incorporate all 7 chars, see if it fucks up anywhere".

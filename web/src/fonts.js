@@ -188,16 +188,20 @@ export const FONTS = {
       }
       // the family's styles as tabs of the name's box, hanging from its line (#275, 4.51; Okay, 16 Oct 2026: "it is a part of
       // the font so it needs to look like tabs of the upper box which is the font name"). A variable font with a weight
-      // axis and no named styles gets Regular and Bold here, which set the axis (what a font may offer here is limited
-      // to bold and italic; its other axes stay down with the sliders)
+      // axis shows the designer's own named styles along that axis — Thin, Light, Regular, Bold… (#52) — each a weight
+      // the tab sets; the styles that also move another axis (a Condensed Bold) stay with that axis's slider. A font
+      // with a weight axis and no such styles gets Regular and Bold here (what a font may offer here is limited to
+      // bold and italic; its other axes stay down with the sliders)
       const tab = (text, on, act, id) => { const b = el("button", { type: "button", className: "tab hang", textContent: text, role: "tab", id, onclick: act }); b.classList.toggle("on", on); b.setAttribute("aria-selected", String(on)); return b; };
       let tabs = mine.length > 1 ? mine.map((x, i) => tab(x.style || x.ps, x.ps === R.ps, () => choose(() => this.use_font(x)), `${pre}font-style-${i}`)) : [];
       if (!tabs.length && G.has_font(R.ps)) {
-        const a = G.font_axes(G.font_of(R)).wght;
+        const info = G.font_of(R), axes = G.font_axes(info), a = axes.wght;
         if (a && a.max >= 600) {
           const side = this.font_side(own), H = this.target(side.scope), now = (H.axes || {}).wght ?? side.base_axis(H, "wght", a), bold = Math.min(700, a.max);
           const put = (v) => { const all = { ...(this.target(side.scope).axes || {}) }; if (Math.abs(v - side.base_axis(this.target(side.scope), "wght", a)) < 1e-6) delete all.wght; else all.wght = v; this.set_value(side.scope, "axes", all); };
-          tabs = [tab("Regular", now < 600, () => put(a.default), `${pre}font-style-0`), tab("Bold", now >= 600, () => put(bold), `${pre}font-style-1`)];
+          const ladder = (info.instances || []).filter((x) => x.axes.wght != null && Object.entries(x.axes).every(([tag, v]) => tag === "wght" || !axes[tag] || Math.abs(v - axes[tag].default) < 1e-6));      // the weight ladder: the other axes at their defaults
+          tabs = ladder.length > 1 ? ladder.map((x, i) => tab(x.name, Math.abs(now - x.axes.wght) < 1, () => put(x.axes.wght), `${pre}font-style-${i}`))
+            : [tab("Regular", now < 600, () => put(a.default), `${pre}font-style-0`), tab("Bold", now >= 600, () => put(bold), `${pre}font-style-1`)];
         }
       }
       styles.hidden = tabs.length < 2;

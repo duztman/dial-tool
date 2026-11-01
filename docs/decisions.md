@@ -556,3 +556,4 @@ The dated record of every decision, with Okay's words as the reason. Not read be
 | 1 Nov, 13:32 | **#561: the turned window's failing check goes into Next, first.** | Okay: "Add the window problems to do nexts" |
 | 1 Nov, 13:54 | **#552: the pane's heading stays where it was pressed when it opens (reading 2); the ring list keeps its rows.** | Okay: "2" |
 | 1 Nov, 14:05 | **The hex pill a hair wider than 7ch, so all seven characters show in Safari.** | Okay: "Font change forced these tags to get…, widen to incorporate all 7 chars, see if it fucks up anywhere" |
+| 1 Nov, 14:30 | **#52 built: a variable font's named styles along the weight axis as the font box's tabs; styles that move another axis stay with that axis's slider.** | Okay: "Go on" (the list's next) |

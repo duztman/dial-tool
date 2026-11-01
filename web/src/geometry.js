@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.12 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.13 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -1052,6 +1052,7 @@ export function add_font(bytes, index = 0, fallback = false) {
     const info = {
       face, font: new HB.Font(face), upem: face.upem,
       ps: name(6) || name(4), family: name(16) || name(1), style: name(17) || name(2),
+      instances: fvar_instances(bytes, index, name),      // a variable font's named styles (#52): [{name, axes: {tag: value}}], [] when it has none
     };
     if (!info.ps) return null;
     fonts.set(info.ps, info);
@@ -1071,6 +1072,31 @@ export function font_of(t) {
   if (fonts.has(t.ps)) return fonts.get(t.ps);
   note(`font ${t.family} (${t.ps}) isn't loaded: ${fonts.get(fallback_ps).family} stands in. Add it in the ring's Type rows.`);
   return fonts.get(fallback_ps);
+}
+
+/** a variable font's named instances — the designer's own styles (Thin, Regular, Bold…), each a point on the axes.
+ *  HarfBuzz does not hand the `fvar` table's instances over, so this reads them from the file itself (#52). An OpenType
+ *  file is a directory of tables; `fvar` lists the axes, then the instances: a name id and one value per axis.
+ *  A collection (a .ttc) holds several fonts; `index` says which. → [{name, axes: {tag: value}}], [] when there are none. */
+function fvar_instances(bytes, index, name) {
+  try {
+    const d = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), tag = (at) => String.fromCharCode(d.getUint8(at), d.getUint8(at + 1), d.getUint8(at + 2), d.getUint8(at + 3));
+    let sfnt = 0;
+    if (tag(0) === "ttcf") sfnt = d.getUint32(12 + 4 * index);      // the collection's header: the fonts' offsets from byte 12
+    const tables = d.getUint16(sfnt + 4);
+    let fvar = 0;
+    for (let i = 0; i < tables; i++) { const rec = sfnt + 12 + 16 * i; if (tag(rec) === "fvar") { fvar = d.getUint32(rec + 8); break; } }
+    if (!fvar) return [];
+    const axes_at = fvar + d.getUint16(fvar + 4), axis_count = d.getUint16(fvar + 8), axis_size = d.getUint16(fvar + 10), count = d.getUint16(fvar + 12), size = d.getUint16(fvar + 14);
+    const tags = []; for (let i = 0; i < axis_count; i++) tags.push(tag(axes_at + axis_size * i));
+    const out = [], first = axes_at + axis_size * axis_count;
+    for (let i = 0; i < count; i++) {
+      const at = first + size * i, axes = {};
+      tags.forEach((t, k) => { axes[t] = d.getInt32(at + 4 + 4 * k) / 65536; });      // Fixed 16.16: the value times 65536
+      out.push({ name: name(d.getUint16(at)), axes });
+    }
+    return out.filter((x) => x.name);
+  } catch (e) { return []; }
 }
 
 /** a font's variable axes: tag → {min, default, max, name}. */

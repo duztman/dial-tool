@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.12 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.13 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7516,7 +7516,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.12 beta";
+var VERSION = "v1.1.13 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -9198,7 +9198,9 @@ function add_font(bytes2, index = 0, fallback = false) {
       upem: face.upem,
       ps: name(6) || name(4),
       family: name(16) || name(1),
-      style: name(17) || name(2)
+      style: name(17) || name(2),
+      instances: fvar_instances(bytes2, index, name)
+      // a variable font's named styles (#52): [{name, axes: {tag: value}}], [] when it has none
     };
     if (!info2.ps) return null;
     fonts.set(info2.ps, info2);
@@ -9215,6 +9217,37 @@ function font_of(t) {
   if (fonts.has(t.ps)) return fonts.get(t.ps);
   note(`font ${t.family} (${t.ps}) isn't loaded: ${fonts.get(fallback_ps).family} stands in. Add it in the ring's Type rows.`);
   return fonts.get(fallback_ps);
+}
+function fvar_instances(bytes2, index, name) {
+  try {
+    const d = new DataView(bytes2.buffer, bytes2.byteOffset, bytes2.byteLength), tag = (at) => String.fromCharCode(d.getUint8(at), d.getUint8(at + 1), d.getUint8(at + 2), d.getUint8(at + 3));
+    let sfnt = 0;
+    if (tag(0) === "ttcf") sfnt = d.getUint32(12 + 4 * index);
+    const tables = d.getUint16(sfnt + 4);
+    let fvar = 0;
+    for (let i2 = 0; i2 < tables; i2++) {
+      const rec = sfnt + 12 + 16 * i2;
+      if (tag(rec) === "fvar") {
+        fvar = d.getUint32(rec + 8);
+        break;
+      }
+    }
+    if (!fvar) return [];
+    const axes_at = fvar + d.getUint16(fvar + 4), axis_count = d.getUint16(fvar + 8), axis_size = d.getUint16(fvar + 10), count = d.getUint16(fvar + 12), size = d.getUint16(fvar + 14);
+    const tags = [];
+    for (let i2 = 0; i2 < axis_count; i2++) tags.push(tag(axes_at + axis_size * i2));
+    const out = [], first = axes_at + axis_size * axis_count;
+    for (let i2 = 0; i2 < count; i2++) {
+      const at = first + size * i2, axes = {};
+      tags.forEach((t, k) => {
+        axes[t] = d.getInt32(at + 4 + 4 * k) / 65536;
+      });
+      out.push({ name: name(d.getUint16(at)), axes });
+    }
+    return out.filter((x2) => x2.name);
+  } catch (e) {
+    return [];
+  }
 }
 function font_axes(info2) {
   const out = {};
@@ -16325,7 +16358,7 @@ var FONTS = {
       };
       let tabs = mine.length > 1 ? mine.map((x2, i2) => tab(x2.style || x2.ps, x2.ps === R.ps, () => choose(() => this.use_font(x2)), `${pre}font-style-${i2}`)) : [];
       if (!tabs.length && has_font(R.ps)) {
-        const a = font_axes(font_of(R)).wght;
+        const info2 = font_of(R), axes2 = font_axes(info2), a = axes2.wght;
         if (a && a.max >= 600) {
           const side = this.font_side(own), H2 = this.target(side.scope), now = (H2.axes || {}).wght ?? side.base_axis(H2, "wght", a), bold = Math.min(700, a.max);
           const put = (v) => {
@@ -16334,7 +16367,8 @@ var FONTS = {
             else all.wght = v;
             this.set_value(side.scope, "axes", all);
           };
-          tabs = [tab("Regular", now < 600, () => put(a.default), `${pre}font-style-0`), tab("Bold", now >= 600, () => put(bold), `${pre}font-style-1`)];
+          const ladder = (info2.instances || []).filter((x2) => x2.axes.wght != null && Object.entries(x2.axes).every(([tag, v]) => tag === "wght" || !axes2[tag] || Math.abs(v - axes2[tag].default) < 1e-6));
+          tabs = ladder.length > 1 ? ladder.map((x2, i2) => tab(x2.name, Math.abs(now - x2.axes.wght) < 1, () => put(x2.axes.wght), `${pre}font-style-${i2}`)) : [tab("Regular", now < 600, () => put(a.default), `${pre}font-style-0`), tab("Bold", now >= 600, () => put(bold), `${pre}font-style-1`)];
         }
       }
       styles.hidden = tabs.length < 2;
