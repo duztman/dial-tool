@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.9 beta · 1 Nov 2026 — the visitor counter (#548)
+
+Okay, 1 Nov 2026, 13:12: "Do the counter, goat counter is good, we only count main."
+
+- **A visitor counter in the page** (`web/build.mjs`): GoatCounter (no cookies), its script added by a few lines in the page's head that run only when the address is `https://duztman.github.io/dial-tool/` (or `/index.html` there) — not on /dev/ (its loader keeps that address), /show-case/, /help/ or a file opened from disk. It sends the path only (`window.goatcounter.path = location.pathname`), never the query or the hash, where a dial's link lives. The code is `dial-tool` — one constant, `COUNTER_CODE`; the GoatCounter account under it is Okay's to make. Counting starts when the step to `main` is run.
+- A check in `window.mjs`: on the test's page (from disk) the counter is written in but asleep, no cookie.
+- Docs: brief Q5 and #16 closed (Okay: "No live text available on dial exports in any format"); #560 added, open: live text in the vectors a session sends him; which fonts the SVG export outlines with the tick on.
+
 ## docs · 1 Nov 2026 — the build list and the rules made followable (no version)
 
 The build list is one ordered list (an order column now → future, easier → harder; the # stays the item's name), folded and finished rows out — #20, #177 into #346; #33, #19 into #522 and #173; #421 into #404; #493 done by #529; #396 a note on #395; #545–#547 (built 25 Oct) removed. The rules index gives each rule a learning order and a name; R-numbers unchanged. R19 (a beta counts as v1), R23 and R32b (#173, #398), R35 (100 families), R36 (#503 retired) updated; brief §5–§8, handoff §1, README, the glossaries, the Project prompt in line.

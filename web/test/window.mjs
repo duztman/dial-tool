@@ -2360,6 +2360,8 @@ await tab("Export");
     check(s.on && s.blend === "multiply" && s.fills.includes(solid) && cr > cg && cg === cb && cg > Math.round(255 * (1 - s.dark / 100)), `a see-through red hand's shadow is lighter and red (${red}), a solid hand's as before (${solid}), multiplied onto the plate (${s.blend})`);
   }
   check(await page.evaluate(() => JSON.parse(localStorage.getItem("dial-tool-folds") || "{}")["Export/Export a file"] === true) && !(await page.isVisible("#export-pdf")), "the Gallery pill shuts the eye of Export a file, so the Gallery has the room (Okay, 15 Oct 2026, 10:47)");
+  // the visitor counter (#548) is written into the page but wakes only at https://duztman.github.io/dial-tool/ — this test opens the file from disk, so it must stay asleep
+  check(await page.evaluate(() => !document.querySelector("script[data-goatcounter]") && document.documentElement.outerHTML.includes("goatcounter.com/count") && document.cookie === ""), "the visitor counter sleeps away from the released page, no cookie, path only (Okay, 1 Nov 2026: \"goat counter is good, we only count main\"; #548)");
   { const f = JSON.parse(await page.evaluate(() => localStorage.getItem("dial-tool-folds") || "{}")); delete f["Export/Export a file"]; await page.evaluate((x) => { localStorage.setItem("dial-tool-folds", x); window.dial_tool.folds = JSON.parse(x); window.dial_tool.show_section(); }, JSON.stringify(f)); }      // open again for the checks after
   await page.$eval(".gallery", (e) => e.scrollIntoView());
   await shot("4c13-gallery");

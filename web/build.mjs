@@ -54,6 +54,7 @@ const unit_face = `@font-face { font-family: "Dial Mono"; font-weight: 400; src:
 // Dial Date (fonts/ui/date_font.py: Inter SemiBold, SIL OFL, its figures only): the bar's stacked date (Okay: "try inter with appropriate weight for that size")
 const date_face = `@font-face { font-family: "Dial Date"; font-weight: 600; src: url(data:font/otf;base64,${b64(path.join(here, "fonts/ui/DialDate-SemiBold.otf"))}) format("opentype"); font-display: block; }`;
 const css = sheets.map((f) => fs.readFileSync(path.join(here, "src/css", f), "utf8")).join("\n") + pixel + time_face + unit_face + date_face;
+const COUNTER_HOST = "duztman.github.io", COUNTER_CODE = "dial-tool";      // the visitor counter (#548): the released page's host, and Okay's GoatCounter code (the account is his)
 const version = /VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(here, "src/geometry.js"), "utf8"))[1];
 
 const html = `<!doctype html>
@@ -79,6 +80,14 @@ globalThis.__DIAL = {
   bytes(name) { const s = atob(this.packed[name]), out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; },      // a plain loop: Uint8Array.from with a function was the page's single largest cost at start (154 ms of 740, measured 25 Oct 2026)
 };
 window.addEventListener("error", (e) => { const a = document.getElementById("app"); if (a && a.textContent.startsWith("Starting")) a.innerHTML = '<p class="starting">Dial Tool couldn’t start: ' + e.message + '</p>'; });
+// The visitor counter (#548): GoatCounter, no cookies, on the released page only (Okay, 1 Nov 2026: "goat counter is
+// good, we only count main"). It runs when this page is https://duztman.github.io/dial-tool/ and nowhere else — not
+// on /dev/ (its loader keeps that address), /show-case/, /help/, nor a file opened from disk. It sends the path only:
+// a dial's link carries the whole dial after ? and #, and none of that leaves the page.
+if (location.host === "${COUNTER_HOST}" && /^\\/dial-tool\\/(index\\.html)?$/.test(location.pathname)) {
+  window.goatcounter = { path: location.pathname, title: "Dial Tool" };
+  const s = document.createElement("script"); s.async = true; s.src = "https://gc.zgo.at/count.js"; s.dataset.goatcounter = "https://${COUNTER_CODE}.goatcounter.com/count"; document.head.append(s);
+}
 </script>
 <script type="module">
 ${code}
