@@ -74,11 +74,13 @@ export const FONTS = {
 
   /** "1234567890" in the font itself: the outline made with the list, or drawn now, or set by the browser.
    *  what = "name": the family's name in its own face instead, likewise. */
-  sample(f, what = "sample", fits = what === "name") {
+  sample(f, what = "sample", fits = what === "name", as = null) {
     const box = el("span", { className: what === "name" ? "face" : "sample" });
     // preview: in a font box the numerals are followed by letters, A to g (Okay, 13 Oct 2026)
     // …and an ellipsis after the g (Okay, 13 Oct 2026): the font's own, or three full stops where it has none (Routed Gothic)
-    const t = G.has_font(f.ps) ? { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 } : null;
+    // `as`: the type's own axes, features and tracking, so the font box's preview follows them (Okay, 1 Nov 2026: "Make
+    // preview sync with weight, etc here as well? Not affecting the main list, default shows there")
+    const t = G.has_font(f.ps) ? { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0, ...(as || {}) } : null;
     const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefg" + (t && G.has_chars("…", t) ? "…" : "...") : "1234567890", high = what === "name" ? 16 : what === "preview" ? 20 : 26;      // the sheet's numerals larger (Okay, 24 Oct 2026, 23:32: "ENLARGE NUMS"; 20 before)
     let s = what === "preview" ? (t ? null : f.sample) : f[what];
     if (!s && t) {
@@ -182,10 +184,11 @@ export const FONTS = {
       features.refresh(R, T);
       swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
-      const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps);
+      const as = { axes: { ...(f && f.start || {}), ...(R.axes || {}) }, features: R.features || {}, tracking: R.tracking || 0 };      // the preview drawn as the type is set
+      const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps) + "/" + JSON.stringify(as);
       if (key !== shown) {
         shown = key;
-        current.replaceChildren(f ? this.sample(f, "preview") : el("span", { className: "sample quiet", textContent: "not loaded" }));
+        current.replaceChildren(f ? this.sample(f, "preview", false, as) : el("span", { className: "sample quiet", textContent: "not loaded" }));
         name.textContent = R.family;                // a window without a font of its own shows the numerals' font, plainly (Okay, 13 Oct 2026: no "· as the numerals" after it)
       }
       // the family's styles as tabs of the name's box, hanging from its line (#275, 4.51; Okay, 16 Oct 2026: "it is a part of
@@ -395,10 +398,9 @@ export const FONTS = {
           const title = { added: "Added by you" }[group];
           if (title) list.append(el("div", { className: "group quiet", textContent: title }));
         }
-        // a line of the sheet (Okay, 13 Oct 2026): the family's name in its own face · its numerals · what it has
-        const named = this.sample(fonts.find((x) => x.name) || f, "name");
-        named.classList.add("name");
-        named.setAttribute("aria-label", family);
+        // a line of the sheet (Okay, 1 Nov 2026): the family's name in the tool's own type · its numerals and letters, cut at
+        // the edge · under them, every sticker it has
+        const named = el("span", { className: "name", textContent: family, title: family });
         const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); this.picker.close(); } },      // choosing a font closes the sheet (Okay, 18 Oct 2026, 22:35)
           named, this.sample(f), el("span", { className: "has" }, ...this.family_says(fonts).map(([word, kind]) => el("span", { className: "sticker " + kind, textContent: word }))));
         row.dataset.family = family;

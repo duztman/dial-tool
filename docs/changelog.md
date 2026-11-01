@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.17 beta · 1 Nov 2026 — the font sheet's rows relaid; the font box's preview follows the type
+
+Okay, 1 Nov 2026, 23:22: "Make preview sync with weight, etc here as well? Not affecting the main list, default shows there. Font selection screen: font names in ui inter, column halved in width. This makes numbers move left, following the numbers as AaBbCcDdEeFf… until its cropped. Every font gets a second line listing all the stickers left to right."
+
+- **The font box's preview is drawn as the type is set** (`fonts.js`, `sample(…, as)`): its axes (a weight from a tab or a slider), its OpenType features and its tracking; the sheet keeps each font's default.
+- **The sheet's rows** (`4g-fonts.css`, `fonts.js`): the family's name in the tool's own type, on a column half as wide as before (one sixth of the row, cut with … when long); the sample on the rest — the numerals, then "AaBbCcDdEeFf…" — cut at the row's edge; under them, on a second line from the left, every sticker the family has.
+- **The samples carry letters** (`fonts.mjs`, `sample_of`): "1234567890 AaBbCcDdEeFf…" per family, the font's own ellipsis or three full stops, the numerals alone for a numerals-only font. The name outlines, no longer shown, are not kept. `src/font_list.js` 1.36 → 1.69 MB; the page 5.41 → 5.74 MB.
+- The sheet's check in `window.mjs` rewritten to the new row; the preview's following checked with Antonio's SemiBold.
+
 ## v1.1.16 beta · 1 Nov 2026 — snapping to rings' edges (#184)
 
 Okay, 14 Oct 2026 (on #85): "while resizing that, it would be nice if it could 'snap' places"; 1 Nov 2026: "#184 first"; "Yep go".

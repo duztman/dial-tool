@@ -3,7 +3,7 @@
 // The open-licence families that suit dial numerals (100, and Inter inside the page). The files live in web/fonts/ (and are
 // published with the page), so choosing one never depends on another site staying as it is.
 // For each file this reads its names and axes with HarfBuzz and draws "1234567890" once, as a
-// small outline — the picker shows that, so no font has to be downloaded just to be looked at.
+// small outline (with letters after, sample_of) — the picker shows that, so no font has to be downloaded just to be looked at.
 //
 //   cd web && node fonts.mjs          (downloads only what is missing)
 //
@@ -189,6 +189,10 @@ const SUBSET = {
   "NotoSerifSC[wght].ttf": " 0123456789:./-ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz〇零一二三四五六七八九十百千万廿卅壹贰叁肆伍陆柒捌玖拾年月日星期周天上下午时分秒",
 };
 
+// the sheet's sample: the numerals, then letters, then an ellipsis — "1234567890 AaBbCcDdEeFf…" (Okay, 1 Nov 2026: "following
+// the numbers as AaBbCcDdEeFf… until its cropped"); the font's own ellipsis, or three full stops where it has none; the
+// numerals alone when it lacks the letters (a numerals-only font). Always read left to right, as numerals are.
+const sample_of = (numerals, outline) => outline(numerals + " AaBbCcDdEeFf…", true) || outline(numerals + " AaBbCcDdEeFf...", true) || outline(numerals, true);
 const local = (file) => file.replace(/[\[\], ]+/g, "-").replace(/-\./, ".");      // "Jost[wght].ttf" → "Jost-wght.ttf"; spaces to dashes too (a file is fetched by its address)
 const zips = new Map();                                                           // a zip is fetched once, to a temporary folder
 async function get(from, to) {
@@ -252,15 +256,15 @@ for (const [family, what, source, dir, ...files] of FAMILIES) {
       }
       return { d, w: Math.round(x) };
     };
-    // name: the family's name in its own face, for the font sheet (the family's first file only) · axes: what a variable font can vary, each with its least and most
+    // axes: what a variable font can vary, each with its least and most
     const first = !list.some((f) => f.family === family);
     // features: the OpenType switches that matter for numerals, and the numbered sets and variants (for the font sheet's stickers)
     const features = [...new Set(face.getTableFeatureTags("GSUB"))].filter((tag) => /^(tnum|pnum|lnum|onum|zero|frac|ss\d\d|cv\d\d)$/.test(tag)).sort();
-    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.fromEntries(Object.entries(all).map(([tag, x]) => [tag, [x.min, x.max]])), features, kinds: kinds_of(family), sample: outline(SAMPLE[family] || "1234567890", true), ...(first && outline(family) ? { name: outline(family) } : {}) });
+    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.fromEntries(Object.entries(all).map(([tag, x]) => [tag, [x.min, x.max]])), features, kinds: kinds_of(family), sample: sample_of(SAMPLE[family] || "1234567890", outline) });      // the family's name is shown in the tool's own type (Okay, 1 Nov 2026), so no name outline is kept
   }
 }
 const text = `// Written by web/fonts.mjs — do not edit. The web version's own fonts: ${FAMILIES.length} families, ${list.length} files,
-// all under the SIL Open Font Licence but GL-Nummernschild, free software (web/fonts/README.md). sample: "1234567890" as an outline, 1000 units to the em; name: the family's name likewise.
+// all under the SIL Open Font Licence but GL-Nummernschild, free software (web/fonts/README.md). sample: "1234567890 AaBbCcDdEeFf…" as an outline, 1000 units to the em.
 export const FONT_SITE = "https://duztman.github.io/dial-tool/fonts/";
 export const FONT_LIST = ${JSON.stringify(list)};
 `;

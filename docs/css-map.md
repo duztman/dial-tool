@@ -129,7 +129,7 @@
 | `--hue` · the window's | `—` |  | 4e-colour | set by colour.js |
 | `--in-l` · set in 4b-lines-tabs | `max(calc(var(--cut-l) + 0.414 * var(--hair)), var(--hair))` | the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider | 4b-lines-tabs ×4 |  |
 | `--in-r` · set in 4b-lines-tabs | `max(calc(var(--cut-r) + 0.414 * var(--hair)), var(--hair))` | the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider | 4b-lines-tabs ×4 |  |
-| `--ink` | `#111` | colour | 1-tokens, 2-base, 3-controls ×26, 4a-panel ×24, 4b-lines-tabs ×6, 4c-rows ×11, 4d-hands, 4e-colour ×10, 4f-rings ×20, 4g-fonts ×11, 4h-gallery, 5-chosen ×3, 6-preview ×49, 7-bar ×2, 8-narrow ×3 | 3-controls `.night` → `var(--bar-ink)`; 4f-rings `.numpop .row` → `var(--num-pop-disc)`; 4f-rings `.numpop.lit .row input[type="range"]` → `var(--shade-lit)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-ink)`; 6-preview `.shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"]` → `var(--shade-lit)`; 6-preview `.shaderows .row.side:hover input[type="range"]` → `var(--shade-lit)`; set by show.js |
+| `--ink` | `#111` | colour | 1-tokens, 2-base, 3-controls ×26, 4a-panel ×24, 4b-lines-tabs ×6, 4c-rows ×11, 4d-hands, 4e-colour ×10, 4f-rings ×20, 4g-fonts ×12, 4h-gallery, 5-chosen ×3, 6-preview ×49, 7-bar ×2, 8-narrow ×3 | 3-controls `.night` → `var(--bar-ink)`; 4f-rings `.numpop .row` → `var(--num-pop-disc)`; 4f-rings `.numpop.lit .row input[type="range"]` → `var(--shade-lit)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-ink)`; 6-preview `.shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"]` → `var(--shade-lit)`; 6-preview `.shaderows .row.side:hover input[type="range"]` → `var(--shade-lit)`; set by show.js |
 | `--ink-dx` · the window's | `—` |  | 3-controls, 7-bar | set by bar.js, set by ink.js |
 | `--ink-dy` · the window's | `—` |  | 3-controls, 7-bar ×2 | set by bar.js, set by ink.js |
 | `--ink-hover` | `#333331` | a filled control under the pointer | 3-controls, 5-chosen | 3-controls `.night` → `var(--white)` |
@@ -351,7 +351,7 @@
 | `--swatch-col` | `calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end))` | from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too | 4g-fonts |  |
 | `--t-date` · special | `10px` | the bar's stacked date: day over month, 10 on 11, so 3 clear above and below in the bar's 28 inside (Okay, 19 Oct 2026: the year "i don't want it there, better fit inside the bounding box"), Inter SemiBold (Okay: "try inter with appropriate weight for that size") | 7-bar |  |
 | `--t-l` | `15px` | two more, asked for by Okay, stand with the specials: --t-xxs, --t-time | 2-base, 4f-rings, 4g-fonts ×4 |  |
-| `--t-m` | `13px` | two more, asked for by Okay, stand with the specials: --t-xxs, --t-time | 2-base ×2, 4a-panel ×2, 4c-rows, 4f-rings ×3, 4g-fonts ×3, 6-preview ×3, 7-bar ×2, 8-narrow |  |
+| `--t-m` | `13px` | two more, asked for by Okay, stand with the specials: --t-xxs, --t-time | 2-base ×2, 4a-panel ×2, 4c-rows, 4f-rings ×3, 4g-fonts ×4, 6-preview ×3, 7-bar ×2, 8-narrow |  |
 | `--t-num-pop` · special | `calc(41px * var(--num-pop-k))` | the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026) | 4f-rings |  |
 | `--t-pixel` | `8px` | the pixel font's own size: its dots fall on the screen's (R32) | 1-tokens, 4c-rows, 4g-fonts ×2, 7-bar, 8-narrow |  |
 | `--t-pixel-legend` · special | `calc(1.5 * var(--t-pixel))` | the pixel font at 12, neither 8 nor 16: the font sheet's legend, its title and stickers (Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen"; on a 2× screen its dots still fall on the screen's) | 4f-rings, 4g-fonts ×2 |  |
@@ -397,14 +397,14 @@
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×4 |  |
 | `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4f-rings, 7-bar ×2 |  |
 | `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×9, 4f-rings ×9, 4g-fonts ×8, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
-| `--u2` · special | `var(--unit)` |  | 1-tokens, 3-controls ×2, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×10, 4f-rings ×6, 6-preview ×16, 7-bar ×7, 8-narrow ×2 |  |
+| `--u2` · special | `var(--unit)` |  | 1-tokens, 3-controls ×2, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×10, 4f-rings ×6, 4g-fonts, 6-preview ×16, 7-bar ×7, 8-narrow ×2 |  |
 | `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour, 4f-rings ×9, 4g-fonts ×5, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
 | `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×4, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×5, 4d-hands ×2, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
 | `--u5` | `calc(2.5 * var(--unit))` |  | 8-narrow ×2 |  |
 | `--u6` | `calc(3 * var(--unit))` |  | 1-tokens ×4, 4a-panel, 4g-fonts ×3, 6-preview, 8-narrow ×2 |  |
 | `--u8` | `calc(4 * var(--unit))` |  | 4g-fonts, 7-bar ×2 |  |
 | `--uiblack` · the window's | `—` |  | 3-controls ×4, 4a-panel ×4, 4c-rows | set by show.js |
-| `--unit` | `5.5px` | every space is a multiple of this: the scale below, in half-units (u1 = half a unit … u8 = four) | 1-tokens ×21, 3-controls ×17, 4a-panel ×10, 4b-lines-tabs ×3, 4c-rows ×7, 4d-hands ×6, 4e-colour, 4f-rings ×6, 4g-fonts ×28, 4h-gallery ×7, 6-preview ×20, 7-bar, 8-narrow ×2 | read by fonts.js, read by panel.js |
+| `--unit` | `5.5px` | every space is a multiple of this: the scale below, in half-units (u1 = half a unit … u8 = four) | 1-tokens ×21, 3-controls ×17, 4a-panel ×10, 4b-lines-tabs ×3, 4c-rows ×7, 4d-hands ×6, 4e-colour, 4f-rings ×6, 4g-fonts ×29, 4h-gallery ×7, 6-preview ×20, 7-bar, 8-narrow ×2 | read by fonts.js, read by panel.js |
 | `--value-pop` | `132px` | a value button's tag: about as wide as it is high | 4f-rings |  |
 | `--veil` | `rgba(0, 0, 0, 0.06)` | a touch of dark on a coloured row | 4f-rings |  |
 | `--veil-strong` | `rgba(0, 0, 0, 0.1)` | a touch of dark on a coloured row | 4f-rings ×3 |  |
