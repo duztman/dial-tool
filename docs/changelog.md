@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.23 beta · 2 Nov 2026 — the ring handles after Okay's drawing (#568)
+
+Okay, 2 Nov 2026, 00:45, his sketch on the preview: "Let's try this design on the side for these handles. Active they are filled in with thicker stroke."
+
+- **A handle** (`6-preview.css`): a white disc with a ring in the guide's colour (`--glow-line`), its sign — the radius circle, the size square, the Start and Span triangles, an added guide's sign — inside in that colour. It was the colour's solid disc with a white hairline and a white sign.
+- **Held** (`.held`, `preview.js`): the dragged handle's disc fills with the colour, its ring doubles and its sign turns white; the class survives the layer's redraws while the value moves (`hold_handle`) and goes on release.
+
 ## v1.1.22 beta · 2 Nov 2026 — the Guides list's Added rows (#566)
 
 Okay, 2 Nov 2026, 00:37: "Move indents in to fit the minus button for each new guide. Plus button remains, becomes a dropdown (in our rules for there) remove the add line."; 00:45: "all indented lines follow the space needed for minus buttons."

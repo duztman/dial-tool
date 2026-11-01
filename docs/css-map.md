@@ -98,7 +98,7 @@
 | `--gallery-lift` · special | `var(--hair)` | the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") | 4a-panel |  |
 | `--gap` | `12px` |  | 1-tokens ×10, 3-controls, 4a-panel ×8, 4b-lines-tabs ×2, 4c-rows ×2, 4e-colour ×2, 4f-rings ×2, 4g-fonts ×3, 6-preview ×3, 7-bar ×2, 8-narrow ×2 | 8-narrow `:root` → `var(--u4)` |
 | `--glow` | `#FF7300` | the outline of what the pointer is on, in the preview | 6-preview |  |
-| `--glow-line` · special | `1.5px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview ×2 |  |
+| `--glow-line` · special | `1.5px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview ×3 |  |
 | `--glow-under` · special | `4px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview |  |
 | `--grey` | `#5C5C58` | colour | 1-tokens, 2-base ×2, 3-controls ×4, 4a-panel ×3, 4b-lines-tabs, 4c-rows ×7, 4d-hands ×3, 4e-colour ×9, 4f-rings ×14, 4g-fonts ×14, 6-preview ×17, 8-narrow ×2 | 3-controls `.night` → `var(--bar-quiet)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)`; set by show.js |
 | `--grip` | `18px` | the ring list's drag handle column | 4f-rings |  |
@@ -123,7 +123,7 @@
 | `--guide-row` · special | `30px` | the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) | 3-controls ×2, 6-preview ×5 | 1-tokens `:root` → `38px` |
 | `--guide-tint` | `22%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 1-tokens, 4f-rings ×2 |  |
 | `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×11, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×5, 4e-colour ×11, 4f-rings ×28, 4g-fonts ×22, 6-preview ×46, 7-bar ×21, 8-narrow ×7 |  |
-| `--handle` · the window's | `—` |  | 6-preview | set by hands.js, set by preview.js |
+| `--handle` · the window's | `—` |  | 6-preview ×3 | set by hands.js, set by preview.js |
 | `--head` | `40px` | a pane's heading | 3-controls, 4a-panel ×3, 4b-lines-tabs ×2, 4e-colour, 4g-fonts ×2, 8-narrow ×2 |  |
 | `--header` | `calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair))` | the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes | 4a-panel ×2, 4g-fonts |  |
 | `--hover` | `#F1F1EE` | a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike | 3-controls ×5, 4a-panel ×2, 4b-lines-tabs, 4f-rings ×2, 4g-fonts ×4, 6-preview | 3-controls `.night` → `var(--night-hover)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-hover)`; set by show.js |

@@ -246,7 +246,7 @@ export const PREVIEW = {
     const more = this.more_handles();      // the added guides' handles, while the Guides list is open (#527)
     const R = this.ring(), k = R ? G.ring_guide(this.S, this.S.ui_ring) : null;
     if (this.S.ui_show || this.unselected || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) {      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
-      if ("more:" + more.key !== this.handles_key) { this.handles_key = "more:" + more.key; H.innerHTML = more.parts.join(""); }      // its own kind of key, so a cleared key ("") never passes for "nothing to show"
+      if ("more:" + more.key !== this.handles_key) { this.handles_key = "more:" + more.key; H.innerHTML = more.parts.join(""); this.hold_handle(); }      // its own kind of key, so a cleared key ("") never passes for "nothing to show"
       return;
     }
     const kind = G.kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
@@ -273,6 +273,14 @@ export const PREVIEW = {
     });
     H.style.setProperty("--handle", tone);
     H.innerHTML = parts.join("") + more.parts.join("");
+    this.hold_handle();
+  },
+
+  /** the handle being dragged keeps its held look across redraws (the layer is rewritten as the value moves, #568) */
+  hold_handle() {
+    const H = this.handles, d = this.handle_drag, m = this.more_drag;
+    const g = d ? H.querySelector(`[data-handle="${d.what}"]`) : m ? H.querySelector(`[data-more="${m.i}"]`) : null;
+    if (g) g.classList.add("held");
   },
 
   /** the guides added by hand, each with a handle in its own colour while the Guides list is open (#527; Okay, 24 Oct
@@ -304,6 +312,7 @@ export const PREVIEW = {
         this.more_drag = { i: +m.dataset.more, x: e.clientX, y: e.clientY, moved: false };
         H.setPointerCapture(e.pointerId);
         H.classList.add("dragging");
+        m.classList.add("held");
         this.tag_hide();
         return;
       }
@@ -321,6 +330,7 @@ export const PREVIEW = {
         d0, a0, dist: d0, angle: a0, last_d: d0, last_a: a0 };      // where it was pressed, and the pointer's travel so far, slowed as it strays (#486)
       H.setPointerCapture(e.pointerId);
       H.classList.add("dragging");
+      g.classList.add("held");                      // the one held: filled, its ring thicker (#568)
       this.tag_hide();
     });
     H.addEventListener("pointermove", (e) => {
@@ -366,7 +376,7 @@ export const PREVIEW = {
       d.prev = span = Math.min(Math.max(Math.round(span), 1), 360);
       this.set_value("ring", "span", span);
     });
-    const end = () => { this.handle_drag = null; this.more_drag = null; this.snapped_to = null; H.classList.remove("dragging"); };
+    const end = () => { this.handle_drag = null; this.more_drag = null; this.snapped_to = null; H.classList.remove("dragging"); for (const g of H.querySelectorAll(".held")) g.classList.remove("held"); };
     H.addEventListener("pointerup", end);
     H.addEventListener("pointercancel", end);
   },

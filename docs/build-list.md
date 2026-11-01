@@ -4,7 +4,7 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 2 Nov 2026 (v1.1.22 beta): #566 done, #567–#568 added; #564 and #562 done; #565 added; #563 done; #562, #564 added; #184 built, to verify; #494, #561, #52 done; #561 added; #552 fixed, to verify; #548 built, #16 closed, #560 added.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 2 Nov 2026 (v1.1.23 beta): #568 built, to verify; #566 done, #567 added; #564 and #562 done; #565 added; #563 done; #562, #564 added; #184 built, to verify; #494, #561, #52 done; #561 added; #552 fixed, to verify; #548 built, #16 closed, #560 added.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
@@ -17,7 +17,8 @@ Nothing: the Now items of 1 Nov 2026 are built. The next build comes from Next, 
 | 1 | 528 | Dramatic lighting: is the darkness right (×0.57 at the rim, Claude's reading of "darker") | 24 Oct 2026 | verify (4.94.19) |
 | 2 | 439 | Backdrop's swatch loses its outline at times (old Safari, iPad; `background-clip: padding-box` taken) | 23 Oct 2026 | verify |
 | 3 | 552 | The Type pane rode up 12 px on opening (the finger anchor followed its heading's button, which moves when a bare pane opens); now the anchor holds the pane | 31 Oct 2026 — "it should open in place, without moving up"; 1 Nov 2026 — "2" | verify (v1.1.12) |
-| 4 | 184 | Snapping: a dragged radius, size and hand Length land on a ring's edge (and on an added guide circle) within 6 px; off to start — Settings: Snap, Snap to guides; the latter on the Guides list too | 14 Oct 2026, on #85; 1 Nov 2026 — "Yep go"; 23:39 — "Snap default is off, snap to guides on" | verify (v1.1.18) |
+| 4 | 568 | The ring handles after Okay's drawing: a white disc with the guide colour's ring and sign; held, filled with a thicker ring | 2 Nov 2026 — "Let's try this design on the side for these handles" | verify (v1.1.23) |
+| 5 | 184 | Snapping: a dragged radius, size and hand Length land on a ring's edge (and on an added guide circle) within 6 px; off to start — Settings: Snap, Snap to guides; the latter on the Guides list too | 14 Oct 2026, on #85; 1 Nov 2026 — "Yep go"; 23:39 — "Snap default is off, snap to guides on" | verify (v1.1.18) |
 
 ## Next — the features, in Okay's order, then easier → harder
 
@@ -25,8 +26,7 @@ Okay, 1 Nov 2026: #184 done, then #169 ("core to our mission"), #175 ("bump up i
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 5 | 567 | The font box's style tabs respect the font hierarchy — each tab's word in the weight it names? (ask: the tool's type at that weight, or the font's own) | 2 Nov 2026 — "Respect the font hierarchy on tabs" | open — ask |
-| 6 | 568 | The ring handles after Okay's drawing: a white disc with the guide colour's ring, the handle's sign inside (triangle · square · circle) in that colour; active, filled with a thicker stroke | 2 Nov 2026 — "Let's try this design on the side for these handles. Active they are filled in with thicker stroke." | build |
+| 6 | 567 | The font box's style tabs respect the font hierarchy — each tab's word in the weight it names? (ask: the tool's type at that weight, or the font's own) | 2 Nov 2026 — "Respect the font hierarchy on tabs" | open — ask |
 | 7 | 169 | One strip for every position: a per-position value per setting as a strip of cells under a ring; a drawn line sets the ends; a typed rhythm repeats. Draw first, show Okay, then build | — "very very good… prioritize this" | open |
 | 8 | 175 | A hand as a stack: caps, windows, lume openings | 21 Oct 2026 — "bump up in importance" | open |
 | 9 | 346 | Complications, systematized — one mechanism for subdials and chronograph registers (#20 folded in), the moon's own disc, the am · pm disc as a ring of its own (#177 folded in), a big date's two discs in X-ray, an SVG for a complication's picture | 1 Nov 2026 — "Up with the big three, after #175" | open |

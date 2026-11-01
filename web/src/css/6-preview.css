@@ -30,9 +30,14 @@
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
-  .handles .handle { fill: var(--white); stroke: none; cursor: grab; pointer-events: all; }      /* the handle's sign in white on its disc */
+  /* a handle after Okay's drawing (2 Nov 2026, #568: "Let's try this design on the side for these handles. Active they are
+     filled in with thicker stroke"): a white disc with a ring in the guide's colour, its sign inside in that colour; held,
+     the disc fills with the colour, the ring thickens and the sign turns white */
+  .handles .handle { fill: var(--handle); stroke: none; cursor: grab; pointer-events: all; }
   .handles .handle .reach { fill: transparent; stroke: none; }
-  .handles .handle .seat { fill: var(--handle); stroke: var(--white); stroke-width: var(--glow-line); }      /* the disc a handle sits in: its guide's colour, solid, a white hairline round it (#486; Okay, 04:52: "No transparency on handles, backgrounds solid") */
+  .handles .handle .seat { fill: var(--white); stroke: var(--handle); stroke-width: var(--glow-line); }
+  .handles .handle.held { fill: var(--white); }
+  .handles .handle.held .seat { fill: var(--handle); stroke-width: calc(2 * var(--glow-line)); }      /* the disc a handle sits in: its guide's colour, solid, a white hairline round it (#486; Okay, 04:52: "No transparency on handles, backgrounds solid") */
   .handles.dragging .handle { cursor: grabbing; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
      everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
