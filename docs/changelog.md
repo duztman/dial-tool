@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## v1.1.11 beta · 1 Nov 2026 — the counter on Okay's code
+
+- `COUNTER_CODE` is `okayka`, his GoatCounter account (Okay, 1 Nov 2026, 13:27, his script tag: `https://okayka.goatcounter.com/count`). Nothing else changed.
+
 ## v1.1.10 beta · 1 Nov 2026 — the Type pane's jump on the iPad (#552)
 
 Okay, 1 Nov 2026, 13:23: "Do 552".
@@ -11,7 +15,7 @@ Okay, 1 Nov 2026, 13:23: "Do 552".
 
 Okay, 1 Nov 2026, 13:12: "Do the counter, goat counter is good, we only count main."
 
-- **A visitor counter in the page** (`web/build.mjs`): GoatCounter (no cookies), its script added by a few lines in the page's head that run only when the address is `https://duztman.github.io/dial-tool/` (or `/index.html` there) — not on /dev/ (its loader keeps that address), /show-case/, /help/ or a file opened from disk. It sends the path only (`window.goatcounter.path = location.pathname`), never the query or the hash, where a dial's link lives. The code is `dial-tool` — one constant, `COUNTER_CODE`; the GoatCounter account under it is Okay's to make. Counting starts when the step to `main` is run.
+- **A visitor counter in the page** (`web/build.mjs`): GoatCounter (no cookies), its script added by a few lines in the page's head that run only when the address is `https://duztman.github.io/dial-tool/` (or `/index.html` there) — not on /dev/ (its loader keeps that address), /show-case/, /help/ or a file opened from disk. It sends the path only (`window.goatcounter.path = location.pathname`), never the query or the hash, where a dial's link lives. The code is `okayka`, Okay's account — one constant, `COUNTER_CODE`. Counting starts when the step to `main` is run.
 - A check in `window.mjs`: on the test's page (from disk) the counter is written in but asleep, no cookie.
 - Docs: brief Q5 and #16 closed (Okay: "No live text available on dial exports in any format"); #560 added, open: live text in the vectors a session sends him; which fonts the SVG export outlines with the tick on.
 
