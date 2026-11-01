@@ -20,6 +20,7 @@ import os from "os";
 import path from "path";
 import { execFileSync } from "child_process";
 import * as HB from "harfbuzzjs";
+import { fvar_instances } from "./src/geometry.js";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const DIR = path.join(here, "fonts");
@@ -46,8 +47,9 @@ const SOURCES = {
 const FAMILIES = [
   ["Arimo", "neutral grotesque, Helvetica's proportions", "google", "arimo", ["Arimo[wght].ttf", "Regular"]],
   ["Archivo", "grotesque with width and weight axes", "google", "archivo", ["Archivo[wdth,wght].ttf", "Regular"]],
-  ["Barlow", "DIN-like, rounded corners", "google", "barlow", ["Barlow-Regular.ttf", "Regular"], ["Barlow-Medium.ttf", "Medium"], ["Barlow-SemiBold.ttf", "SemiBold"], ["Barlow-Bold.ttf", "Bold"]],
-  ["Barlow Condensed", "DIN-like, narrow", "google", "barlowcondensed", ["BarlowCondensed-Regular.ttf", "Regular"], ["BarlowCondensed-Medium.ttf", "Medium"], ["BarlowCondensed-SemiBold.ttf", "SemiBold"]],
+  // one family, its condensed cuts as styles (Okay, 1 Nov 2026: "do not include design indicators like condensed and combine fonts"); a file's own folder as a third word
+  ["Barlow", "DIN-like, rounded corners; condensed cuts", "google", "barlow", ["Barlow-Regular.ttf", "Regular"], ["Barlow-Medium.ttf", "Medium"], ["Barlow-SemiBold.ttf", "SemiBold"], ["Barlow-Bold.ttf", "Bold"],
+    ["BarlowCondensed-Regular.ttf", "Condensed", "barlowcondensed"], ["BarlowCondensed-Medium.ttf", "Condensed Medium", "barlowcondensed"], ["BarlowCondensed-SemiBold.ttf", "Condensed SemiBold", "barlowcondensed"]],
   ["Overpass", "after US highway signs", "google", "overpass", ["Overpass[wght].ttf", "Regular"]],
   ["B612", "made for aircraft cockpit displays", "google", "b612", ["B612-Regular.ttf", "Regular"], ["B612-Bold.ttf", "Bold"]],
   ["Routed Gothic", "engraved lettering of instruments and drawings", "routed", "", ["routed-gothic.ttf", "Regular"], ["routed-gothic-narrow.ttf", "Narrow"], ["routed-gothic-wide.ttf", "Wide"]],
@@ -157,7 +159,7 @@ const FAMILIES = [
 // one word each: sans or serif (neither: a script or blackletter), condensed, mono (every figure one width by design),
 // nonlatin (its numerals are another script's)
 const KINDS = {
-  "Arimo": "sans", "Archivo": "sans", "Barlow": "sans", "Barlow Condensed": "sans condensed", "Overpass": "sans", "B612": "sans",
+  "Arimo": "sans", "Archivo": "sans", "Barlow": "sans condensed", "Overpass": "sans", "B612": "sans",
   "Routed Gothic": "sans", "Jost": "sans", "Josefin Sans": "sans", "Montserrat": "sans", "Rubik": "sans", "Oswald": "sans condensed",
   "Antonio": "sans condensed", "Michroma": "sans", "Saira": "sans", "Bodoni Moda": "serif", "Playfair Display": "serif", "Cormorant": "serif",
   "Poiret One": "sans", "Allerta Stencil": "sans", "Anybody": "sans", "Bebas Neue": "sans condensed", "Cinzel": "serif", "Italiana": "serif",
@@ -189,10 +191,35 @@ const SUBSET = {
   "NotoSerifSC[wght].ttf": " 0123456789:./-ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz〇零一二三四五六七八九十百千万廿卅壹贰叁肆伍陆柒捌玖拾年月日星期周天上下午时分秒",
 };
 
-// the sheet's sample: the numerals, then letters, then an ellipsis — "1234567890 AaBbCcDdEeFf…" (Okay, 1 Nov 2026: "following
-// the numbers as AaBbCcDdEeFf… until its cropped"); the font's own ellipsis, or three full stops where it has none; the
-// numerals alone when it lacks the letters (a numerals-only font). Always read left to right, as numerals are.
-const sample_of = (numerals, outline) => outline(numerals + " AaBbCcDdEeFf…", true) || outline(numerals + " AaBbCcDdEeFf...", true) || outline(numerals, true);
+// the sheet's sample (Okay, 1 Nov 2026): the numerals in the family's resting style, then the alphabet in pairs, "Aa Bb … Zz",
+// the pairs cycling through the family's styles light → black — a variable font's named instances along its weight axis,
+// a family of files each file's cut ("Aa light Bb regular Cc bold Dd black and cycling to the end") — then an ellipsis,
+// the font's own or three full stops. The row cuts it where its room ends. A numerals-only font keeps its numerals alone.
+const WEIGHT_WORDS = [["thin", 100], ["hairline", 100], ["extralight", 200], ["ultralight", 200], ["light", 300], ["regular", 400], ["book", 400], ["normal", 400], ["medium", 500], ["semibold", 600], ["demibold", 600], ["bold", 700], ["extrabold", 800], ["ultrabold", 800], ["black", 900], ["heavy", 900]];
+const weight_of = (style) => { const s = style.toLowerCase().replace(/[\s-]/g, ""); let w = 400; for (const [word, v] of WEIGHT_WORDS) if (s.includes(word)) w = v; return w; };      // the last word that matches wins: "ExtraBold" after "Bold"
+const sample_of = (numerals, members) => {
+  const first = members[0];
+  const nums = first.outline(numerals, true);
+  if (!nums) return null;
+  // the styles to cycle: a variable font's weight ladder (its other axes at rest), else the files by weight
+  const ladder = first.instances.filter((x) => x.axes.wght != null && Object.entries(x.axes).every(([tag, v]) => tag === "wght" || !first.axes[tag] || Math.abs(v - first.axes[tag].default) < 1e-6)).sort((a, b) => a.axes.wght - b.axes.wght);
+  const styles = ladder.length > 1 ? ladder.map((x) => ({ member: first, wght: x.axes.wght })) : [...members].sort((a, b) => weight_of(a.style) - weight_of(b.style)).map((m) => ({ member: m }));
+  const set_weight = (member, wght) => member.font.setVariations(Object.entries({ ...member.start, ...(wght == null ? {} : { wght }) }).map(([tag, v]) => new HB.Variation(tag, v)));
+  let d = nums.d, x = nums.w;
+  const space = first.outline(" ", true, x); if (!space) return nums; x = space.w;
+  const pairs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((c) => c + c.toLowerCase());
+  for (const [i, pair] of pairs.entries()) {
+    const s = styles[i % styles.length];
+    if (s.wght != null) set_weight(s.member, s.wght);
+    const piece = s.member.outline(pair, true, x);
+    if (s.wght != null) set_weight(s.member, null);
+    if (!piece) return nums;                                        // a font without the letters: the numerals alone
+    d += piece.d; x = piece.w;
+  }
+  const dots = first.outline("…", true, x) || first.outline("...", true, x);
+  if (dots) { d += dots.d; x = dots.w; }
+  return { d, w: x };
+};
 const local = (file) => file.replace(/[\[\], ]+/g, "-").replace(/-\./, ".");      // "Jost[wght].ttf" → "Jost-wght.ttf"; spaces to dashes too (a file is fetched by its address)
 const zips = new Map();                                                           // a zip is fetched once, to a temporary folder
 async function get(from, to) {
@@ -225,28 +252,30 @@ for (const [family, what, source, dir, ...files] of FAMILIES) {
   else if (!fs.existsSync(path.join(DIR, "licences", licence))) throw new Error(`${licence} is kept by hand and is missing`);
   const holder = (fs.readFileSync(path.join(DIR, "licences", licence), "utf8").match(/^(Copyright|\(C\)).*$/m) || [""])[0].trim();
   credits.push(`| ${family} | ${files.map((f) => "`" + local(f[0]) + "`").join(" ")} | ${holder} | [licence](licences/${licence}) |`);
-  for (const [file, style] of files) {
+  const members = [];                                               // this family's fonts, for the sample's cycling styles (sample_of)
+  for (const [file, style, own_dir] of files) {
+    const dir_of = own_dir || dir;
     const to = path.join(DIR, local(file));
     if (SUBSET[file] && !fs.existsSync(to)) {                     // fetched whole, then cut (pyftsubset, fontTools)
       const whole = to + ".whole";
-      await get(SOURCES[source].font(dir, file), whole);
+      await get(SOURCES[source].font(dir_of, file), whole);
       execFileSync("pyftsubset", [whole, `--text=${SUBSET[file]}`, `--output-file=${to}`, "--layout-features=*", "--name-IDs=*", "--notdef-outline"]);
       fs.unlinkSync(whole);
       console.log("cut", path.basename(to), (fs.statSync(to).size / 1e3).toFixed(0), "kB");
-    } else await get(SOURCES[source].font(dir, file), to);
+    } else await get(SOURCES[source].font(dir_of, file), to);
     const face = new HB.Face(new HB.Blob(fs.readFileSync(to)), 0), font = new HB.Font(face);
     // a variable font may rest at its thinnest weight: start at regular (400) where the font has it
     const all = face.getAxisInfos(), start = {};
     if (all.wght && all.wght.default !== 400 && all.wght.min <= 400 && all.wght.max >= 400) start.wght = 400;
     font.setVariations(Object.entries(start).map(([tag, v]) => new HB.Variation(tag, v)));
     const k = 1000 / face.upem;
-    const outline = (text, ltr = false) => {                        // a word as an outline, 1000 units to the em, y down; null when the font lacks one of its letters
+    const outline = (text, ltr = false, x0 = 0) => {                // a word as an outline, 1000 units to the em, y down, from x0 on; null when the font lacks one of its letters
       const buffer = new HB.Buffer();
       buffer.addText(text);
       if (ltr) buffer.setDirection(HB.Direction.LTR);                       // numerals read left to right, in Arabic script too
       buffer.guessSegmentProperties();
       HB.shape(font, buffer);
-      let x = 0, d = "";
+      let x = x0, d = "";
       if (buffer.getGlyphInfosAndPositions().some((g) => g.codepoint === 0)) return null;
       for (const g of buffer.getGlyphInfosAndPositions()) {
         for (const c of font.glyphToJson(g.codepoint)) {
@@ -256,12 +285,14 @@ for (const [family, what, source, dir, ...files] of FAMILIES) {
       }
       return { d, w: Math.round(x) };
     };
+    members.push({ font, style, start, axes: all, outline, instances: fvar_instances(new Uint8Array(fs.readFileSync(to)), 0, (id) => face.getName(id, "en") || "") });
     // axes: what a variable font can vary, each with its least and most
     const first = !list.some((f) => f.family === family);
     // features: the OpenType switches that matter for numerals, and the numbered sets and variants (for the font sheet's stickers)
     const features = [...new Set(face.getTableFeatureTags("GSUB"))].filter((tag) => /^(tnum|pnum|lnum|onum|zero|frac|ss\d\d|cv\d\d)$/.test(tag)).sort();
-    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.fromEntries(Object.entries(all).map(([tag, x]) => [tag, [x.min, x.max]])), features, kinds: kinds_of(family), sample: sample_of(SAMPLE[family] || "1234567890", outline) });      // the family's name is shown in the tool's own type (Okay, 1 Nov 2026), so no name outline is kept
+    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.fromEntries(Object.entries(all).map(([tag, x]) => [tag, [x.min, x.max]])), features, kinds: kinds_of(family), sample: null });      // the sample is filled once the family's files are read (below); the family's name is shown in the tool's own type (Okay, 1 Nov 2026), so no name outline is kept
   }
+  list.find((f) => f.family === family).sample = sample_of(SAMPLE[family] || "1234567890", members);
 }
 const text = `// Written by web/fonts.mjs — do not edit. The web version's own fonts: ${FAMILIES.length} families, ${list.length} files,
 // all under the SIL Open Font Licence but GL-Nummernschild, free software (web/fonts/README.md). sample: "1234567890 AaBbCcDdEeFf…" as an outline, 1000 units to the em.

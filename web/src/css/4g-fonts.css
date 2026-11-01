@@ -81,7 +81,7 @@
   .listwrap { position: relative; display: grid; min-height: 0; }
   /* the sheet's two tabs (R35): Dial Tool's fonts · Installed, as the hands' tabs, standing on the list's top line */
   .sheettabs .segs { display: grid; grid-auto-flow: column; grid-auto-columns: max-content; }
-  .sheettabs .tab { height: var(--tab-high); padding: 0 var(--u4); font-weight: 600; }
+  .sheettabs .tab { height: var(--control-large); padding: 0 var(--u4); font-weight: 600; }      /* lower than a word tab (40): in his drawing the tabs stand one and a half filter pills tall, 32 (Okay, 2 Nov 2026: "just lower the height as in my drawing") */
   .fontlist { height: 100%; border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; scrollbar-width: none; }
   .fontlist::-webkit-scrollbar { display: none; }
   .rail { position: absolute; top: var(--unit); bottom: var(--unit); right: calc((var(--btn-pad) - var(--scrollbar)) / 2 + var(--hair)); width: var(--scrollbar); border-radius: var(--round-pill); background: var(--ground); cursor: pointer; touch-action: none; }
@@ -91,11 +91,11 @@
   .rail::after { content: ""; position: absolute; inset: 0 calc(-1 * var(--unit)); }      /* reach: a finger finds it from beside it too */
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
-  /* a line of the sheet (Okay, 1 Nov 2026): the name in the tool's own type on a narrow column (half the old third), the
+  /* a line of the sheet (Okay, 1 Nov 2026): the name in the tool's own type on a column measured to hold most names whole (--font-name-col), the
      sample — numerals, then letters — on the rest, cut at the edge; under them, on a second line, every sticker the
      family has, left to right (Okay: "font names in ui inter, column halved in width … numbers move left … Every font
      gets a second line listing all the stickers") */
-  .fontrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 5fr); grid-template-rows: auto auto; align-items: center; column-gap: var(--unit); width: 100%; min-height: var(--head); padding: var(--unit) var(--btn-pad) 0; border-bottom: var(--hair) solid var(--rule); text-align: left; }
+  .fontrow { display: grid; grid-template-columns: var(--font-name-col) minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; column-gap: var(--unit); width: 100%; min-height: var(--head); padding: var(--unit) var(--btn-pad) 0; border-bottom: var(--hair) solid var(--rule); text-align: left; }
   .fontrow .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-m); color: var(--ink); }
   .fontrow .has { grid-column: 1 / -1; }
   @media (hover: hover) { .fontrow:hover { background: var(--hover); } }

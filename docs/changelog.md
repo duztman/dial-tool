@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.21 beta · 2 Nov 2026 — the font sheet: the alphabet through the family's styles, Barlow one family, the name column (#564, #562)
+
+Okay, 1 Nov 2026, 23:39: "The font popup previews get the rest of the alphabet, cropped … Font names, get the family name only for fonts, do not include design indicators like condensed and combine fonts … extend the name column … if adding 3 chars width and we gain 10 more fonts that have …, do it. Previews: if a font has bolds and other stuff, namely; named versions, the alphabet gets them gradually, Aa light Bb regular Cc bold Dd black and cycling to the end."; 2 Nov, 00:29: "File growth is fine"; 00:31: "just lower the height as in my drawing".
+
+- **The samples** (`fonts.mjs`, `sample_of`): the numerals in the family's resting style, then "Aa Bb … Zz" with each pair in the next of the family's styles, light → black and round again — a variable font's weight ladder (its named instances with the other axes at rest, from `fvar_instances`, now exported from `geometry.js`), a family of files its cuts by weight (`weight_of`, from the style's name) — then the font's ellipsis. The row cuts it at its edge. `src/font_list.js` 1.69 → 3.79 MB; the page 7.84 MB.
+- **Barlow is one family**: its Condensed, Condensed Medium and Condensed SemiBold cuts are styles (the font box's tabs, the sample's cycle); a file may name its own source folder in FAMILIES. The "Barlow Condensed" row is gone from the sheet; the Condensed filter shows Barlow.
+- **The name column** `--font-name-col`, 21 units (115.5 px): measured over the 100 names in the tool's type — 64 px held 42, three more characters gained 31, then 14, then 6, so the column stops at 115.5 with 87 names whole.
+- **The sheet's source tabs** 32 px tall (`--control-large`), one and a half filter pills as in Okay's drawing (#562, reduced to this).
+- The sheet's check in `window.mjs` measures the column and the names it holds, the alphabet's width, Barlow's seven styles.
+
 ## v1.1.20 beta · 2 Nov 2026 — the Guides list's toggle and numbers
 
 Okay, 2 Nov 2026, 00:29: "Snap on disappears? Dot should be black? These pills are too small for these numbers and they are not ink centered."

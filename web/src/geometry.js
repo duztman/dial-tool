@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.20 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.21 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -1118,7 +1118,7 @@ export function font_of(t) {
  *  HarfBuzz does not hand the `fvar` table's instances over, so this reads them from the file itself (#52). An OpenType
  *  file is a directory of tables; `fvar` lists the axes, then the instances: a name id and one value per axis.
  *  A collection (a .ttc) holds several fonts; `index` says which. → [{name, axes: {tag: value}}], [] when there are none. */
-function fvar_instances(bytes, index, name) {
+export function fvar_instances(bytes, index, name) {
   try {
     const d = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), tag = (at) => String.fromCharCode(d.getUint8(at), d.getUint8(at + 1), d.getUint8(at + 2), d.getUint8(at + 3));
     let sfnt = 0;

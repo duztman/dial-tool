@@ -21,8 +21,7 @@ Inter, the page's stand-in font, is packed inside the page itself (also OFL). Th
 |---|---|---|---|
 | Arimo | `Arimo-wght.ttf` | Copyright 2026 The Arimo Project Authors (https://github.com/googlefonts/arimo) | [licence](licences/Arimo-OFL.txt) |
 | Archivo | `Archivo-wdth-wght.ttf` | Copyright 2020 The Archivo Project Authors (https://github.com/Omnibus-Type/Archivo) | [licence](licences/Archivo-OFL.txt) |
-| Barlow | `Barlow-Regular.ttf` `Barlow-Medium.ttf` `Barlow-SemiBold.ttf` `Barlow-Bold.ttf` | Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow) | [licence](licences/Barlow-OFL.txt) |
-| Barlow Condensed | `BarlowCondensed-Regular.ttf` `BarlowCondensed-Medium.ttf` `BarlowCondensed-SemiBold.ttf` | Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow) | [licence](licences/BarlowCondensed-OFL.txt) |
+| Barlow | `Barlow-Regular.ttf` `Barlow-Medium.ttf` `Barlow-SemiBold.ttf` `Barlow-Bold.ttf` `BarlowCondensed-Regular.ttf` `BarlowCondensed-Medium.ttf` `BarlowCondensed-SemiBold.ttf` | Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow) | [licence](licences/Barlow-OFL.txt) |
 | Overpass | `Overpass-wght.ttf` | Copyright 2021 The Overpass Project Authors (https://github.com/RedHatOfficial/Overpass) | [licence](licences/Overpass-OFL.txt) |
 | B612 | `B612-Regular.ttf` `B612-Bold.ttf` | Copyright 2012 The B612 Project Authors (https://github.com/polarsys/b612) | [licence](licences/B612-OFL.txt) |
 | Routed Gothic | `routed-gothic.ttf` `routed-gothic-narrow.ttf` `routed-gothic-wide.ttf` | Copyright (c) 2017, Darren Embry (<https://webonastick.com/>), with | [licence](licences/RoutedGothic-OFL.txt) |
