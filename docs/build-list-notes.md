@@ -1,22 +1,21 @@
 # Dial Tool — build list, the notes
 
 The full text of every open row of `build-list.md`, in the list's order: what was asked, in Okay's words, what was tried and measured, what is open on it. Read a row here when you take its item up; the list itself is the one-line view. Done, folded and dropped items: `build-list-done.md`.
-*Last updated 1 Nov 2026 (v1.1.9 beta): #548 built, #16 closed, #560 added.*
+*Last updated 1 Nov 2026 (v1.1.10 beta): #552 built, to verify; #548 built, #16 closed, #560 added.*
 
 ## Now — Okay said build
 
 | Order | # | Item | Status |
 |---|---|---|---|
-| 1 | 552 | **The Type pane opening jumps the panel's scroll** (Okay, 31 Oct 2026, 00:25, his screenshot of the Rings tab with the ring drawer open: "This type pane opens and goes up to lose the scrolling and top padding, it should open in place, without moving up"). Not reproduced in Chromium at 1440 × 900 or 700: folding and opening the pane leaves `.form`'s scrollTop as it was (`test/crops/type-fold.js`). It is iPad Safari (Okay, 1 Nov 2026): scroll anchoring on the pane's slide, or a focus scrolling the form. | build — the hypothesis to try: `overflow-anchor: none` on the panel's scroller, then one fix (R20) |
-| 2 | 52 | **Named instances of variable fonts in the font box.** A weight axis without named styles gets Regular · Bold (#275); the font's own instances are not listed. To build: read the file's fvar instance table (HarfBuzz does not hand it over), show the names as tabs on the name's line where Regular · Bold stand; a font with no instances keeps Regular · Bold. | build (Okay, 1 Nov 2026: "Up to Now") |
-| 3 | 494 | **Compare at one size, as large as the canvas holds, and a real-size switch** (Okay, 21 Oct 2026: "One big, as big as what fits on the canvas, one real size option in preview"): as built, every saved dial at one size; a switch shows them at their own mm (preview only, R26). | build |
+| 1 | 52 | **Named instances of variable fonts in the font box.** A weight axis without named styles gets Regular · Bold (#275); the font's own instances are not listed. To build: read the file's fvar instance table (HarfBuzz does not hand it over), show the names as tabs on the name's line where Regular · Bold stand; a font with no instances keeps Regular · Bold. | build (Okay, 1 Nov 2026: "Up to Now") |
+| 2 | 494 | **Compare at one size, as large as the canvas holds, and a real-size switch** (Okay, 21 Oct 2026: "One big, as big as what fits on the canvas, one real size option in preview"): as built, every saved dial at one size; a switch shows them at their own mm (preview only, R26). | build |
 
 ## Verify — built, for Okay's Mac, iPad and phone
 
 | Order | # | Item | Status |
 |---|---|---|---|
-| 4 | 528 | **Dramatic lighting more dramatic**: a still spotlight, darker ground; the spotlight lights the ground to its real colour. Built 4.94.19: still and centred, the ground's own colour out to the case's edge, × 0.82 at 70 %, × 0.57 at the rim (`POOL_*` in `watch.js`). | verify: the darkness, Claude's reading of "darker" |
-| 5 | 439 | **Backdrop's swatch loses its outline at times** (Okay, 23:53: old Safari on an Intel Mac, the iPad too; his picture: the switch at rest on a dark red backdrop). Not reproduced in Chromium. Measured: the dot stands at x .25, y .5 of a pixel; its colour is painted under the outline too. Taken: `background-clip: padding-box` on the canvas's swatches (Backdrop, strap). If he still sees it, the dot onto whole pixels. | verify |
+| 3 | 528 | **Dramatic lighting more dramatic**: a still spotlight, darker ground; the spotlight lights the ground to its real colour. Built 4.94.19: still and centred, the ground's own colour out to the case's edge, × 0.82 at 70 %, × 0.57 at the rim (`POOL_*` in `watch.js`). | verify: the darkness, Claude's reading of "darker" |
+| 4 | 439 | **Backdrop's swatch loses its outline at times** (Okay, 23:53: old Safari on an Intel Mac, the iPad too; his picture: the switch at rest on a dark red backdrop). Not reproduced in Chromium. Measured: the dot stands at x .25, y .5 of a pixel; its colour is painted under the outline too. Taken: `background-clip: padding-box` on the canvas's swatches (Backdrop, strap). If he still sees it, the dot onto whole pixels. | verify |
 
 ## Next — the features
 

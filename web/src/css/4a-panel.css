@@ -128,7 +128,10 @@
   .pinned { border-bottom-color: transparent; background: linear-gradient(var(--ink) 0 0) 50% 100% / calc(100% - 2 * var(--margin)) var(--thick) no-repeat border-box; }
   .pinned > .pane:last-child { --air: var(--u6); }
   .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field); --row-rule: var(--line-on-grey);
-    flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }
+    flex: 1; min-height: 0; overflow-y: auto; overflow-anchor: none; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }
+    /* overflow-anchor: none — the browser must not re-aim the scroll when a pane above opens or closes; the tool keeps the scroll
+       itself (app.js: steady, finger_anchor). Safari 27 began anchoring and the Type pane rode up with it on the iPad (#552; Okay,
+       31 Oct 2026: "it should open in place, without moving up") */
 
   /* a pane: a thick line, its heading, its rows. The eye in the toggle column shows whether it is open; the whole
      heading is the button. A folded pane says what it holds, in grey, at the right. Its body is where the columns

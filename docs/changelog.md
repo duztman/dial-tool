@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.10 beta · 1 Nov 2026 — the Type pane's jump on the iPad (#552)
+
+Okay, 1 Nov 2026, 13:23: "Do 552".
+
+- **`overflow-anchor: none` on the form** (`4a-panel.css`, the panel's scroller): the browser no longer re-aims the scroll when a pane above it opens or closes; the tool keeps the scroll itself (`steady`, `finger_anchor`). Why now: scroll anchoring shipped in Safari and iOS Safari 27 (caniuse, Nov 2026), and the Type pane began riding up on the iPad. The one try (R20); for Okay to verify on the iPad.
+- A check in `window.mjs`: the form's computed `overflow-anchor` is `none`.
+
 ## v1.1.9 beta · 1 Nov 2026 — the visitor counter (#548)
 
 Okay, 1 Nov 2026, 13:12: "Do the counter, goat counter is good, we only count main."

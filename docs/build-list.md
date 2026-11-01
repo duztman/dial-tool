@@ -4,22 +4,22 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 1 Nov 2026 (v1.1.9 beta): #548 built, #16 closed, #560 added.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 1 Nov 2026 (v1.1.10 beta): #552 built, to verify; #548 built, #16 closed, #560 added.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 1 | 552 | The Type pane opening jumps the panel's scroll — iPad Safari only; try `overflow-anchor: none` on the panel's scroller, one fix (R20) | 31 Oct 2026 — "it should open in place, without moving up" | build |
-| 2 | 52 | Named instances of variable fonts: the designer's style names as tabs where Regular · Bold stand | 1 Nov 2026 — "Up to Now" | build |
-| 3 | 494 | Compare at one size, as large as the canvas holds, and a real-size switch | 21 Oct 2026 — "One big, as big as what fits on the canvas, one real size option in preview" | build |
+| 1 | 52 | Named instances of variable fonts: the designer's style names as tabs where Regular · Bold stand | 1 Nov 2026 — "Up to Now" | build |
+| 2 | 494 | Compare at one size, as large as the canvas holds, and a real-size switch | 21 Oct 2026 — "One big, as big as what fits on the canvas, one real size option in preview" | build |
 
 ## Verify — built, for Okay's Mac, iPad and phone
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 4 | 528 | Dramatic lighting: is the darkness right (×0.57 at the rim, Claude's reading of "darker") | 24 Oct 2026 | verify (4.94.19) |
-| 5 | 439 | Backdrop's swatch loses its outline at times (old Safari, iPad; `background-clip: padding-box` taken) | 23 Oct 2026 | verify |
+| 3 | 528 | Dramatic lighting: is the darkness right (×0.57 at the rim, Claude's reading of "darker") | 24 Oct 2026 | verify (4.94.19) |
+| 4 | 439 | Backdrop's swatch loses its outline at times (old Safari, iPad; `background-clip: padding-box` taken) | 23 Oct 2026 | verify |
+| 5 | 552 | The Type pane opening jumps the panel's scroll on the iPad: `overflow-anchor: none` on the form (Safari 27 began anchoring); the one try (R20) | 31 Oct 2026 — "it should open in place, without moving up" | verify (v1.1.10) |
 
 ## Next — the features, in Okay's order, then easier → harder
 
