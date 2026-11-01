@@ -29,12 +29,12 @@
 | `--black` | `#000` | pure, for what must show on any colour: the pointer label, the day's handle, the hues' strip | 1-tokens, 4e-colour ×4, 4f-rings ×3, 4g-fonts, 6-preview, 7-bar ×6, 8-narrow ×2 |  |
 | `--box-side-step` | `22px` | the number box beside a hand's box and in a quiet row (4.64): its value · each of − +; the colour list's ink-height box too | 1-tokens, 4d-hands, 4e-colour, 6-preview |  |
 | `--box-side-value` | `52px` | the number box beside a hand's box and in a quiet row (4.64): its value · each of − +; the colour list's ink-height box too | 1-tokens, 4d-hands, 4e-colour |  |
-| `--box-steps` | `var(--tile-w)` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows ×3 | 4d-hands `.row.side .numbox` → `calc(2 * var(--box-side-step))`; 4e-colour `.colourlist > .row.showline .numbox` → `calc(2 * var(--box-side-step))`; 4f-rings `.row.block .numbox` → `calc(2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)`; 6-preview `.popfoot .numbox` → `calc(2 * var(--box-side-step))` |
-| `--box-value` | `calc(var(--tile-w) + var(--unit))` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows ×2 | 4d-hands `.row.side .numbox` → `var(--box-side-value)`; 4e-colour `.colourlist > .row.showline .numbox` → `var(--box-side-value)`; 4f-rings `.row.block .numbox` → `calc(var(--pos-box) - 2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)`; 6-preview `.popfoot .numbox` → `var(--foot-value)` |
-| `--btn-pad` · special | `10px` | from a button's or a box's edge to its words | 1-tokens, 3-controls, 4g-fonts ×12 |  |
+| `--box-steps` | `var(--tile-w)` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows ×2 | 4d-hands `.row.side .numbox` → `calc(2 * var(--box-side-step))`; 4e-colour `.colourlist > .row.showline .numbox` → `calc(2 * var(--box-side-step))`; 4f-rings `.row.block .numbox` → `calc(2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)`; 6-preview `.popfoot .numbox` → `calc(2 * var(--box-side-step))` |
+| `--box-value` | `calc(var(--tile-w) + var(--unit))` | a full row's number box (4.64): the value takes the unit that stood between it and its − + | 4c-rows | 4d-hands `.row.side .numbox` → `var(--box-side-value)`; 4e-colour `.colourlist > .row.showline .numbox` → `var(--box-side-value)`; 4f-rings `.row.block .numbox` → `calc(var(--pos-box) - 2 * var(--pos-step))`; 4g-fonts `.fontbox .row.num:not(.side) > .numbox` → `var(--tile-w)`; 6-preview `.popfoot .numbox` → `var(--foot-value)` |
+| `--btn-pad` · special | `10px` | from a button's or a box's edge to its words | 1-tokens, 3-controls, 4g-fonts ×12, 6-preview |  |
 | `--c` · the window's | `—` |  | 4e-colour ×4, 6-preview ×2 | set by colour.js, set by guides.js, set by ui.js |
 | `--canvas-fill` · the window's | `—` |  | 6-preview ×3 | set by preview.js |
-| `--canvas-inset` · special | `var(--canvas-inset-wide)` | from the preview's edge to what stands on it (a phone sets --canvas-inset to --u5; the title row keeps the wide one) | 1-tokens, 6-preview ×22, 7-bar, 8-narrow ×5 | 8-narrow `:root` → `var(--u5)`; read by cards.js, read by preview.js |
+| `--canvas-inset` · special | `var(--canvas-inset-wide)` | from the preview's edge to what stands on it (a phone sets --canvas-inset to --u5; the title row keeps the wide one) | 1-tokens, 6-preview ×23, 7-bar, 8-narrow ×5 | 8-narrow `:root` → `var(--u5)`; read by cards.js, read by preview.js |
 | `--canvas-inset-wide` · special | `12px` | from the preview's edge to what stands on it (a phone sets --canvas-inset to --u5; the title row keeps the wide one) | 1-tokens ×2 |  |
 | `--canvas-top` | `var(--canvas-inset)` | undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) | 6-preview ×3 | 8-narrow `:root` → `var(--canvas-inset)` |
 | `--checker` | `repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px` | what shows through a see-through colour | 4e-colour ×2 |  |
@@ -201,7 +201,7 @@
 | `--num-pop-w` · the window's | `—` |  | 4f-rings | set by panel.js |
 | `--num-pop-well` | `var(--rule)` | his #585857 square, #B1B1B1 value pill and track; the discs and knob true black (Okay, 24 Oct 2026: "Controller darks actual black now") | 4f-rings ×2 |  |
 | `--off-canvas` · set in 6-preview | `var(--white)` |  | 6-preview | 6-preview `main.dark` → `var(--ink)` |
-| `--on-canvas` · set in 6-preview | `var(--ink)` |  | 6-preview ×8 | 6-preview `main.dark` → `var(--white)` |
+| `--on-canvas` · set in 6-preview | `var(--ink)` |  | 6-preview ×9 | 6-preview `main.dark` → `var(--white)` |
 | `--p` · the window's | `—` |  | 3-controls, 4f-rings ×2 | read by panel.js, set by ui.js |
 | `--panel` | `calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap))` |  | 1-tokens ×2, 4g-fonts, 7-bar |  |
 | `--panel-w` | `calc(var(--panel) + var(--hair))` | the panel's column: its lines and its right hairline | 2-base ×2, 4a-panel ×5, 6-preview ×4 | 2-base `.showing` → `var(--show-panel-w)` |
@@ -260,7 +260,7 @@
 | `--round-large` | `14px` | …and a sticker's corners, a small swatch's | 3-controls, 8-narrow ×3 |  |
 | `--round-pill` | `999px` | fully round: the signs on the Rings heading line, a value button | 3-controls ×3, 4a-panel, 4c-rows, 4f-rings ×2, 4g-fonts ×3, 6-preview ×4 |  |
 | `--round-small` | `5px` | …and a sticker's corners, a small swatch's | 3-controls ×10, 4e-colour ×7, 4f-rings ×6, 6-preview ×3, 7-bar |  |
-| `--round-switch` | `10px` | the switches on the preview: undo, Guides, Backdrop | 6-preview ×18, 7-bar ×4, 8-narrow |  |
+| `--round-switch` | `10px` | the switches on the preview: undo, Guides, Backdrop | 6-preview ×19, 7-bar ×4, 8-narrow |  |
 | `--round-tiny` | `3px` | …and a sticker's corners, a small swatch's | 4e-colour ×4, 4g-fonts |  |
 | `--row-end` | `calc(var(--frame-pad) - var(--hair) + var(--ringline-inner))` | the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons | 1-tokens, 4f-rings |  |
 | `--row-rule` | `var(--line-on-paper)` |  | 4c-rows ×8, 4e-colour ×2, 4f-rings ×4, 6-preview ×4 | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))`; 4a-panel `.settingsbox` → `var(--line-on-grey)`; 4a-panel `.form` → `var(--line-on-grey)`; 4f-rings `.numpop .row` → `transparent` |

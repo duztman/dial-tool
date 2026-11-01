@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.14 beta · 1 Nov 2026 — Compare's Real size (#494), the window check mended (#561), − + on the axis rows
+
+Okay, 1 Nov 2026, 19:01: "Compare at one size is a button on top of compare canvas, the dials resize in their place. Our small preview size for all. Failing window also do this time, all done."; 19:03: "Why no plusminus on varible axis lines?"
+
+- **Real size** (`cards.js`, `6-preview.css`): a switch centred on the canvas's top line, shown only while comparing. Pressed, every dial is drawn at its own millimetres — the browser's millimetre measured, not assumed (R21) — each centred on the place the packing gave it; pressed again, all one size as before. The millimetres come from what was saved (`entry_settings`), read once at the press. Preview only (R26).
+- **The turned window's check** (#561): the tool was right all along. The window shows today's day unless the bar set one, and a "1" at 30° is no taller than level, so the check failed on the 1st and on every day written with a narrow digit. It now sets the day to 28 for its measurement and gives the bar's day back. The whole window test passes.
+- **− and + on a variable font's axis rows** (`fonts.js`): as every number row has them; a step of 10 on a wide axis (a weight, 100–900), 1 on a narrow one (width in percent, optical size in points). The lone-box rule in `4c-rows.css` goes with it.
+- Not changed, looked at: every axis of a variable font already has a slider in every font box (Okay, 19:01: "Add all axes of variable fonts as sliders"); seen while looking — the *opsz* sticker is cut at the label column's edge on "Optical size" (noted, not fixed).
+
 ## v1.1.13 beta · 1 Nov 2026 — a variable font's own styles as the tabs (#52)
 
 Okay, 1 Nov 2026, 14:30: "Go on" (the list's next item).

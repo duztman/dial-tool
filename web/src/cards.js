@@ -179,7 +179,24 @@ export const CARDS = {
       this.compare_was_alone = this.eye_button.getAttribute("aria-pressed") === "true";
       if (!this.compare_view) {
         this.compare_view = el("div", { className: "compareview", id: "compare-view" });
-        this.main.append(this.compare_view);
+        // Real size (#494; Okay, 21 Oct 2026: "one real size option in preview"; 1 Nov 2026: "a button on top of
+        // compare canvas, the dials resize in their place. Our small preview size for all"): a switch on the
+        // canvas's top line; pressed, every dial is drawn at its own millimetres, as the Tiny Preview draws the one
+        // dial, each centred on the place it had. Preview only, nothing reaches a file (R26).
+        this.compare_real = false;
+        const real = el("button", { type: "button", className: "onview comparereal", id: "compare-real", textContent: "Real size", title: "Every dial at its own size, as the Tiny Preview shows it" });
+        real.setAttribute("aria-pressed", "false");
+        real.onclick = async () => {
+          this.compare_real = !this.compare_real; real.setAttribute("aria-pressed", String(this.compare_real));
+          if (this.compare_real) {                 // each saved dial's page in millimetres, read once from what was saved (a set from a link carries its settings already)
+            this.compare_mm = new Map();
+            for (const [i, e] of this.compare_list().entries()) { const S = e.S || await entry_settings(e); if (S) this.compare_mm.set(e.id ?? i, G.page_mm(S)); }      // keyed by the saved dial's id: the list is read afresh each time
+          }
+          this.compare_place();
+          this.log(this.compare_real ? "comparing at real size — each dial at its own millimetres" : "comparing at one size");
+        };
+        this.compare_real_button = real;
+        this.main.append(this.compare_view, real);
         this.watchers.push(new ResizeObserver(() => { if (this.comparing) this.compare_place(); }));
         this.watchers.at(-1).observe(this.compare_view);
         this.listen(document, "keydown", (e) => { if (e.key === "Escape" && this.comparing) this.compare(false); });
@@ -241,10 +258,17 @@ export const CARDS = {
     const packed = pack_even(view.clientWidth, view.clientHeight, n), D = Math.floor(packed.D), places = packed.places;
     if (D < 1) return;
     view.style.setProperty("--compare-d", D + "px");
+    const px_mm = (() => { const probe = el("div"); probe.style.cssText = "position:absolute;visibility:hidden;width:100mm"; view.append(probe); const w = probe.offsetWidth; probe.remove(); return w / 100; })();      // the browser's millimetre, measured, not assumed (R21)
     view.replaceChildren(...list.map((e, i) => {
       const cell = el("div", { className: "comparedial", title: e.name });
       cell.innerHTML = e.picture;
       cell.style.left = places[i][0] + "px"; cell.style.top = places[i][1] + "px";
+      const mm = this.compare_real && this.compare_mm ? this.compare_mm.get(e.id ?? i) : null;
+      if (mm) {                                    // Real size: the dial's own millimetres, centred on its packed place
+        const d = Math.round(mm * px_mm);
+        cell.style.width = cell.style.height = d + "px";
+        cell.style.left = places[i][0] + (D - d) / 2 + "px"; cell.style.top = places[i][1] + (D - d) / 2 + "px";
+      }
       if (this.looking) {                          // a set's dial: a press edits it (your own saved dials stay unpickable here)
         cell.classList.add("pick"); cell.tabIndex = 0;
         cell.onclick = () => { this.compare(false); this.reopen({ ...e.S, ui_section: this.S.ui_section }); this.log(`opened ${e.name}, from the set`); };

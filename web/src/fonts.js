@@ -5,7 +5,7 @@ import * as G from "./geometry.js";
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { $, DEFAULT_ON, FEATURE_NAMES, KEY, PLACE, clamp, el, filled, fmt, parse_number } from "./ui.js";
 
-import { NONE_SIGN, PICS, SIGNS, TOOL_ICONS, eye, icon } from "./icons.js";
+import { NONE_SIGN, PICS, SIGNS, STEP, TOOL_ICONS, eye, icon } from "./icons.js";
 import { LANG_NAMES, col, lang_short, num, pick, seg } from "./rows.js";
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
@@ -470,7 +470,10 @@ export const FONTS = {
           const back = el("button", { type: "button", className: "axisname", id: id + "-back", title: `${a.name} (${tag}), ${a.min}–${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) },
             el("span", { textContent: word }), el("span", { className: "sticker " + kind, textContent: tag }));
           slider.ariaLabel = field.ariaLabel = a.name;
-          wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, el("span", { className: "numbox alone" }, field)));      // the number box without − + (4.64): an axis is swept or typed
+          // − and + as every number row has them (Okay, 1 Nov 2026: "Why no plusminus on variable axis lines?"): a step of
+          // 10 on a wide axis (a weight, 100–900), of 1 on a narrow one (a width in percent, an optical size in points)
+          const by = a.max - a.min >= 500 ? 10 : 1, step = (dir) => { const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * by) }); b.innerHTML = STEP[dir > 0 ? "plus" : "minus"]; b.ariaLabel = dir > 0 ? "Plus" : "Minus"; return b; };
+          wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, el("span", { className: "numbox" }, field, el("span", { className: "steps" }, step(-1), step(1)))));
         }
       }
       for (const input of wrap.querySelectorAll("input")) {

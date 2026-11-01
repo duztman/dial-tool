@@ -96,6 +96,10 @@
   .compareview { position: absolute; z-index: 2; inset: var(--compare-pad) calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: none; }      /* clear of the two rows of switches at the top and at the foot, the same room over and under, so the block sits on the preview's middle */
   main.comparing { --compare-pad: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); background: var(--canvas-fill); }      /* the backdrop is the preview's own picture, hidden with the dial: its colour painted behind */
   main.comparing .compareview { display: block; }
+  .comparereal { position: absolute; z-index: 3; top: var(--canvas-inset); left: 50%; translate: -50% 0; display: none; padding: 0 var(--btn-pad); border-radius: var(--round-switch); }      /* Real size (#494): on the canvas's top line, centred, only while comparing */
+  main.comparing .comparereal { display: flex; }
+  .comparereal[aria-pressed="true"] { border-color: var(--on-canvas); }
+  .comparereal[aria-pressed="true"] > * { opacity: 1; }
   main.comparing > :is(svg, .tip) { visibility: hidden; }
   .comparedial { position: absolute; width: var(--compare-d); height: var(--compare-d); }
   .comparedial > svg { display: block; width: 100%; height: 100%; }

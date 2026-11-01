@@ -2,13 +2,12 @@
 
 *§1 is rewritten at every handover (last on 1 Nov 2026, v1.1.10 beta, #552); §2 says how. Everything else a successor needs is in `CLAUDE.md` (the read order, the loop) and `working-with-okay.md`.*
 
-## 1 · Where things stand (1 Nov 2026, 14:50; v1.1.13 beta on `dev` and /dev/, v1.0 beta on `main` and the released page)
+## 1 · Where things stand (1 Nov 2026, 19:40; v1.1.14 beta on `dev` and /dev/, v1.0 beta on `main` and the released page)
 
-- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **v1.1.13 beta**; <https://duztman.github.io/dial-tool/> and `main` are **v1.0 beta**. The step to `main` is Okay's to run (`tools/release.sh 1.2 "first line"`; a session's safety check refuses a production deploy). The Help page is at </help/> (`guide/help/`, published on his word with `guide/help/publish.sh`).
+- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **v1.1.14 beta**; <https://duztman.github.io/dial-tool/> and `main` are **v1.0 beta**. The step to `main` is Okay's to run (`tools/release.sh 1.2 "first line"`; a session's safety check refuses a production deploy). The Help page is at </help/> (`guide/help/`, published on his word with `guide/help/publish.sh`).
 - **The docs' audit (1 Nov 2026, night)**: the build list is one ordered list (the order column is now → future, easier → harder; the # stays the item's name), folded rows and finished items out; the rules index gives each rule a learning order and a name (R-numbers unchanged — code and tests cite them); brief §5–§8, the rule pages, the Project prompt and this page brought in line. Okay's instruction for the session: research first, docs only, no building, nothing asked that the docs already answer.
 - **The counter (#548) is built** (v1.1.9 beta), asleep until the step to `main`; Okay must make the GoatCounter account with the code `okayka` (or say his code: `COUNTER_CODE` in `web/build.mjs`).
-- **Now** (the list's first): #494 Compare at one size; then Next, #561 (the failing window check) first.
-- **A failing check**: *a window turned with its radius stands 30° askew…* (window.mjs) — now #561, first in Next; still failing on v1.1.11.
+- **Now** is empty: every Now item of 1 Nov 2026 is built; the next build comes from Next (#184 first) on Okay's word. The whole window test passes (#561 mended).
 - **For Okay to verify** on his machines: #528, #439, #552 (the list's Verify group; #552's cause was measured in Chromium and fixed — if the iPad still jumps, ask with a screenshot); the hex pill whole on Safari; from v1.0.2–v1.1.3: the colour pop-out's grid under a finger (19 × 18 at 140; wide doubles them), the letters over the line's cells, the sheet on a phone, a pop-out opened low growing upward; #553 the squeezed time box and #554 Settings as built.
 - **Open from #501**: Rundgotisch Rauh (the archive's file is Tyskland 45 — fix the Wiegel Archive first), Tartlers End is the Krystal cut.
 - **Known on the tools**: a session's clone is shallow — `tools/setup.sh` widens the fetch; without it `release.sh` fails at `to_main` or builds the live page on a stale `gh-pages`. His Mac's screenshot folder (R36) needs `device_request_folder_access`, which a session's classifier may refuse; then the pictures go to him as one zip. The gdoc *Dial tool notes* has had nothing new since 24 Oct 2026 (its notes are #513–#536).

@@ -1195,7 +1195,10 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
     check(open && places === "12 1:30 3 4 4:30 6 7:30 9 10:30" && own[0] === 67.5 && own[1] === "2:15" && own[2] === "Window at 2:15" && own[3] === "window-at-more" && named[0] === 1 && named[1] === null && placed[0][0] === 7 && placed[0][1] === null && placed[1] === null && placed[2] === "10:30" && await S("S.da_at_deg === null"),
       `the dots open every place as a button (${places}) and a field for any time: 2:15 puts the window at 67.5°, and the dots say so; a named time typed (4:30) is that place; a place pressed (10:30) is taken and the popup goes`);
   }
-  // turned with its radius at 4: 30°; the text with it or level
+  // turned with its radius at 4: 30°; the text with it or level. The window shows today's day unless the bar set one: on a
+  // day written "1" the turned glyph is no taller than the level one (a narrow 1 at 30° loses as much height as it
+  // gains), so the check sets a wide day, 28, and gives the bar's day back after (#561)
+  const was_day = await page.evaluate(() => { const t = window.dial_tool, was = t.S.date; t.set_value("global", "date", "2026-10-28"); t.frame(); return was; });
   await page.click("#window-at-more"); await page.click("#window-at-place-8");      // 4 o'clock: the ninth in the list (R9), a button in the dots' popup
   const level = await box();
   await page.check("#window-turn-Turn-it-with-its-radius");
@@ -1204,6 +1207,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await frame();
   const text_level = await page.evaluate(() => { const b = window.dial_tool.statik.windows[0].number.bounds(); return b[3] - b[1]; });
   await shot("4c17-window-turned");
+  await page.evaluate((was) => { const t = window.dial_tool; t.set_value("global", "date", was); t.frame(); }, was_day);
   check(turned[1] > level[1] + 0.3 && text_turned > text_level + 0.1 && await S("S.da_at === 8"), `at 4 a window turned with its radius stands 30° askew (its box ${level.join(" × ")} → ${turned.join(" × ")}); its text turns with it, or stays level`);
   // its own font, and back
   const ring_font = await S("S.rings.find((r) => r.kind === 2).ps");
@@ -1625,10 +1629,11 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
       document.querySelector("#font-style-3").click(); t.frame(); const semi = [tabs(), (t.ring().axes || {}).wght];
       document.querySelector("#font-style-2").click(); t.frame(); const back = [tabs(), (t.ring().axes || {}).wght];
       t.set_value("ring", "axes", { wght: 450 }); t.frame(); const off = tabs();
+      const steps = document.querySelectorAll("#axis-wght + .numbox .steps > .step, .axes .row .numbox .steps > .step").length; document.querySelector("#axis-wght").closest(".row").querySelector(".steps > .step:last-child").click(); const plus = (t.ring().axes || {}).wght;
       const prior = [...t.catalog.values()].find((e) => e.ps === was.ps); if (prior) await t.use_font(prior); t.set_value("ring", "axes", was.axes || {}); t.frame();
-      return { ladder, semi, back, off }; });
-    check(named.ladder === "Thin Light Regular* SemiBold Bold" && named.semi[0] === "Thin Light Regular SemiBold* Bold" && named.semi[1] === 600 && named.back[0] === named.ladder && named.back[1] === undefined && named.off === "Thin Light Regular SemiBold Bold",
-      `a variable font's own styles are the tabs — Antonio: ${named.ladder}; SemiBold sets the weight to ${named.semi[1]} (${named.semi[0]}), Regular takes it off again (${named.back[1]}); a weight between two styles lights none (${named.off}) (#52; Okay, 1 Nov 2026: "Up to Now")`);
+      return { ladder, semi, back, off, steps, plus }; });
+    check(named.ladder === "Thin Light Regular* SemiBold Bold" && named.semi[0] === "Thin Light Regular SemiBold* Bold" && named.semi[1] === 600 && named.back[0] === named.ladder && named.back[1] === undefined && named.off === "Thin Light Regular SemiBold Bold" && named.steps === 2 && named.plus === 460,
+      `a variable font's own styles are the tabs — Antonio: ${named.ladder}; SemiBold sets the weight to ${named.semi[1]} (${named.semi[0]}), Regular takes it off again (${named.back[1]}); a weight between two styles lights none (${named.off}) (#52; Okay, 1 Nov 2026: "Up to Now"); the axis row has − and + (${named.steps}), + takes 450 to ${named.plus} (Okay: "Why no plusminus on variable axis lines?")`);
     await page.click("#font-name");
     await page.click("#font-ground-dark");
     const d = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#font-list").backgroundColor, c("#font-current").backgroundColor, c("#font-current").color, c("#font-ground-dark").backgroundColor, document.querySelector("#font-ground-dark").getAttribute("aria-checked"), sessionStorage.getItem("dial-tool-font-dark"), c(".fontbox").backgroundColor]; });
@@ -2067,6 +2072,17 @@ await page.uncheck("#global-out-production-Mono-print-mask");
     const w = cells.map((c) => c.width), mid = (cells.reduce((s, c) => s + c.left + c.right, 0) / 2 / cells.length);
     return { n: cells.length, inside, apart, same: w.every((x) => x === w[0]), big: w[0] > 150, away: document.querySelector("#app").classList.contains("away"), shown: getComputedStyle(document.querySelector("#compare-view")).display !== "none", hidden: getComputedStyle(document.querySelector("main > svg")).visibility === "hidden" };
   });
+  // Real size (#494): the switch on the canvas's top line; pressed, each dial at its own millimetres, centred where it stood
+  const before_real = await page.evaluate(() => [...document.querySelectorAll(".comparedial")].map((c) => { const r = c.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width]; }));
+  await page.click("#compare-real"); await page.waitForTimeout(400);
+  const real = await page.evaluate(() => { const b = document.querySelector("#compare-real").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(), mm = (() => { const p = document.createElement("div"); p.style.cssText = "position:absolute;visibility:hidden;width:100mm"; document.body.append(p); const w = p.offsetWidth; p.remove(); return w / 100; })();
+    return { on: document.querySelector("#compare-real").getAttribute("aria-pressed"), shown: getComputedStyle(document.querySelector("#compare-real")).display !== "none", centred: Math.abs((b.left + b.right) / 2 - (m.left + m.right) / 2) < 1, top: b.top - m.top,
+      cells: [...document.querySelectorAll(".comparedial")].map((c) => { const r = c.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width]; }), want: window.dial_tool.compare_list().map((e, i) => Math.round(window.dial_tool.compare_mm.get(e.id ?? i) * mm)) }; });
+  await shot("6b-compare-real");
+  await page.click("#compare-real"); await page.waitForTimeout(400);
+  const back_real = await page.evaluate(() => [...document.querySelectorAll(".comparedial")].map((c) => c.getBoundingClientRect().width));
+  check(real.on === "true" && real.shown && real.centred && real.top > 0 && real.top < 30 && real.cells.every((c, i) => Math.abs(c[0] - before_real[i][0]) < 1 && Math.abs(c[1] - before_real[i][1]) < 1 && c[2] === real.want[i]) && back_real.every((w, i) => w === before_real[i][2]),
+    `Real size on the canvas's top line, centred (${real.top} px down): pressed, each dial at its own millimetres (${real.cells.map((c) => c[2]).join(", ")} px for ${real.want.join(", ")}) on the centre it had; pressed again, one size (${back_real.join(", ")}) (#494; Okay, 1 Nov 2026: "the dials resize in their place")`);
   await page.keyboard.press("Escape"); await page.waitForTimeout(700);
   const after = await page.evaluate(() => [document.querySelector("#app").classList.contains("away"), getComputedStyle(document.querySelector("#compare-view")).display]);
   await open_versions();

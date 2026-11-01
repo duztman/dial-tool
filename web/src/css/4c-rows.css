@@ -43,7 +43,6 @@
   .numbox > .steps > .step { display: grid; place-items: center; min-width: 0; padding: 0; color: var(--ink); }
   .numbox > .steps > .step:first-child { border-left: 0; }      /* touching the value: its line is the one between */
   .numbox > .steps > .step > svg { flex: none; }
-  .numbox.alone > input[type="text"] { width: calc(var(--box-value) + var(--box-steps)); }      /* a number with no − + (a font's axis): its box as wide as a whole number box */
   .row.num input[type="text"] { text-align: right; }
   /* the font sheet's two fields (Find a font, a link) are larger than a row's, with a darker line. A row's field for
      words (a window's text, custom labels) is a field like any other (Okay, 13 Oct 2026: "remove input height") */
