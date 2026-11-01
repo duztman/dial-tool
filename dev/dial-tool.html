@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.13 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.14 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -781,7 +781,6 @@
   .numbox > .steps > .step { display: grid; place-items: center; min-width: 0; padding: 0; color: var(--ink); }
   .numbox > .steps > .step:first-child { border-left: 0; }      /* touching the value: its line is the one between */
   .numbox > .steps > .step > svg { flex: none; }
-  .numbox.alone > input[type="text"] { width: calc(var(--box-value) + var(--box-steps)); }      /* a number with no − + (a font's axis): its box as wide as a whole number box */
   .row.num input[type="text"] { text-align: right; }
   /* the font sheet's two fields (Find a font, a link) are larger than a row's, with a darker line. A row's field for
      words (a window's text, custom labels) is a field like any other (Okay, 13 Oct 2026: "remove input height") */
@@ -1656,6 +1655,10 @@
   .compareview { position: absolute; z-index: 2; inset: var(--compare-pad) calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: none; }      /* clear of the two rows of switches at the top and at the foot, the same room over and under, so the block sits on the preview's middle */
   main.comparing { --compare-pad: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); background: var(--canvas-fill); }      /* the backdrop is the preview's own picture, hidden with the dial: its colour painted behind */
   main.comparing .compareview { display: block; }
+  .comparereal { position: absolute; z-index: 3; top: var(--canvas-inset); left: 50%; translate: -50% 0; display: none; padding: 0 var(--btn-pad); border-radius: var(--round-switch); }      /* Real size (#494): on the canvas's top line, centred, only while comparing */
+  main.comparing .comparereal { display: flex; }
+  .comparereal[aria-pressed="true"] { border-color: var(--on-canvas); }
+  .comparereal[aria-pressed="true"] > * { opacity: 1; }
   main.comparing > :is(svg, .tip) { visibility: hidden; }
   .comparedial { position: absolute; width: var(--compare-d); height: var(--compare-d); }
   .comparedial > svg { display: block; width: 100%; height: 100%; }
@@ -7516,7 +7519,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.13 beta";
+var VERSION = "v1.1.14 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -16729,7 +16732,13 @@ var FONTS = {
             el("span", { className: "sticker " + kind, textContent: tag })
           );
           slider.ariaLabel = field.ariaLabel = a.name;
-          wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, el("span", { className: "numbox alone" }, field)));
+          const by = a.max - a.min >= 500 ? 10 : 1, step = (dir) => {
+            const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * by) });
+            b.innerHTML = STEP[dir > 0 ? "plus" : "minus"];
+            b.ariaLabel = dir > 0 ? "Plus" : "Minus";
+            return b;
+          };
+          wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, el("span", { className: "numbox" }, field, el("span", { className: "steps" }, step(-1), step(1)))));
         }
       }
       for (const input of wrap.querySelectorAll("input")) {
@@ -21632,7 +21641,24 @@ var CARDS = {
       this.compare_was_alone = this.eye_button.getAttribute("aria-pressed") === "true";
       if (!this.compare_view) {
         this.compare_view = el("div", { className: "compareview", id: "compare-view" });
-        this.main.append(this.compare_view);
+        this.compare_real = false;
+        const real = el("button", { type: "button", className: "onview comparereal", id: "compare-real", textContent: "Real size", title: "Every dial at its own size, as the Tiny Preview shows it" });
+        real.setAttribute("aria-pressed", "false");
+        real.onclick = async () => {
+          this.compare_real = !this.compare_real;
+          real.setAttribute("aria-pressed", String(this.compare_real));
+          if (this.compare_real) {
+            this.compare_mm = /* @__PURE__ */ new Map();
+            for (const [i2, e] of this.compare_list().entries()) {
+              const S = e.S || await entry_settings(e);
+              if (S) this.compare_mm.set(e.id ?? i2, page_mm(S));
+            }
+          }
+          this.compare_place();
+          this.log(this.compare_real ? "comparing at real size \u2014 each dial at its own millimetres" : "comparing at one size");
+        };
+        this.compare_real_button = real;
+        this.main.append(this.compare_view, real);
         this.watchers.push(new ResizeObserver(() => {
           if (this.comparing) this.compare_place();
         }));
@@ -21708,11 +21734,26 @@ var CARDS = {
     const packed = pack_even(view2.clientWidth, view2.clientHeight, n), D = Math.floor(packed.D), places = packed.places;
     if (D < 1) return;
     view2.style.setProperty("--compare-d", D + "px");
+    const px_mm = (() => {
+      const probe = el("div");
+      probe.style.cssText = "position:absolute;visibility:hidden;width:100mm";
+      view2.append(probe);
+      const w = probe.offsetWidth;
+      probe.remove();
+      return w / 100;
+    })();
     view2.replaceChildren(...list.map((e, i2) => {
       const cell = el("div", { className: "comparedial", title: e.name });
       cell.innerHTML = e.picture;
       cell.style.left = places[i2][0] + "px";
       cell.style.top = places[i2][1] + "px";
+      const mm = this.compare_real && this.compare_mm ? this.compare_mm.get(e.id ?? i2) : null;
+      if (mm) {
+        const d = Math.round(mm * px_mm);
+        cell.style.width = cell.style.height = d + "px";
+        cell.style.left = places[i2][0] + (D - d) / 2 + "px";
+        cell.style.top = places[i2][1] + (D - d) / 2 + "px";
+      }
       if (this.looking) {
         cell.classList.add("pick");
         cell.tabIndex = 0;
