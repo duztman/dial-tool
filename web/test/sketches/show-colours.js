@@ -24,6 +24,10 @@
 // and label."): a part of several colours opens as an expandable — its chevron, its name bold — and under it a line for
 // each colour, named by what it colours (Hand · Cap; Frame · Disc · Figures · Neighbours), each with its pill. A part that
 // shows and hides (the seconds hand): the chevron in its dot's place, the dot on the Hand line.
+// Round 6 (01:39: "Check the row heights and paddings of the newly placed color rows, they are not up to code. Their lines
+// do not extend to the second column, they start where the label starts, 3rd column. Lines only in between colors are
+// white."): a colour's line, under its part: the line over it from where the names start (the third column); the lines
+// between two colours white, from there too; the last colour's line as an item's (from the marks' column).
 part = ".panel .form";
 states = ["open", "Rings closed"];
 css = `
@@ -37,6 +41,9 @@ css = `
   .colourlist .chev:not(.open) svg { transform: rotate(-90deg); }
   .colourlist > .row.showline:has(> .chev) > label { color: var(--ink); font-weight: 600; }      /* an expandable line: bold */
   .colourlist > .row.showline.many > .mark { visibility: visible; }
+  .colourlist > .row.showline:has(+ .row.part) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--label-x)) var(--hair) no-repeat; }      /* a part over its colours: its line from the names' column */
+  .colourlist > .row.part:has(+ .row.part) { box-shadow: none; background: linear-gradient(var(--white) 0 0) right bottom / calc(100% - var(--label-x)) var(--hair) no-repeat; }      /* between two colours: white, from the names' column */
+  .colourlist > .row.part { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
 `;
 setup = async () => {
   const t = window.dial_tool, wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -49,6 +56,7 @@ build = async (state) => {
   const $$ = (q) => [...document.querySelectorAll(q)], list = document.querySelector(".colourlist:not(.inklist)");
   const pane = list.closest(".pane"), x = list.firstElementChild.getBoundingClientRect().left - pane.getBoundingClientRect().left;
   for (const l of $$(".colourlist")) l.style.setProperty("--x-in", x + "px");
+  { const r = list.querySelector(".row.showline:not(.lead)"), lx = r.querySelector("label").getBoundingClientRect().left - r.getBoundingClientRect().left; for (const l of $$(".colourlist")) l.style.setProperty("--label-x", lx + "px"); console.log(`measured the names start ${lx.toFixed(1)} px into a line`); }
   // Rings and Hands: a chevron, as an ink's (its own drawing, copied), open pointing down
   const chev = document.querySelector(".inklist .chev");
   for (const sub of $$(".colourlist > .row.showsub")) {
@@ -86,7 +94,7 @@ build = async (state) => {
       line.querySelector("label").textContent = words[0].toUpperCase() + words.slice(1);
       const bg = s.style.getPropertyValue("--c") || getComputedStyle(s).backgroundColor, pill = line.querySelector(".colour");
       pill.querySelector(".dot").style.setProperty("--c", bg); pill.querySelector(".dot").style.background = bg; pill.querySelector(".hex").textContent = hex(bg);
-      const keep = row.querySelector(".place"); if (keep && line.querySelector(".place")) line.querySelector(".place").replaceWith(document.createElement("span"));
+      line.querySelector(".place")?.replaceChildren();      // the number's place kept, empty: a colour has no height of its own
       if (dot && s === sw[0]) line.firstElementChild.replaceWith(dot);
       after.after(line); after = line;
     }
@@ -99,4 +107,9 @@ build = async (state) => {
     if (/^\d+ parts$/.test(name)) mark.innerHTML = many;
     if (name === "Cap") mark.innerHTML = cap;
   }
+  // measured: every line's height, its rule's colour, its label's left (R21)
+  const rows = $$(".colourlist > .row").filter((r) => !r.hidden && r.querySelector(".colour")).map((r) => { const b = r.getBoundingClientRect(), p = r.querySelector(".colour").getBoundingClientRect(); return `${(r.querySelector("label")?.textContent || "").slice(0, 10)} ${b.height.toFixed(1)} pill ${(p.top - b.top).toFixed(1)}/${(b.bottom - p.bottom).toFixed(1)}`; });
+  console.log("measured rows " + rows.join(" | "));
+  const a = $$(".colourlist > .row.part")[0], b = $$(".colourlist > .row.showline").find((r) => r.querySelector("label")?.textContent === "Hour hand");
+  console.log("measured kids " + [a, b].map((r) => [...r.children].map((k) => k.tagName + "." + k.className + ":" + Math.round(k.getBoundingClientRect().top - r.getBoundingClientRect().top) + "/" + Math.round(k.getBoundingClientRect().height)).join(",")).join(" || "));
 };
