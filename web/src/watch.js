@@ -268,6 +268,11 @@ const handBevel = (x, A, L) => { if (!HAND_BEVEL || !x.hand || !x.bevel) return 
   const id = "hb" + (INK_N++), a = rad(A[x.hand]), side = Math.cos(a) * Math.cos(rad(L)) + Math.sin(a) * Math.sin(rad(L));
   CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
   const lit = 0.22 * HAND_BEVEL * Math.abs(side), dark = 0.26 * HAND_BEVEL * Math.abs(side);
+  if (x.dome) {      // Domed (#531): each half a ramp from nothing on the spine to twice a Ridge half's at its edge, as the dial side draws it (hands.js, DOME)
+    const ramp = (n, s, c, k) => `<linearGradient id="${id}${n}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${f(s * x.hw)}" y2="0"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}" stop-opacity="${f(Math.min(2 * k, 1))}"/></linearGradient>`;
+    CLIPS.push(ramp("r", 1, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark), ramp("l", -1, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit));
+    return `<g data-hb="${x.hand}" data-dome="${id}" transform="rotate(${-A[x.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="url(#${id}r)"/><rect x="-50" y="-50" width="50" height="100" fill="url(#${id}l)"/></g></g>`;
+  }
   return `<g data-hb="${x.hand}" transform="rotate(${-A[x.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="${side > 0 ? "#fff" : "#000"}" fill-opacity="${f(side > 0 ? lit : dark)}"/><rect x="-50" y="-50" width="50" height="100" fill="${side > 0 ? "#000" : "#fff"}" fill-opacity="${f(side > 0 ? dark : lit)}"/></g></g>`; };
 function dialSVG(C, v, L) {
   const D = DIALS[0], s = (C.dial - (C.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;

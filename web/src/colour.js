@@ -506,7 +506,7 @@ export const COLOUR = {
     if (G.kind_of(ring) === "band" && G.positions_of(ring).length > 1) return this.sector_colours(i);
     return [{ id: `ring-${i}`, title: text, alpha: true, read: () => (this.S.rings[i] || {}).c, write: (v) => { this.S.rings[i].c = v; this.changed(); } }];
   },
-  hand_colour(h, text) { return { id: "hand-" + h, title: text, read: () => this.S["ha_" + h].c, write: (v) => { this.S["ha_" + h].c = v; this.changed(); } }; },
+  hand_colour(h, text) { return { id: "hand-" + h, title: text, alpha: true, read: () => this.S["ha_" + h].c, write: (v) => { this.S["ha_" + h].c = v; this.changed(); } }; },
   cap_colour() { return { id: "cap", title: "Cap", read: () => this.S.c_cap, write: (v) => { this.S.c_cap = v; this.changed(); } }; },
 
   /** a window's colours as the Windows tab names them: its frame, its disc, then what is printed on the disc */

@@ -2856,18 +2856,29 @@ await shot("10-bar");
       left: Math.round(rings.getBoundingClientRect().left - pane.left), dial: getComputedStyle(dial.querySelector("label")).fontWeight,
       hand_mark: !!named("Hour hand").querySelector(".mark circle"), win: named("Date at 3")?.querySelector(".mark rect")?.getAttribute("fill") ?? "none",
       parts: [hand, cap].map((x) => x.querySelector("label").textContent).join(" · "), bold: getComputedStyle(sec.querySelector("label")).fontWeight,
-      white: getComputedStyle(hand).backgroundImage.includes("rgb(234, 216") || getComputedStyle(hand).backgroundImage.includes("255, 255, 255"),
+      white: getComputedStyle(hand).backgroundImage.split(")")[0] === getComputedStyle(sec).backgroundImage.split(")")[0],      // between two colours: the rows' own line (01:56: "Abort white lines")
       dotted: !!rows.find((x) => x.classList.contains("off"))?.querySelector(".eye circle[stroke-dasharray]"),
       many: !!document.querySelector(".inklist .row.inkline .mark path"),
     };
     sec.querySelector(".chev").click(); await tick();
     out.shut = hand.hidden && cap.hidden;
     sec.querySelector(".chev").click(); await tick();
+    // the Hands pane's Bevels (01:56: "Bevels is not working on of or edit on show mode. Update bevel here with new options as well")
+    const op = () => Math.max(0, ...[...document.querySelectorAll("[data-hb] rect")].map((x) => +x.getAttribute("fill-opacity") || 0));
+    document.getElementById("bevel-minute").click(); await tick(); await tick();
+    const on = document.querySelectorAll("[data-hb]").length, full = op();
+    t.set_value("global", "sh_bevel", 50); await tick(); await tick();
+    const half = op();
+    [...document.querySelectorAll(".pillswitch button")].find((b) => b.textContent === "Domed").click(); await tick(); await tick();
+    const dome = document.querySelectorAll("[data-dome]").length;
+    document.getElementById("bevel-minute").click(); await tick(); await tick();
+    out.bevels = [on, +(half / full).toFixed(2), dome, document.querySelectorAll("[data-hb]").length].join(" ");
+    out.alpha = (() => { const b = document.getElementById("colour-hand-minute"); b?.click(); const shown = !document.querySelector("#colour-pop .alpharow")?.hidden; t.pop_close(); return shown; })();
     return out;
   });
   await own.context().close();
-  check(r.groups && r.left === 0 && r.dial === "600" && r.hand_mark && r.win === "none" && r.parts === "Hand · Cap" && r.bold === "600" && r.white && r.dotted && r.many && r.shut,
-    `show mode's lists: group names bold with a chevron (${r.groups}), their lines from the pane's left (${r.left}); Dial bold (${r.dial}); a hand's round mark (${r.hand_mark}), a window's outlined (${r.win}); the seconds hand bold (${r.bold}) over its colours ${r.parts}, closing with its chevron (${r.shut}), a white line between (${r.white}); a hidden part's dot dotted (${r.dotted}); an ink of several parts two discs (${r.many}) (Okay, 3 Nov 2026, 01:43: "Exactly as this. Build.")`);
+  check(r.groups && r.left === 0 && r.dial === "600" && r.hand_mark && r.win === "none" && r.parts === "Hand · Cap" && r.bold === "600" && r.white && r.dotted && r.many && r.shut && r.bevels === "1 0.5 1 0" && r.alpha,
+    `show mode's lists: group names bold with a chevron (${r.groups}), their lines from the pane's left (${r.left}); Dial bold (${r.dial}); a hand's round mark (${r.hand_mark}), a window's outlined (${r.win}); the seconds hand bold (${r.bold}) over its colours ${r.parts}, closing with its chevron (${r.shut}), the rows' own line between them (${r.white}); a hidden part's dot dotted (${r.dotted}); an ink of several parts two discs (${r.many}); Bevels: on, at 50 % half as strong, Domed, off (${r.bevels}); a hand's colour see-through (${r.alpha}) (Okay, 3 Nov 2026, 01:43: "Exactly as this. Build."; 01:56: "Bevels is not working on of or edit on show mode"; "Disc hand needs transparency on its swatch color popup in show mode")`);
 }
 { // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });

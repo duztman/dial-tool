@@ -42,7 +42,8 @@ export function options(S, items, effects) {
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
     items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && HANDS.includes(x.name) ? x.name : null;
-      return { role: x.role, hand, bevel: Boolean(hand && x.role !== "lume" && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
+      const H = hand ? S["ha_" + hand] : null;
+      return { role: x.role, hand, bevel: Boolean(H && x.role !== "lume" && H.bevel), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,
@@ -70,7 +71,7 @@ const angles_of = (items) => { const A = {}; for (const x of items) if (x.role =
 export function draw(tool, items) {
   const S = tool.S, g = tool.watch_g;
   const shapes = items.filter((x) => x.fill && !x.stroke);
-  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), G.windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(",")].join("|");      // which ink each part is printed with (#545)
+  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), G.windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(","), HANDS.map((h) => `${+Boolean(S["ha_" + h].bevel)}${S["ha_" + h].bevel_look || 0}`).join("")].join("|");      // a hand's Bevel and its look redraw the watch (Okay, 3 Nov 2026, 01:56: "Bevels is not working on of or edit on show mode")      // which ink each part is printed with (#545)
   if (key !== tool.watch_key || !tool.watch_statik || tool.statik !== tool.watch_statik) {
     tool.watch_key = key; tool.watch_statik = tool.statik;
     const o = options(S, shapes, S.ui_effects), svg = WATCH.draw(o);
@@ -89,9 +90,15 @@ export function draw(tool, items) {
     light.setAttribute("transform", `translate(${(-ux * n.dataset.eh).toFixed(3)} ${(-uy * n.dataset.eh).toFixed(3)})`);
   }
   for (const n of g.querySelectorAll("[data-hb]")) {
-    const a = A[n.dataset.hb] * Math.PI / 180, side = Math.cos(a) * Math.cos(L) + Math.sin(a) * Math.sin(L), lit = 0.22 * Math.abs(side), dark = 0.26 * Math.abs(side);
+    const B = S.w_bevels ? (+S.sh_bevel || 0) / 100 : 0;      // Bevels %, as the drawing has it (watch.js, HAND_BEVEL): every frame too, or a turning hand loses it (01:56: "not working on of or edit")
+    const a = A[n.dataset.hb] * Math.PI / 180, side = Math.cos(a) * Math.cos(L) + Math.sin(a) * Math.sin(L), lit = 0.22 * B * Math.abs(side), dark = 0.26 * B * Math.abs(side);
     const [right, left] = n.querySelectorAll("rect");
     n.setAttribute("transform", `rotate(${-A[n.dataset.hb]})`);
+    if (n.dataset.dome) {      // Domed: its two ramps' colours and strengths
+      const put = (s, c, k) => { for (const stop of g.querySelectorAll(`#${n.dataset.dome}${s} stop`)) stop.setAttribute("stop-color", c); g.querySelector(`#${n.dataset.dome}${s} stop:last-child`)?.setAttribute("stop-opacity", Math.min(2 * k, 1).toFixed(3)); };
+      put("r", side > 0 ? "#fff" : "#000", side > 0 ? lit : dark); put("l", side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
+      continue;
+    }
     right.setAttribute("fill", side > 0 ? "#fff" : "#000"); right.setAttribute("fill-opacity", (side > 0 ? lit : dark).toFixed(3));
     left.setAttribute("fill", side > 0 ? "#000" : "#fff"); left.setAttribute("fill-opacity", (side > 0 ? dark : lit).toFixed(3));
   }

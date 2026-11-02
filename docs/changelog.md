@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## v1.1.43 beta · 3 Nov 2026 — show mode's Bevels work again, with Bevel Type; hands see-through there; plain lines between colours
+
+Okay, 3 Nov 2026, 01:56: "Very awsome. Bevels is not working on of or edit on show mode. Update bevel here with new options as well. Normal rules apply. Disc hand needs transparency on its swatch color popup in show mode. Others? Abort white lines, regular color lines for inbetween colors too."
+
+- **Bevels, on and off** (`show.js`): a hand's Bevel and its look are now in what redraws the watch, so a Bevels pill shows or takes away the bevel at once.
+- **Bevels %** (`show.js`): the per-frame turn of a bevel set its strength as if at 100 % — now it keeps Bevels %, so the number moves the bevel.
+- **Bevel Type in show mode** (`rows.js`, `watch.js`): Ridge · Domed under the Bevels pills, once a hand has its Bevel, for every bevelled hand (none lit when they differ); Domed drawn as on the dial side — each half a ramp from the spine to twice a Ridge half's at the edge, turned with the hand every frame.
+- **See-through hands** (`colour.js`): a hand's colour in show mode has the pop-out's opacity, as on the dial side (rings already had it). The cap, a window's colours and the dial have none, on either side.
+- **Lines between colours**: the rows' own colour, not white.
+- **Tests**: the lists' check adds Bevels on · 50 % · Domed · off and a hand's opacity. `npm test` passes but the icon check (`every-strip`, #169, known); the flaky four failed once and passed on the rerun.
+
 ## v1.1.42 beta · 3 Nov 2026 — show mode's lists: groups and parts that open, one look on the Dial tab
 
 Drawn in six rounds on the real page, Okay, 3 Nov 2026, 01:13–01:39 ("These separator lines, extend all the way to the start of this first column. Disc is not indented, is bold, as is hands and windows. Hands get round icons with hands in L formation … The window icon is not filled outlined"; "Rings and hands get chevrons. Inks pane and all others get the same look. Expandables get chevrons and bold"; "Windows also get chevron. These rules are for all items in these panes with multiples. "4 parts" gets two stacked outline disks … Hidden row might get dotted outline"; "The hr lines cut short, start from 2nd column for expanded items"; "All multiple color parts get multiple lines per color and label"; "Their lines … start where the label starts, 3rd column. Lines only in between colors are white"); 01:43: "Exactly as this. Build."
