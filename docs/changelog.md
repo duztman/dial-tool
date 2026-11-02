@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.26 beta · 2 Nov 2026 — a dropped list follows its ground
+
+Okay, 2 Nov 2026, 11:21: "on black boxes like the guides, (items on the canvas) the dropdown is black. Rounded corners. Add guide popup aligned flush right with its button. On white bgs like the main left column, the dropdowns are white with sharp corners."
+
+- **Where a menu stands decides its list's look** (`menu_list`, `panel.js`; `4a-panel.css`): inside the Guides or Shadows list, the colour pop-out or on the canvas, the list is black and round (`.night`); on the panel, white with sharp corners and an ink hairline — as before v1.1.25.
+- **Added's +** drops its list flush right with the button (`.flush`).
+
 ## v1.1.25 beta · 2 Nov 2026 — every dropped list dark; shadows to the bottom left
 
 Okay, 2 Nov 2026, 11:14: "The white menus here should go. Replaced with the dark menu style of colors. Also all dropdowns within the popup, again like colors … Shadows go to bottom left."

@@ -107,13 +107,13 @@
   .unitmenu button.on .quiet { color: var(--ink); }
   /* every menu's list (menu_list in app.js): the unit list's look, fixed to the window under or over its menu, scrolling when long */
   .unitmenu.floating { position: fixed; z-index: 40; top: auto; right: auto; overflow-y: auto; box-shadow: var(--shadow-pop); }      /* a dropdown's shadow; inside a popup, the nearer one (menu_list sets .inner) */
-  /* every dropped list in the dark style of the Guides list's colours (Okay, 2 Nov 2026: "The white menus here should go. Replaced
-     with the dark menu style of colors. Also all dropdowns within the popup, again like colors"): near black, rounded, a grey
-     hairline, its rows parted by the night rule, the chosen one bold */
-  .unitmenu.floating { border: var(--hair) solid var(--grey); border-radius: var(--round-switch); background: var(--night); color: var(--white); }
-  .unitmenu.floating button + button { border-top-color: var(--night-rule); }
-  .unitmenu.floating button.on .quiet { color: var(--white); }
-  @media (hover: hover) { .unitmenu.floating button:hover { background: var(--night-hover); } }
+  /* a dropped list follows its ground (Okay, 2 Nov 2026): on a black box or the canvas (menu_list sets .night) the Guides list's
+     colours' style — near black, round corners, a grey hairline, its rows parted by the night rule, the chosen one bold; on the
+     panel's white, white with sharp corners, as above */
+  .unitmenu.floating.night { border: var(--hair) solid var(--grey); border-radius: var(--round-switch); background: var(--night); color: var(--white); }
+  .unitmenu.floating.night button + button { border-top-color: var(--night-rule); }
+  .unitmenu.floating.night button.on .quiet { color: var(--white); }
+  @media (hover: hover) { .unitmenu.floating.night button:hover { background: var(--night-hover); } }
   .unitmenu.floating.inner { box-shadow: var(--shadow-pop-in); }
 
   /* sections: a sign inside a ring, its name under it */

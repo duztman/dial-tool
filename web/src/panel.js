@@ -145,13 +145,19 @@ export const PANEL = {
     });
     list.replaceChildren(...items);
     list.classList.toggle("inner", Boolean(select.closest(".guidelist, .colourpop, .settingsbox, .shadelist, .picker, .versionlist, .numpop")));      // a dropdown inside a popup: the nearer shadow (Okay, 2 Nov 2026)
+    // the list's look follows its ground (Okay, 2 Nov 2026): on a black box or the canvas — the Guides and Shadows lists, the
+    // canvas's switches — black with round corners; on the panel's white, white with sharp corners
+    const dark = Boolean(select.closest(".night, .guidelist, .shadelist, main, .colourpop"));
+    list.classList.toggle("night", dark);
+    list.classList.toggle("flush", Boolean(select.closest(".guidehead .plus")));      // Added's +: the list's right edge on the button's
     list.hidden = false;
     const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));      // the stylesheet's unit: a unit off the box and the window's edges
     const box = (select.closest(".menubox, .popgroup, .casebox, .menulabel") || select.parentElement || select).getBoundingClientRect();
     const room_below = innerHeight - box.bottom, room_above = box.top, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
     list.style.minWidth = `${Math.round(box.width)}px`;
     list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - 2 * u)}px`;
-    list.style.left = `${Math.round(Math.max(u, Math.min(box.left, innerWidth - list.offsetWidth - u)))}px`;
+    const left = list.classList.contains("flush") ? box.right - list.offsetWidth : box.left;      // flush right with its button (Okay, 2 Nov 2026: "Add guide popup aligned flush right with its button")
+    list.style.left = `${Math.round(Math.max(u, Math.min(left, innerWidth - list.offsetWidth - u)))}px`;
     list.style.top = up ? "" : `${Math.round(box.bottom + u)}px`;
     list.style.bottom = up ? `${Math.round(innerHeight - box.top + u)}px` : "";
     const on = list.querySelector(".on");
