@@ -20,6 +20,10 @@
 // Round 4 (01:31: "The hr lines cut short, start from 2nd column for expanded items."): the lines from the pane's left only
 // for what opens and closes and for Dial — the group names; the lines of the items inside a group start at the second
 // column, the marks', as they did.
+// Round 5 (01:34: "Hands seconds hand, on the discs date at 3, et. All multiple color parts get multiple lines per color
+// and label."): a part of several colours opens as an expandable — its chevron, its name bold — and under it a line for
+// each colour, named by what it colours (Hand · Cap; Frame · Disc · Figures · Neighbours), each with its pill. A part that
+// shows and hides (the seconds hand): the chevron in its dot's place, the dot on the Hand line.
 part = ".panel .form";
 states = ["open", "Rings closed"];
 css = `
@@ -32,6 +36,7 @@ css = `
   .colourlist .chev { color: var(--grey); }
   .colourlist .chev:not(.open) svg { transform: rotate(-90deg); }
   .colourlist > .row.showline:has(> .chev) > label { color: var(--ink); font-weight: 600; }      /* an expandable line: bold */
+  .colourlist > .row.showline.many > .mark { visibility: visible; }
 `;
 setup = async () => {
   const t = window.dial_tool, wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -61,6 +66,31 @@ build = async (state) => {
   const cap = icon(`<circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none"/>`);      // a cap from above
   const hidden = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8.25" cy="8.25" r="3.5" stroke-dasharray="1.1 1.2"/></svg>`;
   for (const e of $$(".colourlist .eye.seen[aria-pressed='false']")) e.innerHTML = hidden;
+  // a part of several colours: an expandable, a line a colour under it (a single-pill line copied for each)
+  const model = $$(".colourlist:not(.inklist) > .row.showline").find((r) => r.querySelector(".single .colour"));
+  const hex = (c) => "#" + c.match(/\d+/g).slice(0, 3).map((v) => (+v).toString(16).padStart(2, "0")).join("").toUpperCase();
+  for (const row of $$(".colourlist > .row.showline")) {
+    const sw = [...row.querySelectorAll(".swatches .swatch")];
+    if (sw.length < 2) continue;
+    const c = chev.cloneNode(true); c.classList.add("open"); c.removeAttribute("id");
+    const dot = row.firstElementChild.matches(".eye") ? row.firstElementChild : null;      // a part that shows and hides: its dot goes to its first colour's line (the hand itself), the chevron takes its place
+    row.replaceChild(c, row.firstElementChild);
+    row.classList.add("many"); row.querySelector(".note")?.remove(); row.querySelector(".swatches").style.visibility = "hidden";
+    let after = row;
+    for (const s of sw) {
+      let words = (s.title || s.dataset.tip || "").split(" · ").pop();
+      if (/ hand$/.test(words)) words = "hand";      // the seconds hand's own colour: Hand
+      const line = model.cloneNode(true); line.classList.add("part");
+      line.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));
+      line.firstElementChild.replaceWith(document.createElement("i")); line.querySelector(".mark").innerHTML = "";
+      line.querySelector("label").textContent = words[0].toUpperCase() + words.slice(1);
+      const bg = s.style.getPropertyValue("--c") || getComputedStyle(s).backgroundColor, pill = line.querySelector(".colour");
+      pill.querySelector(".dot").style.setProperty("--c", bg); pill.querySelector(".dot").style.background = bg; pill.querySelector(".hex").textContent = hex(bg);
+      const keep = row.querySelector(".place"); if (keep && line.querySelector(".place")) line.querySelector(".place").replaceWith(document.createElement("span"));
+      if (dot && s === sw[0]) line.firstElementChild.replaceWith(dot);
+      after.after(line); after = line;
+    }
+  }
   for (const row of $$(".colourlist > .row.showline")) {
     const name = row.querySelector("label")?.textContent || "", mark = row.querySelector(".mark");
     if (name === "Dial") row.classList.add("lead");
