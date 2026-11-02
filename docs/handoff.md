@@ -1,26 +1,23 @@
 # Handoff — where things stand
 
-*§1 is rewritten at every handover (last on 2 Nov 2026, v1.1.38 beta, handing #175 to a new agent); §2 says how. Everything else a successor needs is in `CLAUDE.md` (the read order, the loop) and `working-with-okay.md`.*
+*§1 is rewritten at every handover (last on 3 Nov 2026, 02:40, v1.1.44 beta, Okay: "No checks for these, write a handoff doc to take up from here"); §2 says how. Everything else a successor needs is in `CLAUDE.md` (the read order, the loop) and `working-with-okay.md`.*
 
-## 1 · Where things stand (2 Nov 2026, 19:30; v1.1.38 beta on `dev` and /dev/, v1.0 beta on `main` and the released page)
+## 1 · Where things stand (3 Nov 2026, 02:40; v1.1.44 beta on `dev` and /dev/, v1.0 beta on `main` and the released page)
 
-- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **v1.1.38 beta**; <https://duztman.github.io/dial-tool/> and `main` are **v1.0 beta**. The step to `main` is Okay's to run (`tools/release.sh 1.2 "first line"`; a session's safety check refuses a production deploy). The Help page is at </help/>.
-- **Now: #175, a hand as a stack** (his order; Okay, 2 Nov 2026, 16:38: "Let's tackle hand on a stack"). Settled with him:
-  - **Opening** is the word for a shape cut through a hand ("Opening: yes"); not *window*, the plate's word. Glossary line in place, marked planned.
-  - **Caps are out of #175**: "No, our cap rules stand, remove whatever this is". The Cap stays part of the seconds hand, or the topmost hand's with *Cap on this hand*.
-  - **The lume is stacked**: a part with its own height (Shadows pane, side view), not a colour on the blade ("Stacked lume for hands").
-  - **A lume view in show mode** comes with it, pulled forward from #522 ("lume view for show case").
-  - **Draw first**: a sketch round on the real page (`web/test/sketch.mjs`, `working-with-okay.md` §2) before building. Not drawn yet. Questions the drawing should answer: an opening's shapes and places along the hand (one or several, at a %), the lume's inset from the opening's edge, the lume's colour and height rows, where the rows sit in the hand's pane (ask for a crop if not drawn — see working-with-okay).
-- **For Okay to verify**: #531 hand bevels — the Bevel pane under the Show box once Bevel is ticked, Bevel Type Ridge · Domed, Bevels % (v1.1.37); #572 show mode's sun lock (v1.1.34). v1.1.38's merged glyph outlines need no check of his but a look at Pathway Extreme in show mode.
-- **Today, done and verified**: #169, #569, #570, #571; #526 (show mode's sun box). Built today besides: the font sheet's filters drawn in lines and the name over the sample (v1.1.30–32); every glyph one outline (v1.1.38).
-- **Later, new**: #573, a Faceted bevel — v1.1.35–36's did not work ("remove for now, note for later"); its place in `BEVEL_LOOKS` and the dead key `facet_turn` wait.
-- **Known broken, not his**: the icon check fails on the `every-strip` icon (#169, since v1.1.27; 16 problems: line weights off the icon grid's set, a level run off the quarter points). Small pushes skip the icon check, so a full `npm test` shows it. Redraw it through `web/icons/` (R33) — ask him first, it's a look change.
-- **Flaky once today**: four window checks failed in one `npm run small` (the session's reload, a pasted link, a red hand's shadow, X-ray) and passed on the rerun.
-- **The counter (#548)** is built, asleep until the step to `main`; Okay must make the GoatCounter account with the code `okayka` (or say his code: `COUNTER_CODE` in `web/build.mjs`).
-- **Open from #501**: Rundgotisch Rauh (the archive's file is Tyskland 45 — fix the Wiegel Archive first), Tartlers End is the Krystal cut.
-- **The phone's layout is not cared for** until he says so (brief §2): the window test prints its phone checks, never counts them.
-- **Known on the tools**: a session's clone is shallow — `tools/setup.sh` widens the fetch. Pushing needs the repo attached with push access (`add_repo`, access "push"); a read-only clone's push is refused by the proxy. His notes gdoc *Dial tool notes* is readable through the Google Drive connector (exported as zip HTML, its pictures in `images/`; the #531 drawing is `image30.png`).
-- **He builds by rounds** (`working-with-okay.md` §2): each round to /dev/ with crops; he answers with marked-up screenshots and short notes. Mid-work notes are notes: log them, carry on.
+- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **v1.1.44 beta**; <https://duztman.github.io/dial-tool/> and `main` are **v1.0 beta**. The step to `main` is Okay's to run (`tools/release.sh 1.2 "first line"`; a session's safety check refuses a production deploy). `dev` is clean and pushed.
+- **Next, in this order** (build list, Now):
+  1. **#581 — show mode's lists, round 2, draw first** (`web/test/sketch.mjs`, on the Dial tab in show mode: `t.show_mode(true, true)`, then `S.ui_section = 5`). His words, 02:34: "Link was a good touch but is that how we do the unselected? It cuts into the line and unfilled. Linked gets filled and is line color filled with contrasting text on it." and "Date at 3 gets the full length line, neighbors top line loses length. The neighbors are part of the window group." Known causes: the LINK pill is `colour.js` `ink_link` + `4e-colour.css` (`.colourlist > .row.haslink > .linkpill`; on = `--ink` fill now — he wants the line's colour, `--row-rule`, with contrasting text); unlinked it is an outline sitting across the line — draw a look that doesn't cut it and ask. The long line over the last colour (Neighbours) is that row's own outer top shadow (`.row:not(.note)` in `4c-rows.css`); the line under a part of several colours should be an item's (from the marks' column), not the names'.
+  2. **#579 — rings reordered in show mode**: Colours › Rings, each ring a 6-dot gripper just before its swatch, dragged top-down as the dial side's ring list (`rings.js`), undoable.
+  3. **#175 — the lume view**: Light's Day · Night pill on top; Night = lume mode, a Lume decay slider under it, the Sun replaced by the Moon (Strength 50 %), a darkness filter true to colour theory. Draw first, on his word.
+- **For Okay to verify**: #576, show mode's lists as built in v1.1.42–44 (groups and colour parts opening by chevrons; marks; Bevels working with Bevel Type, none on a disc; hands see-through; Inks a line a part with LINK; a hand's colours and prints opened).
+- **Verified today**: #574 (the disc hand), #175 as built in v1.1.39, #531, #572 (`build-list-done.md`).
+- **Noted, later**: #580 the hands' heights as a pane at the end of show mode's column ("all that's for later"); #577 hands of your own (+ beside the hand tabs: GMT, day, week, month — ask first, in the Shadows stack); #578 the time bar top or bottom; #575 controllers for show mode's numbers and sliders on the iPad.
+- **The model he chose for inks (02:11)**: every part on its own line under its group; parts of one colour share a height (one ink) — a LINK pill between them — unless unlinked to an own height (`ink_h`, `stroke_h`, `frame_h` on a ring or window; `op_ink_h`, `mark_ink_h`, `mark_stroke_ink_h` on a hand), show mode's only, out of the link (R7). The old Two inks / A | B UI is gone; old files' splits still draw (`ink_mm`). A disc's prints share one height (`print_h`): their LINK is fixed — per-print heights would need a new setting; not asked.
+- **Known broken, not his**: the icon check fails on the `every-strip` icon (#169; 16 problems); a full `npm test` shows it. Redraw through `web/icons/` (R33) — ask first, it's a look change.
+- **Flaky**: four window checks fail now and then on a full run (the session's reload, a pasted link, a red hand's shadow, X-ray) and pass on the rerun of `node test/window.mjs`.
+- **The counter (#548)**: asleep until the step to `main`; Okay must make the GoatCounter account (`okayka`).
+- **Known on the tools**: a session's clone is shallow — `tools/setup.sh` widens the fetch. Push needs the repo attached with push access (`add_repo`, access "push"). Folder access to his Mac's `~/Desktop/dial-maker` was refused by the app's safety check this session: ask him for pictures in the chat. His notes gdoc *Dial tool notes* is unchanged since 24 Oct.
+- **He builds by rounds** (`working-with-okay.md` §2): a tune in `web/test/sketches/`, its shot sent, his marks, the next round; on "Build", the tune's values into `src/`, the tune deleted, `npm test`, docs, one version, `tools/release.sh dev`.
 
 ## 2 · Handing over again
 
