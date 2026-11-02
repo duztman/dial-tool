@@ -27,6 +27,10 @@ css = `
      the gap to the picture a unit and a half, as from the Show box's line to the strip */
   @media (min-width: 861px) { .body > .row.thumbs { grid-row: 1; } .body > .detail { grid-row: 2 / span 40; } }
   .row.thumbs { margin-top: 0; border-top: 0; margin-bottom: var(--u4); }
+  /* round 6 (22:25: "The gap after the line for hands, is the same as before, between it and gray show block. There's
+     too much vertical gap there"): line → tiles as Show box → line, --u4 (11 px measured, was 24) */
+  .form > .pane.headless:has(> .body > .row.thumbs) { padding-top: var(--u4); }
+  .row.thumbs > .picks.thumbs { padding-top: 0; }
 `;
 build = async (state) => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q), H = t.S.ha_hour;
@@ -95,4 +99,7 @@ build = async (state) => {
   }
   console.log(`measured each ${each.toFixed(2)} mm long, ${w} wide`);
   await wait(200);
+  // the gaps round the line under the Show box, measured off the page (R21): Show box → line, line → the strip's tiles
+  const sb = $(".showbox .showline").getBoundingClientRect(), pn = body.closest(".pane").getBoundingClientRect(), tile = $(".row.thumbs .pickt").getBoundingClientRect();
+  console.log(`measured show→line ${(pn.top - sb.bottom).toFixed(1)}, line→tiles ${(tile.top - pn.top).toFixed(1)}`);
 };
