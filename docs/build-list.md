@@ -4,11 +4,13 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 2 Nov 2026 (v1.1.27 beta): #169 built, to verify; #569, #570 added and built, to verify; #528, #439, #552, #568, #184 verified by Okay on every machine (to done); the phone no longer cared for (Okay, 12:48).* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 2 Nov 2026 (v1.1.27 beta): #180 unparked to Later; the Shadows side view at real heights (#571) drawing round 1; #169 built, to verify; #569, #570 added and built, to verify; #528, #439, #552, #568, #184 verified by Okay on every machine (to done); the phone no longer cared for (Okay, 12:48).* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
-Nothing: the Now items of 1 Nov 2026 are built. The next build comes from Next, on Okay's word.
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| — | 571 | The Shadows pane's side view at the parts' real heights, exaggerated: the tallest part fills the room above the plate, the ratios true; no leaders | 2 Nov 2026 — "1a 2a, draw first" | build (drawing round 1, `web/test/sketches/stack-heights.js`) |
 
 ## Verify — built, for Okay's Mac and iPad
 
@@ -66,6 +68,7 @@ Okay, 1 Nov 2026: #184, then #169 ("core to our mission") — both built — the
 | 31 | 53 | Better interface overall: research how good parametric tools lay out lists, inspectors and export, then propose; an export panel that shows what will be written (#171) | 11 Oct 2026 — "learn and implement" | open |
 | 32 | 522 | Finishes and materials in show mode, one row: paint finishes and textures, dial finishes and a preview pipeline, sunray · grain · guilloché on bands (#33 folded in), print-like edges, lume view and lume plots (#19), the bezel, 3D indices, a 3D model | 24 Oct 2026; 1 Nov 2026 — "Merge into one: finishes and materials, Later" | open |
 | 33 | 363 | Non-round dials, one row: square and rounded-square as an Apple Watch's first, then rectangle, rounded rectangle, diamond; the plan is `docs/plan-non-round.md` | 18 Oct 2026; 1 Nov 2026 — "Merge into one, keep in Later" | open |
+| 34 | 180 | Gerstner's programme: rings whose marks follow a written rule (a programme), built on Every mark's per-position values (#169) | 14 Oct 2026; 2 Nov 2026 — "unpark gerstner but for later" | open |
 
 ## The guide — its own schedule, outside the order
 
@@ -82,4 +85,3 @@ Okay, 1 Nov 2026: #184, then #169 ("core to our mission") — both built — the
 | — | 77 | Persistent groupings for every section | 12 Oct 2026 — "Park for now" | parked |
 | — | 358 | The LINK pill on other linkable pairs | 18 Oct 2026 — "Common sense or park for now" | parked |
 | — | 61 | Editing on the preview: movers and shifters on the dial itself | 11 Oct 2026 — "Park now" | parked |
-| — | 180 | Gerstner's programme — remind Okay when #169 exists | — "park for now, remind when applicable" | parked |

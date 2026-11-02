@@ -59,6 +59,6 @@ The loop of a push — set up, change, test, docs, bump, release, reply — is `
 
 ## 8 · Parked
 
-What is parked is the Parked section of `docs/build-list.md`, with Okay's words: editing on the preview (#61), persistent groupings (#77), the LINK pill on other pairs (#358), a fallback font (#15), Gerstner's programme (#180, back when #169 exists), placing dials in the Packer's discs (#395). Snapping (#184) is no longer parked: it is first of the features (Okay, 1 Nov 2026).
+What is parked is the Parked section of `docs/build-list.md`, with Okay's words: editing on the preview (#61), persistent groupings (#77), the LINK pill on other pairs (#358), a fallback font (#15), placing dials in the Packer's discs (#395). Snapping (#184) is no longer parked: it is first of the features (Okay, 1 Nov 2026).
 
 From the research atlas (13 Oct 2026, https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH), Okay's No's worth keeping — kept on Claude's proposal, not confirmed by him: the **snail tachymeter** (atlas 1.6), a fifth positions law after #83; **disorder with a seed** (atlas 7.14, Vera Molnár), a disorder % per ring with a typed seed. The other No's stay in the atlas. Of his Yes's, two are parked on Claude's proposal: the ring edited flat (7.16) and the sliding strip for Count (7.5).
