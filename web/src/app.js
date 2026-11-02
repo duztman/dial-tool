@@ -167,7 +167,15 @@ class DialTool {
     // what the radius measures to changes: the radius changes with it so nothing on the dial moves, only the dotted line
     // (#326; Okay, 18 Oct 2026, notes 2: "Nothing changed … just the dotted line moves"). Undo takes both back.
     if (scope === "ring" && (key === "anchor" || key === "from") && this.ring() && value !== (this.ring()[key] || 0)) this.ring().r = +G.radius_kept(this.ring(), key, value).toFixed(4);
-    if (scope === "hand" && key === "shape" && G.HAND_SHAPES[value] === "disc") this.target("hand").mark_in = true;      // a disc made here keeps its window inside (#344); older links keep theirs as drawn
+    if (scope === "hand" && key === "shape" && G.HAND_SHAPES[value] === "disc" && G.HAND_SHAPES[this.target("hand").shape] !== "disc") {
+      // a disc made here (#574; Okay, 2 Nov 2026, 22:18: "default starting point of disc hand on dial is 85% the dial radius,
+      // the default dot is a wedge that is an equilateral triangle 10% inwards from the edge"; 22:25, his reading: the
+      // disc's edge at 85 % of the dial's radius): its window kept inside (#344); a triangle as wide as it is long × 2/√3,
+      // pointing out, its point 10 % of the disc's radius in from its edge (Marker at); a stroke if it is painted on.
+      // Older links keep theirs as drawn
+      const T = this.target("hand"), d = +(0.85 * this.S.dial_d).toFixed(2), len = T.mark_len || 1.6;
+      Object.assign(T, { mark_in: true, disc_d: d, mark: 1, mark_tri: true, mark_w: +(len * 2 / Math.sqrt(3)).toFixed(2), len: +(0.9 * d / 2).toFixed(2), mark_stroke_w: 0.1 });
+    }
     if (scope === "nudge") {                       // the chosen numeral's own: a neutral value is not kept (#252)
       const R = this.ring(), n = { ...(R.nudge[this.nudge_at] || {}) }, all = { ...R.nudge };
       if (Math.abs(value - NUDGE_NEUTRAL[key]) < 1e-9) delete n[key]; else n[key] = +(+value).toFixed(4);

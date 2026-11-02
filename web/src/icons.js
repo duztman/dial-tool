@@ -218,10 +218,13 @@ export const PICS = {
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size (twice its units, so already on whole dots). */
 export const hand_pic = (i) => {
   // the disc: its marker inside it, cut out, as a disc hand's window is (Okay, 18 Oct 2026, notes 2: "Preview icon shows
-  // wedge outside the disc, correct it")
-  const disc = G.HAND_SHAPES[i] === "disc" ? { len: 2.75, disc_d: 6, mark_len: 2, mark_w: 1.25 } : {};
+  // wedge outside the disc, correct it"); drawn bigger than the tile is wide, cropped at its sides, and centred up and
+  // down (#574; Okay, 2 Nov 2026, 22:18: "Thumbnail, circle bigger, maybe even cropped, vertically centered"); its marker
+  // the triangle a disc starts with, 10 % in from the edge
+  const is_disc = G.HAND_SHAPES[i] === "disc";
+  const disc = is_disc ? { disc_d: 8, len: 3.6, mark: 1, mark_tri: true, mark_len: 2, mark_w: 2.31, mark_in: true } : {};
   const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0, disc_d: 6, mark_len: 7, mark_w: 2.2, ...disc });
-  return `<svg viewBox="-3 -14 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
+  return `<svg viewBox="${is_disc ? "-3 -9.25" : "-3 -14"} 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 
 /** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight),

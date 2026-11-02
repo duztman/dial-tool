@@ -332,7 +332,7 @@ export const ROWS = {
     // side: the row stands beside the box · short: the label when there is little room for it.
     custom("hand_detail", { ...H }),
     col("c", "Colour", { ...H, side: true }),      // first beside the box (Okay's notes, p. 18, #250: "Colour to the top, Cap at the end")
-    num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),      // a disc's: where its marker's outer end is
+    num("len", "Length", 0.5, 30, 0.05, { ...H, side: true, say: (T) => (G.HAND_SHAPES[T.shape] === "disc" ? ["Marker at", "Marker at"] : ["Length", "Length"]) }),      // a disc's: where its marker's outer end is, and named so (#574; Okay, 2 Nov 2026, 22:18: "The distance of that dot from the center has its own slider")
     num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
     // the marker: cut out of the disc, named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it
     // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
@@ -342,6 +342,10 @@ export const ROWS = {
     num("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", say: (T) => (T.mark_as === 1 ? ["Mark length", "Mark L"] : ["Hole length", "Hole L"]), show: hand_is("disc") }),
     num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => (T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"]), show: hand_is("disc") }),
     col("mark_c", "Mark ink", { ...H, side: true, show: (T) => G.paints_mark(T) }),      // "ink": "Mark colour" is longer than the names' column (Counter Ø)
+    // a painted marker's stroke (#574; Okay, 2 Nov 2026, 22:18: "This dot gets a stroke if it's painted on"; 22:25: "Width +
+    // colour rows"), outside its outline; its colour the hand's until one is chosen
+    num("mark_stroke_w", "Stroke width", 0, 1, 0.01, { ...H, side: true, short: "Stroke W", show: (T) => G.paints_mark(T) }),
+    col("mark_stroke_c", "Stroke ink", { ...H, side: true, or: (T) => T.c, show: (T) => G.paints_mark(T) }),
     chk("mark_in", "Inside the disc", { ...H, side: true, show: hand_is("disc") }),      // #344 (Okay, 18 Oct 2026: "Window is always inside disc hands"); on for a hand made a disc here, off in older links
     num("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
     num("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),

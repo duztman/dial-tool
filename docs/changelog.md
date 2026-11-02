@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## v1.1.40 beta · 3 Nov 2026 — the disc hand: 85 % of the dial, a triangle marker, Marker at, a painted marker's stroke (#574)
+
+Okay, 2 Nov 2026, 22:18: "Also the disc hand. Thumbnail, circle bigger, maybe even cropped, vertically centered. default starting point of disc hand on dial is 85% the dial radius, the default dot is a wedge that is an equilateral triangle 10% inwards from the edge. The distance of that dot from the center has its own slider. This dot gets a stroke if it's painted on."; his picks, 22:25; 3 Nov 2026, 00:36: "Do the disc hand first".
+
+- **A disc chosen in the tool** (`app.js`): Disc Ø 0.85 × the dial's Ø (25.50 on a 30 mm dial); its marker a wedge come to a point (`mark_tri`), pointing out, as wide as an equilateral triangle (Mark W = Mark L × 2/√3: 1.85 for 1.60); its point at 90 % of the disc's radius (Marker at 11.47); a stroke of 0.10 mm when painted on. Older links keep their disc as drawn (R31).
+- **Marker at**: a disc hand's Length row is named so — it always set where the marker's point is (`rows.js`).
+- **A painted marker's stroke** (`geometry.js`: `mark_stroke`, HAND_BASE `mark_tri mark_stroke_w mark_stroke_c`, appended to LINK_KEYS): outside its outline, a filled ring (R4), in the hand's colour until Stroke ink is chosen; rows Stroke width and Stroke ink under Mark ink; "Hour hand mark stroke" in the files.
+- **The disc's thumb** (`icons.js`): bigger than its tile, cropped at the sides, centred up and down, with the triangle.
+- **Noted**: #575, show mode's numbers and sliders get controllers on the iPad.
+- **Tests**: a window check for the disc's start. `npm test` passes but the icon check (`every-strip`, #169, known); four window checks failed once and passed on the rerun (the session's reload, a pasted link, a red hand's shadow, X-ray — the flaky four).
+
 ## v1.1.39 beta · 2 Nov 2026 — a hand as a stack: openings, lume as a colour and an ink; the Hands tab re-laid (#175)
 
 Drawn in six rounds on the real page (`web/test/sketch.mjs`), then built on Okay's word, 22:55: "Amazing. Build."

@@ -4,19 +4,19 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 2 Nov 2026, 23:30 (v1.1.39 beta): #175 built but its lume view; #574 the disc hand added; #531 (v1.1.37) and #572 (v1.1.34) to verify; Faceted to Later (#573); #175 Now — openings, stacked lume, a lume view in show mode (from #522); caps out.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 3 Nov 2026, 01:10 (v1.1.40 beta): #574 built, to verify; #175's lume view next; #575 noted; #531 (v1.1.37) and #572 (v1.1.34) to verify; Faceted to Later (#573); #175 Now — openings, stacked lume, a lume view in show mode (from #522); caps out.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
 | 1 | 175 | A hand as a stack — built (v1.1.39): openings, lume as a colour mode and an ink, the Hands tab re-laid, a window's thick line; **left: the lume view in show mode** (from #522) — draw first | 2 Nov 2026, 22:55 — "Amazing. Build." | build — lume view next |
-| 2 | 574 | The disc hand: its edge at 85 % of the dial's radius to start; a wedge marker, an equilateral triangle, 10 % in from the disc's edge; Length named Marker at on a disc; a painted marker's stroke (width, colour); its thumb's circle bigger, centred | 2 Nov 2026, 22:18 — "Also the disc hand" | build — after #175 |
 
 ## Verify — built, for Okay's Mac and iPad
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
+| — | 574 | The disc hand: Disc Ø 85 % of the dial, a triangle marker pointing out at 90 % of its radius (Marker at), a painted marker's stroke (Stroke width, Stroke ink), the thumb bigger and centred | 3 Nov 2026, 00:36 — "Do the disc hand first" | verify (v1.1.40) |
 | — | 175 | A hand as a stack, built: Opening and Bevel panes, hand types on top, Show alone; Lume mode, an opening's Fill (Lume alone, Open); the hands' lume an ink in show mode; a window's thick line | 2 Nov 2026, 22:55 — "Amazing. Build." | verify (v1.1.39) |
 | — | 531 | Hand bevels: a Bevel pane of its own after the Opening pane, its tick box on the heading — Bevel Type (Ridge · Domed), Bevels % | 2 Nov 2026, 22:09 — "move bevel as an eye and a tick box below openings" | verify (v1.1.39) |
 | — | 572 | Show mode's sun lock: Lock on the Sun line; drags leave the sun; "Sun is locked" at the canvas's top | 2 Nov 2026, 17:24 — "Sun needs a lock accessible from its first line" | verify (v1.1.34) |
@@ -27,13 +27,13 @@ Okay, 1 Nov 2026: #184, then #169 ("core to our mission") — both built — the
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 3 | 346 | Complications, systematized — one mechanism for subdials and chronograph registers (#20 folded in), the moon's own disc, the am · pm disc as a ring of its own (#177 folded in), a big date's two discs in X-ray, an SVG for a complication's picture | 1 Nov 2026 — "Up with the big three, after #175" | open |
-| 4 | 83 | Positions law: even · reciprocal · logarithmic · table · squeeze, chosen on the Positions heading line; only `ring_angles()` changes. Built with #346 | 1 Nov 2026 — "this might help us adding in complications" | open, with #346 |
-| 5 | 559 | Hover lights its part, sitewide: a ring's or window's row — pointed at, focused, controller open — lights that thing on the dial, as a Hands row does | 18 Oct 2026 — "these preview gestures are sitewide"; split from #329, 1 Nov 2026 | open |
-| 6 | 502 | Notices: every warning, error and note in the app looked through — inventory first, then Okay sorts them into kinds, then one look per kind | 21 Oct 2026; 1 Nov 2026 — "Keep, ordinary priority" | open |
-| 7 | 404 | Every hand gets a real hub, life-accurate at the cannon pinion; dauphine and leaf first, their details kept in the lit picture (#421 folded in) | 19 Oct 2026; 21 Oct 2026 — "All hands get hubs." | open |
-| 8 | 349 | Each marker selectable and editable: first press the ring, second the mark or numeral; Nudge works on ticks and markers | | open |
-| 9 | 558 | Bracelet photo lighting: one snapshot-like light on any backdrop, soft outlines, many gradients; "Let's workshop this" | 24 Oct 2026, his photo; split from #529, 1 Nov 2026 | open |
+| 2 | 346 | Complications, systematized — one mechanism for subdials and chronograph registers (#20 folded in), the moon's own disc, the am · pm disc as a ring of its own (#177 folded in), a big date's two discs in X-ray, an SVG for a complication's picture | 1 Nov 2026 — "Up with the big three, after #175" | open |
+| 3 | 83 | Positions law: even · reciprocal · logarithmic · table · squeeze, chosen on the Positions heading line; only `ring_angles()` changes. Built with #346 | 1 Nov 2026 — "this might help us adding in complications" | open, with #346 |
+| 4 | 559 | Hover lights its part, sitewide: a ring's or window's row — pointed at, focused, controller open — lights that thing on the dial, as a Hands row does | 18 Oct 2026 — "these preview gestures are sitewide"; split from #329, 1 Nov 2026 | open |
+| 5 | 502 | Notices: every warning, error and note in the app looked through — inventory first, then Okay sorts them into kinds, then one look per kind | 21 Oct 2026; 1 Nov 2026 — "Keep, ordinary priority" | open |
+| 6 | 404 | Every hand gets a real hub, life-accurate at the cannon pinion; dauphine and leaf first, their details kept in the lit picture (#421 folded in) | 19 Oct 2026; 21 Oct 2026 — "All hands get hubs." | open |
+| 7 | 349 | Each marker selectable and editable: first press the ring, second the mark or numeral; Nudge works on ticks and markers | | open |
+| 8 | 558 | Bracelet photo lighting: one snapshot-like light on any backdrop, soft outlines, many gradients; "Let's workshop this" | 24 Oct 2026, his photo; split from #529, 1 Nov 2026 | open |
 
 ## Housekeeping — as touched, never a push of its own
 
@@ -46,6 +46,7 @@ Okay, 1 Nov 2026: #184, then #169 ("core to our mission") — both built — the
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
+| 9 | 575 | Show mode on the iPad: every ± number and slider opens a controller, as on the dial side | 3 Nov 2026, 00:36 — "note all plusminus number and sliders on show case get controllers on ipad" | open |
 | 10 | 573 | A Faceted bevel for hands: a facet per side, mitred where two meet, how finely adjustable — v1.1.35–36's did not work | 2 Nov 2026, 18:48 — "facets system does not work, remove for now, note for later" | open |
 | 11 | 565 | A loading screen while the page arrives on a slow connection: the build is one 5.7 MB file (the font list's samples grow it); what it shows and when, to settle | 2 Nov 2026 — "Maybe a loading screen for slow connections?" | open |
 | 12 | 403 | Playwright 1.56 → 1.64: a session of its own; re-measure the window test, save the look again | | open |

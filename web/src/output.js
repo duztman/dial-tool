@@ -20,6 +20,7 @@ function item_name(item) {
   if (item.role === "ring stroke") return (item.ring.ring.name || item.ring.kind) + " stroke";      // the outline round a ring's letters (#551)
   if (item.role === "hand") return { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name;
   if (item.role === "lume") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " lume";      // its openings' lume (#175)
+  if (item.role === "mark" && item.edge) return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " mark stroke";      // a painted mark's stroke (#574)
   if (item.role === "mark") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " mark";      // a disc's painted mark (#300)
   if (item.window !== undefined) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date picture": "picture", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
   return item.role[0].toUpperCase() + item.role.slice(1);

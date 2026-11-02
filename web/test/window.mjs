@@ -2814,6 +2814,26 @@ await shot("10-bar");
   await own.context().close();
   check(r.labels.includes("Hour · Minute lume") && r.relief === 2, `show mode: the hands' lume is an ink on the Inks pane, its own height (${r.labels.join(" · ")}); its relief turns with each hand (${r.relief})`);
 }
+{ // the disc hand as it starts (#574; Okay, 2 Nov 2026, 22:18: "default starting point of disc hand on dial is 85% the dial
+  // radius, the default dot is a wedge that is an equilateral triangle 10% inwards from the edge. The distance of that dot
+  // from the center has its own slider. This dot gets a stroke if it's painted on")
+  const r = await page.evaluate(async () => {
+    const t = window.dial_tool, S = t.S, was = JSON.stringify([S.ui_hand, S.ui_section, S.ha_minute]);
+    const tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    S.ui_section = 2; t.show_section(); S.ui_hand = 1; t.sync_rows(); await tick();
+    document.getElementById("hand-shape-Shape-10").click(); await tick();
+    const H = S.ha_minute, m = window.dial_tool.items.find((i) => i.role === "mark" && i.name === "minute");
+    const named = [...document.querySelectorAll(".row.side:not([hidden]) > label")].map((l) => l.textContent.trim());
+    const start = { edge: +(H.disc_d / S.dial_d).toFixed(3), at: +(H.len / (H.disc_d / 2)).toFixed(3), tri: H.mark_tri, eq: +(H.mark_w / H.mark_len).toFixed(3) };
+    t.set_value("hand", "mark_as", 1); t.sync_rows(); t.frame(); await tick();
+    const stroke = t.items.filter((i) => i.role === "mark" && i.name === "minute" && i.edge).length;
+    const rows = [...document.querySelectorAll(".row.side:not([hidden]) > label")].map((l) => l.textContent.trim()).filter((x) => x.startsWith("Stroke"));
+    const back = JSON.parse(was); S.ui_hand = back[0]; S.ui_section = back[1]; S.ha_minute = back[2]; t.changed(true); t.show_section(); t.sync_rows(); t.frame();
+    return { start, hole: !m, marker_at: named.some((x) => x.startsWith("Marker at")), stroke, rows: rows.join(" · ") };
+  });
+  check(r.start.edge === 0.85 && r.start.at === 0.9 && r.start.tri && Math.abs(r.start.eq - 2 / Math.sqrt(3)) < 0.01 && r.marker_at && r.stroke === 1 && r.rows.startsWith("Stroke"),
+    `a disc hand chosen here starts with its edge at 85 % of the dial's radius (${r.start.edge}), a triangle (${r.start.tri}) as wide as an equilateral's (${r.start.eq}), its point at 90 % of the disc's radius (${r.start.at}) on a row named Marker at (${r.marker_at}); painted on, a stroke (${r.stroke}) with its rows (${r.rows}) (Okay, 2 Nov 2026, 22:18: "the default dot is a wedge that is an equilateral triangle 10% inwards from the edge … This dot gets a stroke if it's painted on")`);
+}
 { // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });
   const name = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_section = 1; t.S.ui_ring = t.S.rings.findIndex((r) => r.kind === 2); t.show_section(); t.sync_rows();

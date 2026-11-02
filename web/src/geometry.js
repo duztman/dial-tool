@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.39 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.40 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -144,6 +144,12 @@ export const HAND_BASE = {
   // old links for window"): its outer end at the hand's Length, or at the disc's edge if Length reaches past it. Off to
   // start, as every older dial was drawn (R31: no new scheme); a hand made a disc in the tool turns it on (app.js)
   mark_in: false,
+  // the disc hand as it starts when chosen in the tool (#574; Okay, 2 Nov 2026, 22:18: "the default dot is a wedge that is
+  // an equilateral triangle 10% inwards from the edge … This dot gets a stroke if it's painted on"): mark_tri — a wedge
+  // come to a point, pointing out from the centre (off: a wedge as a markers ring draws it, as every older dial);
+  // mark_stroke_w · mark_stroke_c — a painted marker's stroke, outside its outline, its colour the hand's when null
+  // (0: none, as every older dial; app.js gives a disc chosen in the tool 0.1)
+  mark_tri: false, mark_stroke_w: 0, mark_stroke_c: null,
   // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"; 20 Oct 2026, 01:33: the tick "appears as soon as
   // show tick turned on"): the shading Shadows → Bevels % draws on a hand, per hand. Off to start ("Hand bevel off on
   // default", 19 Oct). An older link or file that drew bevels (Bevels % above 0, no per-hand key) gets them on every
@@ -592,7 +598,8 @@ export const LINK_KEYS = [
   "rhythm", "rh_dash", "rh_gap", "rh_dash_shape", "rh_dash_len", "rh_gap_len",      // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
   "bevel_look",             // v1.1.35 beta (#531): appended; Ridge to start, as every older link
   "facet_turn",             // v1.1.36 beta (#531): appended; dead since v1.1.37 with Faceted (#573), kept (R8)
-  "op_on", "op_shape", "op_count", "op_from", "op_to", "op_w", "op_gap", "op_fill",      // v1.2 beta (#175): appended; no openings to start, as every older link
+  "op_on", "op_shape", "op_count", "op_from", "op_to", "op_w", "op_gap", "op_fill",      // v1.1.39 beta (#175): appended; no openings to start, as every older link
+  "mark_tri", "mark_stroke_w", "mark_stroke_c",      // v1.1.40 beta (#574): appended; a wedge as before and no stroke to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2113,7 +2120,9 @@ function disc_hand(h) {
 export function disc_mark(h) {
   return memo("mark" + key_of(h), () => {
     const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
-    const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
+    const tri = h.mark_tri && SHAPES[h.mark] === "wedge";      // a triangle, its point outward (#574)
+    let mark = tri ? mark_outline(mark_ring, h.mark_len, h.mark_w, "wedge", 0).rotate(180) : mark_outline(mark_ring, h.mark_len, h.mark_w);
+    const b = mark.bounds();
     if (!b) return null;
     const outer = h.mark_in ? min(h.len, max(h.disc_d, 0.1) / 2) : h.len;      // kept inside the disc (#344)
     return place(mark, max(outer - (b[3] - b[1]) / 2, 0.1), 0);
@@ -2121,6 +2130,8 @@ export function disc_mark(h) {
 }
 /** a disc hand whose marker is painted on (#300) */
 export const paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
+/** a painted marker's stroke (#574): a filled ring round it, outside its outline (R4: never a stroke in the files); null without one */
+export const mark_stroke = (h) => (paints_mark(h) && h.mark_stroke_w > 0 && disc_mark(h) ? memo("mstroke" + key_of(h), () => stroke_outline(disc_mark(h), h.mark_stroke_w, "Outside", "Miter")) : null);
 
 
 /** the hands that are on, bottom first: [name, colour, upright shape, clock angle]. */
@@ -2311,6 +2322,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
       for (const [name, colour, path, a, h] of hand_items(S, t)) {
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
         if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), dim(h.mark_c, hands_layer), { name, angle: a });      // a disc's painted mark turns with it (#300)
+        if (mark_stroke(h)) add("mark", mark_stroke(h), dim(h.mark_stroke_c || h.c, hands_layer), { name, angle: a, edge: true });      // and its stroke (#574)
         if (fills_openings(h)) add("lume", hand_openings(h), dim(h.op_fill, hands_layer), { name, angle: a });      // its openings' lume turns with it (#175)
       }
       if (cap_shows(S)) add("cap", circle(S.ha_cap), dim(S.c_cap, hands_layer));
