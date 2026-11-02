@@ -554,21 +554,14 @@ export const GUIDES = {
    *  and grow with the sun's distance (Okay: "Rays can grow on distant suns, shorter when they are close"); a sun
    *  near a corner has its rays cut by the frame ("the rays pop in and out"). Drawn once, moved by attributes. */
   /** show mode's Light tab, the Sun pane's top (Okay, 25 Oct 2026, four drawn rounds, "sun locked"): one box, an
-   *  outline with sharp corners in the column's ink ("adapt to the environment"); the sun's picture centred in the
-   *  open space at its left ("Sun centres the open space"), larger for the sliders' absence; at its right Angle ·
-   *  Height · Strength as plain values, each name over its figure, flush left on the number boxes' line, not
-   *  editable ("Labels numbers stack flush left, not editable"), at the rows' size, names faded, figures in ink.
-   *  The sliders are the ordinary rows under it. */
+   *  outline with sharp corners in the column's ink ("adapt to the environment"), the sun's picture alone in it,
+   *  centred across the box's width (Okay, 2 Nov 2026, 17:18: "remove the values an center sun"). Angle · Height ·
+   *  Strength are the ordinary rows under it. */
   row_sunbox(wrap, out) {
     const sun = this.sun_picture("light", true);
-    const value = (name) => { const figure = el("span", { className: "figure" }); return { el: el("div", { className: "sunvalue" }, el("span", { className: "name", textContent: name }), figure), figure }; };
-    const values = [value("Angle"), value("Height"), value("Strength")];
     wrap.classList.add("sunrow");
-    wrap.append(el("div", { className: "sunbox" }, sun.el, el("div", { className: "sunvalues" }, ...values.map((v) => v.el))));
-    out.refresh = (T) => {
-      sun.refresh();
-      [`${T.sh_from}°`, `${T.sh_rise}°`, `${T.sh_dark} %`].forEach((text, i) => { values[i].figure.textContent = text; });
-    };
+    wrap.append(el("div", { className: "sunbox" }, sun.el));
+    out.refresh = () => sun.refresh();
   },
 
   sun_picture(id, centred = false) {      // centred: the picture's view a square round the dial, so the dial stands in the middle of its box (show mode's Light tab)

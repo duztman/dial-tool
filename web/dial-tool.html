@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.32 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.33 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -866,19 +866,13 @@
   .showing .body .row.note > .quiet { grid-column: 1 / -1; }
 
   /* show mode's Light tab, the Sun pane's top (Okay, 25 Oct 2026, "sun locked"; guides.js, row_sunbox): one box, five
-     rows high, its outline in the column's ink with sharp corners, drawn inside the box (an outline, so the columns
-     inside keep the rows' places: "box simply gets an outline with sharp corners to adapt to the environment"); the
-     values at the right as wide as a number box's − +, each name over its figure, flush left on the minuses' line;
-     the picture centred in the open space before them, at the rows' size,
-     names faded and figures in ink ("Labels numbers stack flush left, not editable … Faded colors. Black figures") */
+     rows high, its outline in the column's ink with sharp corners, drawn inside the box ("box simply gets an outline with
+     sharp corners to adapt to the environment"); the picture alone in it, centred across the box (Okay, 2 Nov 2026,
+     17:18: "remove the values an center sun") */
   .row.sunrow { display: block; padding: var(--u2) 0; box-shadow: none; }
   .sunbox { display: flex; height: calc(5 * var(--line)); outline: var(--hair) solid var(--ink); outline-offset: calc(-1 * var(--hair)); }
-  .sunbox > .sunpic { flex: 1; margin-right: var(--gap); overflow: hidden; }
+  .sunbox > .sunpic { flex: 1; overflow: hidden; }
       /* the picture's own colours: 6-preview.css, after the Shadows pane's, a later layer */
-  .sunbox > .sunvalues { flex: none; width: var(--box-steps); display: flex; flex-direction: column; justify-content: space-evenly; white-space: nowrap; }      /* as wide as a number box's − +, so the stack starts on the minuses' line (Okay, 25 Oct 2026, 18:01: "the stack on the right in sun box should align with the minuses boxes from below. Sun centers accordingly") */
-  .sunvalue { display: grid; }
-  .sunvalue > .name { color: var(--grey); }
-  .sunvalue > .figure { color: var(--ink); }
 }
 
 /* a hand's pane: its detail box, the line of shapes, side rows with their number box */
@@ -7585,7 +7579,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.32 beta";
+var VERSION = "v1.1.33 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -21535,26 +21529,14 @@ var GUIDES = {
    *  and grow with the sun's distance (Okay: "Rays can grow on distant suns, shorter when they are close"); a sun
    *  near a corner has its rays cut by the frame ("the rays pop in and out"). Drawn once, moved by attributes. */
   /** show mode's Light tab, the Sun pane's top (Okay, 25 Oct 2026, four drawn rounds, "sun locked"): one box, an
-   *  outline with sharp corners in the column's ink ("adapt to the environment"); the sun's picture centred in the
-   *  open space at its left ("Sun centres the open space"), larger for the sliders' absence; at its right Angle ·
-   *  Height · Strength as plain values, each name over its figure, flush left on the number boxes' line, not
-   *  editable ("Labels numbers stack flush left, not editable"), at the rows' size, names faded, figures in ink.
-   *  The sliders are the ordinary rows under it. */
+   *  outline with sharp corners in the column's ink ("adapt to the environment"), the sun's picture alone in it,
+   *  centred across the box's width (Okay, 2 Nov 2026, 17:18: "remove the values an center sun"). Angle · Height ·
+   *  Strength are the ordinary rows under it. */
   row_sunbox(wrap, out) {
     const sun = this.sun_picture("light", true);
-    const value = (name) => {
-      const figure = el("span", { className: "figure" });
-      return { el: el("div", { className: "sunvalue" }, el("span", { className: "name", textContent: name }), figure), figure };
-    };
-    const values = [value("Angle"), value("Height"), value("Strength")];
     wrap.classList.add("sunrow");
-    wrap.append(el("div", { className: "sunbox" }, sun.el, el("div", { className: "sunvalues" }, ...values.map((v) => v.el))));
-    out.refresh = (T) => {
-      sun.refresh();
-      [`${T.sh_from}\xB0`, `${T.sh_rise}\xB0`, `${T.sh_dark} %`].forEach((text, i2) => {
-        values[i2].figure.textContent = text;
-      });
-    };
+    wrap.append(el("div", { className: "sunbox" }, sun.el));
+    out.refresh = () => sun.refresh();
   },
   sun_picture(id, centred2 = false) {
     const W2 = token("--sun-w", 297), H2 = token("--sun-h", 204), cx = 136, cy = H2 / 2, R = 81.5, NEAR = 12, FAR = 123;

@@ -2661,19 +2661,18 @@ await shot("10-bar");
     check(top.header === 43 && top.line === top.undo - 1 && top.drawn, `show mode's top as main's: the title line ${top.header} high, the tabs' hairline drawn (${top.drawn}) on the undo buttons' bottom (${top.line} / ${top.undo})`);
   }
   { // the Light tab's sun box (Okay, 25 Oct 2026, four drawn rounds, "sun locked"): an outline with sharp corners, the sun's
-    // picture centred in the open space, Angle · Height · Strength as plain values flush left on the number boxes' line;
-    // the three as ordinary rows under it, Darkness named Strength; a drag in the picture moves the sun, the values follow
+    // the picture alone in the box, centred across it; the three as ordinary rows under it, Darkness named Strength;
+    // a drag in the picture moves the sun
     await page.click('.tabs button[data-tab="Light"]'); await frame();
-    const sb = await page.evaluate(() => { const t = window.dial_tool, R = (e) => e.getBoundingClientRect(), box = document.querySelector(".sunbox"), pic = box.querySelector(".sunpic"), d = R(box.querySelector(".dial")), p = R(pic), c = getComputedStyle(box);
-      const rows = [...document.querySelectorAll(".panel .row.num")].filter((e) => e.checkVisibility()).slice(0, 3), names = rows.map((e) => e.querySelector("label").textContent), lefts = [...box.querySelectorAll(".sunvalue")].map((e) => Math.round(R(e).left));
+    const sb = await page.evaluate(() => { const t = window.dial_tool, R = (e) => e.getBoundingClientRect(), box = document.querySelector(".sunbox"), pic = box.querySelector(".sunpic"), d = R(box.querySelector(".dial")), b = R(box), c = getComputedStyle(box);
+      const rows = [...document.querySelectorAll(".panel .row.num")].filter((e) => e.checkVisibility()).slice(0, 3), names = rows.map((e) => e.querySelector("label").textContent);
       const was = [t.S.sh_from, t.S.sh_rise], cx = (d.left + d.right) / 2, cy = (d.top + d.bottom) / 2;
       const ev = (type) => pic.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: cx + d.width / 2, clientY: cy, pointerId: 1, pointerType: "mouse", button: 0 }));
-      ev("pointerdown"); ev("pointerup"); const moved = [t.S.sh_from, t.S.sh_rise], fig = box.querySelector(".sunvalue .figure").textContent;
+      ev("pointerdown"); ev("pointerup"); const moved = [t.S.sh_from, t.S.sh_rise];
       t.set_value("global", "sh_from", was[0]); t.set_value("global", "sh_rise", was[1]);
-      return { sharp: c.borderRadius === "0px" && c.outlineStyle === "solid", centred: Math.abs((d.left + d.right) / 2 - (p.left + p.right) / 2) < 0.5 && Math.abs((d.top + d.bottom) / 2 - (p.top + p.bottom) / 2) < 0.5,
-        lefts, numbox: Math.round(R(rows[0].querySelector(".numbox > .steps")).left), plain: !box.querySelector("input, button"), names, moved, fig }; });
-    check(sb.sharp && sb.centred && sb.lefts.every((x) => x === sb.numbox) && sb.plain && sb.names.join(" · ") === "Angle ° · Height ° · Strength %" && sb.moved[0] === 90 && sb.fig === "90°",
-      `the Light tab's sun box: sharp outline, the picture centred in its space, the values flush left on the minuses' line (${sb.lefts.join(" ")} / ${sb.numbox}; Okay, 18:01: "align with the minuses boxes from below"), not editable, the rows under it ${sb.names.join(" · ")}; a press at the dial's east edge puts the sun at ${sb.moved.join("° · ")} and the value says ${sb.fig} (Okay, 25 Oct 2026: "Labels numbers stack flush left, not editable")`);
+      return { sharp: c.borderRadius === "0px" && c.outlineStyle === "solid", off: +((d.left + d.right) / 2 - (b.left + b.right) / 2).toFixed(2), alone: box.children.length === 1 && !box.querySelector(".sunvalue, input, button"), names, moved }; });
+    check(sb.sharp && Math.abs(sb.off) < 0.5 && sb.alone && sb.names.join(" · ") === "Angle ° · Height ° · Strength %" && sb.moved[0] === 90,
+      `the Light tab's sun box: sharp outline, the picture alone in it, the dial centred across the box (${sb.off} px off; Okay, 2 Nov 2026, 17:18: "remove the values an center sun"), the rows under it ${sb.names.join(" · ")}; a press at the dial's east edge puts the sun at ${sb.moved.join("° · ")}`);
   }
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(2400);

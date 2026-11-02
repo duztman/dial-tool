@@ -10,6 +10,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 | 569 | Every dropdown over its button | **done**, verified 2 Nov 2026 |
 | 570 | The font sheet's line | **done**, verified 2 Nov 2026 |
 | 571 | The Shadows pane's side view at real heights | **done**, verified 2 Nov 2026 |
+| 526 | The sun's picture on show mode's Light tab — the values out, the picture centred (v1.1.33) | **done** — Okay, 17:19: "it's done and it works" |
 
 ## 2 Nov 2026 — verified by Okay on every machine ("5 items all verified on all platforms")
 

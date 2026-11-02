@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.33 beta · 2 Nov 2026 — show mode's sun box: the picture alone, centred (#526)
+
+Okay, 2 Nov 2026, 17:18: "526 already is almost like how i want it, just remove the values an center sun"; 17:19: "it's done and it works".
+
+- **Show mode's Light tab, the Sun pane** (`guides.js`, `4c-rows.css`): the Angle · Height · Strength values in the box are gone (the same three are the rows under it); the picture fills the box, the dial centred across it (measured: 0.00 px off the box's middle). A low sun at the far left stays inside the box.
+- **The window test**: the sun box's check rewritten — the picture alone, centred, a press still moves the sun.
+
 ## v1.1.32 beta · 2 Nov 2026 — half the room between a font's name and its sample
 
 Okay, 2 Nov 2026, 16:59: "half the vertical height between name line and preview line. other vertical spacing remains the same."
