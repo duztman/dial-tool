@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.36 beta · 2 Nov 2026 — a hand's bevel rows: Bevel Type, Bevels %, Facet angle (#531)
+
+Okay, 2 Nov 2026, 17:50: "Bevel type needs its own line, the appearing sausage aligned left with bottom columns whole. on the left, label: Bevel Type. faceted and domed needs settings of intensity. shadows pane has it but this here needs it too. faceted does not look optimal, level of faceting should be adjustable. however there's a bigger item on the list about constructing hands from shapes. without folding ingredients big work, take this as a step towards it."
+
+- **The switch off the Show line** (`rings.js`): Show and Bevel alone again under the tab.
+- **The bevel's rows** (`rows.js`), lines of their own across the hand's pane after Shape, once Bevel is ticked: **Bevel Type** — the name at the left, the pill switch on the sliders' line (measured: both at 184 px); **Bevels %** — the Shadows pane's number, the same one, every hand's (one number in two places); **Facet angle °** (Faceted only, per hand, a new key `facet_turn`, 1–45, 3 to start — as v1.1.35 cut them; appended to the link keys): sides that turn less than this are one facet, so a larger angle cuts a curve in fewer facets.
+- They stand after the hand's own rows: placed before the hand's picture, they pushed its side rows (Colour, Length …) under it.
+- **The window test**: the rows hidden until Bevel, the pill on the sliders' line, each look's drawing, Facet angle only for Faceted, a leaf in 4 facets at 3° and 3 at 30°.
+
 ## v1.1.35 beta · 2 Nov 2026 — a hand's bevel in three looks: Ridge · Faceted · Domed (#531)
 
 Okay, 24 Oct 2026, his drawing: Bevel beside Show, then a pill switch of three; 2 Nov 2026, 17:22: "is the pill list names correct about joins?" — Normal · Miter · Round are stroke-join words, and these are a hand's surface; 17:25: "Option A for hands, build it."

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.35 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.36 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7579,7 +7579,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.35 beta";
+var VERSION = "v1.1.36 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7764,7 +7764,10 @@ var HAND_BASE = {
   // 17:25: "Option A"), a place in BEVEL_LOOKS: 0 Ridge — two long halves meeting on the centre line, as every bevel
   // was drawn before (R31: no new scheme) · 1 Faceted — a facet on every side, mitred where two meet · 2 Domed — round
   // across, shaded from the middle out
-  bevel_look: 0
+  bevel_look: 0,
+  // a Faceted bevel's facets (#531; Okay, 2 Nov 2026, 17:50: "level of faceting should be adjustable"): sides of the
+  // outline that turn less than this many degrees are one facet — small: a curve cut in many facets, large: in few
+  facet_turn: 3
 };
 var BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];
 var WINDOW_BASE = {
@@ -8767,8 +8770,10 @@ var LINK_KEYS = [
   "rh_dash_len",
   "rh_gap_len",
   // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
-  "bevel_look"
+  "bevel_look",
   // v1.1.35 beta (#531): appended; Ridge to start, as every older link
+  "facet_turn"
+  // v1.1.36 beta (#531): appended; 3° to start, the facets as v1.1.35 cut them
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -10146,7 +10151,6 @@ function disc_mark(h) {
   });
 }
 var paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
-var FACET_TURN = 3;
 function hand_facets(h) {
   return memo("facets" + key_of(h), () => {
     const pts = [];
@@ -10158,7 +10162,7 @@ function hand_facets(h) {
     while (start2 < hull.length) {
       let end = start2 + 1;
       const d0 = dir(hull[start2], hull[end % hull.length]);
-      while (end < hull.length && turn(dir(hull[end], hull[(end + 1) % hull.length]), d0) < FACET_TURN * Math.PI / 180) end++;
+      while (end < hull.length && turn(dir(hull[end], hull[(end + 1) % hull.length]), d0) < (h.facet_turn ?? 3) * Math.PI / 180) end++;
       sides.push([hull[start2], hull[end % hull.length]]);
       start2 = end;
     }
@@ -12782,6 +12786,7 @@ var kind_in = (...names) => (R) => names.includes(kind_of(R));
 var marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(kind_of(R)) && shapes.includes(SHAPES[R.shape]);
 var labels_are = (name) => (R) => kind_of(R) === "numerals" && LABEL_SETS[R.labels][0] === name;
 var hand_is = (...shapes) => (H2) => shapes.includes(HAND_SHAPES[H2.shape]);
+var bevelled = (H2) => Boolean(H2 && H2.on && H2.bevel && HAND_SHAPES[H2.shape] !== "disc");
 var numerals_only = kind_in("numerals");
 var with_text = kind_in("numerals", "text");
 var nudgeable = kind_in("ticks", "markers", "numerals", "text");
@@ -13057,8 +13062,16 @@ var ROWS = {
     col("c_cap", "Cap colour", { side: true, show: cap_rows }),
     // its shapes: a row of thumbs under the box and every row beside it, from the box's left to the end (4.46.4; Okay:
     // "Put hand type as a row spanning preview to end, after wall"; under the box in 4.46.3), the SVG tile last
-    pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] })
+    pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] }),
     // every shape but "file": the SVG tile stands for it
+    // the bevel's rows, each a line of its own across the pane after the hand's own rows, once Bevel is ticked beside Show (#531; Okay, 2 Nov 2026,
+    // 17:50: "Bevel type needs its own line, the appearing sausage aligned left with bottom columns whole. on the left,
+    // label: Bevel Type"; "faceted and domed needs settings of intensity. shadows pane has it but this here needs it
+    // too"; "level of faceting should be adjustable"): its look, its strength — the Shadows pane's Bevels %, one number
+    // for every hand in both places — and, Faceted, where a curve turns into facets
+    seg("bevel_look", "Bevel Type", BEVEL_LOOKS, { ...H, show: bevelled }),
+    num2("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, show: (S, _, app) => bevelled(app.hand()) }),
+    num2("facet_turn", "Facet angle \xB0", 1, 45, 1, { ...H, whole: true, short: "Facet \xB0", show: (T) => bevelled(T) && BEVEL_LOOKS[T.bevel_look] === "Faceted" })
   ],
   Date: [
     // "Windows" on its tab: up to four holes in the plate
@@ -19253,24 +19266,11 @@ var RINGS = {
       line.append(bevel_word);
     }
     wrap.append(line);
-    const looks = bevel ? el("span", { className: "pillswitch bevellooks", role: "radiogroup", ariaLabel: "Bevel" }) : null;
-    const look_buttons = bevel ? BEVEL_LOOKS.map((name, i2) => el("button", { type: "button", id: `hand-bevel-look-${i2}`, textContent: name, onclick: () => this.set_value("hand", "bevel_look", i2) })) : [];
-    if (bevel) {
-      looks.append(...look_buttons);
-      wrap.append(looks);
-    }
     out.refresh = (T) => {
       box3.checked = Boolean(T.on);
       if (bevel) {
         bevel.checked = Boolean(T.bevel);
         bevel_word.hidden = !(T.on && HAND_SHAPES[T.shape] !== "disc");
-      }
-      if (bevel) {
-        looks.hidden = bevel_word.hidden || !T.bevel;
-        look_buttons.forEach((b, i2) => {
-          b.classList.toggle("on", i2 === (T.bevel_look || 0));
-          b.setAttribute("aria-checked", String(i2 === (T.bevel_look || 0)));
-        });
       }
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
@@ -19278,18 +19278,7 @@ var RINGS = {
       const place2 = () => {
         const on = tabs.find((t) => t.classList.contains("on")), a = on && on.getBoundingClientRect(), w = wrap.getBoundingClientRect();
         if (!a || !a.width || !wrap.isConnected) return;
-        Object.assign(line.style, { gridRow: "1", gridColumn: "1 / -1", justifySelf: "start", marginLeft: `${a.left - w.left}px`, width: `${a.width}px` });
-        if (looks) {
-          const after = w.right - a.right >= looks.offsetWidth + 2 * parseFloat(getComputedStyle(wrap).getPropertyValue("--unit"));
-          Object.assign(looks.style, {
-            gridRow: "1",
-            gridColumn: "1 / -1",
-            alignSelf: "center",
-            justifySelf: after ? "start" : "end",
-            marginLeft: after ? `calc(${a.right - w.left}px + var(--u4))` : "",
-            marginRight: after ? "" : `calc(${w.right - a.left}px + var(--u4))`
-          });
-        }
+        Object.assign(line.style, { gridColumn: "1 / -1", justifySelf: "start", marginLeft: `${a.left - w.left}px`, width: `${a.width}px` });
       };
       place2();
       requestAnimationFrame(place2);

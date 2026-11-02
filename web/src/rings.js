@@ -573,16 +573,9 @@ export const RINGS = {
     const bevel_word = bevel ? el("label", { className: "check", htmlFor: "hand-bevel", title: "This hand's bevel, the light and dark halves the shadows' light gives it" }, bevel, " Bevel") : null;
     if (bevel) { bevel.onchange = () => this.set_value("hand", "bevel", bevel.checked); line.append(bevel_word); }
     wrap.append(line);
-    // the bevel's look beside the box, once Bevel is ticked (#531; Okay, 24 Oct 2026, his drawing: the pill switch to the
-    // right of Show and Bevel; 2 Nov 2026, 17:25: "Option A" — Ridge · Faceted · Domed): a pill switch as every choice of
-    // words is (canon §6). It stands on the box's line, after the box, or before it under the last tab, where there is no room after
-    const looks = bevel ? el("span", { className: "pillswitch bevellooks", role: "radiogroup", ariaLabel: "Bevel" }) : null;
-    const look_buttons = bevel ? G.BEVEL_LOOKS.map((name, i) => el("button", { type: "button", id: `hand-bevel-look-${i}`, textContent: name, onclick: () => this.set_value("hand", "bevel_look", i) })) : [];
-    if (bevel) { looks.append(...look_buttons); wrap.append(looks); }
     out.refresh = (T) => {
       box.checked = Boolean(T.on);
-      if (bevel) { bevel.checked = Boolean(T.bevel); bevel_word.hidden = !(T.on && G.HAND_SHAPES[T.shape] !== "disc"); }
-      if (bevel) { looks.hidden = bevel_word.hidden || !T.bevel; look_buttons.forEach((b, i) => { b.classList.toggle("on", i === (T.bevel_look || 0)); b.setAttribute("aria-checked", String(i === (T.bevel_look || 0))); }); }      // with Show, Shadows on or off (#531)      // with Show, at once (20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on"); a disc hand is flat; no shadows, no bevels
+      if (bevel) { bevel.checked = Boolean(T.bevel); bevel_word.hidden = !(T.on && G.HAND_SHAPES[T.shape] !== "disc"); }      // with Show, Shadows on or off (#531)      // with Show, at once (20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on"); a disc hand is flat; no shadows, no bevels
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);
@@ -591,12 +584,7 @@ export const RINGS = {
       const place = () => {
         const on = tabs.find((t) => t.classList.contains("on")), a = on && on.getBoundingClientRect(), w = wrap.getBoundingClientRect();
         if (!a || !a.width || !wrap.isConnected) return;      // not laid out yet: the next frame does it
-        Object.assign(line.style, { gridRow: "1", gridColumn: "1 / -1", justifySelf: "start", marginLeft: `${a.left - w.left}px`, width: `${a.width}px` });
-        if (looks) {      // after the box when the chosen tab leaves room to its right, else before it
-          const after = w.right - a.right >= looks.offsetWidth + 2 * parseFloat(getComputedStyle(wrap).getPropertyValue("--unit"));      // room for it and its gap (--u4: two units)
-          Object.assign(looks.style, { gridRow: "1", gridColumn: "1 / -1", alignSelf: "center", justifySelf: after ? "start" : "end",
-            marginLeft: after ? `calc(${a.right - w.left}px + var(--u4))` : "", marginRight: after ? "" : `calc(${w.right - a.left}px + var(--u4))` });
-        }
+        Object.assign(line.style, { gridColumn: "1 / -1", justifySelf: "start", marginLeft: `${a.left - w.left}px`, width: `${a.width}px` });
       };
       place(); requestAnimationFrame(place);
     };

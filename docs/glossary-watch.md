@@ -16,7 +16,7 @@ What each word means **in this project**; Turkish where it is the trade word. On
 | **Centre hole** | | The hole for the hand pipes (`dial_hole`, Ø mm; 0 = none); a production mask always has its cut line. |
 | **Hub** | | The round boss at a hand's pivot (`hub`, Ø per hand; 0 = none). |
 | **Disc hand** | | Hand shape `disc`: a disc on the pivot (`disc_d`) carrying one marker (`mark`, `mark_len`, `mark_w`), a **Hole** (cut) or a **Mark** (painted, `mark_c`) by `mark_as`; *Inside the disc* = `mark_in`. |
-| **Bevel** | | A hand's top lit and shaded by the sun, preview only (`bevel` per hand; strength `sh_bevel`), in one of three **looks** (`bevel_look`): **Ridge** — two long halves meeting on the spine · **Faceted** — a facet per side, mitred where two meet · **Domed** — round across, shaded from the spine out. |
+| **Bevel** | | A hand's top lit and shaded by the sun, preview only (`bevel` per hand; strength `sh_bevel`), in one of three **looks** (`bevel_look`): **Ridge** — two long halves meeting on the spine · **Faceted** — a facet per side, mitred where two meet · **Domed** — round across, shaded from the spine out. Its rows under Shape once Bevel is ticked: **Bevel Type**, **Bevels %** (the Shadows pane's, every hand's), **Facet angle °** (`facet_turn`: sides turning less than this are one facet). |
 | **Track** · minute track · chapter ring | | The minute marks round the edge: a **ticks ring**; its rails thin **band rings**. |
 | **Tick** | | One mark of a ticks ring. |
 | **Railroad** | | Two thin rails along a track, ticks between: two thin bands. |

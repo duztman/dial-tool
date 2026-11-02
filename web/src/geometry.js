@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.35 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.36 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -154,6 +154,9 @@ export const HAND_BASE = {
   // was drawn before (R31: no new scheme) · 1 Faceted — a facet on every side, mitred where two meet · 2 Domed — round
   // across, shaded from the middle out
   bevel_look: 0,
+  // a Faceted bevel's facets (#531; Okay, 2 Nov 2026, 17:50: "level of faceting should be adjustable"): sides of the
+  // outline that turn less than this many degrees are one facet — small: a curve cut in many facets, large: in few
+  facet_turn: 3,
 };
 export const BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];      // R9: a new look is appended
 
@@ -585,6 +588,7 @@ export const LINK_KEYS = [
   "stroke", "stroke_w", "stroke_join", "stroke_side", "stroke_c",      // v1.1 beta (#551): appended; off to start, as every older link
   "rhythm", "rh_dash", "rh_gap", "rh_dash_shape", "rh_dash_len", "rh_gap_len",      // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
   "bevel_look",             // v1.1.35 beta (#531): appended; Ridge to start, as every older link
+  "facet_turn",             // v1.1.36 beta (#531): appended; 3° to start, the facets as v1.1.35 cut them
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2078,9 +2082,8 @@ export const paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as =
 /** a Faceted bevel's facets (#531), on the hand upright: a facet for every side of the hand's outline, each the part of
  *  the hand nearer that side than any other — so two facets meet on the line that halves their corner, a mitre, and the
  *  long sides meet on the hand's spine. Read off the outline's convex hull, its sides joined where they turn less than
- *  FACET_TURN (a curve becomes a few flat facets, as a cut hand's are); each facet as [its corners, its outward
+ *  the hand's facet_turn (a curve becomes a few flat facets, as a cut hand's are); each facet as [its corners, its outward
  *  direction]. Facets reach past the outline: the hand's own shape cuts them (the preview clips them to it). */
-const FACET_TURN = 3;      // degrees: sides that turn less than this are one facet
 export function hand_facets(h) {
   return memo("facets" + key_of(h), () => {
     const pts = [];
@@ -2093,7 +2096,7 @@ export function hand_facets(h) {
     while (start < hull.length) {
       let end = start + 1;
       const d0 = dir(hull[start], hull[end % hull.length]);
-      while (end < hull.length && turn(dir(hull[end], hull[(end + 1) % hull.length]), d0) < FACET_TURN * Math.PI / 180) end++;
+      while (end < hull.length && turn(dir(hull[end], hull[(end + 1) % hull.length]), d0) < (h.facet_turn ?? 3) * Math.PI / 180) end++;
       sides.push([hull[start], hull[end % hull.length]]);
       start = end;
     }

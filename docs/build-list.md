@@ -4,7 +4,7 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 2 Nov 2026 (v1.1.30 beta): #169, #569, #570, #571 verified by Okay on every machine (to done); #175 to Now (Okay, 16:38); the font sheet's band apart from the list when the Installed tab is absent; #526 done (v1.1.33); show mode's sun lock (#572, v1.1.34); #531 built (v1.1.35), both to verify; #175 Now.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 2 Nov 2026 (v1.1.30 beta): #169, #569, #570, #571 verified by Okay on every machine (to done); #175 to Now (Okay, 16:38); the font sheet's band apart from the list when the Installed tab is absent; #526 done (v1.1.33); show mode's sun lock (#572, v1.1.34); #531 built (v1.1.35–36), both to verify; #175 Now.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
@@ -16,7 +16,7 @@ Status words, four: **build** (Okay said build) · **verify** (built; Okay has n
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| — | 531 | Hand bevels in three looks, Ridge · Faceted · Domed, a pill switch beside Bevel | 2 Nov 2026, 17:25 — "Option A for hands, build it" | verify (v1.1.35) |
+| — | 531 | Hand bevels in three looks: Bevel Type (Ridge · Faceted · Domed), Bevels %, Facet angle ° — rows of their own once Bevel is ticked | 2 Nov 2026, 17:50 — "Bevel type needs its own line" | verify (v1.1.36) |
 | — | 572 | Show mode's sun lock: Lock on the Sun line; drags leave the sun; "Sun is locked" at the canvas's top | 2 Nov 2026, 17:24 — "Sun needs a lock accessible from its first line" | verify (v1.1.34) |
 
 ## Next — the features, in Okay's order, then easier → harder

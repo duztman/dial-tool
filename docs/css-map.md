@@ -406,7 +406,7 @@
 | `--u8` | `calc(4 * var(--unit))` |  | 4g-fonts, 7-bar ×2 |  |
 | `--uiblack` · set in 6-preview | `var(--white)` | the Snap to guides toggle on the dark ground: a white outline and dot off; on, a white track with the dot dark (Okay, 2 Nov 2026: "Snap on disappears? Dot should be black?") | 3-controls ×4, 4a-panel ×4, 4c-rows | set by show.js |
 | `--uiknob` · set in 6-preview | `var(--night)` | the Snap to guides toggle on the dark ground: a white outline and dot off; on, a white track with the dot dark (Okay, 2 Nov 2026: "Snap on disappears? Dot should be black?") | 3-controls |  |
-| `--unit` | `5.5px` | every space is a multiple of this: the scale below, in half-units (u1 = half a unit … u8 = four) | 1-tokens ×21, 3-controls ×17, 4a-panel ×10, 4b-lines-tabs ×3, 4c-rows ×7, 4d-hands ×6, 4e-colour, 4f-rings ×6, 4g-fonts ×26, 4h-gallery ×7, 6-preview ×20, 7-bar, 8-narrow ×2 | read by fonts.js, read by panel.js, read by rings.js |
+| `--unit` | `5.5px` | every space is a multiple of this: the scale below, in half-units (u1 = half a unit … u8 = four) | 1-tokens ×21, 3-controls ×17, 4a-panel ×10, 4b-lines-tabs ×3, 4c-rows ×7, 4d-hands ×6, 4e-colour, 4f-rings ×6, 4g-fonts ×26, 4h-gallery ×7, 6-preview ×20, 7-bar, 8-narrow ×2 | read by fonts.js, read by panel.js |
 | `--value-pop` | `132px` | a value button's tag: about as wide as it is high | 4f-rings |  |
 | `--veil` | `rgba(0, 0, 0, 0.06)` | a touch of dark on a coloured row | 4f-rings |  |
 | `--veil-strong` | `rgba(0, 0, 0, 0.1)` | a touch of dark on a coloured row | 4f-rings ×3 |  |
