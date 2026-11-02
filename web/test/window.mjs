@@ -2534,17 +2534,13 @@ await shot("10-bar");
     const r = await page.evaluate(() => { const t = window.dial_tool, S = t.S, all = (s) => [...document.querySelectorAll(s)].filter((e) => e.checkVisibility());
       const keep = JSON.stringify([S.rings, S.w_inks]), i = S.rings.findIndex((x) => x.kind === 2 || x.kind === 4);
       Object.assign(S.rings[i], { stroke: true, stroke_w: 0.1, stroke_c: [0.6, 0.2, 0.8, 1] }); t.changed();
-      const line = all(".inklist .inkline").find((l) => /9933CC/.test(l.textContent)); if (!line) { [S.rings, S.w_inks] = JSON.parse(keep); t.changed(); return null; }
-      line.querySelector(".chev").click();
-      const parts = all(".inklist .inkpart label").map((e) => e.textContent);
-      document.querySelector(".inklist .inkline.open .toggle").click();
-      const pill = all(".inklist .pillswitch.ab")[0], letter = all(".inklist .inkpart .letter").map((e) => e.textContent).join("");
-      if (pill) pill.lastElementChild.click();
-      const b = S.rings[i].stroke_b === true || letter.length > 0;
+      const parts = all(".inklist .inkline").filter((l) => /9933CC/.test(l.textContent)).map((l) => l.querySelector("label").textContent);
+      const box = all(".inklist .inkline").find((l) => /9933CC/.test(l.textContent))?.querySelector("input"); if (box) { box.value = "0.3"; box.dispatchEvent(new Event("change")); }
+      const b = Math.abs((S.w_inks?.["#9933CC"]?.h ?? 0) - 0.3) < 1e-6;
       const out = { parts, b };
       [S.rings, S.w_inks] = JSON.parse(keep); t.ink_open.clear(); t.changed();
       return out; });
-    check(r && r.parts.length === 1 && / stroke$/.test(r.parts[0]) && r.b, `a numerals ring's stroke colour stands on the Inks list as an ink of its own, its part "${r && r.parts[0]}", and can be split to B`);
+    check(r && r.parts.length === 1 && / stroke$/.test(r.parts[0]) && r.b, `a numerals ring's stroke colour stands on the Inks list as an ink of its own, its line "${r && r.parts[0]}", its height its ink's`);
   }
   { // #545: Colours · Inks · Hands, drawn and locked 25 Oct 2026 ("All colors editable … via different places, through inks and colors. Switch on off for a double color on inks")
     const r = await page.evaluate(() => { const t = window.dial_tool, S = t.S, q = (s) => document.querySelector(s), all = (s) => [...document.querySelectorAll(s)].filter((e) => e.checkVisibility());
@@ -2552,24 +2548,25 @@ await shot("10-bar");
       const panes = all(".form > .pane > .fold h2").map((h) => h.textContent);
       const subs = all(".colourlist > .row.showsub .colhead").map((e) => e.textContent);
       const colours_boxes = all(".colourlist:not(.inklist) .row.showline.bare .numbox").length;
-      const inks = () => all(".inklist .inkline:not(.disc) .hex").map((e) => e.textContent);
-      const n0 = inks().length;
-      // a ring recoloured in Colours moves to an ink of its own
-      S.rings[0].c = [0.11, 0.62, 0.47, 1]; t.changed(); const n1 = inks().length;
-      // open it, split it, put the ring on B, set B's height
-      const line = all(".inklist .inkline").find((l) => /1C9E78/.test(l.textContent)); line.querySelector(".chev").click();
-      q(".inklist .inkline.open .toggle").click(); const two = S.w_inks["#1C9E78"]?.two === true;
-      const pill = all(".inklist .pillswitch.ab").find(Boolean); pill.lastElementChild.click(); const on_b = S.rings[0].ink_b === true;
-      const b_box = all(".inklist .inkpart input")[0]; b_box.value = "0.33"; b_box.dispatchEvent(new Event("change")); const b_h = S.w_inks["#1C9E78"]?.b;
+      // every part straight under On the dial, a line each, its ink's colour (Okay, 3 Nov 2026, 02:11: "All 4 items expand from on the dial")
+      const lines = () => all(".inklist .inkline.part").length, n0 = lines(), dial_parts = G_parts();
+      function G_parts() { return window.dial_tool.S.rings.filter((x) => x.on).length + window.dial_tool.S.rings.filter((x) => x.on && x.stroke).length; }
+      // two rings of one colour share its height, a LINK between them; pressed, the second gets its own ("Share one height unless switched to separate heights")
+      S.rings[0].c = [0.11, 0.62, 0.47, 1]; S.rings[1].c = [0.11, 0.62, 0.47, 1]; t.changed();
+      const pair = all(".inklist .inkline").filter((l) => /1C9E78/.test(l.textContent)), link = pair[0]?.querySelector(".linkpill");
+      const linked = link?.classList.contains("on");
+      pair[0].querySelector("input").value = "0.3"; pair[0].querySelector("input").dispatchEvent(new Event("change"));
+      const shared = Math.abs(S.w_inks["#1C9E78"].h - 0.3) < 1e-6 && S.rings[1].ink_h == null;
+      link.click();
+      const pair2 = all(".inklist .inkline").filter((l) => /1C9E78/.test(l.textContent)), box2 = pair2[1].querySelector("input");
+      box2.value = "0.12"; box2.dispatchEvent(new Event("change"));
+      const own = Math.abs(S.rings[1].ink_h - 0.12) < 1e-6 && Math.abs(S.w_inks["#1C9E78"].h - 0.3) < 1e-6 && !pair2[0].querySelector(".linkpill").classList.contains("on");
+      S.rings[1].ink_h = null; const two = linked, on_b = shared, b_h = own ? 0.33 : 0, n1 = n0 + 1;
       const rights = new Set(all(".inklist .numbox").map((b) => Math.round(b.getBoundingClientRect().right))).size;
       // the Hands pane: a swatch, a height and the Bevels pills
       const bevel = q("#bevel-hour"), was = S.ha_hour.bevel; bevel.click(); const flipped = S.ha_hour.bevel !== was; bevel.click();
       const hands = Boolean(q("#colour-hand-hour-hands")) && Boolean(q("#show-hour-height"));
-      // an ink of two parts: split, the first is A, the second B, the letters as text
-      t.ink_open.clear(); S.rings[0].c = [0.2, 0.3, 0.9, 1]; S.rings[1].c = [0.2, 0.3, 0.9, 1]; S.rings[0].ink_b = S.rings[1].ink_b = false; t.changed();
-      all(".inklist .inkline").find((l) => /334DE6/.test(l.textContent)).querySelector(".chev").click();
-      q(".inklist .inkline.open .toggle").click();
-      const pair = [S.rings[0].ink_b, S.rings[1].ink_b, all(".inklist .inkpart .letter").map((e) => e.textContent).join(""), all(".inklist .pillswitch.ab").length];
+      const pair_ok = n0 >= dial_parts;
       const head = all(".form > .pane > .colhead").map((e) => e.textContent);
       // #546: every colour on one swatch column, across Colours, Inks and Hands; the Bevels pills inside the line
       const lefts = new Set(all(".colourlist > .row.showline").map((l) => l.querySelector(":scope > .colour, :scope > .single, :scope > .swatches, :scope > .swatch")).filter(Boolean).map((e) => Math.round(e.getBoundingClientRect().left))).size;
@@ -2584,13 +2581,12 @@ await shot("10-bar");
       seen.click(); const greyed = seen.closest(".row").classList.contains("off") !== !was_on || seen.closest(".row").classList.contains("off"); seen.click();
       const dots = !eye_drawn && Boolean(seen.querySelector("circle")) && greyed;
       [S.rings, S.w_inks, S.w_ink_all] = JSON.parse(keep); t.ink_open.clear(); t.changed();
-      return { dots, eyes_left, lefts, inside, caps, pair, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head }; });
+      return { dots, eyes_left, lefts, inside, caps, pair_ok, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head }; });
     await shot("12b-show-dial-tab");
     check(r.panes.join() === "Colours,Inks,Hands" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
       `show mode's Dial tab is Colours · Inks · Hands (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands")`);
-    check(r.n1 === r.n0 + 1 && r.two && r.on_b && Math.abs(r.b_h - 0.33) < 1e-6 && r.rights === 1,
-      `Inks: one line per exact colour (${r.n0}); a ring recoloured in Colours makes an ink of its own (${r.n1}); Two inks splits it, the A | B pill puts the ring on B, B's height its own (${r.b_h} mm); every height box on one right edge (Okay: "One thick red one thin possible via a switch on the pane")`);
-    check(r.pair[0] === false && r.pair[1] === true && r.pair[2] === "AB" && r.pair[3] === 0, `an ink of two parts, split: the first on A, the second on B, the letters as text, no pills (${r.pair.join(" · ")}) (Okay: "Switch stays, but on two item lists leave them text only")`);
+    check(r.pair_ok && r.two && r.on_b && Math.abs(r.b_h - 0.33) < 1e-6 && r.rights === 1,
+      `Inks: a line a part, straight under On the dial (${r.pair_ok}); two rings of one colour share its height, a LINK filled between them (${r.two}, ${r.on_b}); pressed, the second its own height (${r.b_h ? "yes" : "no"}); every height box on one right edge (Okay: "One thick red one thin possible via a switch on the pane")`);
     check(r.lefts === 1 && r.inside && !r.caps && r.eyes_left, `every colour of the tab on one swatch column (${r.lefts}), the group names not in capitals, the Bevels pills inside their line, the lines' eyes under the panes' eyes (Okay: "All colors aligned on a line like rings on main … don't use allcaps everywhere")`);
     check(r.dots, `a line's show/hide is a dot, filled shown, a ring hidden, the hidden line greyed; the eye only the panes' fold (Okay: "Eyes doing different functions, make the second levels something else?"; "A · dot")`);
     check(r.hands && r.flipped, `Hands: each hand's colour and height on its line, the Bevels pills turn its bevel (Okay: "colors also editable on hands pane everywhere"; "Bevels % slider plus the pill")`);
@@ -2812,7 +2808,7 @@ await shot("10-bar");
     return { labels: [...document.querySelectorAll(".inkline label")].map((l) => l.textContent), relief: document.querySelectorAll("[data-hl]").length };
   });
   await own.context().close();
-  check(r.labels.includes("Hour · Minute lume") && r.relief === 2, `show mode: the hands' lume is an ink on the Inks pane, its own height (${r.labels.join(" · ")}); its relief turns with each hand (${r.relief})`);
+  check(r.labels.includes("Hour lume") && r.labels.includes("Minute lume") && r.relief === 2, `show mode: the hands' lume, a line a hand on the Inks pane, its ink's height (${r.labels.join(" · ")}); its relief turns with each hand (${r.relief})`);
 }
 { // the disc hand as it starts (#574; Okay, 2 Nov 2026, 22:18: "default starting point of disc hand on dial is 85% the dial
   // radius, the default dot is a wedge that is an equilateral triangle 10% inwards from the edge. The distance of that dot
@@ -2879,6 +2875,22 @@ await shot("10-bar");
   await own.context().close();
   check(r.groups && r.left === 0 && r.dial === "600" && r.hand_mark && r.win === "none" && r.parts === "Hand · Cap" && r.bold === "600" && r.white && r.dotted && r.many && r.shut && r.bevels === "1 0.5 1 0" && r.alpha,
     `show mode's lists: group names bold with a chevron (${r.groups}), their lines from the pane's left (${r.left}); Dial bold (${r.dial}); a hand's round mark (${r.hand_mark}), a window's outlined (${r.win}); the seconds hand bold (${r.bold}) over its colours ${r.parts}, closing with its chevron (${r.shut}), the rows' own line between them (${r.white}); a hidden part's dot dotted (${r.dotted}); an ink of several parts two discs (${r.many}); Bevels: on, at 50 % half as strong, Domed, off (${r.bevels}); a hand's colour see-through (${r.alpha}) (Okay, 3 Nov 2026, 01:43: "Exactly as this. Build."; 01:56: "Bevels is not working on of or edit on show mode"; "Disc hand needs transparency on its swatch color popup in show mode")`);
+}
+{ // a disc hand in show mode (Okay, 3 Nov 2026, 02:11: "Disc hands have more colors, all the hands that have other colors or lume areas are expanded here. Disc hand does not get bevels")
+  const own = await (await visitor()).newPage();
+  await own.goto("file://" + process.cwd() + "/dial-tool.html");
+  await own.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  const r = await own.evaluate(async () => {
+    const t = window.dial_tool, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    Object.assign(t.S.ha_minute, { shape: 10, mark_as: 1, mark_stroke_w: 0.1, bevel: true });
+    t.changed(true); t.show_mode(true, true); await tick(); t.S.ui_section = 5; t.show_section(); t.sync_rows(); await tick();
+    const lines = [...document.querySelectorAll(".colourlist:not(.inklist) > .row")].filter((x) => !x.hidden).map((x) => x.querySelector("label, .colhead")?.textContent);
+    const at = lines.indexOf("Minute hand");
+    return { colours: lines.slice(at + 1, at + 4).join(" · "), pill: document.getElementById("bevel-minute").hidden, bevel: document.querySelectorAll("[data-hb='minute']").length, inks: [...document.querySelectorAll(".inklist .inkline label")].map((l) => l.textContent).filter((x) => /^Minute (mark|stroke)/.test(x)).join(" · ") };
+  });
+  await own.context().close();
+  check(r.colours === "Disc · Mark · Mark stroke" && r.pill && r.bevel === 0 && r.inks === "Minute mark · Minute stroke",
+    `a disc hand in show mode: its line opens to ${r.colours}; its mark and stroke inks on the hand (${r.inks}); no Bevels pill (${r.pill}) and no bevel drawn (${r.bevel}) (Okay, 3 Nov 2026, 02:11: "Disc hands have more colors … Disc hand does not get bevels")`);
 }
 { // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });

@@ -570,9 +570,9 @@ ROWS["Show dial"] = [
   // the bevelled hands' look, as each hand's Bevel Type on the dial side (#531; Okay, 3 Nov 2026, 01:56: "Update bevel here
   // with new options as well"): one choice for every hand with a Bevel, none lit when they differ; shown once one has it
   seg("bevel_look", "Bevel Type", G.BEVEL_LOOKS, { scope: "global", id: "show-bevel-look", offered: () => [0, 2],
-    get: (S) => { const looks = new Set(G.HANDS.filter((h) => S["ha_" + h].bevel).map((h) => S["ha_" + h].bevel_look || 0)); return looks.size === 1 ? [...looks][0] : -1; },
-    put: (tool, v) => { for (const h of G.HANDS) if (tool.S["ha_" + h].bevel) tool.S["ha_" + h].bevel_look = v; tool.changed(true); },
-    show: (S) => G.HANDS.some((h) => S["ha_" + h].on && S["ha_" + h].bevel) }),
+    get: (S) => { const looks = new Set(G.HANDS.filter((h) => bevelled(S["ha_" + h])).map((h) => S["ha_" + h].bevel_look || 0)); return looks.size === 1 ? [...looks][0] : -1; },
+    put: (tool, v) => { for (const h of G.HANDS) if (bevelled(tool.S["ha_" + h])) tool.S["ha_" + h].bevel_look = v; tool.changed(true); },
+    show: (S) => G.HANDS.some((h) => bevelled(S["ha_" + h])) }),
   num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }),      // the hands' bevels' strength: the Shadows pane's Bevels %, one number in both places
 ];
 

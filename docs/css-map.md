@@ -43,7 +43,7 @@
 | `--chip-rule` | `rgba(0, 0, 0, 0.25)` |  | 3-controls, 4e-colour, 6-preview ×2 | 3-controls `.night` → `var(--night-chip-rule)`; set by show.js |
 | `--clock-gap` · special | `4px` | the bar's time: a colon's split hairline this far from the ink of the figure either side, and its own gap the same (Okay, 31 Oct 2026, 01:35: "Notice the gaps"; 01:41: "The hr gaps before after line segments should be equal"; approved 01:49) | 7-bar ×2 | read by bar.js |
 | `--col` | `54px` |  | 1-tokens ×5, 3-controls, 4a-panel, 4e-colour, 4g-fonts, 6-preview ×2 | 4a-panel `.showing .panel` → `var(--show-col)`; 8-narrow `:root` → `calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6)` |
-| `--column` · the window's | `—` |  | 4a-panel | set by show.js |
+| `--column` · the window's | `—` |  | 4a-panel, 4e-colour | set by show.js |
 | `--column-solid` · the window's | `—` |  | 4a-panel | set by show.js |
 | `--column-top` · the window's | `—` |  | 4a-panel ×3 | set by show.js |
 | `--columns` | `var(--eye) repeat(6, minmax(0, 1fr))` |  | 4a-panel ×2, 4b-lines-tabs ×2 |  |
@@ -139,7 +139,7 @@
 | `--iris-ink` · the window's | `—` |  | 6-preview | set by mode.js |
 | `--iris-time` | `250ms` | the iris switch's words sliding out; Now shrinking into its undo sign | 3-controls ×2, 6-preview ×5 |  |
 | `--iris-words` | `160px` | room enough for ACTIVATE SHOWCASE | 6-preview |  |
-| `--kind-pic` | `24px` | a kind's picture, its square (KIND_PIC in icons.js): the column of the tiny marks in show mode's Dial tab | 4e-colour ×3 |  |
+| `--kind-pic` | `24px` | a kind's picture, its square (KIND_PIC in icons.js): the column of the tiny marks in show mode's Dial tab | 4e-colour ×4 |  |
 | `--knob` · special | `20px` | the handle on the field and on the strip | 4e-colour ×4 | 1-tokens `:root` → `28px` |
 | `--lead` | `calc(var(--eye) + var(--gap))` | the toggle column and the gap after it: where the six columns start | 1-tokens ×2, 4b-lines-tabs ×4, 4e-colour ×3, 4f-rings ×2, 4g-fonts, 7-bar, 8-narrow |  |
 | `--leading` | `1.4` | the panel's line spacing: its text, a tick's two lines, a tick and its note (#420) | 2-base, 4c-rows ×2, 4g-fonts |  |
@@ -206,7 +206,7 @@
 | `--p` · the window's | `—` |  | 3-controls, 4f-rings ×2 | read by panel.js, set by ui.js |
 | `--panel` | `calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap))` |  | 1-tokens ×2, 4g-fonts, 7-bar |  |
 | `--panel-w` | `calc(var(--panel) + var(--hair))` | the panel's column: its lines and its right hairline | 2-base ×2, 4a-panel ×5, 6-preview ×4 | 2-base `.showing` → `var(--show-panel-w)` |
-| `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×8, 4b-lines-tabs, 4e-colour ×3, 4f-rings ×6, 4g-fonts, 5-chosen ×2, 6-preview ×6, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
+| `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×8, 4b-lines-tabs, 4e-colour ×4, 4f-rings ×6, 4g-fonts, 5-chosen ×2, 6-preview ×6, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
 | `--picked` · the window's | `—` |  | 6-preview | set by rings.js |
 | `--pill` | `calc(1em + 2 * var(--pill-gap))` | its height. The swatch is as high as the hex is set (1em) | 4e-colour |  |
 | `--pill-gap` | `var(--unit)` | a colour pill (and the font name line beside its swatch): this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these | 1-tokens ×2, 4e-colour ×2, 4g-fonts |  |
@@ -398,7 +398,7 @@
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×4 |  |
 | `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4f-rings ×2, 7-bar ×2 |  |
 | `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×12, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
-| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×2, 4a-panel ×4, 4c-rows ×2, 4e-colour ×14, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
+| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×2, 4a-panel ×4, 4c-rows ×2, 4e-colour ×15, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
 | `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour ×4, 4f-rings ×9, 4g-fonts ×7, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
 | `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×4, 4d-hands ×2, 4e-colour ×2, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
 | `--u5` | `calc(2.5 * var(--unit))` |  | 8-narrow ×2 |  |

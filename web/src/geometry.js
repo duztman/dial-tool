@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.43 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.44 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -88,6 +88,7 @@ export const RING_BASE = {
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
   ink_d: 0,                                        // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
   stroke_b: false,                                 // show mode's Inks: its stroke's colour split into two inks, the stroke printed with ink B (as ink_b; not in the link)
+  ink_h: null, stroke_h: null,                     // show mode's Inks: this ring's own height, and its stroke's, mm — unlinked from its ink's (Okay, 3 Nov 2026, 02:11: "Share one height unless switched to separate heights"); null = the ink's. The file and the session, not the link
   ink_b: false,                                    // show mode's Inks (#545): with its colour split into two inks, this ring is printed with ink B; the file and the session, not the link (R7)
   // a stroke round the numerals or letters (#551; Okay, 30 Oct 2026: "good strokes, uniform. And round/sharp/miter
   // options"; 31 Oct: "Stroke on off, miter round sharp, inside middle outside of vector, and its color"): drawn as a
@@ -196,12 +197,13 @@ export const WINDOW_BASE = {
   physics: true,                                   // its disc stays inside the case (4.72, #346): passing it, its guide shows red and the panel says so; off for a face on a screen, where a disc may be bigger than the dial
   wh_link: false,                                  // width and height linked: one changed, the other keeps their ratio (#358, beta 4.57); off, so every link draws and behaves as before
   depth: null,                                     // its disc's depth under the plate, mm, for the shadows (#526, 4.95: a row per disc in the Shadows pane); null = the shared sh_disc
+  frame_h: null,                                   // show mode's Inks: its frame's own height, mm, unlinked from its ink's; null = the ink's (02:11)
   frame_b: false,                                  // show mode's Inks (#545): with its frame's colour split into two inks, the frame is printed with ink B; the file and the session, not the link
   print_h: null,                                   // show mode's Inks (#545): how high what is printed on its disc stands, mm; null = INK_MM; the file and the session, not the link
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3", neighbours: "da_neighbours", jump: "da_jump", day_form: "da_day_form", own_names: "da_own_names", ampm_form: "da_ampm_form", depth: "da_depth", frame_b: "da_frame_b", print_h: "da_print_h" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3", neighbours: "da_neighbours", jump: "da_jump", day_form: "da_day_form", own_names: "da_own_names", ampm_form: "da_ampm_form", depth: "da_depth", frame_b: "da_frame_b", print_h: "da_print_h", frame_h: "da_frame_h" };
 
 export const DEFAULTS = {
   version: 2,
@@ -285,7 +287,7 @@ export const DEFAULTS = {
   da_day_form: 0,                                  // … and `day_form` (#515)
   da_own_names: null, da_ampm_form: 0,             // … and `own_names`, `ampm_form` (#515, #516)
   da_depth: null,                                  // … and `depth` (#526)
-  da_frame_b: false, da_print_h: null,             // … and `frame_b`, `print_h` (#545)
+  da_frame_b: false, da_print_h: null, da_frame_h: null,      // … and `frame_b`, `print_h` (#545), `frame_h`
   da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
@@ -600,6 +602,7 @@ export const LINK_KEYS = [
   "facet_turn",             // v1.1.36 beta (#531): appended; dead since v1.1.37 with Faceted (#573), kept (R8)
   "op_on", "op_shape", "op_count", "op_from", "op_to", "op_w", "op_gap", "op_fill",      // v1.1.39 beta (#175): appended; no openings to start, as every older link
   "mark_tri", "mark_stroke_w", "mark_stroke_c",      // v1.1.40 beta (#574): appended; a wedge as before and no stroke to start, as every older link
+  "ink_h", "stroke_h", "frame_h",      // v1.1.44 beta: appended for the table's sake; a part's own ink height, show mode's, lean() leaves it out of a link (R7)
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -692,14 +695,14 @@ function differing(d, base) {
 
 /** the settings, without everything that still has its starting value and without the window's own state. */
 /** the watch's own keys (show mode): kept in the file and the session, never in a link (Okay, 22 Oct 2026) */
-export const NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h"].includes(k);      // the inks' split and heights (#545) are show mode's too
+export const NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h", "da_frame_h"].includes(k);      // the inks' split and heights (#545) are show mode's too
 export function lean(S) {
   const out = {};
   for (const k in S) {
     if (k.startsWith("ui_") || k === "version" || NOT_IN_LINK(k) || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
-    if (k === "rings") out.rings = S.rings.map((r) => { const d = differing(r, RING_BASE); delete d.ink_d; delete d.ink_b; delete d.stroke_b; return d; });      // a ring's ink is show mode's: not in the link (R7)
-    else if (k === "windows") out.windows = S.windows.map((w) => { const d = differing(w, WINDOW_BASE); delete d.frame_b; delete d.print_h; return d; });
-    else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
+    if (k === "rings") out.rings = S.rings.map((r) => { const d = differing(r, RING_BASE); delete d.ink_d; delete d.ink_b; delete d.stroke_b; delete d.ink_h; delete d.stroke_h; return d; });      // a ring's ink is show mode's: not in the link (R7)
+    else if (k === "windows") out.windows = S.windows.map((w) => { const d = differing(w, WINDOW_BASE); delete d.frame_b; delete d.print_h; delete d.frame_h; return d; });
+    else if (HANDS.some((h) => k === "ha_" + h)) { out[k] = differing(S[k], HAND_BASE); for (const own of ["op_ink_h", "mark_ink_h", "mark_stroke_ink_h"]) delete out[k][own]; }      // a print's own height is show mode's (R7)
     else out[k] = S[k];
   }
   // with Bevels % in it, every hand says its Bevel, so fresh_settings never takes it for an older link. A hand left out
@@ -2180,20 +2183,22 @@ export function dial_inks(S) {
   windows_of(S).forEach((w, i) => { if (w.on) put(w.ink, { kind: "frame", i, name: window_name(w) + " frame", sectors: 0 }); });
   return [...inks.values()];
 }
-/** the hands' lumes (#175): each lume colour laid in shown hands' openings, once — [{ hex, colour, hands, name }],
- *  named by its hands ("Hour · Minute lume") */
-export function hand_lumes(S) {
-  const out = new Map();
+/** what is printed on the shown hands (#175, #574): each hand's lume, a disc's painted mark and its stroke — in show mode
+ *  inks over the blade or disc they sit on (Okay, 3 Nov 2026, 02:11: "all the hands that have other colors or lume areas
+ *  are expanded here"). [{ hand, kind: "lume" | "mark" | "stroke", key, own, colour, hex, name }], grouped by colour, so
+ *  the parts of one ink stand together; own: the key of the part's own height (null: its ink's) */
+export function hand_prints(S) {
   if (!S.ha_on) return [];
+  const word = { hour: "Hour", minute: "Minute", second: "Seconds" }, out = [];      // short: the names' column is narrow ("Hour lume", "Minute stroke")
   for (const h of HANDS) {
     const H = S["ha_" + h];
-    if (!H || !H.on || !fills_openings(H)) continue;
-    const hex = ink_hex(H.op_fill);
-    if (!out.has(hex)) out.set(hex, { hex, colour: H.op_fill, hands: [] });
-    out.get(hex).hands.push(h);
+    if (!H || !H.on) continue;
+    if (fills_openings(H)) out.push({ hand: h, kind: "lume", key: "op_fill", own: "op_ink_h", colour: H.op_fill, name: word[h] + " lume" });
+    if (paints_mark(H) && disc_mark(H)) out.push({ hand: h, kind: "mark", key: "mark_c", own: "mark_ink_h", colour: H.mark_c, name: word[h] + " mark" });
+    if (mark_stroke(H)) out.push({ hand: h, kind: "stroke", key: "mark_stroke_c", own: "mark_stroke_ink_h", colour: H.mark_stroke_c || H.c, name: word[h] + " stroke" });
   }
-  const word = { hour: "Hour", minute: "Minute", second: "Seconds" };
-  return [...out.values()].map((l) => ({ ...l, name: l.hands.map((h) => word[h]).join(" · ") + " lume" }));
+  const order = [...new Set(out.map((p) => ink_hex(p.colour)))];
+  return out.map((p) => ({ ...p, hex: ink_hex(p.colour) })).sort((p, q) => order.indexOf(p.hex) - order.indexOf(q.hex));
 }
 /** a window's name in the lists: its kind and where it is ("Date at 3", "Moon phase at 6") */
 export const window_name = (w) => { const k = WINDOW_KINDS[w.kind] || "window"; return k[0].toUpperCase() + k.slice(1) + " at " + (w.at_deg != null ? Math.round(w.at_deg) + "°" : (DATE_AT[w.at] || DATE_AT[0])[0]); };
@@ -2203,12 +2208,16 @@ export function ink_mm(S, x) {
   let h = INK_MM;
   if (x.role === "ring" || x.role === "date frame") {
     const ink = ink_of(S, ink_hex(x.fill)), on_b = x.role === "ring" ? x.ring?.ring?.ink_b : windows_of(S)[x.window]?.frame_b;
-    h = ink.two && on_b ? ink.b : ink.h;
+    const own = x.role === "ring" ? x.ring?.ring?.ink_h : windows_of(S)[x.window]?.frame_h;      // unlinked: the part's own height
+    h = own ?? (ink.two && on_b ? ink.b : ink.h);
   } else if (x.role === "ring stroke") {
     const ink = ink_of(S, ink_hex(x.fill));
-    h = ink.two && x.ring?.ring?.stroke_b ? ink.b : ink.h;
+    h = x.ring?.ring?.stroke_h ?? (ink.two && x.ring?.ring?.stroke_b ? ink.b : ink.h);
   } else if (x.role === "date number" || x.role === "date picture" || x.role === "disc print") h = windows_of(S)[x.window]?.print_h ?? INK_MM;
-  else if (x.role === "lume") h = ink_of(S, ink_hex(x.fill)).h;      // a hand's lume: its ink's height, over the blade it sits in (#175)
+  else if (x.role === "lume" || x.role === "mark") {      // printed on a hand: a lume (#175), a disc's painted mark and its stroke (#574) — its own height, or its ink's, over the blade or disc it sits on
+    const H = S["ha_" + x.name] || {}, own = x.role === "lume" ? H.op_ink_h : x.edge ? H.mark_stroke_ink_h : H.mark_ink_h;
+    h = own ?? ink_of(S, ink_hex(x.fill)).h;
+  }
   return Math.max(0, Math.min(INK_MOST, h + (+S.w_ink_all || 0)));
 }
 /** the inks a dial is printed in (#35): every shown ring's colour (each sector's of a band), every shown window's frame;

@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## v1.1.44 beta · 3 Nov 2026 — Inks a line a part, linked heights; a hand's colours and prints in show mode; no bevel on a disc
+
+Okay, 3 Nov 2026, 02:11: "This 3 items thing aborted. All 4 items expand from on the dial. This logic for all the inks. Disc hands have more colors, all the hands that have other colors or lume areas are expanded here. Disc hand does not get bevels."; his picks: "Share one height unless switched to separate heights or colors?"; the hands' colours in "Colours pane, Inks pane, On the hands, Hands pane".
+
+- **Inks, On the dial** (`colour.js`): no ink lines ("3 parts"); every part straight under On the dial, grouped by colour — its mark, its name, its ink's colour (recolouring every part of that ink), its height. Parts of one ink share one height: a LINK pill between two, filled (the windows' Width · Height fitting). Pressed, the part below gets its own height (`ink_h`, `stroke_h`, `frame_h`: show mode's, not in the link, R7); pressed again, it shares again. The Two inks switch and A | B pills are gone from the pane; an older file's split still draws as it was (`ink_mm`).
+- **On the hands**: a line a print — a hand's lume, a disc's painted mark and its stroke ("Hour lume", "Minute mark", "Minute stroke"), each its ink's height over the blade or disc, linked as the dial's; own heights `op_ink_h`, `mark_ink_h`, `mark_stroke_ink_h` (`hand_prints`). A painted mark and its stroke now stand as inks in show mode, with the ink's relief turning with the hand (`watch.js`).
+- **On the discs**: a line a print (Figures, Neighbours), the window's one height on each, LINK filled and fixed.
+- **A hand's colours** (`hand_colours`): Colours and the Hands pane open a hand of several colours — Hand or Disc, Mark, Mark stroke, Lume, Cap — a line each; Lume opens the pop-out in Lume alone.
+- **A disc hand has no bevel** in show mode: no Bevels pill, none drawn; Bevel Type counts only bevelled blades.
+- **Tests**: the Inks checks rewritten (a line a part, LINK shared then own); a disc hand's check. `npm test` passes but the icon check (`every-strip`, #169, known).
+
 ## v1.1.43 beta · 3 Nov 2026 — show mode's Bevels work again, with Bevel Type; hands see-through there; plain lines between colours
 
 Okay, 3 Nov 2026, 01:56: "Very awsome. Bevels is not working on of or edit on show mode. Update bevel here with new options as well. Normal rules apply. Disc hand needs transparency on its swatch color popup in show mode. Others? Abort white lines, regular color lines for inbetween colors too."

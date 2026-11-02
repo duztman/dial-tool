@@ -43,7 +43,8 @@ export function options(S, items, effects) {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
     items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && HANDS.includes(x.name) ? x.name : null;
       const H = hand ? S["ha_" + hand] : null;
-      return { role: x.role, hand, bevel: Boolean(H && x.role !== "lume" && H.bevel), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
+      // a disc hand is flat, as on the dial side (Okay, 3 Nov 2026, 02:11: "Disc hand does not get bevels")
+      return { role: x.role, hand, bevel: Boolean(H && x.role === "hand" && H.bevel && G.HAND_SHAPES[H.shape] !== "disc"), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) || x.role === "mark" ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // a disc's painted mark is printed on it: an ink (02:11)      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,

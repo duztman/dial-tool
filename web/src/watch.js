@@ -284,7 +284,7 @@ function dialSVG(C, v, L) {
   const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
   const handsShadow = items.filter((x) => x.hand || x.role === "cap").map((x) => { const sh = away(HEIGHTS[x.hand || "cap"] ?? 0.35);
     return `<path d="${x.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x.hand ? ` data-hs="${x.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`; }).join("");
-  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? (x.role === "lume" ? lumeRelief(x, s, L, A) : handBevel(x, A, L)) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
+  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? (x.role === "lume" || x.role === "mark" ? lumeRelief(x, s, L, A) : handBevel(x, A, L)) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
   const firstHand = items.findIndex((x) => x.hand || x.role === "cap");
   body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;

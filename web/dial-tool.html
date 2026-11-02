@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.43 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.44 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -996,6 +996,10 @@
   .colourlist > .row.part:has(+ .row.part) { box-shadow: none; background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--kind-pic) - var(--u2)) var(--hair) no-repeat; }
   .pane > .colhead { justify-self: end; margin-left: auto; color: var(--grey); font-size: var(--t-xs); }
   /* Inks: its lines on the same columns; the ink's fold in the eye's place, its part count as its name */
+  /* the LINK between two parts of one ink (02:11): on the line between them, at the names' column; filled, linked */
+  .colourlist > .row.haslink > .linkpill { left: calc(var(--kind-pic) + var(--u2)); }
+  .colourlist > .row.haslink > .linkpill.on { color: var(--column, var(--paper)); }      /* the pane's own ground, so the word reads on the filled pill in both modes */
+  .colourlist > .row.haslink > .linkpill:disabled { cursor: default; }
   .colourlist .chev { display: grid; place-items: center; color: var(--grey); }
   .colourlist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
   @media (hover: hover) { .colourlist .chev:hover { color: var(--ink); } }
@@ -7610,7 +7614,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.43 beta";
+var VERSION = "v1.1.44 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7705,6 +7709,9 @@ var RING_BASE = {
   // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
   stroke_b: false,
   // show mode's Inks: its stroke's colour split into two inks, the stroke printed with ink B (as ink_b; not in the link)
+  ink_h: null,
+  stroke_h: null,
+  // show mode's Inks: this ring's own height, and its stroke's, mm — unlinked from its ink's (Okay, 3 Nov 2026, 02:11: "Share one height unless switched to separate heights"); null = the ink's. The file and the session, not the link
   ink_b: false,
   // show mode's Inks (#545): with its colour split into two inks, this ring is printed with ink B; the file and the session, not the link (R7)
   // a stroke round the numerals or letters (#551; Okay, 30 Oct 2026: "good strokes, uniform. And round/sharp/miter
@@ -7881,6 +7888,8 @@ var WINDOW_BASE = {
   // width and height linked: one changed, the other keeps their ratio (#358, beta 4.57); off, so every link draws and behaves as before
   depth: null,
   // its disc's depth under the plate, mm, for the shadows (#526, 4.95: a row per disc in the Shadows pane); null = the shared sh_disc
+  frame_h: null,
+  // show mode's Inks: its frame's own height, mm, unlinked from its ink's; null = the ink's (02:11)
   frame_b: false,
   // show mode's Inks (#545): with its frame's colour split into two inks, the frame is printed with ink B; the file and the session, not the link
   print_h: null
@@ -7929,7 +7938,8 @@ var FIRST_WINDOW = {
   ampm_form: "da_ampm_form",
   depth: "da_depth",
   frame_b: "da_frame_b",
-  print_h: "da_print_h"
+  print_h: "da_print_h",
+  frame_h: "da_frame_h"
 };
 var DEFAULTS = {
   version: 2,
@@ -8139,7 +8149,8 @@ var DEFAULTS = {
   // … and `depth` (#526)
   da_frame_b: false,
   da_print_h: null,
-  // … and `frame_b`, `print_h` (#545)
+  da_frame_h: null,
+  // … and `frame_b`, `print_h` (#545), `frame_h`
   da_look: 0,
   da_c2: null,
   da_c3: null,
@@ -8835,8 +8846,12 @@ var LINK_KEYS = [
   // v1.1.39 beta (#175): appended; no openings to start, as every older link
   "mark_tri",
   "mark_stroke_w",
-  "mark_stroke_c"
+  "mark_stroke_c",
   // v1.1.40 beta (#574): appended; a wedge as before and no stroke to start, as every older link
+  "ink_h",
+  "stroke_h",
+  "frame_h"
+  // v1.1.44 beta: appended for the table's sake; a part's own ink height, show mode's, lean() leaves it out of a link (R7)
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -8932,7 +8947,7 @@ function differing(d, base) {
   for (const k in d) if (JSON.stringify(d[k]) !== JSON.stringify(base[k])) out[k] = d[k];
   return out;
 }
-var NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h"].includes(k);
+var NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h", "da_frame_h"].includes(k);
 function lean(S) {
   const out = {};
   for (const k in S) {
@@ -8942,16 +8957,21 @@ function lean(S) {
       delete d.ink_d;
       delete d.ink_b;
       delete d.stroke_b;
+      delete d.ink_h;
+      delete d.stroke_h;
       return d;
     });
     else if (k === "windows") out.windows = S.windows.map((w) => {
       const d = differing(w, WINDOW_BASE);
       delete d.frame_b;
       delete d.print_h;
+      delete d.frame_h;
       return d;
     });
-    else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
-    else out[k] = S[k];
+    else if (HANDS.some((h) => k === "ha_" + h)) {
+      out[k] = differing(S[k], HAND_BASE);
+      for (const own of ["op_ink_h", "mark_ink_h", "mark_stroke_ink_h"]) delete out[k][own];
+    } else out[k] = S[k];
   }
   if ("sh_bevel" in out) for (const h of HANDS) out["ha_" + h] = { ...differing(S["ha_" + h] || {}, HAND_BASE), bevel: Boolean(S["ha_" + h] && S["ha_" + h].bevel) };
   return out;
@@ -10278,18 +10298,18 @@ function dial_inks(S) {
   });
   return [...inks.values()];
 }
-function hand_lumes(S) {
-  const out = /* @__PURE__ */ new Map();
+function hand_prints(S) {
   if (!S.ha_on) return [];
+  const word = { hour: "Hour", minute: "Minute", second: "Seconds" }, out = [];
   for (const h of HANDS) {
     const H2 = S["ha_" + h];
-    if (!H2 || !H2.on || !fills_openings(H2)) continue;
-    const hex3 = ink_hex(H2.op_fill);
-    if (!out.has(hex3)) out.set(hex3, { hex: hex3, colour: H2.op_fill, hands: [] });
-    out.get(hex3).hands.push(h);
+    if (!H2 || !H2.on) continue;
+    if (fills_openings(H2)) out.push({ hand: h, kind: "lume", key: "op_fill", own: "op_ink_h", colour: H2.op_fill, name: word[h] + " lume" });
+    if (paints_mark(H2) && disc_mark(H2)) out.push({ hand: h, kind: "mark", key: "mark_c", own: "mark_ink_h", colour: H2.mark_c, name: word[h] + " mark" });
+    if (mark_stroke(H2)) out.push({ hand: h, kind: "stroke", key: "mark_stroke_c", own: "mark_stroke_ink_h", colour: H2.mark_stroke_c || H2.c, name: word[h] + " stroke" });
   }
-  const word = { hour: "Hour", minute: "Minute", second: "Seconds" };
-  return [...out.values()].map((l) => ({ ...l, name: l.hands.map((h) => word[h]).join(" \xB7 ") + " lume" }));
+  const order = [...new Set(out.map((p) => ink_hex(p.colour)))];
+  return out.map((p) => ({ ...p, hex: ink_hex(p.colour) })).sort((p, q) => order.indexOf(p.hex) - order.indexOf(q.hex));
 }
 var window_name = (w) => {
   const k = WINDOW_KINDS[w.kind] || "window";
@@ -10299,12 +10319,16 @@ function ink_mm(S, x2) {
   let h = INK_MM;
   if (x2.role === "ring" || x2.role === "date frame") {
     const ink = ink_of(S, ink_hex(x2.fill)), on_b = x2.role === "ring" ? x2.ring?.ring?.ink_b : windows_of(S)[x2.window]?.frame_b;
-    h = ink.two && on_b ? ink.b : ink.h;
+    const own = x2.role === "ring" ? x2.ring?.ring?.ink_h : windows_of(S)[x2.window]?.frame_h;
+    h = own ?? (ink.two && on_b ? ink.b : ink.h);
   } else if (x2.role === "ring stroke") {
     const ink = ink_of(S, ink_hex(x2.fill));
-    h = ink.two && x2.ring?.ring?.stroke_b ? ink.b : ink.h;
+    h = x2.ring?.ring?.stroke_h ?? (ink.two && x2.ring?.ring?.stroke_b ? ink.b : ink.h);
   } else if (x2.role === "date number" || x2.role === "date picture" || x2.role === "disc print") h = windows_of(S)[x2.window]?.print_h ?? INK_MM;
-  else if (x2.role === "lume") h = ink_of(S, ink_hex(x2.fill)).h;
+  else if (x2.role === "lume" || x2.role === "mark") {
+    const H2 = S["ha_" + x2.name] || {}, own = x2.role === "lume" ? H2.op_ink_h : x2.edge ? H2.mark_stroke_ink_h : H2.mark_ink_h;
+    h = own ?? ink_of(S, ink_hex(x2.fill)).h;
+  }
   return Math.max(0, Math.min(INK_MOST, h + (+S.w_ink_all || 0)));
 }
 function inks_of(S) {
@@ -10885,7 +10909,7 @@ function dialSVG(C2, v, L) {
     const sh = away(HEIGHTS[x2.hand || "cap"] ?? 0.35);
     return `<path d="${x2.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x2.hand ? ` data-hs="${x2.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x2.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`;
   }).join("");
-  const body = items.map((x2) => `<path d="${x2.p}" fill="${col2(x2)}" fill-opacity="${x2.a}"${x2.hand ? ` data-h="${x2.hand}" transform="rotate(${-A[x2.hand]})"` : ""}/>` + (x2.hand ? x2.role === "lume" ? lumeRelief(x2, s, L, A) : handBevel(x2, A, L) : x2.role !== "plate" && x2.role !== "cap" ? inkRelief(x2, s, L) : ""));
+  const body = items.map((x2) => `<path d="${x2.p}" fill="${col2(x2)}" fill-opacity="${x2.a}"${x2.hand ? ` data-h="${x2.hand}" transform="rotate(${-A[x2.hand]})"` : ""}/>` + (x2.hand ? x2.role === "lume" || x2.role === "mark" ? lumeRelief(x2, s, L, A) : handBevel(x2, A, L) : x2.role !== "plate" && x2.role !== "cap" ? inkRelief(x2, s, L) : ""));
   const firstHand = items.findIndex((x2) => x2.hand || x2.role === "cap");
   body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;
@@ -11621,9 +11645,9 @@ function options(S, items, effects) {
     items: items.map((x2) => {
       const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS2.includes(x2.name) ? x2.name : null;
       const H2 = hand ? S["ha_" + hand] : null;
-      return { role: x2.role, hand, bevel: Boolean(H2 && x2.role !== "lume" && H2.bevel), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) ? ink_mm(S, x2) / INK_STEP_MM : 0 };
+      return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0 };
     }),
-    // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
+    // a disc's painted mark is printed on it: an ink (02:11)      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
     A: Object.fromEntries(HANDS2.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather",
     nato: NATO_NAMES[S.w_nato] || "regimental",
@@ -13408,14 +13432,14 @@ ROWS["Show dial"] = [
     id: "show-bevel-look",
     offered: () => [0, 2],
     get: (S) => {
-      const looks = new Set(HANDS.filter((h) => S["ha_" + h].bevel).map((h) => S["ha_" + h].bevel_look || 0));
+      const looks = new Set(HANDS.filter((h) => bevelled(S["ha_" + h])).map((h) => S["ha_" + h].bevel_look || 0));
       return looks.size === 1 ? [...looks][0] : -1;
     },
     put: (tool2, v) => {
-      for (const h of HANDS) if (tool2.S["ha_" + h].bevel) tool2.S["ha_" + h].bevel_look = v;
+      for (const h of HANDS) if (bevelled(tool2.S["ha_" + h])) tool2.S["ha_" + h].bevel_look = v;
       tool2.changed(true);
     },
-    show: (S) => HANDS.some((h) => S["ha_" + h].on && S["ha_" + h].bevel)
+    show: (S) => HANDS.some((h) => bevelled(S["ha_" + h]))
   }),
   num2("sh_bevel", "Bevels %", 0, 100, 1, { whole: true })
   // the hands' bevels' strength: the Shadows pane's Bevels %, one number in both places
@@ -16223,7 +16247,7 @@ var COLOUR = {
         for (const c of line.colours) {
           const swatch = pills === 1 && line.colours.length === 1 ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
           if (c.square || showing) swatch.dataset.tip = c.title;
-          swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
+          swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha), lume_only: Boolean(c.lume_only) }, swatch, group);
           group.append(swatch);
         }
         if (line.note) {
@@ -16345,7 +16369,7 @@ var COLOUR = {
       const cap = this.cap_colour();
       if (show) lines.push({ sub: true, text: "Hands", colours: [] });
       HANDS.forEach((h, k) => {
-        const text = ["Hour hand", "Minute hand", "Seconds hand"][k], line = { text, colours: [this.hand_colour(h, text)], mark: show ? PICS.hand : "" };
+        const text = ["Hour hand", "Minute hand", "Seconds hand"][k], line = { text, colours: show ? this.hand_colours(h, text) : [this.hand_colour(h, text)], mark: show ? PICS.hand : "" };
         if (show) {
           line.eye = { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => {
             this.S["ha_" + h].on = on;
@@ -16381,6 +16405,20 @@ var COLOUR = {
       this.S.rings[i2].c = v;
       this.changed();
     } }];
+  },
+  /** a hand's colours in show mode's lists (Okay, 3 Nov 2026, 02:11: "Disc hands have more colors, all the hands that have
+   *  other colors or lume areas are expanded here"): the hand itself (a disc's: Disc), a disc's painted mark and its
+   *  stroke, its openings' lume — the line opens to them when there are more than one. suffix: the list's own ids */
+  hand_colours(h, text, suffix = "") {
+    const H2 = () => this.S["ha_" + h], put = (key) => (v) => {
+      H2()[key] = v;
+      this.changed(true);
+    }, T = H2(), disc = HAND_SHAPES[T.shape] === "disc";
+    const out = [{ ...this.hand_colour(h, text), id: `hand-${h}${suffix}`, title: `${text} \xB7 ${disc ? "disc" : "hand"}` }];
+    if (paints_mark(T) && disc_mark(T)) out.push({ id: `hand-${h}-mark${suffix}`, title: `${text} \xB7 mark`, alpha: true, read: () => H2().mark_c, write: put("mark_c") });
+    if (mark_stroke(T)) out.push({ id: `hand-${h}-stroke${suffix}`, title: `${text} \xB7 mark stroke`, read: () => H2().mark_stroke_c || H2().c, write: put("mark_stroke_c") });
+    if (fills_openings(T)) out.push({ id: `hand-${h}-lume${suffix}`, title: `${text} \xB7 lume`, lume_only: true, read: () => H2().op_fill, write: put("op_fill") });
+    return out;
   },
   hand_colour(h, text) {
     return { id: "hand-" + h, title: text, alpha: true, read: () => this.S["ha_" + h].c, write: (v) => {
@@ -16468,8 +16506,7 @@ var COLOUR = {
       const inks = dial_inks(S()), kids = [];
       kids.push(sub("On the dial"));
       inks.forEach((ink, n) => {
-        const hex3 = ink.hex, open = this.ink_open.has(hex3), one = ink_of(S(), hex3);
-        const now = () => dial_inks(S())[n] || ink;
+        const now = () => dial_inks(S()).find((x2) => x2.parts.some((q) => q.kind === ink.parts[0].kind && q.i === ink.parts[0].i)) || ink;
         const write = (v) => {
           const from = now(), was = from.hex, to = ink_hex(v);
           for (const p of from.parts) {
@@ -16492,91 +16529,69 @@ var COLOUR = {
           }
           this.changed(true);
         };
-        const chev = el("button", {
-          type: "button",
-          className: "eye chev" + (open ? " open" : ""),
-          title: open ? "Close this ink" : "Open this ink: its parts",
-          ariaLabel: open ? "Close this ink" : "Open this ink",
-          ariaExpanded: String(open),
-          onclick: () => {
-            if (this.ink_open.has(hex3)) this.ink_open.delete(hex3);
-            else this.ink_open.add(hex3);
-            wrap.dataset.list = "";
-            this.changed();
-          }
-        });
-        chev.innerHTML = icon(SIGNS.down);
-        const count = ink.parts.length === 1 ? "1 part" : `${ink.parts.length} parts`;
-        const label = el("label", { className: "inkname", textContent: count });
-        const pair = (parts) => parts.length === 2;
-        const set_b = (p, b) => this.part_b(p, b);
-        const toggle = open ? this.line_toggle(`ink-${n}-two`, "Two inks", () => ink_of(S(), now().hex).two, (on) => {
-          entry(now().hex).two = on;
-          const parts = now().parts;
-          if (on && pair(parts)) parts.forEach((p, m) => set_b(p, m === 1));
-          this.changed();
-        }) : null;
-        if (toggle) rows.push(toggle);
-        const number = open ? null : height(`ink-${n}-h`, `${hex3} height`, () => ink_of(S(), now().hex).h + all(), (v) => {
-          entry(now().hex).h = +(v - all()).toFixed(3);
-        });
-        const pill = swatch(`ink-${n}`, `${hex3}: every part of this ink`, () => now().colour, write, true);
-        const end = open ? el("span", { className: "place two" }, el("label", { textContent: "Two inks" }), toggle.el) : place2(number);
-        kids.push(el("div", { className: "row showline inkline" + (open ? " open" : "") }, chev, mark(ink.parts.length > 1 ? PICS.many : ""), label, pill, end));
-        if (!open) return;
+        let above = null;
         ink.parts.forEach((p, m) => {
-          const on_b = () => this.part_b(p);
-          const letter = () => ink_of(S(), now().hex).two && on_b() ? "b" : "h";
           const name = p.name + (p.sectors > 1 ? ` \xB7 ${p.sectors} sectors` : p.sectors === 1 ? " \xB7 1 sector" : "");
-          const pill2 = one.two && !pair(ink.parts) ? this.ab_pill(p, n, on_b) : null;
-          if (pill2) rows.push(pill2);
-          const said = one.two && pair(ink.parts) ? el("span", { className: "letter", textContent: on_b() ? "B" : "A" }) : el("i");
-          const box3 = height(`ink-${n}-part-${m}`, `${name}: its ink's height`, () => ink_of(S(), now().hex)[letter()] + all(), (v) => {
-            entry(now().hex)[letter()] = +(v - all()).toFixed(3);
+          const own = () => this.part_own(p);
+          const box3 = height(`ink-${n}-part-${m}`, `${name}: its height`, () => (own() ?? ink_of(S(), now().hex).h) + all(), (v) => {
+            const h = +(v - all()).toFixed(3);
+            if (own() != null) this.part_own(p, h);
+            else entry(now().hex).h = h;
           });
           const kind = p.kind === "frame" ? PICS.window_mark : PICS.kind(S().rings[p.i].kind);
-          kids.push(el("div", { className: "row showline inkpart" }, said, mark(kind), el("label", { textContent: name }), pill2 ? pill2.el : el("i"), place2(box3)));
+          const pill = swatch(`ink-${n}-${m}`, `${name}: its ink, every part of it`, () => now().colour, write, true);
+          const line = el("div", { className: "row showline inkline part" + (above ? " haslink" : "") }, el("i"), mark(kind), el("label", { textContent: name }), pill, place2(box3));
+          if (above) this.ink_link(above, name, () => own() == null, () => {
+            this.part_own(p, own() != null ? null : ink_of(S(), now().hex).h);
+            wrap.dataset.list = "";
+            this.changed(true);
+          }, rows, `ink-${n}-link-${m}`);
+          kids.push(line);
+          above = line;
         });
       });
-      const lumes = hand_lumes(S());
-      if (lumes.length) kids.push(sub("On the hands"));
-      lumes.forEach((l, n) => {
-        const now = () => hand_lumes(S())[n] || l;
+      const prints = hand_prints(S());
+      if (prints.length) kids.push(sub("On the hands"));
+      let over = null;
+      prints.forEach((p, n) => {
+        const H2 = () => S()["ha_" + p.hand], now = () => hand_prints(S()).find((q) => q.hand === p.hand && q.kind === p.kind) || p;
+        const own = (v) => {
+          if (v === void 0) return H2()[p.own] ?? null;
+          H2()[p.own] = v;
+        };
         const write = (v) => {
-          for (const h of now().hands) S()["ha_" + h].op_fill = v;
+          for (const q of hand_prints(S())) if (q.hex === now().hex) S()["ha_" + q.hand][q.key] = v;
           this.changed(true);
         };
-        const pill = swatch(`lume-${n}`, `${l.name}: its lume`, () => now().colour, write, true, true);
-        kids.push(el(
-          "div",
-          { className: "row showline inkline" },
-          el("i"),
-          mark(),
-          el("label", { textContent: l.name }),
-          pill,
-          place2(height(`lume-${n}-h`, `${l.name}: its lume's height`, () => ink_of(S(), now().hex).h + all(), (v) => {
-            entry(now().hex).h = +(v - all()).toFixed(3);
-          }))
-        ));
+        const pill = swatch(`print-${n}`, `${p.name}: its ink`, () => now().colour, write, true, p.kind === "lume");
+        const box3 = height(`print-${n}-h`, `${p.name}: its height`, () => (own() ?? ink_of(S(), now().hex).h) + all(), (v) => {
+          const h = +(v - all()).toFixed(3);
+          if (own() != null) own(h);
+          else entry(now().hex).h = h;
+        });
+        const line = el("div", { className: "row showline inkline part" }, el("i"), mark(PICS.hand), el("label", { textContent: p.name }), pill, place2(box3));
+        if (over && over.hex === p.hex) this.ink_link(over.line, p.name, () => own() == null, () => {
+          own(own() != null ? null : ink_of(S(), now().hex).h);
+          wrap.dataset.list = "";
+          this.changed(true);
+        }, rows, `print-link-${n}`);
+        kids.push(line);
+        over = { line, hex: p.hex };
       });
       const wins = windows_of(S()).map((w, k) => [w, k]).filter(([w]) => w.on);
       if (wins.length) kids.push(sub("On the discs"));
       for (const [w, k] of wins) {
-        const prints = this.window_prints(k), many = prints.length > 1, key = "part:" + window_name(w) + " prints";
-        const parent = el(
-          "div",
-          { className: "row showline inkline disc" + (many ? " many" : "") },
-          many ? this.list_chevron(key) : el("i"),
-          mark(PICS.window_mark),
-          el("label", { textContent: window_name(w) }),
-          many ? el("span") : colours(prints.map((c) => ({ ...c, id: c.id + "-ink" }))),
-          place2(height(`disc-${k}-print`, `${window_name(w)}: prints' height`, () => (windows_of(S())[k].print_h ?? INK_MM) + all(), (v) => {
+        let first = null;
+        this.window_prints(k).forEach((c, m) => {
+          const box3 = height(`disc-${k}-print-${m}`, `${window_name(w)}: prints' height`, () => (windows_of(S())[k].print_h ?? INK_MM) + all(), (v) => {
             windows_of(S())[k].print_h = +(v - all()).toFixed(3);
-          }))
-        );
-        if (many) parent.dataset.key = key;
-        kids.push(parent);
-        if (many) for (const c of prints) kids.push(el("div", { className: "row showline inkline part" }, el("i"), mark(), el("label", { textContent: colour_part(c.title) }), swatch(c.id + "-ink", c.title, c.read, c.write, true), el("span", { className: "place" })));
+          });
+          const said = colour_part(c.title), label = wins.length > 1 ? `${window_name(w).split(" at ").pop()} \xB7 ${said}` : said;
+          const line = el("div", { className: "row showline inkline part" }, el("i"), mark(PICS.window_mark), el("label", { textContent: label, title: window_name(w) + " \xB7 " + said }), swatch(c.id + "-ink", c.title, c.read, c.write, true), place2(box3));
+          if (first) this.ink_link(first, window_name(w), () => true, null, rows, `disc-${k}-link-${m}`);
+          kids.push(line);
+          first = line;
+        });
       }
       const discs = wins.filter(([w, k]) => disc_of(S(), k));
       if (discs.length) kids.push(sub("Disc depths"));
@@ -16599,8 +16614,8 @@ var COLOUR = {
     };
     out.refresh = () => {
       const sig = JSON.stringify([
-        hand_lumes(this.S).map((l) => [l.hex, l.name]),
-        dial_inks(this.S).map((ink) => [ink.parts.map((p) => [p.kind, p.i, p.sectors, Boolean(this.part_b(p))]), this.ink_open.has(ink.hex), ink_of(this.S, ink.hex).two]),
+        hand_prints(this.S).map((p) => [p.hand, p.kind, p.hex, this.S["ha_" + p.hand][p.own] == null]),
+        dial_inks(this.S).map((ink) => ink.parts.map((p) => [p.kind, p.i, p.sectors, this.part_own(p) == null])),
         windows_of(this.S).map((w, k) => [w.on, w.kind, w.at, w.at_deg, w.neighbours, w.look, w.ampm_form, disc_of(this.S, k) ? 1 : 0])
       ]);
       if (wrap.dataset.list !== sig) {
@@ -16609,6 +16624,33 @@ var COLOUR = {
       }
       for (const r of rows) r.refresh(this.S);
     };
+  },
+  /** the LINK pill on the line between two parts of one ink (the windows' Width · Height fitting, #358): filled, the part
+   *  below shares the ink's height; pressed, it gets its own (toggle null: always linked, not pressable) */
+  ink_link(above, name, linked, toggle, rows, id) {
+    const link = el("button", {
+      type: "button",
+      className: "linkpill",
+      id,
+      ariaLabel: `${name}: linked to the part above`,
+      textContent: "LINK",
+      title: toggle ? "Linked: the same height as the part above. Press to give this part its own" : "One height for every print on this disc"
+    });
+    link.disabled = !toggle;
+    if (toggle) link.onclick = toggle;
+    rows.push({ refresh: () => {
+      const on = linked();
+      link.classList.toggle("on", on);
+      link.setAttribute("aria-pressed", String(on));
+    } });
+    above.append(link);
+    above.classList.add("haslink");
+  },
+  /** an ink's part's own height, mm (null: its ink's) — a window's frame, a ring's stroke or the ring; with v, set it (null: linked again) */
+  part_own(p, v) {
+    const on = p.kind === "frame" ? windows_of(this.S)[p.i] : this.S.rings[p.i], key = p.kind === "frame" ? "frame_h" : p.kind === "stroke" ? "stroke_h" : "ink_h";
+    if (v === void 0) return on[key] ?? null;
+    on[key] = v;
   },
   /** whether an ink's part is printed with ink B — a window's frame, a ring's stroke or the ring itself; with b, set it */
   part_b(p, b) {
@@ -16643,7 +16685,7 @@ var COLOUR = {
         lines.push({
           text,
           mark: PICS.hand,
-          colours: [{ ...this.hand_colour(h, text + " hand"), id: `hand-${h}-hands`, square: true }],
+          colours: this.hand_colours(h, text + " hand", "-hands").map((c) => ({ ...c, square: true })),
           tail: tall(h, text + " height"),
           eye: { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => {
             this.S["ha_" + h].on = on;
@@ -16673,7 +16715,7 @@ var COLOUR = {
         const on = Boolean(this.S["ha_" + h].bevel);
         b.classList.toggle("on", on);
         b.setAttribute("aria-pressed", String(on));
-        b.hidden = !this.S["ha_" + h].on;
+        b.hidden = !this.S["ha_" + h].on || HAND_SHAPES[this.S["ha_" + h].shape] === "disc";
       }
     };
   },

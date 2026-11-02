@@ -64,6 +64,10 @@
   .colourlist > .row.part:has(+ .row.part) { box-shadow: none; background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--kind-pic) - var(--u2)) var(--hair) no-repeat; }
   .pane > .colhead { justify-self: end; margin-left: auto; color: var(--grey); font-size: var(--t-xs); }
   /* Inks: its lines on the same columns; the ink's fold in the eye's place, its part count as its name */
+  /* the LINK between two parts of one ink (02:11): on the line between them, at the names' column; filled, linked */
+  .colourlist > .row.haslink > .linkpill { left: calc(var(--kind-pic) + var(--u2)); }
+  .colourlist > .row.haslink > .linkpill.on { color: var(--column, var(--paper)); }      /* the pane's own ground, so the word reads on the filled pill in both modes */
+  .colourlist > .row.haslink > .linkpill:disabled { cursor: default; }
   .colourlist .chev { display: grid; place-items: center; color: var(--grey); }
   .colourlist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
   @media (hover: hover) { .colourlist .chev:hover { color: var(--ink); } }
