@@ -584,9 +584,10 @@ export const PREVIEW = {
   /** show mode's sun (the Show Case's, 21 Oct 2026): one finger or the pointer anywhere on the canvas — its direction from
    *  the middle is where the light comes from, and the nearer the middle, the higher the sun (85° there, 10° at 0.42 of
    *  the canvas's shorter side). The angle on screen is the watch's L; the dial's From is L + 90 (R2, clock angles) */
-  sun_at(p) {
+  sun_at(p, from = null) {
     const [w, h] = this.size(), dx = p[0] - w / 2, dy = p[1] - h / 2, reach = 0.42 * Math.min(w, h), TOP = 85, LOW = 10;
     if (reach <= 0) return;
+    if (this.S.w_sun_lock) return from && this.sun_lock_tried(Math.hypot(p[0] - from[0], p[1] - from[1]) / reach);      // locked: the drag only counts how far it has gone
     const L = Math.atan2(dy, dx) * 180 / Math.PI, rise = clamp(TOP - (TOP - LOW) * Math.hypot(dx, dy) / reach, LOW, TOP);
     this.set_value("global", "sh_from", Math.round(((L + 90) % 360 + 360) % 360));
     this.set_value("global", "sh_rise", Math.round(rise));
@@ -611,7 +612,7 @@ export const PREVIEW = {
       else if (pts.size >= 2) down = { ...pair(), moved: true };      // a pinch is never a click
       else down = null;
     };
-    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1) { down.pan = e.button === 2; if (down.pan) down.moved = true; else if (this.S.ui_show) { down.moved = true; this.sun_at(at(e)); } } });      // the right button moves the drawing, in both modes; in show mode one finger or the pointer is the sun, never a click
+    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1) { down.pan = e.button === 2; if (down.pan) down.moved = true; else if (this.S.ui_show) { down.moved = true; this.sun_at(at(e), at(e)); } } });      // the right button moves the drawing, in both modes; in show mode one finger or the pointer is the sun, never a click
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
@@ -626,7 +627,7 @@ export const PREVIEW = {
       const p = at(e);
       if (down.pan && !(e.buttons & 2)) { down.pan = false; return; }      // the button let go (outside the window too): the move ends
       if (down.pan) { this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; return this.place(); }
-      if (this.S.ui_show) return this.sun_at(p);
+      if (this.S.ui_show) return this.sun_at(p, down.p);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       // a finger alone doesn't move the dial: two do, with the pinch (Okay, 18 Oct 2026, notes 2: "on ipad and all touch
       // screens, you need two fingers to move as well. One finger drag sometimes confusing as reported"). The mouse drags.

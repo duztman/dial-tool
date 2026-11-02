@@ -2673,6 +2673,24 @@ await shot("10-bar");
       return { sharp: c.borderRadius === "0px" && c.outlineStyle === "solid", off: +((d.left + d.right) / 2 - (b.left + b.right) / 2).toFixed(2), alone: box.children.length === 1 && !box.querySelector(".sunvalue, input, button"), names, moved }; });
     check(sb.sharp && Math.abs(sb.off) < 0.5 && sb.alone && sb.names.join(" · ") === "Angle ° · Height ° · Strength %" && sb.moved[0] === 90,
       `the Light tab's sun box: sharp outline, the picture alone in it, the dial centred across the box (${sb.off} px off; Okay, 2 Nov 2026, 17:18: "remove the values an center sun"), the rows under it ${sb.names.join(" · ")}; a press at the dial's east edge puts the sun at ${sb.moved.join("° · ")}`);
+    // the sun's lock (show mode only): on the Sun heading line; a drag on the canvas leaves the sun where it is, a slip
+    // says nothing, a long drag puts "Sun is locked" at the canvas's top; the sliders still move it
+    const lk = await (async () => {
+      const id = await page.evaluate(() => { const l = [...document.querySelectorAll(".panel label.check")].find((x) => x.textContent.trim() === "Lock" && x.checkVisibility()); return l ? l.htmlFor : ""; });
+      if (!id) return { id };
+      await page.click("#" + id); await frame();
+      const m = await page.evaluate(() => { const b = document.querySelector("main").getBoundingClientRect(); return [b.left + b.width / 2 + 100, b.top + b.height / 2 + 50]; });
+      const was = await page.evaluate(() => [window.dial_tool.S.sh_from, window.dial_tool.S.sh_rise].join(" "));
+      const drag = async (dx) => { await page.mouse.move(m[0], m[1]); await page.mouse.down(); await page.mouse.move(m[0] + dx, m[1], { steps: 5 }); await page.mouse.up(); await frame(); return page.evaluate(() => [[window.dial_tool.S.sh_from, window.dial_tool.S.sh_rise].join(" "), document.querySelector("#preview-note").hidden ? "" : document.querySelector("#preview-note").textContent]); };
+      const slip = await drag(8), long = await drag(80);
+      await page.evaluate(() => { document.querySelector("#preview-note").click(); window.dial_tool.set_value("global", "sh_from", 200); });
+      const slider = await page.evaluate(() => window.dial_tool.S.sh_from);
+      await page.click("#" + id); await frame();
+      const off = await page.evaluate(() => window.dial_tool.S.w_sun_lock);
+      return { id, was, slip, long, slider, off };
+    })();
+    check(lk.id && lk.slip[0] === lk.was && lk.slip[1] === "" && lk.long[0] === lk.was && lk.long[1] === "Sun is locked" && lk.slider === 200 && lk.off === false,
+      `show mode's sun lock on the Sun line: locked, an 8 px slip leaves the sun at ${lk.slip?.[0]} with no note, an 80 px drag leaves it there too and says "${lk.long?.[1]}", the slider still moves it (${lk.slider}°) (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line … If a user does excessive dragging, alert top canvas: sun is locked")`);
   }
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(2400);

@@ -7,6 +7,8 @@ import { LINE, SIGNS, SLANT, TOOL_ICONS, eye, icon, none_dot, sw } from "./icons
 import { $, token, GUIDE_STEP, clamp, el, parse_number, svg_el } from "./ui.js";
 import { chevron_box, chk, num } from "./rows.js";
 
+const SUN_LOCK_SAY = 0.1;      // how far a drag on a locked sun goes, as a share of the sun's whole travel, before the note says it is locked
+
 const GUIDE_NAMES = ["Pink", "Cyan", "Green", "Yellow", "Orange", "Violet", "Black", "White"];      // the guide colours' names (GUIDE_COLOURS, R9), for the colour list
 
 export const GUIDES = {
@@ -564,6 +566,13 @@ export const GUIDES = {
     out.refresh = () => sun.refresh();
   },
 
+  /** a drag on a locked sun (show mode, w_sun_lock): once it has gone a tenth of the way the sun can travel — past a
+   *  slip of the finger — the note at the canvas's top says so (Okay, 2 Nov 2026, 17:24: "If a user does excessive
+   *  dragging, alert top canvas: sun is locked"). `travel`: how far the drag has gone, as a share of that way. */
+  sun_lock_tried(travel) {
+    if (travel > SUN_LOCK_SAY && this.note.hidden) this.say("Sun is locked");
+  },
+
   sun_picture(id, centred = false) {      // centred: the picture's view a square round the dial, so the dial stands in the middle of its box (show mode's Light tab)
     const W = token("--sun-w", 297), H = token("--sun-h", 204), cx = 136, cy = H / 2, R = 81.5, NEAR = 12, FAR = 123;      // his drawing of 25 Oct 2026: the dial's ring r 81.5 at (136, 102) in the picture's 297 × 204; at Height 25 the sun stands 14 past the rim; a low sun goes past the box's top or bottom, as its rays do      // the picture's grid, as the stylesheet sizes its box (--sun-w × --sun-h); the sun's distance from the middle: Height 85 = NEAR, 5 = FAR
     const box = el("div", { className: "sunpic", id: id + "-sun" });
@@ -592,13 +601,14 @@ export const GUIDES = {
       const r = box.getBoundingClientRect(), k = Math.max(VW / r.width, H / r.height);      // the picture keeps its proportions in a box of any width (it is centred), so the press is read through that scale
       const px = VX + VW / 2 + (e.clientX - r.left - r.width / 2) * k, py = H / 2 + (e.clientY - r.top - r.height / 2) * k;
       const dx = px - cx, dy = py - cy, dist = Math.hypot(dx, dy), from = ((Math.atan2(dx, -dy) * 180 / Math.PI) + 360) % 360;
+      if (this.S.ui_show && this.S.w_sun_lock) { box.from ??= [px, py]; return this.sun_lock_tried(Math.hypot(px - box.from[0], py - box.from[1]) / (FAR - NEAR)); }      // locked (show mode only): the drag only counts how far it has gone
       this.S.sh_from = Math.round(from);
       this.S.sh_rise = Math.round(clamp(5 + 80 * (FAR - clamp(dist, NEAR, FAR)) / (FAR - NEAR), 5, 85));
       this.sync_rows(); this.render();
     };
     box.onpointerdown = (e) => { if (e.button !== 0 && e.pointerType === "mouse") return; e.preventDefault(); box.setPointerCapture(e.pointerId); box.classList.add("held"); move(e); };
     box.onpointermove = (e) => { if (box.classList.contains("held")) move(e); };
-    box.onpointerup = box.onpointercancel = () => box.classList.remove("held");
+    box.onpointerup = box.onpointercancel = () => { box.classList.remove("held"); box.from = null; };
     return { el: box, refresh };
   },
 };

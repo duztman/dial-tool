@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.33 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.34 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7579,7 +7579,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.33 beta";
+var VERSION = "v1.1.34 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -8057,6 +8057,8 @@ var DEFAULTS = {
   // the tab last used in show mode (Watch to start) and on the dial side (SECTIONS numbers, R9)
   ui_grey_panel: false,
   // show mode's panel in greys, like the bar, instead of the backdrop's colour (the round swatch at the title line's end; Okay, 22 Oct 2026)
+  w_sun_lock: false,
+  // show mode's sun held where it is: a drag on the canvas or the sun's picture no longer moves it; the sliders still do (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line. Applies to showcase only")
   w_bevels: true,
   // show mode draws the hands' bevels (Shenanigans' Bevels: Okay, 23 Oct 2026)
   w_gradients: true,
@@ -8218,6 +8220,7 @@ var NOT_GEOMETRY = [
   "w_ink_all",
   "w_flare_on",
   "w_bevels",
+  "w_sun_lock",
   "w_flare",
   "w_fl_size",
   "w_fl_tint",
@@ -13239,8 +13242,10 @@ ROWS.Light = [
   seg("w_style", "Style", ["Engineer", "Miyazaki"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
   hdr("Sun", { folded: false }),
+  chk("w_sun_lock", "Lock", { head: true }),
+  // on the Sun heading line (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line"): drags leave the sun where it is
   custom("sunbox"),
-  // the sun's picture with the three values (guides.js, row_sunbox; Okay, 25 Oct 2026: "sun locked")
+  // the sun's picture alone (guides.js, row_sunbox; Okay, 25 Oct 2026: "sun locked"; 2 Nov 2026: the values out)
   num2("sh_from", "Angle \xB0", 0, 359, 1, { whole: true }),
   // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026); named as in the Shadows pane
   num2("sh_rise", "Height \xB0", 5, 85, 1, { whole: true }),
@@ -20708,9 +20713,10 @@ var PREVIEW = {
   /** show mode's sun (the Show Case's, 21 Oct 2026): one finger or the pointer anywhere on the canvas — its direction from
    *  the middle is where the light comes from, and the nearer the middle, the higher the sun (85° there, 10° at 0.42 of
    *  the canvas's shorter side). The angle on screen is the watch's L; the dial's From is L + 90 (R2, clock angles) */
-  sun_at(p) {
+  sun_at(p, from = null) {
     const [w, h] = this.size(), dx = p[0] - w / 2, dy = p[1] - h / 2, reach = 0.42 * Math.min(w, h), TOP = 85, LOW = 10;
     if (reach <= 0) return;
+    if (this.S.w_sun_lock) return from && this.sun_lock_tried(Math.hypot(p[0] - from[0], p[1] - from[1]) / reach);
     const L = Math.atan2(dy, dx) * 180 / Math.PI, rise = clamp(TOP - (TOP - LOW) * Math.hypot(dx, dy) / reach, LOW, TOP);
     this.set_value("global", "sh_from", Math.round(((L + 90) % 360 + 360) % 360));
     this.set_value("global", "sh_rise", Math.round(rise));
@@ -20747,7 +20753,7 @@ var PREVIEW = {
         if (down.pan) down.moved = true;
         else if (this.S.ui_show) {
           down.moved = true;
-          this.sun_at(at(e));
+          this.sun_at(at(e), at(e));
         }
       }
     });
@@ -20773,7 +20779,7 @@ var PREVIEW = {
         this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]];
         return this.place();
       }
-      if (this.S.ui_show) return this.sun_at(p);
+      if (this.S.ui_show) return this.sun_at(p, down.p);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       if (e.pointerType === "touch") return;
       if (down.moved) {
@@ -20898,6 +20904,7 @@ var PREVIEW = {
 };
 
 // src/guides.js
+var SUN_LOCK_SAY = 0.1;
 var GUIDE_NAMES = ["Pink", "Cyan", "Green", "Yellow", "Orange", "Violet", "Black", "White"];
 var GUIDES = {
   /** guides, at the preview's top right (Okay, 19 Oct 2026): a switch (a bullseye and the word; solid outline = on,
@@ -21538,6 +21545,12 @@ var GUIDES = {
     wrap.append(el("div", { className: "sunbox" }, sun.el));
     out.refresh = () => sun.refresh();
   },
+  /** a drag on a locked sun (show mode, w_sun_lock): once it has gone a tenth of the way the sun can travel — past a
+   *  slip of the finger — the note at the canvas's top says so (Okay, 2 Nov 2026, 17:24: "If a user does excessive
+   *  dragging, alert top canvas: sun is locked"). `travel`: how far the drag has gone, as a share of that way. */
+  sun_lock_tried(travel) {
+    if (travel > SUN_LOCK_SAY && this.note.hidden) this.say("Sun is locked");
+  },
   sun_picture(id, centred2 = false) {
     const W2 = token("--sun-w", 297), H2 = token("--sun-h", 204), cx = 136, cy = H2 / 2, R = 81.5, NEAR = 12, FAR = 123;
     const box3 = el("div", { className: "sunpic", id: id + "-sun" });
@@ -21566,6 +21579,10 @@ var GUIDES = {
       const r = box3.getBoundingClientRect(), k = Math.max(VW / r.width, H2 / r.height);
       const px = VX + VW / 2 + (e.clientX - r.left - r.width / 2) * k, py = H2 / 2 + (e.clientY - r.top - r.height / 2) * k;
       const dx = px - cx, dy = py - cy, dist = Math.hypot(dx, dy), from = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+      if (this.S.ui_show && this.S.w_sun_lock) {
+        box3.from ??= [px, py];
+        return this.sun_lock_tried(Math.hypot(px - box3.from[0], py - box3.from[1]) / (FAR - NEAR));
+      }
       this.S.sh_from = Math.round(from);
       this.S.sh_rise = Math.round(clamp(5 + 80 * (FAR - clamp(dist, NEAR, FAR)) / (FAR - NEAR), 5, 85));
       this.sync_rows();
@@ -21581,7 +21598,10 @@ var GUIDES = {
     box3.onpointermove = (e) => {
       if (box3.classList.contains("held")) move(e);
     };
-    box3.onpointerup = box3.onpointercancel = () => box3.classList.remove("held");
+    box3.onpointerup = box3.onpointercancel = () => {
+      box3.classList.remove("held");
+      box3.from = null;
+    };
     return { el: box3, refresh };
   }
 };

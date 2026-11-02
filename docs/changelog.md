@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.34 beta · 2 Nov 2026 — show mode's sun lock
+
+Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line. Applies to showcase only, remember. If a user does excessive dragging, alert top canvas: sun is locked."
+
+- **Lock** (`rows.js`, a new key `w_sun_lock`, off to start, kept with the session and the settings file, not in links — show mode's keys never are): a tick on the Sun pane's heading line in show mode's Light tab, as Flare's tick sits on its own.
+- **Locked** (`preview.js` `sun_at`, `guides.js` `sun_picture`): a drag on the canvas or on the sun's picture leaves the sun where it is; Angle · Height · Strength still move it. The dial side is untouched: its Shadows pane's sun moves as before.
+- **The note** (`guides.js` `sun_lock_tried`, `SUN_LOCK_SAY` = 0.1): once a locked drag has gone a tenth of the sun's whole travel (the canvas's: 0.42 × its shorter side; the picture's: its near-to-far span), the canvas's top note says "Sun is locked" — the one note links' warnings use (`say()`, R34). A slip says nothing: measured, 8 px silent, 80 px said.
+- **The window test**: a check of the lock (the tick on the Sun line, a slip, a long drag and its note, the slider, the lock off again).
+
 ## v1.1.33 beta · 2 Nov 2026 — show mode's sun box: the picture alone, centred (#526)
 
 Okay, 2 Nov 2026, 17:18: "526 already is almost like how i want it, just remove the values an center sun"; 17:19: "it's done and it works".

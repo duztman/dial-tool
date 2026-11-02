@@ -104,7 +104,8 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Engineer** · **Miyazaki** | The watch's two paints: ink outlines and hard shadows; flat shapes cut by light, a flare. |
 | **Shown dot** (show mode) | A line's show or hide in show mode's Dial tab: a filled dot shown, a ring hidden (`shown_dot`); the eye is a pane's fold. |
 | **Ink** (show mode) | One colour printed on the dial, exactly the same colour (`dial_inks`); its height in mm stands it proud of the plate (`w_inks`, default `INK_MM` 0.21). **Two inks**: one colour split into ink **A** and ink **B**, each its own height, each part on one by its A \| B pill before its name (an ink of two parts: the letters as text, first A, second B), its box that letter's height (`ink_b`, `frame_b`). **On the discs**: what a window's disc carries, its own height (`print_h`), never one of the dial's inks; the disc's colour is their baseline. **All inks at once** (`w_ink_all`): mm added to every printed height. |
-| **Sun box** | The top of show mode's Light tab Sun pane: the **sun picture** centred in an outlined box, Angle · Height · Strength as plain values beside it; the rows under it change them (`row_sunbox`). |
+| **Sun box** | The top of show mode's Light tab Sun pane: the **sun picture** alone, centred in an outlined box; Angle · Height · Strength are the rows under it (`row_sunbox`). |
+| **Sun lock** | **Lock**, a tick on show mode's Sun heading line (`w_sun_lock`): drags on the canvas and the sun picture leave the sun where it is; the sliders still move it; a long locked drag says *Sun is locked* at the canvas's top. Show mode only. |
 | **Shenanigans** | Show mode's foot: Shadows, Flare, Blurs, Bevels on and off, as toggles. |
 
 ## Files, links, export

@@ -565,7 +565,8 @@ ROWS.Light = [
   seg("w_style", "Style", ["Engineer", "Miyazaki"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
   hdr("Sun", { folded: false }),
-  custom("sunbox"),      // the sun's picture with the three values (guides.js, row_sunbox; Okay, 25 Oct 2026: "sun locked")
+  chk("w_sun_lock", "Lock", { head: true }),      // on the Sun heading line (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line"): drags leave the sun where it is
+  custom("sunbox"),      // the sun's picture alone (guides.js, row_sunbox; Okay, 25 Oct 2026: "sun locked"; 2 Nov 2026: the values out)
   num("sh_from", "Angle °", 0, 359, 1, { whole: true }),      // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026); named as in the Shadows pane
   num("sh_rise", "Height °", 5, 85, 1, { whole: true }),
   num("sh_dark", "Strength %", 0, 100, 1, { whole: true }),      // the shadows' darkness, the Shadows pane's Strength (Okay, 25 Oct 2026: "Darkness becomes the box's Strength slider")
