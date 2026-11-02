@@ -178,7 +178,7 @@
     --shadow: calc(-2 * var(--unit)) 0 6px rgba(0, 0, 0, 0.28);
     --shadow-solid: calc(-2 * var(--unit)) calc(2 * var(--unit)) 0 rgba(0, 0, 0, 0.5);      /* the font sheet's: solid, no blur, to the left and down, as far as --shadow reaches (Okay, 24 Oct 2026, 21:39: "font popups shadow looks out of place. make it solid 50% opacity. no fancy, static left plus bottom") */
     --shadow-solid-near: calc(-1 * var(--unit)) var(--unit) 0 rgba(0, 0, 0, 0.5);      /* the same over the font sheet (its legend), half as far */
-    --shadow-pop: 5px 5px 0 rgba(0, 0, 0, 0.3); --shadow-pop-in: 3px 3px 0 rgba(0, 0, 0, 0.3);      /* every dropdown and popup (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"); a dropdown inside a popup, 3 */
+    --shadow-pop: -5px 5px 0 rgba(0, 0, 0, 0.3); --shadow-pop-in: -3px 3px 0 rgba(0, 0, 0, 0.3);      /* every dropdown and popup, to the bottom left (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"; "Shadows go to bottom left"); a dropdown inside a popup, 3 */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 26px;                              /* a font's numerals in the font list, when the browser sets them (as the outlines, app.js sample(): Okay, 24 Oct 2026, "ENLARGE NUMS") */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */

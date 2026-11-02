@@ -100,7 +100,7 @@
 | `--glow` | `#FF7300` | the outline of what the pointer is on, in the preview | 6-preview |  |
 | `--glow-line` · special | `1.5px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview ×3 |  |
 | `--glow-under` · special | `4px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview |  |
-| `--grey` | `#5C5C58` | colour | 1-tokens, 2-base ×2, 3-controls ×4, 4a-panel ×3, 4b-lines-tabs, 4c-rows ×7, 4d-hands ×3, 4e-colour ×9, 4f-rings ×14, 4g-fonts ×13, 6-preview ×18, 8-narrow ×2 | 3-controls `.night` → `var(--bar-quiet)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)`; set by show.js |
+| `--grey` | `#5C5C58` | colour | 1-tokens, 2-base ×2, 3-controls ×4, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×7, 4d-hands ×3, 4e-colour ×9, 4f-rings ×14, 4g-fonts ×13, 6-preview ×18, 8-narrow ×2 | 3-controls `.night` → `var(--bar-quiet)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)`; set by show.js |
 | `--grip` | `18px` | the ring list's drag handle column | 4f-rings |  |
 | `--grip-groove` | `12px` | the one line across it, as a gripper's lines are | 3-controls |  |
 | `--grip-h` | `10px` | the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it | 4f-rings ×2, 8-narrow ×2 |  |
@@ -122,7 +122,7 @@
 | `--guide-pill-pad` · special | `var(--u2)` | a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) | 6-preview |  |
 | `--guide-row` · special | `30px` | the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) | 3-controls ×2, 6-preview ×5 | 1-tokens `:root` → `38px` |
 | `--guide-tint` | `22%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 1-tokens, 4f-rings ×2 |  |
-| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×11, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×5, 4e-colour ×11, 4f-rings ×28, 4g-fonts ×20, 6-preview ×48, 7-bar ×21, 8-narrow ×7 |  |
+| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×12, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×5, 4e-colour ×11, 4f-rings ×28, 4g-fonts ×20, 6-preview ×48, 7-bar ×21, 8-narrow ×7 |  |
 | `--handle` · the window's | `—` |  | 6-preview ×3 | set by hands.js, set by preview.js |
 | `--head` | `40px` | a pane's heading | 3-controls, 4a-panel ×3, 4b-lines-tabs ×2, 4e-colour, 4g-fonts ×2, 8-narrow ×2 |  |
 | `--header` | `calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair))` | the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes | 4a-panel ×2, 4g-fonts |  |
@@ -168,12 +168,12 @@
 | `--name-in` · special | `6px` | a ring's name starts this far into its column; the ring line's buttons too | 4f-rings ×2 |  |
 | `--names` | `18px` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×8 |  |
 | `--nest-from` | `calc((100% + var(--gap)) / 3)` | where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here | 4c-rows |  |
-| `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×3, 4e-colour, 6-preview ×9 | set by show.js |
+| `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×4, 4e-colour, 6-preview ×9 | set by show.js |
 | `--night-chip-rule` | `rgba(255, 255, 255, 0.28)` |  | 3-controls, 4e-colour |  |
 | `--night-field` | `#262624` |  | 3-controls ×2, 4a-panel ×5 | set by show.js |
 | `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview |  |
-| `--night-hover` | `#34342F` |  | 3-controls, 6-preview |  |
-| `--night-rule` | `#4A4A46` |  | 3-controls ×3, 5-chosen, 6-preview ×14 |  |
+| `--night-hover` | `#34342F` |  | 3-controls, 4a-panel, 6-preview |  |
+| `--night-rule` | `#4A4A46` |  | 3-controls ×3, 4a-panel, 5-chosen, 6-preview ×14 |  |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
 | `--nudge` · special | `2px` | the eyes stand this much right of the margin: a pane's eye and a ring row's alike | 4a-panel, 4e-colour, 4f-rings ×2 |  |
 | `--num-columns` | `var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w)` | a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges | 4c-rows, 4g-fonts |  |
@@ -261,7 +261,7 @@
 | `--round-large` | `14px` | …and a sticker's corners, a small swatch's | 3-controls, 4g-fonts, 8-narrow ×3 |  |
 | `--round-pill` | `999px` | fully round: the signs on the Rings heading line, a value button | 3-controls ×3, 4a-panel, 4c-rows, 4f-rings ×2, 4g-fonts ×3, 6-preview ×4 |  |
 | `--round-small` | `5px` | …and a sticker's corners, a small swatch's | 3-controls ×10, 4e-colour ×7, 4f-rings ×6, 6-preview ×3, 7-bar |  |
-| `--round-switch` | `10px` | the switches on the preview: undo, Guides, Backdrop | 6-preview ×20, 7-bar ×4, 8-narrow |  |
+| `--round-switch` | `10px` | the switches on the preview: undo, Guides, Backdrop | 4a-panel, 6-preview ×20, 7-bar ×4, 8-narrow |  |
 | `--round-tiny` | `3px` | …and a sticker's corners, a small swatch's | 4e-colour ×4, 4g-fonts |  |
 | `--row-end` | `calc(var(--frame-pad) - var(--hair) + var(--ringline-inner))` | the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons | 1-tokens, 4f-rings |  |
 | `--row-rule` | `var(--line-on-paper)` |  | 4c-rows ×8, 4e-colour ×2, 4f-rings ×4, 6-preview ×4 | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))`; 4a-panel `.settingsbox` → `var(--line-on-grey)`; 4a-panel `.form` → `var(--line-on-grey)`; 4f-rings `.numpop .row` → `transparent` |
@@ -304,8 +304,8 @@
 | `--shade-word-x` · special | `12px` | a box's name (Sun · Parts) from its corner | 6-preview ×2 |  |
 | `--shade-word-y` · special | `11px` | a box's name (Sun · Parts) from its corner | 6-preview |  |
 | `--shadow` | `calc(-2 * var(--unit)) 0 6px rgba(0, 0, 0, 0.28)` |  | 7-bar |  |
-| `--shadow-pop` | `5px 5px 0 rgba(0, 0, 0, 0.3)` | every dropdown and popup (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"); a dropdown inside a popup, 3 | 4a-panel ×3, 4e-colour, 4f-rings, 4g-fonts, 6-preview ×4, 7-bar |  |
-| `--shadow-pop-in` | `3px 3px 0 rgba(0, 0, 0, 0.3)` | every dropdown and popup (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"); a dropdown inside a popup, 3 | 4a-panel, 4g-fonts, 6-preview |  |
+| `--shadow-pop` | `-5px 5px 0 rgba(0, 0, 0, 0.3)` | every dropdown and popup, to the bottom left (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"; "Shadows go to bottom left"); a dropdown inside a popup, 3 | 4a-panel ×3, 4e-colour, 4f-rings, 4g-fonts, 6-preview ×4, 7-bar |  |
+| `--shadow-pop-in` | `-3px 3px 0 rgba(0, 0, 0, 0.3)` | every dropdown and popup, to the bottom left (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"; "Shadows go to bottom left"); a dropdown inside a popup, 3 | 4a-panel, 4g-fonts, 6-preview |  |
 | `--sheet-edge` · special | `7px` | a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "padding from all sides except top"; 21:26: "increase … to 7") | 8-narrow ×8 |  |
 | `--sheet-max` | `75vh` | a list opened as a sheet from the bottom: at most this tall, then it scrolls | 8-narrow |  |
 | `--sheet-w` | `60px` | the print sheet's page, drawn small beside its button (4.75, #348) | 4c-rows |  |
@@ -415,7 +415,7 @@
 | `--wait` | `#8E8E89` | a sign that waits to be used: the rename box, the ring drawer's keys, the (i) sign; the font sheet's chosen style and its quiet buttons share it | 4f-rings ×3, 4g-fonts ×8 | 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)` |
 | `--watch-fade` | `250ms` | the watch fading in once the panels have moved into show mode, out before they move back | 6-preview | read by mode.js |
 | `--well` | `var(--ground)` |  | 3-controls ×2, 4a-panel, 4e-colour, 6-preview ×2 | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--night-field, var(--ground))`; 4a-panel `.showing .form` → `var(--night-field, var(--ground))`; 4a-panel `.form` → `var(--field)`; 4f-rings `.numpop .row` → `var(--num-pop-well)`; 4g-fonts `.fontbox` → `var(--ground)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-well)`; 4g-fonts `.fontname .colour` → `var(--field)` |
-| `--white` | `#fff` | pure, for what must show on any colour: the pointer label, the day's handle, the hues' strip | 1-tokens ×4, 3-controls ×2, 4a-panel ×3, 4c-rows ×3, 4e-colour ×5, 4f-rings ×9, 4g-fonts ×2, 6-preview ×20, 7-bar ×2, 8-narrow ×2 | set by show.js |
+| `--white` | `#fff` | pure, for what must show on any colour: the pointer label, the day's handle, the hues' strip | 1-tokens ×4, 3-controls ×2, 4a-panel ×5, 4c-rows ×3, 4e-colour ×5, 4f-rings ×9, 4g-fonts ×2, 6-preview ×20, 7-bar ×2, 8-narrow ×2 | set by show.js |
 | `--word-max` | `88px` | the most a switch's word unfolds to | 6-preview ×2 |  |
 
 **Tokens whose comment names another token** — a quirk borrowed from another region and given a token of its own (sectors.md §7), or a value derived from another's (19): `--bar-control` ← `--bar-lead-narrow`; `--bar-height` ← `--bar-lead-narrow`; `--canvas-inset` ← `--u5`; `--canvas-inset-wide` ← `--canvas-inset`, `--u5`; `--canvas-top` ← `--header`; `--font-name-col` ← `--t-m`; `--list-gap` ← `--list-room`; `--pixel-ink-bar` ← `--pixel-ink`; `--pop-chip-gap` ← `--u2`; `--select` ← `--play`; `--select-rule` ← `--play`; `--shadow-solid` ← `--shadow`; `--t-l` ← `--t-xxs`, `--t-time`; `--t-m` ← `--t-xxs`, `--t-time`; `--t-s` ← `--t-xxs`, `--t-time`; `--t-time` ← `--t-l`; `--t-time-narrow` ← `--t-m`; `--t-xs` ← `--t-xxs`, `--t-time`; `--tip-half` ← `--arrow`.

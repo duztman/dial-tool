@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.25 beta · 2 Nov 2026 — every dropped list dark; shadows to the bottom left
+
+Okay, 2 Nov 2026, 11:14: "The white menus here should go. Replaced with the dark menu style of colors. Also all dropdowns within the popup, again like colors … Shadows go to bottom left."
+
+- **Dropped lists** (`4a-panel.css`, `.unitmenu.floating`): every list a menu drops — Added's +, Which rings, Stroke's side, the case, every select's — near black, rounded, a grey hairline, white words, the rows parted by the night rule, the chosen one bold; the same on the panel's paper as inside a popup (design canon, *Dropped lists*).
+- **Shadows** to the bottom left: `--shadow-pop` −5 px 5 px, `--shadow-pop-in` −3 px 3 px.
+
 ## v1.1.24 beta · 2 Nov 2026 — the Guides list's eyes and named colours, the shadows, the sheet's head, Thin before Regular
 
 Okay, 2 Nov 2026, 01:34 (iPad: "all tests pass"), six notes, each a line below.

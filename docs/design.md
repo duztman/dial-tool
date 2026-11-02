@@ -310,4 +310,8 @@ How the panel's parts are laid out, in the stylesheet's terms (R32 names the tok
 
 ## Popups and dropdowns: the shadow
 
-Every dropdown and popup casts one solid shadow, 5 px right and down, black at 30 % (`--shadow-pop`): the Guides and Shadows lists, the colour pop-out, the undo and Versions lists, Settings, a value pop, the font sheet, the bar's date, a menu's list. A dropdown or list that opens *inside* a popup casts the nearer one, 3 px (`--shadow-pop-in`): the Guides list's colour list, a menu dropped inside a popup, the font sheet's legend (Okay, 2 Nov 2026: "All dropdowns and popups get 5px solid black shadow 30%opacity. Dropdowns inside popups get 3px shadows."). The undo list has a hairline outline in grey as well.
+Every dropdown and popup casts one solid shadow, 5 px to the bottom left, black at 30 % (`--shadow-pop`; Okay, 2 Nov 2026: "Shadows go to bottom left"): the Guides and Shadows lists, the colour pop-out, the undo and Versions lists, Settings, a value pop, the font sheet, the bar's date, a menu's list. A dropdown or list that opens *inside* a popup casts the nearer one, 3 px (`--shadow-pop-in`): the Guides list's colour list, a menu dropped inside a popup, the font sheet's legend (Okay, 2 Nov 2026: "All dropdowns and popups get 5px solid black shadow 30%opacity. Dropdowns inside popups get 3px shadows."). The undo list has a hairline outline in grey as well.
+
+## Dropped lists: the dark style
+
+Every list a menu drops (`menu_list`, `.unitmenu.floating`) is the Guides list's colour list's kind: near black (`--night`), rounded (`--round-switch`), a grey hairline round it, white words, its rows parted by the night rule, the chosen row bold — on the panel's paper as inside a popup (Okay, 2 Nov 2026: "The white menus here should go. Replaced with the dark menu style of colors. Also all dropdowns within the popup, again like colors").

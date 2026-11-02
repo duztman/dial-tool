@@ -6,6 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
+| 567 | The style tabs and the font hierarchy | **done** (v1.1.24 beta) — it meant Thin standing with the lights before Regular (Okay, 2 Nov 2026: "Respecting the font hierarchy meant light and regular being together, it's done") |
 | 566 | Guides list, Added: each guide's − inside the list, the + a menu, the Add line gone | **done** (v1.1.22 beta): every line indented by a − button's circle and a unit (`--guide-inset`), an added line's − in that indent; Added's + opens the tool's list (Line · Crosshair · Circle) over a hidden select; the foot keeps Thickness and Snap to guides · Reset All (Okay, 2 Nov 2026) |
 | 564 | Font sheet: the whole alphabet, the styles cycling through the letter pairs, families combined, the name column widened | **done** (v1.1.21 beta): `fonts.mjs` draws "1234567890 Aa Bb … Zz…" per family, the pairs cycling the weight ladder or the files by weight; Barlow Condensed is Barlow's Condensed cuts; the name column 21 units (115.5 px, 87 of 100 names whole, measured by Okay's rule); `font_list.js` 1.69 → 3.79 MB, the page 7.84 MB (Okay: "File growth is fine") |
 | 562 | Font sheet head after Okay's drawing | **done** (v1.1.21 beta) — reduced by Okay to one change (2 Nov 2026: "disregard the design, just lower the height as in my drawing"): the source tabs 32 px (`--control-large`), one and a half filter pills tall as drawn |

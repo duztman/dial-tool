@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.24 beta · built 2026-11-01 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.24 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -213,7 +213,7 @@
     --shadow: calc(-2 * var(--unit)) 0 6px rgba(0, 0, 0, 0.28);
     --shadow-solid: calc(-2 * var(--unit)) calc(2 * var(--unit)) 0 rgba(0, 0, 0, 0.5);      /* the font sheet's: solid, no blur, to the left and down, as far as --shadow reaches (Okay, 24 Oct 2026, 21:39: "font popups shadow looks out of place. make it solid 50% opacity. no fancy, static left plus bottom") */
     --shadow-solid-near: calc(-1 * var(--unit)) var(--unit) 0 rgba(0, 0, 0, 0.5);      /* the same over the font sheet (its legend), half as far */
-    --shadow-pop: 5px 5px 0 rgba(0, 0, 0, 0.3); --shadow-pop-in: 3px 3px 0 rgba(0, 0, 0, 0.3);      /* every dropdown and popup (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"); a dropdown inside a popup, 3 */
+    --shadow-pop: -5px 5px 0 rgba(0, 0, 0, 0.3); --shadow-pop-in: -3px 3px 0 rgba(0, 0, 0, 0.3);      /* every dropdown and popup, to the bottom left (Okay, 2 Nov 2026: "5px solid black shadow 30%opacity"; "Shadows go to bottom left"); a dropdown inside a popup, 3 */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 26px;                              /* a font's numerals in the font list, when the browser sets them (as the outlines, app.js sample(): Okay, 24 Oct 2026, "ENLARGE NUMS") */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
@@ -591,6 +591,13 @@
   .unitmenu button.on .quiet { color: var(--ink); }
   /* every menu's list (menu_list in app.js): the unit list's look, fixed to the window under or over its menu, scrolling when long */
   .unitmenu.floating { position: fixed; z-index: 40; top: auto; right: auto; overflow-y: auto; box-shadow: var(--shadow-pop); }      /* a dropdown's shadow; inside a popup, the nearer one (menu_list sets .inner) */
+  /* every dropped list in the dark style of the Guides list's colours (Okay, 2 Nov 2026: "The white menus here should go. Replaced
+     with the dark menu style of colors. Also all dropdowns within the popup, again like colors"): near black, rounded, a grey
+     hairline, its rows parted by the night rule, the chosen one bold */
+  .unitmenu.floating { border: var(--hair) solid var(--grey); border-radius: var(--round-switch); background: var(--night); color: var(--white); }
+  .unitmenu.floating button + button { border-top-color: var(--night-rule); }
+  .unitmenu.floating button.on .quiet { color: var(--white); }
+  @media (hover: hover) { .unitmenu.floating button:hover { background: var(--night-hover); } }
   .unitmenu.floating.inner { box-shadow: var(--shadow-pop-in); }
 
   /* sections: a sign inside a ring, its name under it */
