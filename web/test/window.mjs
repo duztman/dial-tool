@@ -2758,6 +2758,29 @@ await shot("10-bar");
   check(r.shown && r.off && r.gone && r.lit && !r.cap_hour && r.cap_second,
     `a hand's Bevel beside Show while it is shown (${r.shown}; hidden with Show off: ${r.gone}), off to start (${r.off}), on: its hand bevelled (${r.lit}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
 }
+{ // the bevel's three looks (#531): a pill switch on the Show line once Bevel is ticked — after the box under Hour, before it
+  // under Seconds; Ridge draws two halves, Faceted a facet per side (a round end a fan of small ones), Domed two gradients
+  const r = await page.evaluate(async () => {
+    const t = window.dial_tool, S = t.S, was = JSON.stringify([S.ui_hand, S.ui_section, S.ha_hour, S.ha_second]);
+    const sw = () => document.querySelector(".bevellooks"), at = () => { const a = sw().getBoundingClientRect(), b = document.querySelector(".showline").getBoundingClientRect(); return a.left >= b.right ? "after" : a.right <= b.left ? "before" : "over"; };
+    const g = () => document.querySelector("g[clip-path='url(#bevel-clip-hour)']");
+    const tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    S.ui_section = 2; t.show_section(); S.ui_hand = 0; S.ha_hour.shape = 0; t.sync_rows(); t.frame(); await tick();
+    const hidden_off = sw().hidden;
+    t.set_value("hand", "bevel", true); t.sync_rows(); t.frame(); await tick();
+    const shown = !sw().hidden, words = [...sw().children].map((b) => b.textContent).join(" · "), hour_at = at(), ridge = g().querySelectorAll("rect").length;
+    document.querySelector("#hand-bevel-look-1").click(); t.frame(); await tick();
+    const faceted = [S.ha_hour.bevel_look, g().querySelectorAll("path").length, g().querySelectorAll("rect").length];
+    document.querySelector("#hand-bevel-look-2").click(); t.frame(); await tick();
+    const domed = [S.ha_hour.bevel_look, [...g().querySelectorAll("rect")].filter((x) => (x.getAttribute("fill") || "").startsWith("url(")).length, g().querySelectorAll("path").length];
+    S.ui_hand = 2; S.ha_second.bevel = true; t.sync_rows(); await tick();
+    const second_at = at();
+    const back = JSON.parse(was); S.ui_hand = back[0]; S.ui_section = back[1]; S.ha_hour = back[2]; S.ha_second = back[3]; t.changed(); t.show_section(); t.sync_rows(); t.frame();
+    return { hidden_off, shown, words, hour_at, ridge, faceted, domed, second_at };
+  });
+  check(r.hidden_off && r.shown && r.words === "Ridge · Faceted · Domed" && r.hour_at === "after" && r.second_at === "before" && r.ridge === 2 && r.faceted[0] === 1 && r.faceted[1] >= 4 && r.faceted[2] === 0 && r.domed.join() === "2,2,0",
+    `a hand's bevel look, a pill switch on the Show line once Bevel is ticked (hidden before: ${r.hidden_off}): ${r.words}, ${r.hour_at} the box under Hour, ${r.second_at} it under Seconds; Ridge two halves (${r.ridge}), Faceted a facet per side, a round end a fan of them (${r.faceted.join(" ")}), Domed two gradients (${r.domed.join(" ")}) (Okay, 2 Nov 2026, 17:25: "Option A for hands, build it")`);
+}
 { // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });
   const name = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_section = 1; t.S.ui_ring = t.S.rings.findIndex((r) => r.kind === 2); t.show_section(); t.sync_rows();

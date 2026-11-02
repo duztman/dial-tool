@@ -42,9 +42,41 @@ export const HANDS = {
       inner.setAttribute("clip-path", `url(#${clip.id})`);
       const half = (name, x, colour, k) => { const r = part(`${key}/${name}`, "rect", inner); r.setAttribute("x", f(x)); r.setAttribute("y", "-50"); r.setAttribute("width", "50"); r.setAttribute("height", "100"); r.setAttribute("fill", colour); r.setAttribute("fill-opacity", f(k)); };
       const amount = S["ha_" + item.name]?.bevel ? clamp(+S.sh_bevel || 0, 0, 100) / 100 : 0;      // Shadows → Bevels % (4.79): none to start; a hand's own Bevel tick off: none on it
-      const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
-      half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
-      half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
+      const k = Math.min(on, 1) * amount, look = G.BEVEL_LOOKS[own.bevel_look] || "Ridge";      // #531: the hand's own look
+      // a surface facing direction n takes light by how much it faces the sun: n · (sin a, −cos a) on the hand as it stands
+      // up the screen (its tip at −y), a the sun's clock angle seen from the hand. White where it faces the sun, black where
+      // it faces away, as strong as Bevels % and the shadows' darkness say
+      const a = (from - item.angle) * Math.PI / 180, light = [Math.sin(a), -Math.cos(a)];
+      const shade = (v) => (v > 0 ? ["#fff", BEVEL.light * v * k] : ["#000", BEVEL.dark * -v * k]);
+      if (look === "Faceted") {
+        // a facet on every side of the hand, mitred where two meet (geometry.js, hand_facets)
+        G.hand_facets(own).forEach(([corners, n], j) => {
+          const facet = part(`${key}/facet-${j}`, "path", inner), [colour, opacity] = shade(n[0] * light[0] + n[1] * light[1]);
+          facet.setAttribute("d", "M" + corners.map(([x, y]) => f(x) + " " + f(y)).join("L") + "Z");
+          facet.setAttribute("fill", colour); facet.setAttribute("fill-opacity", f(opacity));
+        });
+      } else if (look === "Domed") {
+        // round across: the surface turns from facing the sun to facing away as it goes from one edge to the other, so the
+        // light grows from nothing on the spine to the full at either edge (a gradient over each half, the hand's width)
+        const hw = Math.max((own.w || 1) / 2, 0.05);
+        const ramp = (name, sign) => {
+          const [colour, opacity] = shade(sign * light[0]);
+          const grad = part(`${key}/${name}/ramp`, "linearGradient", this.light_defs);
+          grad.id = `bevel-${item.name}-${name}`;
+          for (const [k2, v] of [["gradientUnits", "userSpaceOnUse"], ["x1", "0"], ["x2", f(sign * hw)], ["y1", "0"], ["y2", "0"]]) grad.setAttribute(k2, v);
+          const s0 = part(`${key}/${name}/ramp/0`, "stop", grad), s1 = part(`${key}/${name}/ramp/1`, "stop", grad);
+          s0.setAttribute("offset", "0"); s0.setAttribute("stop-color", colour); s0.setAttribute("stop-opacity", "0");
+          s1.setAttribute("offset", "1"); s1.setAttribute("stop-color", colour); s1.setAttribute("stop-opacity", f(opacity));
+          const r = part(`${key}/${name}`, "rect", inner);
+          r.setAttribute("x", sign > 0 ? "0" : "-50"); r.setAttribute("y", "-50"); r.setAttribute("width", "50"); r.setAttribute("height", "100"); r.setAttribute("fill", `url(#${grad.id})`); r.removeAttribute("fill-opacity");
+        };
+        ramp("right", 1); ramp("left", -1);
+      } else {
+        // Ridge: two long halves meeting on the spine, the right one facing the hand's right, the left its left
+        const lit = BEVEL.light * Math.abs(side) * k, dark = BEVEL.dark * Math.abs(side) * k;
+        half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
+        half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
+      }
     });
     finish();
   },

@@ -1,6 +1,16 @@
 # Dial Tool — changelog
 
-## v1.1.34 beta · 2 Nov 2026 — show mode's sun lock
+## v1.1.35 beta · 2 Nov 2026 — a hand's bevel in three looks: Ridge · Faceted · Domed (#531)
+
+Okay, 24 Oct 2026, his drawing: Bevel beside Show, then a pill switch of three; 2 Nov 2026, 17:22: "is the pill list names correct about joins?" — Normal · Miter · Round are stroke-join words, and these are a hand's surface; 17:25: "Option A for hands, build it."
+
+- **The switch** (`rings.js`, `row_show_box`): Ridge · Faceted · Domed, a pill switch on the hand's Show line once Bevel is ticked, a `--u4` gap after the grey box — or before it under Seconds, where there is no room after.
+- **The key** `bevel_look` per hand (`HAND_BASE`, `BEVEL_LOOKS`; appended to the link keys, R8, R9): 0 Ridge to start, so every older dial draws as before (R31).
+- **Ridge**: as before, the two long halves. **Faceted** (`geometry.js`, `hand_facets`, remembered per shape, R6): the hull of the hand's outline, its sides joined where they turn less than 3° (`FACET_TURN`), and every point given to the side it is nearest — so facets meet in mitres at the corners and on the spine; each facet lit by how much it faces the sun. A baton four facets, a dauphine and a leaf four, a sword five; a round end becomes a fan of small facets; a Breguet's facets 8 ms once. Shapes that bend inward (arrow, syringe, lollipop, Breguet) take the facets of their outer hull, cut to the hand. **Domed** (`hands.js`): a gradient over each half, from nothing on the spine to full at the edge (the hand's Width).
+- **Show mode** still draws its own bevel (one ridge); the three looks are the dial side's.
+- **The window test**: the switch hidden until Bevel, its words, where it stands under Hour and under Seconds, each look's drawing.
+
+## v1.1.34 beta · 2 Nov 2026 — show mode's sun lock (#572)
 
 Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line. Applies to showcase only, remember. If a user does excessive dragging, alert top canvas: sun is locked."
 
