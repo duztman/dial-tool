@@ -96,7 +96,7 @@
      sample — numerals, then letters — on top from the row's left, cut at the edge; under it one line: the name in full in
      the tool's own type, then the stickers, cut where the row ends; a full line between two (Okay, 1 Nov 2026) */
   .fontrow { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; width: 100%; min-height: var(--head); padding: var(--u3) var(--btn-pad) var(--u2); border-bottom: var(--hair) solid var(--rule); text-align: left; }      /* the name's line on top, the sample under it, a little more room above and below (Okay, 2 Nov 2026, 16:50: "Font name and details line above preview line on all fonts. just a little more padding vertically") */
-  .fontrow .meta { display: flex; align-items: center; gap: var(--unit); min-width: 0; overflow: hidden; white-space: nowrap; padding: 0 0 var(--u2); }
+  .fontrow .meta { display: flex; align-items: center; gap: var(--unit); min-width: 0; overflow: hidden; white-space: nowrap; padding: 0 0 var(--u1); }      /* half the room between the name's line and the sample (Okay, 2 Nov 2026, 16:59: "half the vertical height between name line and preview line")
   .fontrow .name { flex: none; white-space: nowrap; font-size: var(--t-m); color: var(--ink); }      /* in full, never cut */
   @media (hover: hover) { .fontrow:hover { background: var(--hover); } }
   .fontrow.on { background: var(--select); }

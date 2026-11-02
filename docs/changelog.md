@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## v1.1.32 beta · 2 Nov 2026 — half the room between a font's name and its sample
+
+Okay, 2 Nov 2026, 16:59: "half the vertical height between name line and preview line. other vertical spacing remains the same."
+
+- **A line of the font sheet** (`4g-fonts.css`): name to sample 5.5 → 2.75 px (`--u1`); above 8.25 and below 5.5 unchanged; a row 68.7 px.
+
 ## v1.1.31 beta · 2 Nov 2026 — the font sheet's filters drawn in lines; a font's name over its sample
 
 Okay, 2 Nov 2026, 16:50, his picture of the band: "this is too dark, make it like this. please make sure the big sausage's end radii synced up with inner pills. Font name and details line above preview line on all fonts. just a little more padding vertically."

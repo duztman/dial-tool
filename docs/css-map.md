@@ -397,8 +397,8 @@
 | `--track-20` | `0.02em` | tracking 20: the controller's value, a little apart | 4f-rings |  |
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×4 |  |
 | `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4f-rings ×2, 7-bar ×2 |  |
-| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×9, 4f-rings ×9, 4g-fonts ×5, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
-| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×2, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×10, 4f-rings ×7, 4g-fonts ×6, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
+| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×9, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
+| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×2, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×10, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
 | `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour, 4f-rings ×9, 4g-fonts ×7, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
 | `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×5, 4d-hands ×2, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
 | `--u5` | `calc(2.5 * var(--unit))` |  | 8-narrow ×2 |  |
