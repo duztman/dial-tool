@@ -132,7 +132,7 @@ export const nudgeable = kind_in("ticks", "markers", "numerals", "text");      /
 // Every mark (#169): the rings it is for, what its strip shows (a nudge's key, its range, its step), a rhythm's shapes
 export const marks_ring = (R) => Boolean(R) && ["ticks", "markers"].includes(G.kind_of(R));
 export const rhythm_on = (R) => marks_ring(R) && R.rhythm > 0;
-export const RHYTHM_SHAPES = ["Bar", "Wedge", "Dot"];      // the first three of SHAPES (Okay, 2 Nov 2026: "Bar is correct")
+export const RHYTHM_SHAPES = ["Bar", "Wedge", "Dot"];      // the first three of SHAPES as every pill and tile says them (Okay, 2 Nov 2026: "Bar is correct"; 3 Nov 2026, 00:54: "Bar Wedge Dot capitalized")
 export const rhythm_shape = (R, k) => (k >= 0 ? k : R.shape > 2 ? 0 : R.shape);      // -1: the ring's own (a file's: a bar)
 export const STRIP_SHOWS = [
   { text: "Length", key: "s", lo: 0.05, hi: 10, step: 0.05 },      // in mm on the strip; kept as the nudge's Scale ×, so a mark follows the ring's length
@@ -230,7 +230,7 @@ export const ROWS = {
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
     hdr("Shapes", { folded: true, show: kind_in("ticks", "markers") }),      // "Shape box is called shapes now" (Okay, 20 Oct 2026, 00:34)
-    pick("shape", "Shape", G.SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
+    pick("shape", "Shape", RHYTHM_SHAPES, PICS.shape, { show: kind_in("ticks", "markers") }),
     num("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file") }),      // a dot's Ø, and a mark's length, stand in Resize (4.47)
     num("taper", "Inner width ×", 0, 2, 0.01, { show: marks_with("wedge") }),
     num("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
@@ -338,7 +338,7 @@ export const ROWS = {
     // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
     // its rows say which (say: their names as [whole, short], by the choice)
     seg("mark_as", "Marker", ["Hole", "Mark"], { ...H, side: true, show: hand_is("disc") }),
-    seg("mark", "Hole", G.SHAPES.slice(0, 3), { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),      // the markers ring's shapes (#164)
+    seg("mark", "Hole", RHYTHM_SHAPES, { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),      // the markers ring's shapes (#164)
     num("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", say: (T) => (T.mark_as === 1 ? ["Mark length", "Mark L"] : ["Hole length", "Hole L"]), show: hand_is("disc") }),
     num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => (T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"]), show: hand_is("disc") }),
     col("mark_c", "Mark ink", { ...H, side: true, show: (T) => G.paints_mark(T) }),      // "ink": "Mark colour" is longer than the names' column (Counter Ø)

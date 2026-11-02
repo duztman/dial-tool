@@ -171,10 +171,19 @@ class DialTool {
       // a disc made here (#574; Okay, 2 Nov 2026, 22:18: "default starting point of disc hand on dial is 85% the dial radius,
       // the default dot is a wedge that is an equilateral triangle 10% inwards from the edge"; 22:25, his reading: the
       // disc's edge at 85 % of the dial's radius): its window kept inside (#344); a triangle as wide as it is long × 2/√3,
-      // pointing out, its point 10 % of the disc's radius in from its edge (Marker at); a stroke if it is painted on.
+      // pointing out, its point 10 % of the disc's radius in from its edge (Marker at).
       // Older links keep theirs as drawn
       const T = this.target("hand"), d = +(0.85 * this.S.dial_d).toFixed(2), len = T.mark_len || 1.6;
-      Object.assign(T, { mark_in: true, disc_d: d, mark: 1, mark_tri: true, mark_w: +(len * 2 / Math.sqrt(3)).toFixed(2), len: +(0.9 * d / 2).toFixed(2), mark_stroke_w: 0.1 });
+      (this.blade_len ||= {})[this.S.ui_hand] = T.len;      // the blade's length, kept while the page is open: a disc's Length is where its marker is
+      // its colour half see-through, no stroke on its marker to start (3 Nov 2026, 00:54: "The disc color defaults in 50%
+      // opacity, zero stroke for the wedge")
+      Object.assign(T, { mark_in: true, disc_d: d, mark: 1, mark_tri: true, mark_w: +(len * 2 / Math.sqrt(3)).toFixed(2), len: +(0.9 * d / 2).toFixed(2), mark_stroke_w: 0, c: [...(T.c || [0.1, 0.1, 0.12, 1]).slice(0, 3), 0.5] });
+    }
+    // back from a disc to a blade: the half see-through it started with goes (a blade is solid), and its length comes back
+    if (scope === "hand" && key === "shape" && G.HAND_SHAPES[value] !== "disc" && G.HAND_SHAPES[this.target("hand").shape] === "disc") {
+      const T = this.target("hand"), kept = this.blade_len?.[this.S.ui_hand];
+      if (T.c?.[3] === 0.5) T.c = [...T.c.slice(0, 3), 1];
+      if (kept) { T.len = kept; delete this.blade_len[this.S.ui_hand]; }
     }
     if (scope === "nudge") {                       // the chosen numeral's own: a neutral value is not kept (#252)
       const R = this.ring(), n = { ...(R.nudge[this.nudge_at] || {}) }, all = { ...R.nudge };

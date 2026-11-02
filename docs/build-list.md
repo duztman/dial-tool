@@ -4,22 +4,18 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 3 Nov 2026, 01:10 (v1.1.40 beta): #574 built, to verify; #175's lume view next; #575 noted; #531 (v1.1.37) and #572 (v1.1.34) to verify; Faceted to Later (#573); #175 Now — openings, stacked lume, a lume view in show mode (from #522); caps out.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 3 Nov 2026, 01:30 (v1.1.41 beta): #175 (as built), #531, #572, #574 verified; Bar · Wedge · Dot capitalised; the disc half see-through, no stroke to start; #175's lume view next; #575 noted; #531 (v1.1.37) and #572 (v1.1.34) to verify; Faceted to Later (#573); #175 Now — openings, stacked lume, a lume view in show mode (from #522); caps out.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 1 | 175 | A hand as a stack — built (v1.1.39): openings, lume as a colour mode and an ink, the Hands tab re-laid, a window's thick line; **left: the lume view in show mode** (from #522) — draw first | 2 Nov 2026, 22:55 — "Amazing. Build." | build — lume view next |
+| 1 | 175 | A hand as a stack — built (v1.1.39); **left: the lume view in show mode** — Light gets a Day · Night pill on top; Night is lume mode: a Lume decay slider under it, the Sun replaced by the Moon (Strength 50 % to start), a darkness filter true to colour theory — note, not to build yet | 3 Nov 2026, 01:06 — "Light gets another pill selector, top: day/night … Do not build, note." | open — noted |
 
 ## Verify — built, for Okay's Mac and iPad
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| — | 574 | The disc hand: Disc Ø 85 % of the dial, a triangle marker pointing out at 90 % of its radius (Marker at), a painted marker's stroke (Stroke width, Stroke ink), the thumb bigger and centred | 3 Nov 2026, 00:36 — "Do the disc hand first" | verify (v1.1.40) |
-| — | 175 | A hand as a stack, built: Opening and Bevel panes, hand types on top, Show alone; Lume mode, an opening's Fill (Lume alone, Open); the hands' lume an ink in show mode; a window's thick line | 2 Nov 2026, 22:55 — "Amazing. Build." | verify (v1.1.39) |
-| — | 531 | Hand bevels: a Bevel pane of its own after the Opening pane, its tick box on the heading — Bevel Type (Ridge · Domed), Bevels % | 2 Nov 2026, 22:09 — "move bevel as an eye and a tick box below openings" | verify (v1.1.39) |
-| — | 572 | Show mode's sun lock: Lock on the Sun line; drags leave the sun; "Sun is locked" at the canvas's top | 2 Nov 2026, 17:24 — "Sun needs a lock accessible from its first line" | verify (v1.1.34) |
 
 ## Next — the features, in Okay's order, then easier → harder
 
@@ -46,29 +42,31 @@ Okay, 1 Nov 2026: #184, then #169 ("core to our mission") — both built — the
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 9 | 575 | Show mode on the iPad: every ± number and slider opens a controller, as on the dial side | 3 Nov 2026, 00:36 — "note all plusminus number and sliders on show case get controllers on ipad" | open |
-| 10 | 573 | A Faceted bevel for hands: a facet per side, mitred where two meet, how finely adjustable — v1.1.35–36's did not work | 2 Nov 2026, 18:48 — "facets system does not work, remove for now, note for later" | open |
-| 11 | 565 | A loading screen while the page arrives on a slow connection: the build is one 5.7 MB file (the font list's samples grow it); what it shows and when, to settle | 2 Nov 2026 — "Maybe a loading screen for slow connections?" | open |
-| 12 | 403 | Playwright 1.56 → 1.64: a session of its own; re-measure the window test, save the look again | | open |
-| 13 | 543 | `same.mjs`: two states differ between two runs of one build (the corner switches' words still folding; a hover left by a click) | 25 Oct 2026 | open |
-| 14 | 407 | The window test in sections that stand alone, so a small push runs only the sections it touches | 19 Oct 2026 | open (`window-only.mjs` runs chosen sections) |
-| 15 | 132 | The font box's preview follows the switches (a slashed zero shows in the 0; fractions show 1/2) | 13 Oct 2026 — "notes for later" | open |
-| 16 | 176 | A fit section under Dial's sizes, so rings and windows fit | | open |
-| 17 | 63 | Live text in the PDF (the font built into the file) | 11 Oct 2026 — "SVG now, PDF later"; 1 Nov 2026 — not to be asked again | open |
-| 18 | 560 | Live text in the vectors Okay gets from a session to work on in Illustrator (sketch rounds, crops); and look at which fonts the SVG export outlines with the tick on | 1 Nov 2026 — "It would be nice to get live text in some ui elements… Even svg outlines some fonts" | open |
-| 19 | 100 | The whole interface smaller on an iPad, about 80 % — one factor on the tokens, or the page's zoom | 13 Oct 2026 — "note for later" | open |
-| 20 | 491 | Ink thicknesses for show mode's Engineer style | — "You can tackle ink thicknesses next" | open |
-| 21 | 21 | Plotter output for the pen plotter via LightBurn: a centre-line or hatched SVG, a new output under Export → Print | | open |
-| 22 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time | 12 Oct 2026; 1 Nov 2026 — "Keep, Later" | open |
-| 23 | 14 | Heavy dials: redraw on mouse-up if dragging feels slow (a slider step on the worst ring 40 ms in Chromium; the Intel Mac is slower) | | open |
-| 24 | 135 | Weekday and month names by language, built into the tool (which languages: ask); non-Latin scripts need #15 | 13 Oct 2026 | open |
-| 25 | 362 | An Apple Watch preview: at least the dial in an Apple Watch's frame (a real face is not open to third parties) | 18 Oct 2026 — "some kind of preview for apple watch?" | open |
-| 26 | 173 | SVG import, one mechanism (R34; R23 says how a file is read): a picture on the dial, a logo (#72), imported marker and hand shapes (#50; cathedral hands with them, #19), a moon window's Custom… (#466), a blank template file (#405). The moon, am · pm and dial places are readied with a note | 24 Oct 2026 — "spaces set. Moon, ampm, dial only"; 1 Nov 2026 — "One row" | open |
-| 27 | 89 | Movement numbers: a *Size from movement* menu for windows, the feet as a guide — blocked until Okay reads the movement drawings on a Mac | | open, blocked |
-| 28 | 53 | Better interface overall: research how good parametric tools lay out lists, inspectors and export, then propose; an export panel that shows what will be written (#171) | 11 Oct 2026 — "learn and implement" | open |
-| 29 | 522 | Finishes and materials in show mode, one row: paint finishes and textures, dial finishes and a preview pipeline, sunray · grain · guilloché on bands (#33 folded in), print-like edges, lume view and lume plots (#19), the bezel, 3D indices, a 3D model | 24 Oct 2026; 1 Nov 2026 — "Merge into one: finishes and materials, Later" | open |
-| 30 | 363 | Non-round dials, one row: square and rounded-square as an Apple Watch's first, then rectangle, rounded rectangle, diamond; the plan is `docs/plan-non-round.md` | 18 Oct 2026; 1 Nov 2026 — "Merge into one, keep in Later" | open |
-| 31 | 180 | Gerstner's programme: rings whose marks follow a written rule (a programme), built on Every mark's per-position values (#169) | 14 Oct 2026; 2 Nov 2026 — "unpark gerstner but for later" | open |
+| 9 | 577 | Hands of your own: a + beside the hand tabs asks first what the hand does — GMT (another time), day, week or month tracker — then adds it as a hand, with its own pane and its place in the Shadows stack | 3 Nov 2026, 01:06 — "A plus sign next to the hands tabs, creates a new hand" | open |
+| 10 | 578 | Settings: the time bar at the top or the bottom; at the top the same bar, its numbers (silkscreen on the speed, mono on the time ruler) under it and its line at its foot | 3 Nov 2026, 01:06 — "time bar: top or bottom" | open |
+| 11 | 575 | Show mode on the iPad: every ± number and slider opens a controller, as on the dial side | 3 Nov 2026, 00:36 — "note all plusminus number and sliders on show case get controllers on ipad" | open |
+| 12 | 573 | A Faceted bevel for hands: a facet per side, mitred where two meet, how finely adjustable — v1.1.35–36's did not work | 2 Nov 2026, 18:48 — "facets system does not work, remove for now, note for later" | open |
+| 13 | 565 | A loading screen while the page arrives on a slow connection: the build is one 5.7 MB file (the font list's samples grow it); what it shows and when, to settle | 2 Nov 2026 — "Maybe a loading screen for slow connections?" | open |
+| 14 | 403 | Playwright 1.56 → 1.64: a session of its own; re-measure the window test, save the look again | | open |
+| 15 | 543 | `same.mjs`: two states differ between two runs of one build (the corner switches' words still folding; a hover left by a click) | 25 Oct 2026 | open |
+| 16 | 407 | The window test in sections that stand alone, so a small push runs only the sections it touches | 19 Oct 2026 | open (`window-only.mjs` runs chosen sections) |
+| 17 | 132 | The font box's preview follows the switches (a slashed zero shows in the 0; fractions show 1/2) | 13 Oct 2026 — "notes for later" | open |
+| 18 | 176 | A fit section under Dial's sizes, so rings and windows fit | | open |
+| 19 | 63 | Live text in the PDF (the font built into the file) | 11 Oct 2026 — "SVG now, PDF later"; 1 Nov 2026 — not to be asked again | open |
+| 20 | 560 | Live text in the vectors Okay gets from a session to work on in Illustrator (sketch rounds, crops); and look at which fonts the SVG export outlines with the tick on | 1 Nov 2026 — "It would be nice to get live text in some ui elements… Even svg outlines some fonts" | open |
+| 21 | 100 | The whole interface smaller on an iPad, about 80 % — one factor on the tokens, or the page's zoom | 13 Oct 2026 — "note for later" | open |
+| 22 | 491 | Ink thicknesses for show mode's Engineer style | — "You can tackle ink thicknesses next" | open |
+| 23 | 21 | Plotter output for the pen plotter via LightBurn: a centre-line or hatched SVG, a new output under Export → Print | | open |
+| 24 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time | 12 Oct 2026; 1 Nov 2026 — "Keep, Later" | open |
+| 25 | 14 | Heavy dials: redraw on mouse-up if dragging feels slow (a slider step on the worst ring 40 ms in Chromium; the Intel Mac is slower) | | open |
+| 26 | 135 | Weekday and month names by language, built into the tool (which languages: ask); non-Latin scripts need #15 | 13 Oct 2026 | open |
+| 27 | 362 | An Apple Watch preview: at least the dial in an Apple Watch's frame (a real face is not open to third parties) | 18 Oct 2026 — "some kind of preview for apple watch?" | open |
+| 28 | 173 | SVG import, one mechanism (R34; R23 says how a file is read): a picture on the dial, a logo (#72), imported marker and hand shapes (#50; cathedral hands with them, #19), a moon window's Custom… (#466), a blank template file (#405). The moon, am · pm and dial places are readied with a note | 24 Oct 2026 — "spaces set. Moon, ampm, dial only"; 1 Nov 2026 — "One row" | open |
+| 29 | 89 | Movement numbers: a *Size from movement* menu for windows, the feet as a guide — blocked until Okay reads the movement drawings on a Mac | | open, blocked |
+| 30 | 53 | Better interface overall: research how good parametric tools lay out lists, inspectors and export, then propose; an export panel that shows what will be written (#171) | 11 Oct 2026 — "learn and implement" | open |
+| 31 | 522 | Finishes and materials in show mode, one row: paint finishes and textures, dial finishes and a preview pipeline, sunray · grain · guilloché on bands (#33 folded in), print-like edges, lume view and lume plots (#19), the bezel, 3D indices, a 3D model | 24 Oct 2026; 1 Nov 2026 — "Merge into one: finishes and materials, Later" | open |
+| 32 | 363 | Non-round dials, one row: square and rounded-square as an Apple Watch's first, then rectangle, rounded rectangle, diamond; the plan is `docs/plan-non-round.md` | 18 Oct 2026; 1 Nov 2026 — "Merge into one, keep in Later" | open |
+| 33 | 180 | Gerstner's programme: rings whose marks follow a written rule (a programme), built on Every mark's per-position values (#169) | 14 Oct 2026; 2 Nov 2026 — "unpark gerstner but for later" | open |
 
 ## The guide — its own schedule, outside the order
 

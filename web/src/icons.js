@@ -218,13 +218,14 @@ export const PICS = {
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size (twice its units, so already on whole dots). */
 export const hand_pic = (i) => {
   // the disc: its marker inside it, cut out, as a disc hand's window is (Okay, 18 Oct 2026, notes 2: "Preview icon shows
-  // wedge outside the disc, correct it"); drawn bigger than the tile is wide, cropped at its sides, and centred up and
-  // down (#574; Okay, 2 Nov 2026, 22:18: "Thumbnail, circle bigger, maybe even cropped, vertically centered"); its marker
-  // the triangle a disc starts with, 10 % in from the edge
+  // wedge outside the disc, correct it"); the whole disc, as wide as its tile less 1 px a side, centred up and down (#574;
+  // 2 Nov 2026, 22:18: "Thumbnail, circle bigger … vertically centered"; 3 Nov 2026, 00:54: "cropped less from the sides,
+  // shrink the margins to 1px each side for disc"); its marker the triangle a disc starts with, 10 % in from the edge
   const is_disc = G.HAND_SHAPES[i] === "disc";
-  const disc = is_disc ? { disc_d: 8, len: 3.6, mark: 1, mark_tri: true, mark_len: 2, mark_w: 2.31, mark_in: true } : {};
+  const disc = is_disc ? { disc_d: 13, len: 5.85, mark: 1, mark_tri: true, mark_len: 3, mark_w: 3.46, mark_in: true } : {};
   const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0, disc_d: 6, mark_len: 7, mark_w: 2.2, ...disc });
-  return `<svg viewBox="${is_disc ? "-3 -9.25" : "-3 -14"} 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
+  if (is_disc) return `<svg viewBox="-6.5 -6.5 13 13" width="26" height="26" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;      // the whole disc, 26 px: its tile less 1 px a side (27.9 inside the border on a 1440 window; 3 Nov 2026, 00:54: "cropped less from the sides, shrink the margins to 1px each side"), twice its units as every hand's picture (R33)
+  return `<svg viewBox="-3 -14 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 
 /** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight),

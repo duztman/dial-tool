@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.41 beta · 3 Nov 2026 — Bar · Wedge · Dot capitalised; a disc starts half see-through with no stroke; its thumb whole
+
+Okay, 3 Nov 2026, 00:54: "All confirmed verified. Bar Wedge Dot capitalized, all pill text check. The disc color defaults in 50% opacity, zero stroke for the wedge. Disc thumbnaail cropped less from the sides, shrink the margins to1px each side for disc."
+
+- **Bar · Wedge · Dot** (`rows.js`): a disc's Hole · Mark pill and the ticks' and markers' Shape tiles say them capitalised, from `RHYTHM_SHAPES` (the stored index unchanged, R9). The pills checked on every tab: the rest start with a capital; mm · pt · in · lig · thou stay lower case, as units are written.
+- **A disc chosen in the tool** (`app.js`): its colour at 50 % opacity, no stroke on its marker (Stroke width 0; the rows stay). Back to a blade, the hand is solid again and gets back the length it had (kept while the page is open).
+- **The disc's thumb** (`icons.js`, `4d-hands.css`): the whole disc, 1 px from its tile's border each side, centred.
+- **Verified** (3 Nov 2026): #574, #175 as built, #531, #572 — to `build-list-done.md`.
+- **Tests**: the disc check says its opacity, no stroke, the thumb's 1 px. `npm test` passes but the icon check (`every-strip`, #169, known).
+
 ## v1.1.40 beta · 3 Nov 2026 — the disc hand: 85 % of the dial, a triangle marker, Marker at, a painted marker's stroke (#574)
 
 Okay, 2 Nov 2026, 22:18: "Also the disc hand. Thumbnail, circle bigger, maybe even cropped, vertically centered. default starting point of disc hand on dial is 85% the dial radius, the default dot is a wedge that is an equilateral triangle 10% inwards from the edge. The distance of that dot from the center has its own slider. This dot gets a stroke if it's painted on."; his picks, 22:25; 3 Nov 2026, 00:36: "Do the disc hand first".

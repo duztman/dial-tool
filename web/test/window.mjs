@@ -2824,15 +2824,18 @@ await shot("10-bar");
     document.getElementById("hand-shape-Shape-10").click(); await tick();
     const H = S.ha_minute, m = window.dial_tool.items.find((i) => i.role === "mark" && i.name === "minute");
     const named = [...document.querySelectorAll(".row.side:not([hidden]) > label")].map((l) => l.textContent.trim());
-    const start = { edge: +(H.disc_d / S.dial_d).toFixed(3), at: +(H.len / (H.disc_d / 2)).toFixed(3), tri: H.mark_tri, eq: +(H.mark_w / H.mark_len).toFixed(3) };
+    const start = { edge: +(H.disc_d / S.dial_d).toFixed(3), at: +(H.len / (H.disc_d / 2)).toFixed(3), tri: H.mark_tri, eq: +(H.mark_w / H.mark_len).toFixed(3), alpha: H.c[3], stroke: H.mark_stroke_w };
+    const thumb = (() => { const t = document.getElementById("hand-shape-Shape-10").getBoundingClientRect(), g = document.querySelector("#hand-shape-Shape-10 svg").getBoundingClientRect(); return [+(g.left - t.left).toFixed(1), +(t.right - g.right).toFixed(1)].join(" "); })();
     t.set_value("hand", "mark_as", 1); t.sync_rows(); t.frame(); await tick();
+    const none = t.items.filter((i) => i.role === "mark" && i.name === "minute" && i.edge).length;
+    t.set_value("hand", "mark_stroke_w", 0.1); t.frame(); await tick();
     const stroke = t.items.filter((i) => i.role === "mark" && i.name === "minute" && i.edge).length;
     const rows = [...document.querySelectorAll(".row.side:not([hidden]) > label")].map((l) => l.textContent.trim()).filter((x) => x.startsWith("Stroke"));
     const back = JSON.parse(was); S.ui_hand = back[0]; S.ui_section = back[1]; S.ha_minute = back[2]; t.changed(true); t.show_section(); t.sync_rows(); t.frame();
-    return { start, hole: !m, marker_at: named.some((x) => x.startsWith("Marker at")), stroke, rows: rows.join(" · ") };
+    return { start, thumb, hole: !m, marker_at: named.some((x) => x.startsWith("Marker at")), none, stroke, rows: rows.join(" · ") };
   });
-  check(r.start.edge === 0.85 && r.start.at === 0.9 && r.start.tri && Math.abs(r.start.eq - 2 / Math.sqrt(3)) < 0.01 && r.marker_at && r.stroke === 1 && r.rows.startsWith("Stroke"),
-    `a disc hand chosen here starts with its edge at 85 % of the dial's radius (${r.start.edge}), a triangle (${r.start.tri}) as wide as an equilateral's (${r.start.eq}), its point at 90 % of the disc's radius (${r.start.at}) on a row named Marker at (${r.marker_at}); painted on, a stroke (${r.stroke}) with its rows (${r.rows}) (Okay, 2 Nov 2026, 22:18: "the default dot is a wedge that is an equilateral triangle 10% inwards from the edge … This dot gets a stroke if it's painted on")`);
+  check(r.start.edge === 0.85 && r.start.at === 0.9 && r.start.tri && Math.abs(r.start.eq - 2 / Math.sqrt(3)) < 0.01 && r.start.alpha === 0.5 && r.start.stroke === 0 && r.marker_at && r.none === 0 && r.stroke === 1 && r.rows.startsWith("Stroke") && r.thumb.split(" ").every((v) => Math.abs(v - 2) < 0.3),
+    `a disc hand chosen here starts with its edge at 85 % of the dial's radius (${r.start.edge}), a triangle (${r.start.tri}) as wide as an equilateral's (${r.start.eq}), its point at 90 % of the disc's radius (${r.start.at}) on a row named Marker at (${r.marker_at}); its colour half see-through (${r.start.alpha}), no stroke to start (${r.start.stroke}, drawn: ${r.none}); painted on, a stroke when given a width (${r.stroke}), its rows (${r.rows}); its thumb the whole disc, 1 px in from its tile's edges inside its border (${r.thumb}) (Okay, 2 Nov 2026, 22:18: "the default dot is a wedge that is an equilateral triangle 10% inwards from the edge"; 3 Nov 2026, 00:54: "The disc color defaults in 50% opacity, zero stroke for the wedge"; "shrink the margins to 1px each side for disc")`);
 }
 { // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });

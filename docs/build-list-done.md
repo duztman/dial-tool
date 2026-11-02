@@ -2,6 +2,15 @@
 
 Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused; the changelog says what each version built.
 
+## 3 Nov 2026, 00:54 — verified by Okay ("All confirmed verified")
+
+| # | Item | Status |
+|---|---|---|
+| 574 | The disc hand: Disc Ø 85 % of the dial, a triangle marker at 90 % of its radius (Marker at), a painted marker's stroke, the thumb | **done**, verified 3 Nov 2026 (v1.1.40); then half see-through and no stroke to start, the thumb whole (v1.1.41) |
+| 175 | A hand as a stack, as built in v1.1.39: openings, Lume mode, an opening's Fill, the hands' lume an ink in show mode, the Hands tab re-laid, a window's thick line | **done**, verified 3 Nov 2026; its lume view in show mode stays open as #175 |
+| 531 | Hand bevels: the Bevel pane, Ridge · Domed, Bevels % | **done**, verified 3 Nov 2026 |
+| 572 | Show mode's sun lock | **done**, verified 3 Nov 2026 |
+
 ## 2 Nov 2026, afternoon — verified by Okay on every machine ("All checks 169-...571 pass")
 
 | # | Item | Status |

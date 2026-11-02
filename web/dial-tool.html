@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.40 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.41 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7596,7 +7596,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.40 beta";
+var VERSION = "v1.1.41 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -12579,9 +12579,10 @@ var PICS = {
 };
 var hand_pic = (i2) => {
   const is_disc = HAND_SHAPES[i2] === "disc";
-  const disc = is_disc ? { disc_d: 8, len: 3.6, mark: 1, mark_tri: true, mark_len: 2, mark_w: 2.31, mark_in: true } : {};
+  const disc = is_disc ? { disc_d: 13, len: 5.85, mark: 1, mark_tri: true, mark_len: 3, mark_w: 3.46, mark_in: true } : {};
   const p = hand_shape({ ...HAND_BASE, shape: i2, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i2] || 0, round: 0, wall: 0, counter: 0, disc_d: 6, mark_len: 7, mark_w: 2.2, ...disc });
-  return `<svg viewBox="${is_disc ? "-3 -9.25" : "-3 -14"} 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
+  if (is_disc) return `<svg viewBox="-6.5 -6.5 13 13" width="26" height="26" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
+  return `<svg viewBox="-3 -14 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 var hand_detail = (h, cap = null) => {
   const p = hand_shape(h), b = p.bounds();
@@ -12961,7 +12962,7 @@ var ROWS = {
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
     hdr("Shapes", { folded: true, show: kind_in("ticks", "markers") }),
     // "Shape box is called shapes now" (Okay, 20 Oct 2026, 00:34)
-    pick("shape", "Shape", SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
+    pick("shape", "Shape", RHYTHM_SHAPES, PICS.shape, { show: kind_in("ticks", "markers") }),
     num2("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file") }),
     // a dot's Ø, and a mark's length, stand in Resize (4.47)
     num2("taper", "Inner width \xD7", 0, 2, 0.01, { show: marks_with("wedge") }),
@@ -13094,7 +13095,7 @@ var ROWS = {
     // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
     // its rows say which (say: their names as [whole, short], by the choice)
     seg("mark_as", "Marker", ["Hole", "Mark"], { ...H, side: true, show: hand_is("disc") }),
-    seg("mark", "Hole", SHAPES.slice(0, 3), { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),
+    seg("mark", "Hole", RHYTHM_SHAPES, { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),
     // the markers ring's shapes (#164)
     num2("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", say: (T) => T.mark_as === 1 ? ["Mark length", "Mark L"] : ["Hole length", "Hole L"], show: hand_is("disc") }),
     num2("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"], show: hand_is("disc") }),
@@ -26956,7 +26957,16 @@ var DialTool = class _DialTool {
     if (scope === "ring" && (key === "anchor" || key === "from") && this.ring() && value !== (this.ring()[key] || 0)) this.ring().r = +radius_kept(this.ring(), key, value).toFixed(4);
     if (scope === "hand" && key === "shape" && HAND_SHAPES[value] === "disc" && HAND_SHAPES[this.target("hand").shape] !== "disc") {
       const T2 = this.target("hand"), d = +(0.85 * this.S.dial_d).toFixed(2), len = T2.mark_len || 1.6;
-      Object.assign(T2, { mark_in: true, disc_d: d, mark: 1, mark_tri: true, mark_w: +(len * 2 / Math.sqrt(3)).toFixed(2), len: +(0.9 * d / 2).toFixed(2), mark_stroke_w: 0.1 });
+      (this.blade_len ||= {})[this.S.ui_hand] = T2.len;
+      Object.assign(T2, { mark_in: true, disc_d: d, mark: 1, mark_tri: true, mark_w: +(len * 2 / Math.sqrt(3)).toFixed(2), len: +(0.9 * d / 2).toFixed(2), mark_stroke_w: 0, c: [...(T2.c || [0.1, 0.1, 0.12, 1]).slice(0, 3), 0.5] });
+    }
+    if (scope === "hand" && key === "shape" && HAND_SHAPES[value] !== "disc" && HAND_SHAPES[this.target("hand").shape] === "disc") {
+      const T2 = this.target("hand"), kept = this.blade_len?.[this.S.ui_hand];
+      if (T2.c?.[3] === 0.5) T2.c = [...T2.c.slice(0, 3), 1];
+      if (kept) {
+        T2.len = kept;
+        delete this.blade_len[this.S.ui_hand];
+      }
     }
     if (scope === "nudge") {
       const R = this.ring(), n = { ...R.nudge[this.nudge_at] || {} }, all = { ...R.nudge };
