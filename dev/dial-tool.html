@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.27 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.28 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7578,7 +7578,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.27 beta";
+var VERSION = "v1.1.28 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -21473,30 +21473,34 @@ var GUIDES = {
       plate: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="55.6" ry="18.7"/><rect class="dark" x="${ax + 21}" y="${y - 2.5}" width="10" height="5" rx="1"/><circle class="hole dark" cx="${ax}" cy="${y}" r="1.5"/>`,
       disc: (ax, y) => `<path class="fill" fill-rule="evenodd" d="M${ax - 25.9} ${y}a25.9 8.7 0 1 0 51.8 0a25.9 8.7 0 1 0 -51.8 0M${ax - 18.5} ${y}a18.5 6.2 0 1 0 37 0a18.5 6.2 0 1 0 -37 0Z"/>`
     };
+    const KEY2 = { cap: "sh_cap", second: "sh_second", minute: "sh_minute", hour: "sh_hour" };
+    const height = (name) => KEY2[name] ? this.S[KEY2[name]] : name.startsWith("disc-") ? -this.disc_depth(windows_of(this.S)[+name.slice(5)]) : 0;
+    const AIR = 8, FOOT = 12;
     const refresh = () => {
       const b = svg.getBoundingClientRect(), W2 = Math.round(b.width), H2 = Math.round(b.height), ax = W2 / 2;
       if (!W2 || !H2) return;
       svg.setAttribute("viewBox", `0 0 ${W2} ${H2}`);
       svg.setAttribute("width", W2);
       svg.setAttribute("height", H2);
-      const list = [], rows = document.querySelectorAll("#shadow-list .shaderows > .row, #shadow-list .shadowdiscs > .row");
-      let first = null, plate_y = null;
-      for (const r of rows) {
-        if (r.hidden) continue;
-        const rr = r.getBoundingClientRect(), y = +(rr.top + rr.height / 2 - b.top).toFixed(1);
-        if (first === null) first = +(rr.top - b.top).toFixed(1);
-        const name = r.dataset.part || (r.classList.contains("ref") ? "plate" : "");
-        if (name === "plate") plate_y = y;
+      const rows = [...document.querySelectorAll("#shadow-list .shaderows > .row, #shadow-list .shadowdiscs > .row")].filter((r) => !r.hidden);
+      if (!rows.length) return;
+      const plate_row = rows.find((r) => r.classList.contains("ref")), pr = plate_row.getBoundingClientRect();
+      const first = +(rows[0].getBoundingClientRect().top - b.top).toFixed(1), plate_y = +(pr.top + pr.height / 2 - b.top).toFixed(1);
+      const named = rows.map((r) => r.dataset.part || (r.classList.contains("ref") ? "plate" : "")).filter(Boolean);
+      const tallest = Math.max(...named.map(height), 0.05), deepest = Math.max(...named.map((n) => -height(n)), 0.05);
+      const k = (plate_y - first - AIR) / tallest, kd = Math.min(k, (H2 - FOOT - plate_y) / deepest);
+      const list = named.map((name) => {
+        const z = height(name), y = +(plate_y - (z >= 0 ? k : kd) * z).toFixed(1);
         const kind = name === "plate" ? "plate" : name === "cap" ? "cap" : name.startsWith("disc") ? "disc" : "hand";
-        list.push({ name, y, svg: kind === "hand" ? draw3.hand(ax, y, name) : draw3[kind](ax, y) });
-      }
+        return { name, y, svg: kind === "hand" ? draw3.hand(ax, y, name) : draw3[kind](ax, y) };
+      }).sort((p, q) => p.y - q.y);
       const lit = list.find((p) => p.name === this.shade_lit);
       const one = (p) => `<g data-part="${p.name}" class="${p.name === "plate" ? "plate" : ""}${p === lit ? " lit" : ""}${lit && p.name === "plate" ? " dropped" : ""}">${p.svg}</g>`;
       parts.innerHTML = list.filter((p) => p !== lit).map(one).join("");
       top.innerHTML = lit ? one(lit) : "";
       axis.setAttribute("x1", ax);
       axis.setAttribute("x2", ax);
-      axis.setAttribute("y1", first ?? 0);
+      axis.setAttribute("y1", list[0].y);
       axis.setAttribute("y2", H2 - token("--shade-axis-end", 12));
       drop.classList.toggle("on", Boolean(lit && plate_y !== null));
       if (lit && plate_y !== null) {
