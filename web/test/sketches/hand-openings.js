@@ -7,6 +7,9 @@
 // Read as: no tick in the Show box; Opening is a pane with a heading and its eye (a folding pane, as Flare's in show
 // mode), its on · off on the heading line — the app's toggle (#525) — and its rows only while on; the pane comes after
 // the hand's pane (its picture and the sliders beside it); the hand types' strip moves to the top of the hand's pane.
+// Round 3 (22:04, his marks on round 2): the picture "Too much" (empty below: the shots now end under the last row);
+// the line over the strip struck out (the strip stands right under the Show box); the switch → "TICK BOX" (the app's
+// tick on the heading line, as Flare's).
 // Not drawn yet: the lume's height (Shadows pane), the openings on the dial's own hands.
 part = ".panel .form";
 tab = "Hands";
@@ -17,6 +20,7 @@ css = `
      the gap to the picture a unit and a half, as from the Show box's line to the strip */
   @media (min-width: 861px) { .body > .row.thumbs { grid-row: 1; } .body > .detail { grid-row: 2 / span 40; } }
   .row.thumbs { margin-top: 0; border-top: 0; margin-bottom: var(--u4); }
+  .form > .pane.headless:has(> .body > .row.thumbs) { background: none; }      /* no line over the strip (22:04, struck out) */
 `;
 build = async (state) => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q), H = t.S.ha_hour;
@@ -32,7 +36,7 @@ build = async (state) => {
   const on = (T) => Boolean(T.op_on);
   const rows = [
     { kind: "hdr", text: "Opening", folded: false, scope: "hand" },
-    { kind: "seg", bool: true, key: "op_on", text: "Opening", head: true, scope: "hand" },
+    { kind: "chk", key: "op_on", text: "Opening", head: true, scope: "hand" },
     { kind: "seg", key: "op_shape", text: "Shape", items: ["Bar", "Dot"], show: on },
     { kind: "num", key: "op_count", text: "Count", lo: 1, hi: 12, step: 1, whole: true, show: on },
     { kind: "num", key: "op_from", text: "From %", lo: 0, hi: 100, step: 1, whole: true, show: on },
@@ -45,7 +49,9 @@ build = async (state) => {
   const [head, ...rest] = rows, after = body.closest(".pane");
   after.after(head.el);
   for (const r of rest) {
-    if (r.row.head) { const c = r.el.lastElementChild; c.classList.add("headcontrol"); r.el = c; r.group = head; r.in_head = true; head.button.after(c); head.el.classList.add("has"); }
+    if (r.row.head) { const c = r.el.lastElementChild; c.classList.add("headcontrol"); r.el = c; r.group = head; r.in_head = true; head.button.after(c); head.el.classList.add("has");
+      c.querySelector(".words")?.remove();      // the box alone: the heading already says Opening
+    }
     else { r.group = head; head.body.append(r.el); }
   }
   t.rows.push(...rows);
