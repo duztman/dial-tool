@@ -14,6 +14,9 @@
 // openings" — Bevel leaves the Show box for a pane of its own after Opening's, its tick on the heading line, Bevel Type
 // and Bevels % in it while ticked (the real rows, the real keys); "Show same as windows' show" — the Show box holds Show
 // alone, as a window's does.
+// Round 5 (22:18): "New design is good. Only needed thing is line above, like this. The distance from show to line to
+// the beginning of the content" — the hand's pane keeps its thin black line under the Show box, at the distances it has
+// now (show → line → content), the strip its first content; "list of hand types gets a thin black line".
 // Not drawn yet: the lume's height (Shadows pane), the openings on the dial's own hands.
 part = ".panel .form";
 tab = "Hands";
@@ -24,7 +27,6 @@ css = `
      the gap to the picture a unit and a half, as from the Show box's line to the strip */
   @media (min-width: 861px) { .body > .row.thumbs { grid-row: 1; } .body > .detail { grid-row: 2 / span 40; } }
   .row.thumbs { margin-top: 0; border-top: 0; margin-bottom: var(--u4); }
-  .form > .pane.headless:has(> .body > .row.thumbs) { background: none; }      /* no line over the strip (22:04, struck out) */
 `;
 build = async (state) => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q), H = t.S.ha_hour;
