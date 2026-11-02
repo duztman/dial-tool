@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.24 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.25 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -591,13 +591,13 @@
   .unitmenu button.on .quiet { color: var(--ink); }
   /* every menu's list (menu_list in app.js): the unit list's look, fixed to the window under or over its menu, scrolling when long */
   .unitmenu.floating { position: fixed; z-index: 40; top: auto; right: auto; overflow-y: auto; box-shadow: var(--shadow-pop); }      /* a dropdown's shadow; inside a popup, the nearer one (menu_list sets .inner) */
-  /* every dropped list in the dark style of the Guides list's colours (Okay, 2 Nov 2026: "The white menus here should go. Replaced
-     with the dark menu style of colors. Also all dropdowns within the popup, again like colors"): near black, rounded, a grey
-     hairline, its rows parted by the night rule, the chosen one bold */
-  .unitmenu.floating { border: var(--hair) solid var(--grey); border-radius: var(--round-switch); background: var(--night); color: var(--white); }
-  .unitmenu.floating button + button { border-top-color: var(--night-rule); }
-  .unitmenu.floating button.on .quiet { color: var(--white); }
-  @media (hover: hover) { .unitmenu.floating button:hover { background: var(--night-hover); } }
+  /* a dropped list follows its ground (Okay, 2 Nov 2026): on a black box or the canvas (menu_list sets .night) the Guides list's
+     colours' style — near black, round corners, a grey hairline, its rows parted by the night rule, the chosen one bold; on the
+     panel's white, white with sharp corners, as above */
+  .unitmenu.floating.night { border: var(--hair) solid var(--grey); border-radius: var(--round-switch); background: var(--night); color: var(--white); }
+  .unitmenu.floating.night button + button { border-top-color: var(--night-rule); }
+  .unitmenu.floating.night button.on .quiet { color: var(--white); }
+  @media (hover: hover) { .unitmenu.floating.night button:hover { background: var(--night-hover); } }
   .unitmenu.floating.inner { box-shadow: var(--shadow-pop-in); }
 
   /* sections: a sign inside a ring, its name under it */
@@ -7561,7 +7561,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.24 beta";
+var VERSION = "v1.1.25 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -17386,13 +17386,17 @@ var PANEL = {
     });
     list.replaceChildren(...items);
     list.classList.toggle("inner", Boolean(select.closest(".guidelist, .colourpop, .settingsbox, .shadelist, .picker, .versionlist, .numpop")));
+    const dark = Boolean(select.closest(".night, .guidelist, .shadelist, main, .colourpop"));
+    list.classList.toggle("night", dark);
+    list.classList.toggle("flush", Boolean(select.closest(".guidehead .plus")));
     list.hidden = false;
     const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));
     const box3 = (select.closest(".menubox, .popgroup, .casebox, .menulabel") || select.parentElement || select).getBoundingClientRect();
     const room_below = innerHeight - box3.bottom, room_above = box3.top, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
     list.style.minWidth = `${Math.round(box3.width)}px`;
     list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - 2 * u)}px`;
-    list.style.left = `${Math.round(Math.max(u, Math.min(box3.left, innerWidth - list.offsetWidth - u)))}px`;
+    const left = list.classList.contains("flush") ? box3.right - list.offsetWidth : box3.left;
+    list.style.left = `${Math.round(Math.max(u, Math.min(left, innerWidth - list.offsetWidth - u)))}px`;
     list.style.top = up ? "" : `${Math.round(box3.bottom + u)}px`;
     list.style.bottom = up ? `${Math.round(innerHeight - box3.top + u)}px` : "";
     const on = list.querySelector(".on");
