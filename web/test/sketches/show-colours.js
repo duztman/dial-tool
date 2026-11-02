@@ -17,11 +17,13 @@
 // the discs · Disc depths); an ink of several parts marked by two outline discs, the front one covering the back one; a
 // part hidden on the watch: its dot a dotted ring (the Minute ticks hidden, to show it); the Cap line a mark of its own
 // (it has no dot: it shows and hides with its hand, and its line is there only while the dial has a cap).
+// Round 4 (01:31: "The hr lines cut short, start from 2nd column for expanded items."): the lines from the pane's left only
+// for what opens and closes and for Dial — the group names; the lines of the items inside a group start at the second
+// column, the marks', as they did.
 part = ".panel .form";
 states = ["open", "Rings closed"];
 css = `
-  .colourlist > .row { margin-left: calc(-1 * var(--x-in)); padding-left: var(--x-in); }      /* the line from the pane's left */
-  .colourlist > .row.showline > :first-child { left: calc(var(--nudge) - var(--eye) - var(--gap) + var(--x-in)); }      /* the dot keeps its place */
+  .colourlist > :is(.row.showsub, .row.showline.lead) { margin-left: calc(-1 * var(--x-in)); padding-left: var(--x-in); }      /* a group's line and Dial's from the pane's left; an item's from the marks' column */
   .colourlist > .row.showsub .colhead, .colourlist > .row.showline.lead > label { color: var(--ink); font-weight: 600; font-size: var(--t-s); }
   .colourlist > .row.showline.lead > label { grid-column: 1 / span 2; }      /* Dial on the marks' column */
   .colourlist > .row.showline.lead > .mark { display: none; }
