@@ -12,21 +12,32 @@
 //   Dark red    red (a tint) · about 22 %, unsourced
 part = "#colour-pop";
 tab = "Hands";
+// 22:38: "Do gaps get shadows if they are not filled in lume? Obviously they only get lume, with lume coming in with our
+// color selector with no other options but lume. Lume colors get L in their swatches and their tag-swatch versions
+// named with their name." So two states: a colour (every mode, Lume the fifth) and an opening's Fill (Lume alone, an
+// Open tile first: no fill, the dial seen through it). A lume's swatch carries a faded L, as a RAL's carries an R
+// (4e-colour.css); its pill says its name ("C3"), as a RAL's says R5015.
+states = ["a colour", "an opening's fill"];
 css = `
   #colour-pop .lumegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--u2); padding: var(--u3) 0; }
   #colour-pop .lumegrid > button { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: var(--u2); align-items: center; padding: var(--u1); border: var(--hair) solid transparent; border-radius: var(--round-small); background: none; color: inherit; text-align: left; }
   #colour-pop .lumegrid > button.on { border-color: currentColor; }
-  #colour-pop .lumegrid .day { grid-row: 1 / span 2; width: calc(3 * var(--u4)); height: calc(3 * var(--u4)); border-radius: var(--round-small); position: relative; }
+  #colour-pop .lumegrid .day { display: block; grid-row: 1 / span 2; width: calc(3 * var(--u4)); height: calc(3 * var(--u4)); border-radius: var(--round-small); position: relative; }
   #colour-pop .lumegrid .day > i { position: absolute; right: var(--u1); bottom: var(--u1); width: var(--u3); height: var(--u3); border-radius: 50%; box-shadow: 0 0 0 var(--hair) #0B0E12; }      /* its glow, a dot */
   #colour-pop .lumegrid b { font-weight: 600; font-size: var(--t-s); }
   #colour-pop .lumegrid small { font-size: var(--t-xs); opacity: 0.6; }
+  #colour-pop .lumegrid .day::after, .lumechip::after, .chips button.lume::after { content: "L"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(0, 0, 0, 0.35); font: 600 var(--t-xs)/1 var(--sans); }      /* a faded L, centred, as RAL's R (dark on lume's light bodies) */
+  #colour-pop .lumegrid .open .day { background: repeating-linear-gradient(45deg, transparent 0 4px, rgba(255,255,255,0.18) 4px 5px); box-shadow: inset 0 0 0 var(--hair) rgba(255,255,255,0.4); }
+  #colour-pop .lumegrid .open .day::after { content: ""; }
+  #colour-pop.lumeonly .asnumbers .segs, #colour-pop.lumeonly .chiprow { display: none; }      /* Lume alone: no other modes, no dial or palette chips */
 `;
 setup = async () => {
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   document.querySelector(".row.col .colour, .row.col button")?.click(); await wait(300);
   document.querySelector("#pop-as-RAL")?.click(); await wait(300);
 };
-build = async () => {
+build = async (state) => {
+  const only = state === "an opening's fill";
   const $ = (q) => document.querySelector(q), pop = $("#colour-pop");
   const LUMES = [
     ["C3", "#E4EAC2", "#8CF56A", "100 %"], ["BGW9", "#F4F4F0", "#62DDF5", "95 %"], ["C5", "#E9EDB0", "#B7F06A", "89 %"],
@@ -40,6 +51,12 @@ build = async () => {
   for (const id of ["#pop-ralgrid", "#pop-charts", "#pop-bands", "#colour-pop .alpharow"])      // no Opacity: a lume is an ink, laid whole
   { const e = $(id); if (e) e.hidden = true; }
   const grid = document.createElement("div"); grid.className = "lumegrid";
+  if (only) {
+    pop.classList.add("lumeonly");
+    const h = window.dial_tool.pop?.title; if (h) h.textContent = "Hour hand · Opening fill";
+    const o = document.createElement("button"); o.type = "button"; o.className = "open"; o.title = "Open: no fill, the dial seen through";
+    o.innerHTML = `<span class="day"></span><b>Open</b><small>no fill</small>`; grid.append(o);
+  }
   for (const [name, day, glow, k] of LUMES) {
     const b = document.createElement("button"); b.type = "button"; b.className = name === "C3" ? "on" : ""; b.title = `${name}: by day ${day}, glows ${glow}`;
     b.innerHTML = `<span class="day" style="background:${day}"><i style="background:${glow}"></i></span><b>${name}</b><small>${k}</small>`;

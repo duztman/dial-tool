@@ -31,12 +31,13 @@ css = `
      too much vertical gap there"): line → tiles as Show box → line, --u4 (11 px measured, was 24) */
   .form > .pane.headless:has(> .body > .row.thumbs) { padding-top: var(--u4); }
   .row.thumbs > .picks.thumbs { padding-top: 0; }
+  .lumechip::after { content: "L"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(0, 0, 0, 0.35); font: 600 calc(var(--t-xs) * 0.8)/1 var(--sans); }      /* a lume's swatch: a faded L, as a RAL's R */
 `;
 build = async (state) => {
   const t = window.dial_tool, $ = (q) => document.querySelector(q), H = t.S.ha_hour;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   // the settings this round shows, on the hour hand (sketch only: not in the app's settings yet)
-  const O = { op_on: state === "on", op_shape: 0, op_count: 3, op_from: 30, op_to: 92, op_w: 0.8, op_gap: 0.4, op_fill: 1, op_lume: [0.91, 0.89, 0.78, 1] };
+  const O = { op_on: state === "on", op_shape: 0, op_count: 3, op_from: 30, op_to: 92, op_w: 0.8, op_gap: 0.4, op_fill: 1, op_lume: [0.894, 0.918, 0.761, 1] };      // C3 by day, #E4EAC2 (research v31, §6.1)
   Object.assign(H, O);
   // the hand types' strip to the top of the hand's pane, over its picture and sliders
   const thumbs = $(".row.pick.thumbs"), body = thumbs.parentElement;
@@ -67,8 +68,7 @@ build = async (state) => {
     { kind: "num", key: "op_to", text: "To %", lo: 0, hi: 100, step: 1, whole: true, show: on },
     { kind: "num", key: "op_w", text: "Width", lo: 0.05, hi: 3, step: 0.05, show: on },
     { kind: "num", key: "op_gap", text: "Gap", lo: 0, hi: 3, step: 0.05, show: on },
-    { kind: "seg", key: "op_fill", text: "Fill", items: ["Open", "Lume"], show: on },
-    { kind: "col", key: "op_lume", text: "Lume", show: (T) => on(T) && T.op_fill === 1 },
+    { kind: "col", key: "op_lume", text: "Fill", show: on },      // 22:38: one row, its pop-out Lume alone (Open, or a lume); the pill says the lume's name, its swatch an L
   ], (el) => body.closest(".pane").after(el));
   // Bevel: out of the Show box (Show alone, as a window's) into a pane after Opening's, its own rows moved in
   $("#hand-bevel")?.closest("label")?.remove();
@@ -98,6 +98,9 @@ build = async (state) => {
     svg.append(s);
   }
   console.log(`measured each ${each.toFixed(2)} mm long, ${w} wide`);
+  // the Fill pill: the lume's name, an L on its swatch (as a RAL's pill says R5015, its chip a faded R)
+  const fill = [...document.querySelectorAll(".row.col")].find((r) => r.textContent.trim().startsWith("Fill"));
+  if (fill) { const word = [...fill.querySelectorAll("span")].find((e) => /^#/.test(e.textContent.trim())); if (word) word.textContent = "C3"; const dot = fill.querySelector("i, .dot"); if (dot) { dot.classList.add("lumechip"); dot.style.position = "relative"; } }
   await wait(200);
   // the gaps round the line under the Show box, measured off the page (R21): Show box → line, line → the strip's tiles
   const sb = $(".showbox .showline").getBoundingClientRect(), pn = body.closest(".pane").getBoundingClientRect(), tile = $(".row.thumbs .pickt").getBoundingClientRect();
