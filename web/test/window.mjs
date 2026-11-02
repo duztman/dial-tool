@@ -1028,7 +1028,7 @@ await page.click("#hand-tab-0");
 const show_under = [await under_tab("#hand-tab-0")];
 await page.click("#hand-tab-2"); show_under.push(await under_tab("#hand-tab-2")); await page.click("#hand-tab-0");
 // under the box a thin black line opens the hand's pane, from where the tabs start; the hand's box starts there too, its top on the first row's line (Okay, on 4.46.1: "Blue lines, align, black line, new black line, thin")
-const opened = await page.evaluate(() => { const pane = document.querySelector(".form > .pane.headless"), c = getComputedStyle(pane), d = document.querySelector("#hand-detail").getBoundingClientRect(), t = document.querySelector(".tabsbar .segs").getBoundingClientRect(), rows = [...document.querySelectorAll(".form > .pane.headless .row.side:not([hidden])")], row = rows[0].getBoundingClientRect(), last = rows.at(-1).getBoundingClientRect(), box = document.querySelector(".form > .showbox > .showline").getBoundingClientRect(), p = pane.getBoundingClientRect();
+const opened = await page.evaluate(() => { const pane = document.querySelector(".form > .pane.headless:not(.bevelpane)"), c = getComputedStyle(pane), d = document.querySelector("#hand-detail").getBoundingClientRect(), t = document.querySelector(".tabsbar .segs").getBoundingClientRect(), rows = [...document.querySelectorAll(".form > .pane.headless:not(.bevelpane) .row.side:not([hidden])")], row = rows[0].getBoundingClientRect(), last = rows.at(-1).getBoundingClientRect(), box = document.querySelector(".form > .showbox > .showline").getBoundingClientRect(), p = pane.getBoundingClientRect();
   return [c.backgroundImage.includes("linear-gradient") && c.backgroundSize.endsWith(" 1px"), (d.left - t.left).toFixed(1), (d.top - (row.top - 1)).toFixed(1), (d.bottom - last.bottom).toFixed(1), (p.top - box.bottom).toFixed(1) + "/" + (row.top - 1 - (p.top + 1)).toFixed(1)].join(" "); });      // over the line: from the box to its top edge; under it: from its foot to the first row's white line
 check(/^true 0\.0 0\.0 0\.0 (\S+)\/\1$/.test(opened), `under the Show box a thin black line opens the hand's pane, as far under the box as the rows are under it (${opened.split(" ").at(-1)}); the hand's box starts where the tabs do, from the first row's line to the last row's foot (4.46.4: "Enlarge the preview to fit the area")`);
 check(tick_up[0] === "hand-on-Show" && tick_up[1] === "Show" && tick_up[2] && tick_up[3] && tick_up[4] && show_under.every((u) => u === "0.0 0.0 0.0"), `the Show box (#261; 4.46.2): it grows down from the chosen tab, as wide as it, and goes with it (Hour, Seconds: ${show_under.join(" · ")}); a ground of its own, it holds Show; the hand's pane under it has no name line and no thick line`);
@@ -1064,7 +1064,7 @@ await page.click("#hand-tab-0");
   check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "0px 0px" && strip.notch === "true true true rgb(17, 17, 17)" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, each cutting its top corners one unit deep so a sharp V stands over each joint, the first and last corner square, the chosen one ink and square (#260, 4.46) (${strip.notch}), ${strip.high} high`);
 }
 { // a hand's pane (13 Oct 2026): a box with the hand itself at the left, its rows beside it: a line of tiles that opens, numbers, colour
-  const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = [...document.querySelectorAll(".form .pane .body")][0].querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".row.thumbs > .picks.thumbs > *")].filter((e) => e.offsetParent).map((e) => e.title);
+  const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = document.querySelector(".form .pane:not(.bevelpane) .body").querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".row.thumbs > .picks.thumbs > *")].filter((e) => e.offsetParent).map((e) => e.title);
     return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), high: Math.round(box.height), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].filter((h) => h.checkVisibility()).map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
   const a = await look();
   check(a.beside === 12 && a.top === -1 && a.bottom === 0 && a.panes === "" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, as high as the rows beside it (${JSON.stringify({ ...a, d: 0 })})`);      // top −1: its line on the first row's (4.46.2; 6 below it until then)
@@ -2758,31 +2758,28 @@ await shot("10-bar");
   check(r.shown && r.off && r.gone && r.lit && !r.cap_hour && r.cap_second,
     `a hand's Bevel beside Show while it is shown (${r.shown}; hidden with Show off: ${r.gone}), off to start (${r.off}), on: its hand bevelled (${r.lit}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
 }
-{ // the bevel's rows (#531): once Bevel is ticked, Bevel Type (a pill switch on the sliders' line, its name at the left),
-  // Bevels % (the Shadows pane's number) and, Faceted only, Facet angle °; Ridge draws two halves, Faceted a facet per
-  // side, Domed two gradients; a larger facet angle cuts a curve in fewer facets
+{ // the bevel's pane (#531): under the Show box, before the hand's own pane, once Bevel is ticked — Bevel Type (Ridge ·
+  // Domed; Faceted not offered, #573) on the sliders' line, Bevels % (the Shadows pane's number); the hand's pane keeps its
+  // thin black line under it; a Domed edge twice a Ridge's half
   const r = await page.evaluate(async () => {
     const t = window.dial_tool, S = t.S, was = JSON.stringify([S.ui_hand, S.ui_section, S.ha_hour]);
-    const row = (name) => [...document.querySelectorAll(".form .row")].find((x) => x.checkVisibility() && x.querySelector("label")?.textContent.startsWith(name));
-    const g = () => document.querySelector("g[clip-path='url(#bevel-clip-hour)']");
+    const pane = () => document.querySelector(".bevelpane"), g = () => document.querySelector("g[clip-path='url(#bevel-clip-hour)']");
     const tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
-    S.ui_section = 2; t.show_section(); S.ui_hand = 0; S.ha_hour.shape = 4; t.changed(); t.sync_rows(); t.frame(); await tick();
-    const hidden_off = !row("Bevel Type") && !row("Facet angle");
+    S.ui_section = 2; t.show_section(); S.ui_hand = 0; t.sync_rows(); t.frame(); await tick();
+    const hidden_off = pane().hidden;
     t.set_value("hand", "bevel", true); t.sync_rows(); t.frame(); await tick();
-    const type = row("Bevel Type"), words = [...type.querySelectorAll(".pillswitch button")].map((b) => b.textContent).join(" · ");
-    const lined = Math.round(type.querySelector(".pillswitch").getBoundingClientRect().left) === Math.round(row("Bevels %").querySelector("input[type=range]").getBoundingClientRect().left);
-    const ridge = [g().querySelectorAll("rect").length, !row("Facet angle")];
-    t.set_value("hand", "bevel_look", 1); t.sync_rows(); t.frame(); await tick();
-    const many = g().querySelectorAll("path").length, angle = !!row("Facet angle");
-    t.set_value("hand", "facet_turn", 30); t.frame(); await tick();
-    const few = g().querySelectorAll("path").length;
-    t.set_value("hand", "bevel_look", 2); t.sync_rows(); t.frame(); await tick();
-    const domed = [[...g().querySelectorAll("rect")].filter((x) => (x.getAttribute("fill") || "").startsWith("url(")).length, g().querySelectorAll("path").length, !row("Facet angle")];
+    const shown = !pane().hidden, place = pane().previousElementSibling?.classList.contains("showbox") && pane().nextElementSibling?.classList.contains("headless");
+    const words = [...pane().querySelectorAll(".pillswitch button")].filter((b) => !b.hidden).map((b) => b.textContent).join(" · ");
+    const lined = Math.round(pane().querySelector(".pillswitch").getBoundingClientRect().left) === Math.round(pane().querySelector("input[type=range]").getBoundingClientRect().left);
+    const under = getComputedStyle(pane().nextElementSibling).backgroundImage.includes("linear-gradient") && getComputedStyle(pane()).backgroundImage.includes("linear-gradient");
+    const ridge = Math.max(...[...g().querySelectorAll("rect")].map((x) => +x.getAttribute("fill-opacity") || 0));
+    t.set_value("hand", "bevel_look", 2); t.frame(); await tick();
+    const dome = Math.max(...[...document.querySelectorAll("linearGradient[id^='bevel-hour'] stop")].map((x) => +x.getAttribute("stop-opacity") || 0));
     const back = JSON.parse(was); S.ui_hand = back[0]; S.ui_section = back[1]; S.ha_hour = back[2]; t.changed(); t.show_section(); t.sync_rows(); t.frame();
-    return { hidden_off, words, lined, ridge, many, angle, few, domed };
+    return { hidden_off, shown, place, words, lined, under, ridge: +ridge.toFixed(3), dome: +dome.toFixed(3) };
   });
-  check(r.hidden_off && r.words === "Ridge · Faceted · Domed" && r.lined && r.ridge.join() === "2,true" && r.angle && r.many > r.few && r.few >= 2 && r.domed.join() === "2,0,true",
-    `a hand's bevel rows once Bevel is ticked (none before: ${r.hidden_off}): Bevel Type ${r.words}, its pill on the sliders' line (${r.lined}); Ridge two halves (${r.ridge[0]}); Faceted with its Facet angle row (${r.angle}), a leaf in ${r.many} facets at 3°, ${r.few} at 30°; Domed two gradients (${r.domed.join(" ")}) (Okay, 2 Nov 2026, 17:50: "Bevel type needs its own line … on the left, label: Bevel Type"; "level of faceting should be adjustable")`);
+  check(r.hidden_off && r.shown && r.place && r.words === "Ridge · Domed" && r.lined && r.under && Math.abs(r.dome - Math.min(2 * r.ridge, 1)) < 0.002,
+    `a hand's Bevel pane under the Show box, before the hand's pane, once Bevel is ticked (hidden before: ${r.hidden_off}; in place: ${r.place}): Bevel Type ${r.words} on the sliders' line (${r.lined}), Bevels %; a thin black line over it and over the hand's pane (${r.under}); a Domed edge ${r.dome}, twice a Ridge half's ${r.ridge} (Okay, 2 Nov 2026, 18:48: "place the bevel settings here in the green area with a black line on top"; "round bevel needs more intensity at 100"; "facets system does not work, remove for now")`);
 }
 { // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });

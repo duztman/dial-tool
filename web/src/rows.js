@@ -319,6 +319,14 @@ export const ROWS = {
     // the Show box (#261, 4.46; Okay's notes, p. 2): under the tabs, on top of the grey page, Show — the tab says which
     // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (headless)
     custom("show_box", { ...H, bar: true }),
+    // the bevel, a pane of its own between the Show box and the hand's pane, once Bevel is ticked (#531; Okay, 2 Nov 2026,
+    // 18:48, his picture: "place the bevel settings here in the green area with a black line on top"): its look — Bevel
+    // Type, its name at the left, the pill on the sliders' line (17:50) — and its strength, the Shadows pane's Bevels %,
+    // one number for every hand in both places. Faceted is not offered (18:48: "facets system does not work, remove for
+    // now, note for later", #573); its place in BEVEL_LOOKS stays (R9) and a hand that has it draws a Ridge
+    hdr("Bevel", { headless: true, cls: "bevelpane" }),
+    seg("bevel_look", "Bevel Type", G.BEVEL_LOOKS, { ...H, show: bevelled, offered: () => [0, 2] }),
+    num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, show: (S, _, app) => bevelled(app.hand()) }),
     hdr("One hand", { headless: true }),
     // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
     // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
@@ -359,14 +367,6 @@ export const ROWS = {
     // its shapes: a row of thumbs under the box and every row beside it, from the box's left to the end (4.46.4; Okay:
     // "Put hand type as a row spanning preview to end, after wall"; under the box in 4.46.3), the SVG tile last
     pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] }),      // every shape but "file": the SVG tile stands for it
-    // the bevel's rows, each a line of its own across the pane after the hand's own rows, once Bevel is ticked beside Show (#531; Okay, 2 Nov 2026,
-    // 17:50: "Bevel type needs its own line, the appearing sausage aligned left with bottom columns whole. on the left,
-    // label: Bevel Type"; "faceted and domed needs settings of intensity. shadows pane has it but this here needs it
-    // too"; "level of faceting should be adjustable"): its look, its strength — the Shadows pane's Bevels %, one number
-    // for every hand in both places — and, Faceted, where a curve turns into facets
-    seg("bevel_look", "Bevel Type", G.BEVEL_LOOKS, { ...H, show: bevelled }),
-    num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, show: (S, _, app) => bevelled(app.hand()) }),
-    num("facet_turn", "Facet angle °", 1, 45, 1, { ...H, whole: true, short: "Facet °", show: (T) => bevelled(T) && G.BEVEL_LOOKS[T.bevel_look] === "Faceted" }),
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)

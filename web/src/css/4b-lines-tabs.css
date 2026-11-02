@@ -64,7 +64,7 @@
   .form > .showbox input[type="checkbox"]::before { width: calc(var(--tick) - var(--u1)); height: calc(var(--tick) - var(--u1)); }      /* the Show tick fills its box: the box as it is, the tick bigger (Okay, 19 Oct 2026: "'Show tick' in white gets bigger, black box stays the same") */
   .form > .showbox > .showline { grid-column: var(--tab, 1); display: flex; align-items: center; gap: var(--u4); height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
     margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
-  .form > .showbox + .pane.headless { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
+  :is(.form > .showbox + .pane.headless, .form > .showbox + .pane.headless + .pane.headless) { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }      /* under the Show box: a hand's Bevel pane, shown or not, then its own pane — each opens with the thin black line (#531; Okay, 2 Nov 2026: "with a black line on top") */
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > .menubox { grid-column: 6 / span 2; }

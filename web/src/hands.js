@@ -6,6 +6,8 @@ import { BEVEL, hand_detail, hand_part } from "./icons.js";
 import { HANDLE_AXIS, HANDLE_REACH, SNAP_PX, clamp, el, snap, svg_el } from "./ui.js";
 import { ROWS, chevron_box } from "./rows.js";
 
+const DOME = 2;      // a Domed bevel's edges against a Ridge's halves: twice, so the dome's light and dark, spread from spine to edge, add up to a Ridge's (#531)
+
 export const HANDS = {
   /** the light on the dial (4.77): wherever shadows
    *  are drawn, each hand's bevel (BEVEL) — its two long halves lighter and darker by where the light comes from.
@@ -48,19 +50,14 @@ export const HANDS = {
       // it faces away, as strong as Bevels % and the shadows' darkness say
       const a = (from - item.angle) * Math.PI / 180, light = [Math.sin(a), -Math.cos(a)];
       const shade = (v) => (v > 0 ? ["#fff", BEVEL.light * v * k] : ["#000", BEVEL.dark * -v * k]);
-      if (look === "Faceted") {
-        // a facet on every side of the hand, mitred where two meet (geometry.js, hand_facets)
-        G.hand_facets(own).forEach(([corners, n], j) => {
-          const facet = part(`${key}/facet-${j}`, "path", inner), [colour, opacity] = shade(n[0] * light[0] + n[1] * light[1]);
-          facet.setAttribute("d", "M" + corners.map(([x, y]) => f(x) + " " + f(y)).join("L") + "Z");
-          facet.setAttribute("fill", colour); facet.setAttribute("fill-opacity", f(opacity));
-        });
-      } else if (look === "Domed") {
+      if (look === "Domed") {
         // round across: the surface turns from facing the sun to facing away as it goes from one edge to the other, so the
-        // light grows from nothing on the spine to the full at either edge (a gradient over each half, the hand's width)
+        // light grows from nothing on the spine to the full at either edge (a gradient over each half, the hand's width).
+        // Its edges twice a Ridge's halves, so at Bevels 100 the dome shows as much light and dark as a Ridge does, on
+        // the whole (Okay, 2 Nov 2026, 18:48: "round bevel needs more intensity at 100")
         const hw = Math.max((own.w || 1) / 2, 0.05);
         const ramp = (name, sign) => {
-          const [colour, opacity] = shade(sign * light[0]);
+          const [colour, half] = shade(sign * light[0]), opacity = Math.min(DOME * half, 1);
           const grad = part(`${key}/${name}/ramp`, "linearGradient", this.light_defs);
           grad.id = `bevel-${item.name}-${name}`;
           for (const [k2, v] of [["gradientUnits", "userSpaceOnUse"], ["x1", "0"], ["x2", f(sign * hw)], ["y1", "0"], ["y2", "0"]]) grad.setAttribute(k2, v);

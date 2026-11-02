@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.36 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.37 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -151,14 +151,12 @@ export const HAND_BASE = {
   bevel: false,
   // how the bevel shapes the hand's top (#531; Okay, 24 Oct 2026, his drawing: a pill switch beside Bevel; 2 Nov 2026,
   // 17:25: "Option A"), a place in BEVEL_LOOKS: 0 Ridge — two long halves meeting on the centre line, as every bevel
-  // was drawn before (R31: no new scheme) · 1 Faceted — a facet on every side, mitred where two meet · 2 Domed — round
-  // across, shaded from the middle out
+  // was drawn before (R31: no new scheme) · 1 Faceted — not offered, drawn as a Ridge (2 Nov 2026, 18:48: "facets
+  // system does not work, remove for now, note for later", #573) · 2 Domed — round across, shaded from the middle out
   bevel_look: 0,
-  // a Faceted bevel's facets (#531; Okay, 2 Nov 2026, 17:50: "level of faceting should be adjustable"): sides of the
-  // outline that turn less than this many degrees are one facet — small: a curve cut in many facets, large: in few
-  facet_turn: 3,
+  facet_turn: 3,      // dead with Faceted (#573): kept, as every key is (R8); nothing reads it
 };
-export const BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];      // R9: a new look is appended
+export const BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];      // R9: a new look is appended; Faceted (1) is not offered (#573) and draws as a Ridge
 
 // windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
 // text: what a date or day window shows · age: of the moon, in days · hour: of the day, for am · pm until 13 Oct
@@ -588,7 +586,7 @@ export const LINK_KEYS = [
   "stroke", "stroke_w", "stroke_join", "stroke_side", "stroke_c",      // v1.1 beta (#551): appended; off to start, as every older link
   "rhythm", "rh_dash", "rh_gap", "rh_dash_shape", "rh_dash_len", "rh_gap_len",      // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
   "bevel_look",             // v1.1.35 beta (#531): appended; Ridge to start, as every older link
-  "facet_turn",             // v1.1.36 beta (#531): appended; 3° to start, the facets as v1.1.35 cut them
+  "facet_turn",             // v1.1.36 beta (#531): appended; dead since v1.1.37 with Faceted (#573), kept (R8)
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2079,61 +2077,6 @@ export function disc_mark(h) {
 /** a disc hand whose marker is painted on (#300) */
 export const paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
 
-/** a Faceted bevel's facets (#531), on the hand upright: a facet for every side of the hand's outline, each the part of
- *  the hand nearer that side than any other — so two facets meet on the line that halves their corner, a mitre, and the
- *  long sides meet on the hand's spine. Read off the outline's convex hull, its sides joined where they turn less than
- *  the hand's facet_turn (a curve becomes a few flat facets, as a cut hand's are); each facet as [its corners, its outward
- *  direction]. Facets reach past the outline: the hand's own shape cuts them (the preview clips them to it). */
-export function hand_facets(h) {
-  return memo("facets" + key_of(h), () => {
-    const pts = [];
-    for (const c of hand_shape(h).contours()) pts.push(...c._points());
-    const hull = convex_hull(pts);
-    if (hull.length < 3) return [];
-    // the sides, joined while they keep within FACET_TURN of the first one's direction
-    const sides = [], dir = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]), turn = (x, y) => Math.abs(((x - y + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
-    let start = 0;
-    while (start < hull.length) {
-      let end = start + 1;
-      const d0 = dir(hull[start], hull[end % hull.length]);
-      while (end < hull.length && turn(dir(hull[end], hull[(end + 1) % hull.length]), d0) < (h.facet_turn ?? 3) * Math.PI / 180) end++;
-      sides.push([hull[start], hull[end % hull.length]]);
-      start = end;
-    }
-    const b = hand_shape(h).bounds(), pad = 1 + Math.max(b[2] - b[0], b[3] - b[1]);
-    const box = [[b[0] - pad, b[1] - pad], [b[2] + pad, b[1] - pad], [b[2] + pad, b[3] + pad], [b[0] - pad, b[3] + pad]];
-    // a side's line: its outward direction n and how far in a point lies from it, (p − a)·(−n)
-    const lines = sides.map(([a, e]) => { const dx = e[0] - a[0], dy = e[1] - a[1], l = Math.hypot(dx, dy) || 1, n = [dy / l, -dx / l]; return { a, n }; });
-    const ccw = lines.reduce((t, { a }, i) => t + a[0] * lines[(i + 1) % lines.length].a[1] - lines[(i + 1) % lines.length].a[0] * a[1], 0) > 0;
-    if (ccw) for (const L of lines) L.n = [-L.n[0], -L.n[1]];      // outward whichever way round the hull runs
-    const depth = (L, p) => -((p[0] - L.a[0]) * L.n[0] + (p[1] - L.a[1]) * L.n[1]);
-    // keep the part of a polygon where f(p) ≤ 0 (f linear)
-    const cut = (poly, f) => {
-      const out = [];
-      poly.forEach((p, i) => {
-        const q = poly[(i + 1) % poly.length], fp = f(p), fq = f(q);
-        if (fp <= 0) out.push(p);
-        if ((fp < 0 && fq > 0) || (fp > 0 && fq < 0)) { const t = fp / (fp - fq); out.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]); }
-      });
-      return out;
-    };
-    return lines.map((L, i) => {
-      let poly = box;
-      lines.forEach((M, j) => { if (j !== i && poly.length) poly = cut(poly, (p) => depth(L, p) - depth(M, p)); });
-      return [poly, L.n];
-    }).filter(([poly]) => poly.length > 2);
-  });
-}
-/** the convex hull of some points, round the outside in order (Andrew's monotone chain). */
-function convex_hull(points) {
-  const p = points.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-  if (p.length < 3) return p;
-  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-  const lower = [], upper = [];
-  for (const q of p) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], q) <= 1e-9) lower.pop(); lower.push(q); }
-  for (const q of p.reverse()) { while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], q) <= 1e-9) upper.pop(); upper.push(q); }
-  return lower.slice(0, -1).concat(upper.slice(0, -1));
-}
 
 /** the hands that are on, bottom first: [name, colour, upright shape, clock angle]. */
 function hand_items(S, t) {

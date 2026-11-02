@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.37 beta · 2 Nov 2026 — the hand's Bevel pane under the Show box; Domed stronger; Faceted put away (#531, #573)
+
+Okay, 2 Nov 2026, 18:48, his picture with the place marked under the Show box: "place the bevel settings here in the green area with a black line on top.. round bevel needs more intensity at 100. facets system does not work, remove for now, note for later."
+
+- **The Bevel pane** (`rows.js`, `4b-lines-tabs.css`): Bevel Type and Bevels % in a pane of their own (`.bevelpane`, headless) between the Show box and the hand's own pane, once Bevel is ticked; hidden with Bevel off, as an empty pane is (R16). It opens with the thin black line the hand's pane had there, and the hand's pane under it keeps its own (one rule for both).
+- **Domed** (`hands.js`, `DOME` = 2): a dome's edges at twice a Ridge half's strength (measured in the window test at Bevels 100: a Ridge half 0.251, a Domed edge 0.502), so its light and dark, spread from spine to edge, add up to a Ridge's.
+- **Faceted** out: not offered on Bevel Type, its drawing and `hand_facets` gone, the Facet angle row gone. Its place in `BEVEL_LOOKS` stays (R9) — a hand that has it draws a Ridge — and `facet_turn` stays as a dead key (R8). Later: #573.
+- **The window test**: the Bevel pane's check (place, words, line, the dome's strength); two older checks now find the hand's pane past the Bevel pane.
+
 ## v1.1.36 beta · 2 Nov 2026 — a hand's bevel rows: Bevel Type, Bevels %, Facet angle (#531)
 
 Okay, 2 Nov 2026, 17:50: "Bevel type needs its own line, the appearing sausage aligned left with bottom columns whole. on the left, label: Bevel Type. faceted and domed needs settings of intensity. shadows pane has it but this here needs it too. faceted does not look optimal, level of faceting should be adjustable. however there's a bigger item on the list about constructing hands from shapes. without folding ingredients big work, take this as a step towards it."
