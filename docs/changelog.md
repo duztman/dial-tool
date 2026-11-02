@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.28 beta · 2 Nov 2026 — the Shadows side view at the parts' real heights (#571)
+
+Okay, 2 Nov 2026, 13:05: "hand heights diagram on right, can we make the distances related to reals but exaggerated to show the distinction? the red lines and etc adapt"; 13:10: "1a 2a, draw first"; 13:13, on the drawing: "Build as is".
+
+- **The side view** (`stack_picture`, `guides.js`): the plate stays on the Plate row's line; each part stands at its height over it times one scale, the scale set so the tallest part shown reaches the first row's top, 8 px under it (193 px per mm at the starting heights, the real picture's ~3: about 60 ×); a date disc under the plate at the same scale, held inside the box. No leader lines: a row pointed at still lights its part; the red drop line runs from the lit part to the next toward the plate, as before.
+- Checked: the window test (one scale for every part, 193.3–193.4 px/mm; the plate on its row; the drop line); the Every mark check now waits for the panel to stop scrolling before its press (it chose the wrong mark once in three runs).
+
 ## v1.1.27 beta · 2 Nov 2026 — Every mark (#169); every dropdown over its button; the font sheet's line
 
 Okay, 2 Nov 2026, 12:19: "Rhythm: give the user a dropdown of a few options and custom, L S system done through actual lengths, dash and gap. Options for line dot and wedge for these."; 12:22: "All good. Bar is correct, implement."; 12:48: "gap is a gap, it does not need to have a shape … for the font list: font name and stickers on the same row … the dropdown, when open dhould cover the button it's coming out of … this applies to all dropdowns".

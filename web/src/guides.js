@@ -497,26 +497,35 @@ export const GUIDES = {
       plate: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="55.6" ry="18.7"/><rect class="dark" x="${ax + 21}" y="${y - 2.5}" width="10" height="5" rx="1"/><circle class="hole dark" cx="${ax}" cy="${y}" r="1.5"/>`,
       disc: (ax, y) => `<path class="fill" fill-rule="evenodd" d="M${ax - 25.9} ${y}a25.9 8.7 0 1 0 51.8 0a25.9 8.7 0 1 0 -51.8 0M${ax - 18.5} ${y}a18.5 6.2 0 1 0 37 0a18.5 6.2 0 1 0 -37 0Z"/>`,
     };
+    // where each part stands: at its real height over the plate, exaggerated (Okay, 2 Nov 2026, 13:05: "can we make the
+    // distances related to reals but exaggerated to show the distinction? the red lines and etc adapt"; 13:10: "1a 2a" —
+    // the tallest part fills the room above the plate, so the ratios are true and the exaggeration varies with the dial;
+    // no leaders, a row pointed at still lights its part). The plate stays on its row's line; a disc under it, as deep
+    // as the same scale lets it inside the box
+    const KEY = { cap: "sh_cap", second: "sh_second", minute: "sh_minute", hour: "sh_hour" };
+    const height = (name) => (KEY[name] ? this.S[KEY[name]] : name.startsWith("disc-") ? -this.disc_depth(G.windows_of(this.S)[+name.slice(5)]) : 0);
+    const AIR = 8, FOOT = 12;                        // px: air over the tallest part, room under the deepest disc
     const refresh = () => {
       const b = svg.getBoundingClientRect(), W = Math.round(b.width), H = Math.round(b.height), ax = W / 2;      // the svg's own box, inside the frame's line
       if (!W || !H) return;
       svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", W); svg.setAttribute("height", H);
-      const list = [], rows = document.querySelectorAll("#shadow-list .shaderows > .row, #shadow-list .shadowdiscs > .row");
-      let first = null, plate_y = null;
-      for (const r of rows) {
-        if (r.hidden) continue;
-        const rr = r.getBoundingClientRect(), y = +(rr.top + rr.height / 2 - b.top).toFixed(1);
-        if (first === null) first = +(rr.top - b.top).toFixed(1);
-        const name = r.dataset.part || (r.classList.contains("ref") ? "plate" : "");
-        if (name === "plate") plate_y = y;
+      const rows = [...document.querySelectorAll("#shadow-list .shaderows > .row, #shadow-list .shadowdiscs > .row")].filter((r) => !r.hidden);
+      if (!rows.length) return;
+      const plate_row = rows.find((r) => r.classList.contains("ref")), pr = plate_row.getBoundingClientRect();
+      const first = +(rows[0].getBoundingClientRect().top - b.top).toFixed(1), plate_y = +(pr.top + pr.height / 2 - b.top).toFixed(1);
+      const named = rows.map((r) => r.dataset.part || (r.classList.contains("ref") ? "plate" : "")).filter(Boolean);
+      const tallest = Math.max(...named.map(height), 0.05), deepest = Math.max(...named.map((n) => -height(n)), 0.05);
+      const k = (plate_y - first - AIR) / tallest, kd = Math.min(k, (H - FOOT - plate_y) / deepest);      // px per mm over the plate, and under it
+      const list = named.map((name) => {
+        const z = height(name), y = +(plate_y - (z >= 0 ? k : kd) * z).toFixed(1);
         const kind = name === "plate" ? "plate" : name === "cap" ? "cap" : name.startsWith("disc") ? "disc" : "hand";
-        list.push({ name, y, svg: kind === "hand" ? draw.hand(ax, y, name) : draw[kind](ax, y) });
-      }
+        return { name, y, svg: kind === "hand" ? draw.hand(ax, y, name) : draw[kind](ax, y) };
+      }).sort((p, q) => p.y - q.y);      // top to bottom as they stand, so "the next part toward the plate" is the next in the list
       const lit = list.find((p) => p.name === this.shade_lit);
       const one = (p) => `<g data-part="${p.name}" class="${p.name === "plate" ? "plate" : ""}${p === lit ? " lit" : ""}${lit && p.name === "plate" ? " dropped" : ""}">${p.svg}</g>`;
       parts.innerHTML = list.filter((p) => p !== lit).map(one).join("");
       top.innerHTML = lit ? one(lit) : "";                // the lit part in a group of its own, over the red line
-      axis.setAttribute("x1", ax); axis.setAttribute("x2", ax); axis.setAttribute("y1", first ?? 0); axis.setAttribute("y2", H - token("--shade-axis-end", 12));
+      axis.setAttribute("x1", ax); axis.setAttribute("x2", ax); axis.setAttribute("y1", list[0].y); axis.setAttribute("y2", H - token("--shade-axis-end", 12));
       // the lit part's height as a line down the axis to the plate (Okay's drawing, 25 Oct 2026, 16:55): the piece this
       // row changes — from the part to the next part toward the plate — dashed, the stack under it solid; the red is
       // always on top and knocks the grey axis out under its dashes ("knocks out the gray dashline")
