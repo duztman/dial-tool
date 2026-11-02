@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.29 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.30 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1522,6 +1522,7 @@
   .picker header > .findbox { grid-row: 1; grid-column: 3; }
   .picker header > .findtray { grid-row: 2; grid-column: 1 / -1; }
   .picker header > .sheettabs { grid-row: 3; grid-column: 1 / -1; align-self: end; }
+  .picker header:has(> .sheettabs[hidden]) { padding-bottom: var(--u2); }      /* no tabs (a browser without Installed fonts: Safari, the iPad): the band keeps the header's own gap above the list, never sitting on it (Okay, 2 Nov 2026: "this line needs a bottom padding when the tabs aren't there") */
   /* Find: at the sheet's top right, as wide as the stickers' column under it; a magnifier in it, no words */
   .picker header > .findbox { display: grid; }
   .findbox > .find { position: relative; }
@@ -7578,7 +7579,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.29 beta";
+var VERSION = "v1.1.30 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;

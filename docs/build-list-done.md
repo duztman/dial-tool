@@ -2,6 +2,15 @@
 
 Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused; the changelog says what each version built.
 
+## 2 Nov 2026, afternoon — verified by Okay on every machine ("All checks 169-...571 pass")
+
+| # | Item | Status |
+|---|---|---|
+| 169 | Every mark | **done**, verified 2 Nov 2026 |
+| 569 | Every dropdown over its button | **done**, verified 2 Nov 2026 |
+| 570 | The font sheet's line | **done**, verified 2 Nov 2026 |
+| 571 | The Shadows pane's side view at real heights | **done**, verified 2 Nov 2026 |
+
 ## 2 Nov 2026 — verified by Okay on every machine ("5 items all verified on all platforms")
 
 | # | Item | Status |

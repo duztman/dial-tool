@@ -171,6 +171,7 @@
   .picker header > .findbox { grid-row: 1; grid-column: 3; }
   .picker header > .findtray { grid-row: 2; grid-column: 1 / -1; }
   .picker header > .sheettabs { grid-row: 3; grid-column: 1 / -1; align-self: end; }
+  .picker header:has(> .sheettabs[hidden]) { padding-bottom: var(--u2); }      /* no tabs (a browser without Installed fonts: Safari, the iPad): the band keeps the header's own gap above the list, never sitting on it (Okay, 2 Nov 2026: "this line needs a bottom padding when the tabs aren't there") */
   /* Find: at the sheet's top right, as wide as the stickers' column under it; a magnifier in it, no words */
   .picker header > .findbox { display: grid; }
   .findbox > .find { position: relative; }

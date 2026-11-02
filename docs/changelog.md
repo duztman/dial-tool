@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.30 beta · 2 Nov 2026 — the font sheet's filters apart from the list without the Installed tab
+
+Okay, 2 Nov 2026, 16:38, a crop of the sheet without its tabs: "this line needs a bottom padding when the tabs aren't there". "All checks 169-...571 pass" — #169, #569, #570, #571 to done; #175 to Now.
+
+- **The sheet's head** (`4g-fonts.css`): where the Dial Tool's fonts · Installed tabs are hidden (a browser without `queryLocalFonts`: Safari, the iPad), the head takes `--u2` under it, the same as its own row gap. Measured in Chromium with `queryLocalFonts` removed: the band's foot to the list's top 0 → 5.5 px; with the tabs, unchanged (37.5 px).
+- **The window test** (`window.mjs`): a check hides the tabs and measures the gap.
+
 ## v1.1.29 beta · 2 Nov 2026 — a Shadows part stays lit while its controller is open (#571)
 
 Okay, 2 Nov 2026, 14:06: "Tapping line labels on left highlights the diagram but using controller later is done on a gray diagram. While adjusting, the diagram must still be lighting up. If user starts adjusting from the slider, the diagram lights up correctly now."
