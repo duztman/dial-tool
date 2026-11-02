@@ -10,6 +10,10 @@
 // Round 3 (22:04, his marks on round 2): the picture "Too much" (empty below: the shots now end under the last row);
 // the line over the strip struck out (the strip stands right under the Show box); the switch → "TICK BOX" (the app's
 // tick on the heading line, as Flare's).
+// Round 4 (22:09): "All good. Hand types and the above" — kept as round 3; "move bevel as an eye and a tick box below
+// openings" — Bevel leaves the Show box for a pane of its own after Opening's, its tick on the heading line, Bevel Type
+// and Bevels % in it while ticked (the real rows, the real keys); "Show same as windows' show" — the Show box holds Show
+// alone, as a window's does.
 // Not drawn yet: the lume's height (Shadows pane), the openings on the dial's own hands.
 part = ".panel .form";
 tab = "Hands";
@@ -34,9 +38,23 @@ build = async (state) => {
   // the Opening pane, after the hand's pane: built and kept as the panel builds its own (a heading, its toggle on the
   // heading line, the rows in its body), so the eye, the lines and showing a row only while on are the app's
   const on = (T) => Boolean(T.op_on);
-  const rows = [
-    { kind: "hdr", text: "Opening", folded: false, scope: "hand" },
-    { kind: "chk", key: "op_on", text: "Opening", head: true, scope: "hand" },
+  H.bevel = state === "on";
+  // a pane as the panel builds one: a heading with its eye, a tick on the heading line (the box alone: the heading
+  // already says its name), the rows in its body; kept with the panel's rows so sync_rows shows each only while it applies
+  const all = [];
+  const pane = (defs, place) => {
+    const rows = defs.map((r) => t.build_row({ scope: "hand", ...r })), [head, ...rest] = rows;
+    place(head.el);
+    for (const r of rest) {
+      if (r.row.head) { const c = r.el.lastElementChild; c.classList.add("headcontrol"); c.querySelector(".words")?.remove(); r.el = c; r.group = head; r.in_head = true; head.button.after(c); head.el.classList.add("has"); }
+      else { r.group = head; head.body.append(r.el); }
+    }
+    all.push(...rows);
+    return head;
+  };
+  const opening = pane([
+    { kind: "hdr", text: "Opening", folded: false },
+    { kind: "chk", key: "op_on", text: "Opening", head: true },
     { kind: "seg", key: "op_shape", text: "Shape", items: ["Bar", "Dot"], show: on },
     { kind: "num", key: "op_count", text: "Count", lo: 1, hi: 12, step: 1, whole: true, show: on },
     { kind: "num", key: "op_from", text: "From %", lo: 0, hi: 100, step: 1, whole: true, show: on },
@@ -45,15 +63,18 @@ build = async (state) => {
     { kind: "num", key: "op_gap", text: "Gap", lo: 0, hi: 3, step: 0.05, show: on },
     { kind: "seg", key: "op_fill", text: "Fill", items: ["Open", "Lume"], show: on },
     { kind: "col", key: "op_lume", text: "Lume", show: (T) => on(T) && T.op_fill === 1 },
-  ].map((r) => t.build_row({ scope: "hand", ...r }));
-  const [head, ...rest] = rows, after = body.closest(".pane");
-  after.after(head.el);
-  for (const r of rest) {
-    if (r.row.head) { const c = r.el.lastElementChild; c.classList.add("headcontrol"); r.el = c; r.group = head; r.in_head = true; head.button.after(c); head.el.classList.add("has");
-      c.querySelector(".words")?.remove();      // the box alone: the heading already says Opening
-    }
-    else { r.group = head; head.body.append(r.el); }
-  }
+  ], (el) => body.closest(".pane").after(el));
+  // Bevel: out of the Show box (Show alone, as a window's) into a pane after Opening's, its own rows moved in
+  $("#hand-bevel")?.closest("label")?.remove();
+  const own = (key) => t.rows.find((r) => r.row.key === key && !r.in_head)?.row;
+  pane([
+    { kind: "hdr", text: "Bevel", folded: false },
+    { kind: "chk", key: "bevel", text: "Bevel", head: true },
+    { ...own("bevel_look") },
+    { ...own("sh_bevel") },
+  ], (el) => opening.el.after(el));
+  $(".bevelpane")?.remove();
+  const rows = all;
   t.rows.push(...rows);
   t.sync_rows();
   // the openings on the hand's picture (its own units: mm, pointing up, the hub at 0): along the hand from From % to
