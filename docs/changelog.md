@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.31 beta · 2 Nov 2026 — the font sheet's filters drawn in lines; a font's name over its sample
+
+Okay, 2 Nov 2026, 16:50, his picture of the band: "this is too dark, make it like this. please make sure the big sausage's end radii synced up with inner pills. Font name and details line above preview line on all fonts. just a little more padding vertically."
+
+- **The filters** (`4g-fonts.css`, `5-chosen.css`, a new token `--filter-on` #6F6F6B, read off his picture): the band an outline in `--rule` on the paper, no fill; each pill an outline in `--rule` with its word in `--filter-on`; the chosen one filled in `--filter-on`, paper words (not ink: its own rule in the chosen layer); a pill under the pointer `--hover`. The band's corner radius is a pill's half-height plus the band's padding and line, `calc(var(--control) / 2 + var(--u2) + var(--hair))` = 19.5 px, so its ends are round about the pills' centres (measured: pill radius 13 + inset 6.5 = 19.5; the band 39 px high).
+- **A line of the font sheet** (`fonts.js`, `4g-fonts.css`): the name and its stickers on top, the sample under them, on every row. Room: 8.25 above (`--u3`), 5.5 between (`--u2`), 5.5 below (`--u2`) — 19.25 px in all, was 16.5 (+17 %); a row 71.4 px, was 68.7.
+- **The window test**: the row order turned; the band's radius checked against the pills'; no fill on the band. One run failed four unrelated checks (the session's reload, a pasted link, a red hand's shadow, X-ray); the run after passed whole.
+
 ## v1.1.30 beta · 2 Nov 2026 — the font sheet's filters apart from the list without the Installed tab
 
 Okay, 2 Nov 2026, 16:38, a crop of the sheet without its tabs: "this line needs a bottom padding when the tabs aren't there". "All checks 169-...571 pass" — #169, #569, #570, #571 to done; #175 to Now.

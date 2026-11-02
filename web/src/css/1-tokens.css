@@ -8,6 +8,7 @@
     --field: var(--white);                              /* inside a control: fields, tiles, buttons */
     --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
     --ink-hover: #333331;                          /* a filled control under the pointer */
+    --filter-on: #6F6F6B;                          /* the font sheet's filter pills: their words, and the chosen one's fill (Okay's picture of 2 Nov 2026, 16:50, read off it) */
     --wait: #8E8E89;                               /* a sign that waits to be used: the rename box, the ring drawer's keys, the (i) sign; the font sheet's chosen style and its quiet buttons share it */
     --select: #F6D5CB; --select-rule: #D98A74;     /* what is selected: a light red, the seconds hand's (--play) toward paper (Okay, 20 Oct 2026: "This blue accent gets red everywhere we see it") */
     --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
