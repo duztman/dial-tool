@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.34 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.35 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7579,7 +7579,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.34 beta";
+var VERSION = "v1.1.35 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7759,8 +7759,14 @@ var HAND_BASE = {
   // show tick turned on"): the shading Shadows → Bevels % draws on a hand, per hand. Off to start ("Hand bevel off on
   // default", 19 Oct). An older link or file that drew bevels (Bevels % above 0, no per-hand key) gets them on every
   // hand when read (fresh_settings), so it draws as before (R31: no new scheme)
-  bevel: false
+  bevel: false,
+  // how the bevel shapes the hand's top (#531; Okay, 24 Oct 2026, his drawing: a pill switch beside Bevel; 2 Nov 2026,
+  // 17:25: "Option A"), a place in BEVEL_LOOKS: 0 Ridge — two long halves meeting on the centre line, as every bevel
+  // was drawn before (R31: no new scheme) · 1 Faceted — a facet on every side, mitred where two meet · 2 Domed — round
+  // across, shaded from the middle out
+  bevel_look: 0
 };
+var BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];
 var WINDOW_BASE = {
   on: false,
   kind: 0,
@@ -8759,8 +8765,10 @@ var LINK_KEYS = [
   "rh_gap",
   "rh_dash_shape",
   "rh_dash_len",
-  "rh_gap_len"
+  "rh_gap_len",
   // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
+  "bevel_look"
+  // v1.1.35 beta (#531): appended; Ridge to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -10138,6 +10146,67 @@ function disc_mark(h) {
   });
 }
 var paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
+var FACET_TURN = 3;
+function hand_facets(h) {
+  return memo("facets" + key_of(h), () => {
+    const pts = [];
+    for (const c of hand_shape(h).contours()) pts.push(...c._points());
+    const hull = convex_hull(pts);
+    if (hull.length < 3) return [];
+    const sides = [], dir = (a, b3) => Math.atan2(b3[1] - a[1], b3[0] - a[0]), turn = (x2, y) => Math.abs((x2 - y + 3 * Math.PI) % (2 * Math.PI) - Math.PI);
+    let start2 = 0;
+    while (start2 < hull.length) {
+      let end = start2 + 1;
+      const d0 = dir(hull[start2], hull[end % hull.length]);
+      while (end < hull.length && turn(dir(hull[end], hull[(end + 1) % hull.length]), d0) < FACET_TURN * Math.PI / 180) end++;
+      sides.push([hull[start2], hull[end % hull.length]]);
+      start2 = end;
+    }
+    const b = hand_shape(h).bounds(), pad = 1 + Math.max(b[2] - b[0], b[3] - b[1]);
+    const box3 = [[b[0] - pad, b[1] - pad], [b[2] + pad, b[1] - pad], [b[2] + pad, b[3] + pad], [b[0] - pad, b[3] + pad]];
+    const lines = sides.map(([a, e]) => {
+      const dx = e[0] - a[0], dy = e[1] - a[1], l = Math.hypot(dx, dy) || 1, n = [dy / l, -dx / l];
+      return { a, n };
+    });
+    const ccw = lines.reduce((t, { a }, i2) => t + a[0] * lines[(i2 + 1) % lines.length].a[1] - lines[(i2 + 1) % lines.length].a[0] * a[1], 0) > 0;
+    if (ccw) for (const L of lines) L.n = [-L.n[0], -L.n[1]];
+    const depth = (L, p) => -((p[0] - L.a[0]) * L.n[0] + (p[1] - L.a[1]) * L.n[1]);
+    const cut = (poly2, f2) => {
+      const out = [];
+      poly2.forEach((p, i2) => {
+        const q = poly2[(i2 + 1) % poly2.length], fp = f2(p), fq = f2(q);
+        if (fp <= 0) out.push(p);
+        if (fp < 0 && fq > 0 || fp > 0 && fq < 0) {
+          const t = fp / (fp - fq);
+          out.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]);
+        }
+      });
+      return out;
+    };
+    return lines.map((L, i2) => {
+      let poly2 = box3;
+      lines.forEach((M, j) => {
+        if (j !== i2 && poly2.length) poly2 = cut(poly2, (p) => depth(L, p) - depth(M, p));
+      });
+      return [poly2, L.n];
+    }).filter(([poly2]) => poly2.length > 2);
+  });
+}
+function convex_hull(points) {
+  const p = points.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (p.length < 3) return p;
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower = [], upper = [];
+  for (const q of p) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], q) <= 1e-9) lower.pop();
+    lower.push(q);
+  }
+  for (const q of p.reverse()) {
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], q) <= 1e-9) upper.pop();
+    upper.push(q);
+  }
+  return lower.slice(0, -1).concat(upper.slice(0, -1));
+}
 function hand_items(S, t) {
   const angles = hand_angles(t, BEATS[S.ha_beat][1]);
   return HANDS.map((name, i2) => [name, S["ha_" + name].c, S["ha_" + name], angles[i2]]).filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h), a, h]);
@@ -19184,11 +19253,24 @@ var RINGS = {
       line.append(bevel_word);
     }
     wrap.append(line);
+    const looks = bevel ? el("span", { className: "pillswitch bevellooks", role: "radiogroup", ariaLabel: "Bevel" }) : null;
+    const look_buttons = bevel ? BEVEL_LOOKS.map((name, i2) => el("button", { type: "button", id: `hand-bevel-look-${i2}`, textContent: name, onclick: () => this.set_value("hand", "bevel_look", i2) })) : [];
+    if (bevel) {
+      looks.append(...look_buttons);
+      wrap.append(looks);
+    }
     out.refresh = (T) => {
       box3.checked = Boolean(T.on);
       if (bevel) {
         bevel.checked = Boolean(T.bevel);
         bevel_word.hidden = !(T.on && HAND_SHAPES[T.shape] !== "disc");
+      }
+      if (bevel) {
+        looks.hidden = bevel_word.hidden || !T.bevel;
+        look_buttons.forEach((b, i2) => {
+          b.classList.toggle("on", i2 === (T.bevel_look || 0));
+          b.setAttribute("aria-checked", String(i2 === (T.bevel_look || 0)));
+        });
       }
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
@@ -19196,7 +19278,18 @@ var RINGS = {
       const place2 = () => {
         const on = tabs.find((t) => t.classList.contains("on")), a = on && on.getBoundingClientRect(), w = wrap.getBoundingClientRect();
         if (!a || !a.width || !wrap.isConnected) return;
-        Object.assign(line.style, { gridColumn: "1 / -1", justifySelf: "start", marginLeft: `${a.left - w.left}px`, width: `${a.width}px` });
+        Object.assign(line.style, { gridRow: "1", gridColumn: "1 / -1", justifySelf: "start", marginLeft: `${a.left - w.left}px`, width: `${a.width}px` });
+        if (looks) {
+          const after = w.right - a.right >= looks.offsetWidth + 2 * parseFloat(getComputedStyle(wrap).getPropertyValue("--unit"));
+          Object.assign(looks.style, {
+            gridRow: "1",
+            gridColumn: "1 / -1",
+            alignSelf: "center",
+            justifySelf: after ? "start" : "end",
+            marginLeft: after ? `calc(${a.right - w.left}px + var(--u4))` : "",
+            marginRight: after ? "" : `calc(${w.right - a.left}px + var(--u4))`
+          });
+        }
       };
       place2();
       requestAnimationFrame(place2);
@@ -19519,19 +19612,55 @@ var HANDS3 = {
       g.setAttribute("pointer-events", "none");
       const inner = part2(key + "/in", "g", g);
       inner.setAttribute("clip-path", `url(#${clip.id})`);
-      const half = (name, x2, colour, k) => {
+      const half = (name, x2, colour, k2) => {
         const r = part2(`${key}/${name}`, "rect", inner);
         r.setAttribute("x", f2(x2));
         r.setAttribute("y", "-50");
         r.setAttribute("width", "50");
         r.setAttribute("height", "100");
         r.setAttribute("fill", colour);
-        r.setAttribute("fill-opacity", f2(k));
+        r.setAttribute("fill-opacity", f2(k2));
       };
       const amount = S["ha_" + item.name]?.bevel ? clamp(+S.sh_bevel || 0, 0, 100) / 100 : 0;
-      const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
-      half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
-      half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
+      const k = Math.min(on, 1) * amount, look = BEVEL_LOOKS[own.bevel_look] || "Ridge";
+      const a = (from - item.angle) * Math.PI / 180, light = [Math.sin(a), -Math.cos(a)];
+      const shade = (v) => v > 0 ? ["#fff", BEVEL.light * v * k] : ["#000", BEVEL.dark * -v * k];
+      if (look === "Faceted") {
+        hand_facets(own).forEach(([corners, n2], j) => {
+          const facet = part2(`${key}/facet-${j}`, "path", inner), [colour, opacity] = shade(n2[0] * light[0] + n2[1] * light[1]);
+          facet.setAttribute("d", "M" + corners.map(([x2, y]) => f2(x2) + " " + f2(y)).join("L") + "Z");
+          facet.setAttribute("fill", colour);
+          facet.setAttribute("fill-opacity", f2(opacity));
+        });
+      } else if (look === "Domed") {
+        const hw = Math.max((own.w || 1) / 2, 0.05);
+        const ramp = (name, sign) => {
+          const [colour, opacity] = shade(sign * light[0]);
+          const grad = part2(`${key}/${name}/ramp`, "linearGradient", this.light_defs);
+          grad.id = `bevel-${item.name}-${name}`;
+          for (const [k2, v] of [["gradientUnits", "userSpaceOnUse"], ["x1", "0"], ["x2", f2(sign * hw)], ["y1", "0"], ["y2", "0"]]) grad.setAttribute(k2, v);
+          const s0 = part2(`${key}/${name}/ramp/0`, "stop", grad), s1 = part2(`${key}/${name}/ramp/1`, "stop", grad);
+          s0.setAttribute("offset", "0");
+          s0.setAttribute("stop-color", colour);
+          s0.setAttribute("stop-opacity", "0");
+          s1.setAttribute("offset", "1");
+          s1.setAttribute("stop-color", colour);
+          s1.setAttribute("stop-opacity", f2(opacity));
+          const r = part2(`${key}/${name}`, "rect", inner);
+          r.setAttribute("x", sign > 0 ? "0" : "-50");
+          r.setAttribute("y", "-50");
+          r.setAttribute("width", "50");
+          r.setAttribute("height", "100");
+          r.setAttribute("fill", `url(#${grad.id})`);
+          r.removeAttribute("fill-opacity");
+        };
+        ramp("right", 1);
+        ramp("left", -1);
+      } else {
+        const lit = BEVEL.light * Math.abs(side) * k, dark = BEVEL.dark * Math.abs(side) * k;
+        half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
+        half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
+      }
     });
     finish();
   },
