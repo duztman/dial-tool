@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.42 beta · 3 Nov 2026 — show mode's lists: groups and parts that open, one look on the Dial tab
+
+Drawn in six rounds on the real page, Okay, 3 Nov 2026, 01:13–01:39 ("These separator lines, extend all the way to the start of this first column. Disc is not indented, is bold, as is hands and windows. Hands get round icons with hands in L formation … The window icon is not filled outlined"; "Rings and hands get chevrons. Inks pane and all others get the same look. Expandables get chevrons and bold"; "Windows also get chevron. These rules are for all items in these panes with multiples. "4 parts" gets two stacked outline disks … Hidden row might get dotted outline"; "The hr lines cut short, start from 2nd column for expanded items"; "All multiple color parts get multiple lines per color and label"; "Their lines … start where the label starts, 3rd column. Lines only in between colors are white"); 01:43: "Exactly as this. Build."
+
+- **Groups** (`colour.js`: `list_head`, `list_chevron`, `list_folds`; `4e-colour.css`): Rings · Hands · Windows, On the dial · On the discs · Disc depths — bold in ink, a chevron in the dots' column that opens and closes them, their lines from the pane's left. Which are shut is kept by this browser (`dial-tool-shut`).
+- **Dial**: flush on the marks' column, bold, its line from the pane's left.
+- **A part of several colours** (`swatch_lines`): the seconds hand with its cap, a window's frame · disc · figures · neighbours, a band's sectors, a disc's prints on the Inks pane — an expandable line, bold, its chevron in its dot's place; under it a line a colour, named (`colour_part`: Hand, Cap, Frame, Sector 2…), each with its pill, 34 px, the pill 5.5 from each line. The line over them from the names' column, white between two, the last as an item's. The hand's dot on its Hand line.
+- **Marks** (`icons.js`): a hand's line a circle with two hands in an L (`PICS.hand`, the Hands pane's lines too); the cap's (`PICS.cap`); a window's outlined (`PICS.window_mark`); an ink of several parts two discs, the front over the back (`PICS.many`). A hidden part's dot a dotted ring (`list_dot`).
+- **Tests**: a window check for the lists. `npm test` passes but the icon check (`every-strip`, #169, known).
+
 ## v1.1.41 beta · 3 Nov 2026 — Bar · Wedge · Dot capitalised; a disc starts half see-through with no stroke; its thumb whole
 
 Okay, 3 Nov 2026, 00:54: "All confirmed verified. Bar Wedge Dot capitalized, all pill text check. The disc color defaults in 50% opacity, zero stroke for the wedge. Disc thumbnaail cropped less from the sides, shrink the margins to1px each side for disc."

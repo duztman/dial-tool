@@ -44,15 +44,29 @@
   .colourlist > .row.showline > .swatches { flex-wrap: nowrap; }
   .colourlist > .row.showline > .swatches > .dots { flex: none; display: flex; flex-wrap: wrap; gap: var(--chip-gap); max-width: calc(6 * var(--dot) + 5 * var(--chip-gap)); }      /* six swatches a line (Okay: "Six to a line, two lines"), the note beside them */
   .colourlist > .row.showline.bare > .place { display: none; }
-  /* a group's name (Rings · Hands · Windows; On the dial · On the discs · Disc depths): grey, sentence case, at the rows'
-     size, as the Shadows pane's Part Heights; a pane's number column named at its heading's end, small and grey */
-  .colourlist > .row.showsub { display: flex; align-items: end; min-height: var(--line); padding-bottom: var(--u2); }
-  .colourlist > .row.showsub .colhead { color: var(--grey); font-size: var(--t-s); }
+  /* a group's name (Rings · Hands · Windows; On the dial · On the discs · Disc depths): bold in ink, on the marks'
+     column, its chevron in the dots' column, its line from the pane's left (Okay, 3 Nov 2026, 01:13: "These separator
+     lines, extend all the way to the start of this first column … is bold, as is hands and windows"; 01:17: "Rings and
+     hands get chevrons"; 01:31: "start from 2nd column for expanded items" — an item's line keeps the marks' column) */
+  .colourlist > .row.showsub { position: relative; display: flex; align-items: end; min-height: var(--line); padding-bottom: var(--u2); }
+  .colourlist > .row.showsub .colhead { color: var(--ink); font-weight: 600; font-size: var(--t-s); }
+  .colourlist > :is(.row.showsub, .row.showline.lead) { margin-left: calc(-1 * var(--lead)); padding-left: var(--lead); }
+  .colourlist > .row.showsub > .chev { position: absolute; top: 0; bottom: 0; left: calc(var(--nudge) - var(--eye) - var(--gap) + var(--lead)); width: var(--eye); }
+  .colourlist > .row.showline.lead > label { grid-column: 1 / span 2; color: var(--ink); font-weight: 600; font-size: var(--t-s); }      /* Dial: flush on the marks' column, bold */
+  .colourlist > .row.showline.lead > .mark { display: none; }
+  /* what opens (a group, a part of several colours, an ink of several parts): bold, in ink (01:17: "Expandables get
+     chevrons and bold") */
+  .colourlist > .row.showline:has(> .chev) > label { color: var(--ink); font-weight: 600; }
+  /* a part's colours, a line each under it (01:34; 01:39: "Their lines … start where the label starts, 3rd column. Lines
+     only in between colors are white"): the line over them from the names' column, white between two, the last as an
+     item's */
+  .colourlist > .row.showline:has(+ .row.part) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--kind-pic) - var(--u2)) var(--hair) no-repeat; }
+  .colourlist > .row.part:has(+ .row.part) { box-shadow: none; background: linear-gradient(var(--white) 0 0) right bottom / calc(100% - var(--kind-pic) - var(--u2)) var(--hair) no-repeat; }
   .pane > .colhead { justify-self: end; margin-left: auto; color: var(--grey); font-size: var(--t-xs); }
   /* Inks: its lines on the same columns; the ink's fold in the eye's place, its part count as its name */
-  .inklist .chev { display: grid; place-items: center; color: var(--grey); }
-  .inklist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
-  @media (hover: hover) { .inklist .chev:hover { color: var(--ink); } }
+  .colourlist .chev { display: grid; place-items: center; color: var(--grey); }
+  .colourlist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
+  @media (hover: hover) { .colourlist .chev:hover { color: var(--ink); } }
   .inklist > .row.inkline > label { color: var(--ink); }
   .inklist > .row.inkline.open > .place.two { display: flex; align-items: center; justify-content: end; gap: var(--u3); color: var(--grey); }      /* Two inks in the number's place, its word right against it */
   .inklist > .row.inkpart > .letter { display: grid; place-items: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the eye's place */

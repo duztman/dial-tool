@@ -2837,6 +2837,38 @@ await shot("10-bar");
   check(r.start.edge === 0.85 && r.start.at === 0.9 && r.start.tri && Math.abs(r.start.eq - 2 / Math.sqrt(3)) < 0.01 && r.start.alpha === 0.5 && r.start.stroke === 0 && r.marker_at && r.none === 0 && r.stroke === 1 && r.rows.startsWith("Stroke") && r.thumb.split(" ").every((v) => Math.abs(v - 2) < 0.3),
     `a disc hand chosen here starts with its edge at 85 % of the dial's radius (${r.start.edge}), a triangle (${r.start.tri}) as wide as an equilateral's (${r.start.eq}), its point at 90 % of the disc's radius (${r.start.at}) on a row named Marker at (${r.marker_at}); its colour half see-through (${r.start.alpha}), no stroke to start (${r.start.stroke}, drawn: ${r.none}); painted on, a stroke when given a width (${r.stroke}), its rows (${r.rows}); its thumb the whole disc, 1 px in from its tile's edges inside its border (${r.thumb}) (Okay, 2 Nov 2026, 22:18: "the default dot is a wedge that is an equilateral triangle 10% inwards from the edge"; 3 Nov 2026, 00:54: "The disc color defaults in 50% opacity, zero stroke for the wedge"; "shrink the margins to 1px each side for disc")`);
 }
+{ // show mode's lists (Okay, 3 Nov 2026, 01:13–01:43, drawn: "Exactly as this. Build."): group names bold with a chevron, their
+  // lines from the pane's left; Dial flush and bold; hands round marks, windows outlined; a part of several colours opens to
+  // a line a colour, named, the lines between them white from the names' column; a hidden part's dot a dotted ring; an ink
+  // of several parts two discs. A page of its own: show mode is left as it was found
+  const own = await (await visitor()).newPage();
+  await own.goto("file://" + process.cwd() + "/dial-tool.html");
+  await own.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  const r = await own.evaluate(async () => {
+    const t = window.dial_tool, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    t.S.rings[0].on = false; t.changed(true); t.show_mode(true, true); await tick();
+    t.S.ui_section = 5; t.show_section(); t.sync_rows(); await tick();
+    const list = document.querySelector(".colourlist:not(.inklist)"), pane = list.closest(".pane").getBoundingClientRect();
+    const rows = [...list.children], named = (w) => rows.find((x) => (x.querySelector("label, .colhead")?.textContent || "") === w);
+    const rings = named("Rings"), dial = named("Dial"), sec = named("Seconds hand"), hand = sec.nextElementSibling, cap = hand.nextElementSibling;
+    const out = {
+      groups: [...document.querySelectorAll(".colourlist > .row.showsub")].every((x) => x.querySelector(".chev") && getComputedStyle(x.querySelector(".colhead")).fontWeight === "600"),
+      left: Math.round(rings.getBoundingClientRect().left - pane.left), dial: getComputedStyle(dial.querySelector("label")).fontWeight,
+      hand_mark: !!named("Hour hand").querySelector(".mark circle"), win: named("Date at 3")?.querySelector(".mark rect")?.getAttribute("fill") ?? "none",
+      parts: [hand, cap].map((x) => x.querySelector("label").textContent).join(" · "), bold: getComputedStyle(sec.querySelector("label")).fontWeight,
+      white: getComputedStyle(hand).backgroundImage.includes("rgb(234, 216") || getComputedStyle(hand).backgroundImage.includes("255, 255, 255"),
+      dotted: !!rows.find((x) => x.classList.contains("off"))?.querySelector(".eye circle[stroke-dasharray]"),
+      many: !!document.querySelector(".inklist .row.inkline .mark path"),
+    };
+    sec.querySelector(".chev").click(); await tick();
+    out.shut = hand.hidden && cap.hidden;
+    sec.querySelector(".chev").click(); await tick();
+    return out;
+  });
+  await own.context().close();
+  check(r.groups && r.left === 0 && r.dial === "600" && r.hand_mark && r.win === "none" && r.parts === "Hand · Cap" && r.bold === "600" && r.white && r.dotted && r.many && r.shut,
+    `show mode's lists: group names bold with a chevron (${r.groups}), their lines from the pane's left (${r.left}); Dial bold (${r.dial}); a hand's round mark (${r.hand_mark}), a window's outlined (${r.win}); the seconds hand bold (${r.bold}) over its colours ${r.parts}, closing with its chevron (${r.shut}), a white line between (${r.white}); a hidden part's dot dotted (${r.dotted}); an ink of several parts two discs (${r.many}) (Okay, 3 Nov 2026, 01:43: "Exactly as this. Build.")`);
+}
 { // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });
   const name = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_section = 1; t.S.ui_ring = t.S.rings.findIndex((r) => r.kind === 2); t.show_section(); t.sync_rows();

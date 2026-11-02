@@ -117,6 +117,8 @@ export const SHOWN = {
   off: `<circle cx="8.25" cy="8.25" r="3.5" ${sw(CURVE)}/>`,
 };
 export const shown_dot = (on) => icon(SHOWN[on ? "on" : "off"]);
+/** show mode's lists (#547): hidden, a dotted ring (Okay, 3 Nov 2026, 01:27: "Hidden row might get dotted outline instead of iris") */
+export const list_dot = (on) => icon(on ? SHOWN.on : `<circle cx="8.25" cy="8.25" r="3.5" ${sw(CURVE)} stroke-dasharray="1.1 1.2" stroke-linecap="butt"/>`);
 
 export const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
 
@@ -163,7 +165,16 @@ export const PICS = {
   ][i], KIND_PIC),
   // show mode's Dial tab (#546; Okay, 25 Oct 2026: "Tiny marks … look at prescedents"; "Hands unnecessary to iconize"):
   // beside the ring marks above, a window (the Windows tab's, alone), at KIND_PIC
-  window_mark: icon(`<rect x="7" y="8.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none"/>`, KIND_PIC),
+  // outlined (Okay, 3 Nov 2026, 01:13: "The window icon is not filled outlined (rounded rectangle) all for this pane")
+  window_mark: icon(`<rect x="7.25" y="8.75" width="9.5" height="6.5" rx="1.5"/>`, KIND_PIC),
+  // a hand's line (01:13: "Hands get round icons with hands in L formation in the same style as others"): the circle,
+  // the minute hand at 12, the hour hand at 3
+  hand: icon(`<circle cx="12" cy="12" r="9"/><path d="M12 12V5.25M12 12H16.5"/>`, KIND_PIC),
+  // the cap's line: a cap seen from above
+  cap: icon(`<circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none"/>`, KIND_PIC),
+  // an ink of several parts (01:27: "two stacked outline disks, one covering the other, as a thumbnail, this means
+  // multiple items"): the front disc whole, the back one only where the front leaves it, a gap between
+  many: icon(`<path d="M14.023 6.75A5.5 5.5 0 1 0 7.527 15.412"/><circle cx="14" cy="13.5" r="5.5"/>`, KIND_PIC),
   // a stroke's joins (#551; Okay's drawing, 31 Oct 2026: three tiles, an L-shaped band each, its outer corner sharp,
   // round or cut): the band 5 wide, as the shape tile's baton; pictured widths, not lines
   // drawn whole at 24 (not through pic()): a bare tile shows the picture alone, large (Okay, 31 Oct 2026: "NO LABEL, LARGER icon"); the band 7 wide
