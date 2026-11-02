@@ -264,7 +264,10 @@ export const GUIDES = {
     this.shadow_stack = this.stack_picture();
     const parts = el("div", { className: "shadeparts" }, col, this.shadow_stack.el);
     // a row pointed at, focused or with its controller open lights its part in the picture
-    const lit = (e) => { const r = e.target.closest(".row"); this.shade_light(r && r.dataset.part && (e.type === "pointerover" || e.type === "focusin") ? r.dataset.part : null); };
+    // …and while its controller is open the part stays lit, whatever the pointer leaves (Okay, 2 Nov 2026: "Tapping line
+    // labels on left highlights the diagram but using controller later is done on a gray diagram. While adjusting, the
+    // diagram must still be lighting up"); the controller's closing puts it out (value_pop_close)
+    const lit = (e) => { const r = e.target.closest(".row"); this.shade_light((r && r.dataset.part && (e.type === "pointerover" || e.type === "focusin") ? r.dataset.part : null) || this.value_pop?.row?.part || null); };
     for (const kind of ["pointerover", "pointerout", "focusin", "focusout"]) rows.addEventListener(kind, lit);
     const scroll = el("div", { className: "shadescroll" }, top, parts);
     const cell = (cls, ...kids) => el("div", { className: "cell " + cls }, ...kids);

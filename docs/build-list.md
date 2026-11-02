@@ -17,7 +17,7 @@ Nothing: #571 is built. Next in Okay's order: #175 (draw first).
 | 1 | 169 | Every mark: a strip of each mark's value (Length · Radius ± · Angle ± · Rotate °), a press chooses, a drawn line sets the ends; a rhythm of dash and gap marks | 2 Nov 2026 — "All good. Bar is correct, implement"; 12:48 — "gap is a gap" | verify (v1.1.27) |
 | 2 | 569 | Every dropdown over its button, the chosen choice first and bold; the dark lists' rows 4 px lower; Added's list touching its + | 2 Nov 2026 — "this applies to all dropdowns, white bg ones too" | verify (v1.1.27) |
 | 3 | 570 | The font sheet's line: the sample on top, the name in full and the stickers on one line under it, cut at the edge | 2 Nov 2026 — "font name and stickers on the same row" | verify (v1.1.27) |
-| 4 | 571 | The Shadows side view at the parts' real heights, exaggerated: the tallest part fills the room, ratios true, no leaders | 2 Nov 2026 — "Build as is" | verify (v1.1.28) |
+| 4 | 571 | The Shadows side view at the parts' real heights, exaggerated: the tallest part fills the room, ratios true, no leaders; a part stays lit while its controller is open | 2 Nov 2026 — "Build as is"; 14:06 — "While adjusting, the diagram must still be lighting up" | verify (v1.1.29) |
 
 ## Next — the features, in Okay's order, then easier → harder
 

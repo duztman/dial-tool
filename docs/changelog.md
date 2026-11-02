@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.29 beta · 2 Nov 2026 — a Shadows part stays lit while its controller is open (#571)
+
+Okay, 2 Nov 2026, 14:06: "Tapping line labels on left highlights the diagram but using controller later is done on a gray diagram. While adjusting, the diagram must still be lighting up. If user starts adjusting from the slider, the diagram lights up correctly now."
+
+- **The side view keeps its part lit** (`guides.js`): when the pointer or the finger leaves a row whose controller is open, its part stays lit; the controller's closing puts it out, as before. Measured in Chromium, mouse and touch: before, the picture went grey (lit: none); now the part stays lit (second).
+- **The window test** (`window.mjs`): a check for it (Minutes' name pressed, the pointer on its controller: "minute minute"). The Every mark check presses the strip by sending it the pointer's events, as the sun is pressed, so the panel's scroll is left alone (a real click could land on the pinned rings list); and its line broken in v1.1.28 is mended — that run stopped there, so v1.1.28's window test did not run to its end.
+
 ## v1.1.28 beta · 2 Nov 2026 — the Shadows side view at the parts' real heights (#571)
 
 Okay, 2 Nov 2026, 13:05: "hand heights diagram on right, can we make the distances related to reals but exaggerated to show the distinction? the red lines and etc adapt"; 13:10: "1a 2a, draw first"; 13:13, on the drawing: "Build as is".

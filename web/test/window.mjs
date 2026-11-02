@@ -155,8 +155,11 @@ check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] ==
   const dash = await len(2), gap = await len(1);
   await page.click("#ring-rh-dash-shape-Dash-1"); await frame();
   const wedge = await S("t.ring().rh_dash_shape === 1 ? 'wedge' : String(t.ring().rh_dash_shape)");
-  const strip = await page.$("#every-strip"); await strip.scrollIntoViewIfNeeded(); await page.waitForTimeout(300); const sb = await strip.boundingBox()      // measured once the panel has stopped scrolling (a press measured mid-scroll chose the wrong mark, once in three runs), n = await S("parseInt(t.ring().count)");
-  await page.mouse.click(sb.x + sb.width * (4.5 / n), sb.y + sb.height / 2); await frame();
+  // the press sent to the strip itself, as the Shadows pane's sun is pressed: the panel's scroll is left alone (the
+  // strip may stand under the pinned rings list, where a real click would land on that)
+  await page.evaluate(() => { const st = document.querySelector("#every-strip"), r = st.getBoundingClientRect(), n = parseInt(window.dial_tool.ring().count), x = r.left + r.width * (4.5 / n), y = r.top + r.height / 2;
+    for (const type of ["pointerdown", "pointerup"]) st.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: x, clientY: y, pointerId: 1, pointerType: "mouse", button: 0 })); });
+  await frame();
   const chose = await S("t.nudge_at");
   await page.click("#every-reset"); await page.evaluate(() => window.scrollTo(0, 0)); await frame();      // the strip was scrolled into view: the page back at its top, as the checks after it expect
   check(dash / gap > 1.3 && wedge === "wedge" && chose === "4" && await S("t.ring().rhythm === 0 && !Object.keys(t.ring().nudge).length"),
@@ -3053,6 +3056,15 @@ await touch.close();
     && pane.width === 498 && pane.labels.slice(0, 5).join() === "Cap,Seconds,Minutes,Hours,Plate" && pane.heights.every((h) => h === 34) && pane.on_line && pane.lit.join() === "second" && pane.dropped && pane.under === 21 && pane.foot && pane.shadows_tick
     && pane.bounds[0] === pane.bounds[2] && pane.bounds[1] === pane.bounds[3] && pane.limit === "LIMIT" && pane.red && pane.taken === pane.bounds[3],
     `the Shadows pane to Okay's drawing (25 Oct 2026, "pixel perfect"): the top box 204 high with the sliders' column as wide as the diagram (${pane.box}), 25 inside the edge (${pane.pad}); the heading line 34 high, 14 under the box, the diagram's box from its line (${pane.head}); the parts ${pane.labels.join(" · ")} on 34 lines; in the picture the plate on its row's line and each part at its real height over it, one scale for all, the tallest at the first row's top (px per mm: ${pane.off.join(" ")}; Okay, 2 Nov 2026: "distances related to reals but exaggerated to show the distinction"), the one under the pointer lit, its height a red line over the grey parts down to the plate — dashed from the part to the next one toward the plate, solid under it — and the white part over the red (${pane.lit}, ${pane.dropped}); the pane ${pane.width} wide on every screen; the box 21 under the last line (${pane.under}); the footer 53 high in four cells, hairlines between, 120 · … · 167 · to the edge (${pane.cells.join(" · ")}: ${pane.foot}); the seconds hand's slider runs between the minutes' and the cap's heights (${pane.bounds.join(" ")}) and a value past them flashes LIMIT in red (${pane.limit}, ${pane.red}, ${pane.taken} taken)`);
+}
+{ // a part stays lit while its controller is open (Okay, 2 Nov 2026: "using controller later is done on a gray diagram. While adjusting, the diagram must still be lighting up"): its name pressed, the pointer then on the controller's slider
+  await page.click("#shadows-more"); await page.waitForTimeout(200);
+  await page.click('#shadow-list .row[data-part="minute"] label'); await page.waitForTimeout(150);
+  const sb = await (await page.$('#value-pop input[type="range"]')).boundingBox();
+  await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2); await page.waitForTimeout(100);
+  const held = await page.evaluate(() => [window.dial_tool.shade_lit, document.querySelector("#shadows-stack .lit")?.dataset.part].join(" "));
+  await page.keyboard.press("Escape"); await page.mouse.move(5, 5); await page.click("#shadows-more"); await page.waitForTimeout(100);
+  check(held === "minute minute", `the Shadows pane: a part's name pressed, the pointer then on its controller — the part stays lit in the picture (${held})`);
 }
 { // a row per window that shows a disc, under the plate, round the dial from 12, each with its own depth (`depth`; null = the shared sh_disc)
   const discs = await page.evaluate(() => { const t = window.dial_tool, S = t.S, wins = window.dial_tool.S.windows || [], keep = JSON.stringify([S.da_on, S.da_kind, S.da_at, wins]);
