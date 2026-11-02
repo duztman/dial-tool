@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.37 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.38 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -860,7 +860,12 @@ export class Path {
    *  So: an outline inside an odd number of others is a hole, and is turned to run the other way. */
   _wound() {
     const parts = this.contours().map((c) => ({ c, pts: c._points() })).filter((o) => o.pts.length > 2);
-    if (parts.length < 2) return this;
+    if (!parts.length) return this;
+    // one outline alone is set to run as every outer outline does too (counter-clockwise), so merging a shape again gives
+    // the same shape: PathKit hands a single curved outline back the other way round, and the stroke's grow step
+    // (offset) needs the outer way round — a figure merged twice (once as its glyph, once for its stroke) lost its
+    // stroke (2 Nov 2026, found with test/frames.mjs)
+    if (parts.length === 1) { const [o] = parts, a = o.pts.reduce((t, p, i) => t + p[0] * o.pts[(i + 1) % o.pts.length][1] - o.pts[(i + 1) % o.pts.length][0] * p[1], 0); return a < 0 ? o.c._reversed() : o.c; }
     for (const o of parts) {                       // each contour's box: a probe outside it can't be inside the contour, so most pairs are settled without the crossing count (a 60-tick ring is 60 contours: 3,600 pairs a frame before, a few after)
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
       for (const [x, y] of o.pts) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
@@ -1217,6 +1222,28 @@ export function has_chars(txt, t) {
   return buffer.getGlyphInfosAndPositions().every((g) => g.codepoint !== 0);
 }
 
+/** one glyph's outline in the font's own units, its overlaps merged, remembered per font, axes and glyph so a new size
+ *  only scales it. A variable font keeps a figure's strokes as pieces lying over each other (Pathway Extreme's 4: the bar
+ *  over the stem), which an even-odd fill — show mode's ink relief — reads as holes, and a laser would burn twice (Okay,
+ *  2 Nov 2026, 19:06: "Some fonts fail with ink height on show case"); merged in font units, before scaling, for
+ *  precision. The font's variations are set by the caller (shaped). */
+function glyph_outline(info, t, codepoint) {
+  return memo("glyph" + JSON.stringify([info.ps, t.axes, codepoint]), () => {
+    const outline = new Path();
+    for (const c of info.font.glyphToJson(codepoint)) {
+      const v = c.values;
+      if (c.type === "M") outline.moveTo(v);
+      else if (c.type === "L") outline.lineTo(v);
+      else if (c.type === "C") outline.curveTo([v[0], v[1]], [v[2], v[3]], [v[4], v[5]]);
+      else if (c.type === "Q") {
+        const last = outline.d[outline.d.length - 1], px = last[last.length - 2], py = last[last.length - 1];
+        outline.curveTo([px + 2 / 3 * (v[0] - px), py + 2 / 3 * (v[1] - py)], [v[2] + 2 / 3 * (v[0] - v[2]), v[3] + 2 / 3 * (v[1] - v[3])], [v[2], v[3]]);
+      } else outline.closePath();
+    }
+    return outline.removeOverlap();
+  });
+}
+
 /** text → glyphs with positions, in mm. Font, tracking, features, axes and language applied. */
 function shaped(txt, t, size) {
   return memo("text" + JSON.stringify([txt, t.ps, size, t.tracking, t.lang, t.axes, t.features]), () => {
@@ -1232,17 +1259,7 @@ function shaped(txt, t, size) {
     const p = new Path(), starts = [];      // where each glyph starts along the line, with the text index (UTF-16) it came from: a word's letters placed one by one (path_letters) keep their kerning
     for (const g of buffer.getGlyphInfosAndPositions()) {
       starts.push([g.cluster, x]);
-      const outline = new Path();
-      for (const c of info.font.glyphToJson(g.codepoint)) {
-        const v = c.values;
-        if (c.type === "M") outline.moveTo(v);
-        else if (c.type === "L") outline.lineTo(v);
-        else if (c.type === "C") outline.curveTo([v[0], v[1]], [v[2], v[3]], [v[4], v[5]]);
-        else if (c.type === "Q") {
-          const last = outline.d[outline.d.length - 1], px = last[last.length - 2], py = last[last.length - 1];
-          outline.curveTo([px + 2 / 3 * (v[0] - px), py + 2 / 3 * (v[1] - py)], [v[2] + 2 / 3 * (v[0] - v[2]), v[3] + 2 / 3 * (v[1] - v[3])], [v[2], v[3]]);
-        } else outline.closePath();
-      }
+      const outline = glyph_outline(info, t, g.codepoint).copy();
       outline.scale(k).translate(x + (g.xOffset || 0) * k, (g.yOffset || 0) * k);
       p.appendPath(outline);
       x += (g.xAdvance || 0) * k + tr;

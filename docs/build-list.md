@@ -4,13 +4,13 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 2 Nov 2026 (v1.1.37 beta): #169, #569, #570, #571 verified by Okay on every machine (to done); #175 to Now (Okay, 16:38); the font sheet's band apart from the list when the Installed tab is absent; #526 done (v1.1.33); show mode's sun lock (#572, v1.1.34); #531 built (v1.1.35–37), both to verify; Faceted to Later (#573); #175 Now, caps out.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 2 Nov 2026 (v1.1.38 beta): #531 (v1.1.37) and #572 (v1.1.34) to verify; Faceted to Later (#573); #175 Now — openings, stacked lume, a lume view in show mode (from #522); caps out.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 1 | 175 | A hand as a stack: openings and lume openings — draw first | 2 Nov 2026, 18:48 — "Opening: yes"; caps out ("our cap rules stand") | build — one question open, then drawing |
+| 1 | 175 | A hand as a stack: openings and lume openings, the lume stacked (a part with its own height); a lume view in show mode (from #522) — draw first | 2 Nov 2026, 19:06 — "Stacked lume for hands, lume view for show case" | build — drawing next |
 
 ## Verify — built, for Okay's Mac and iPad
 

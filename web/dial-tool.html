@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.37 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.38 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7579,7 +7579,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.37 beta";
+var VERSION = "v1.1.38 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -9090,7 +9090,11 @@ var Path = class _Path {
    *  So: an outline inside an odd number of others is a hole, and is turned to run the other way. */
   _wound() {
     const parts = this.contours().map((c) => ({ c, pts: c._points() })).filter((o) => o.pts.length > 2);
-    if (parts.length < 2) return this;
+    if (!parts.length) return this;
+    if (parts.length === 1) {
+      const [o] = parts, a = o.pts.reduce((t, p, i2) => t + p[0] * o.pts[(i2 + 1) % o.pts.length][1] - o.pts[(i2 + 1) % o.pts.length][0] * p[1], 0);
+      return a < 0 ? o.c._reversed() : o.c;
+    }
     for (const o of parts) {
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
       for (const [x2, y] of o.pts) {
@@ -9440,6 +9444,22 @@ function has_chars(txt2, t) {
   HB.shape(info2.font, buffer, []);
   return buffer.getGlyphInfosAndPositions().every((g) => g.codepoint !== 0);
 }
+function glyph_outline(info2, t, codepoint) {
+  return memo("glyph" + JSON.stringify([info2.ps, t.axes, codepoint]), () => {
+    const outline = new Path();
+    for (const c of info2.font.glyphToJson(codepoint)) {
+      const v = c.values;
+      if (c.type === "M") outline.moveTo(v);
+      else if (c.type === "L") outline.lineTo(v);
+      else if (c.type === "C") outline.curveTo([v[0], v[1]], [v[2], v[3]], [v[4], v[5]]);
+      else if (c.type === "Q") {
+        const last2 = outline.d[outline.d.length - 1], px = last2[last2.length - 2], py = last2[last2.length - 1];
+        outline.curveTo([px + 2 / 3 * (v[0] - px), py + 2 / 3 * (v[1] - py)], [v[2] + 2 / 3 * (v[0] - v[2]), v[3] + 2 / 3 * (v[1] - v[3])], [v[2], v[3]]);
+      } else outline.closePath();
+    }
+    return outline.removeOverlap();
+  });
+}
 function shaped(txt2, t, size) {
   return memo("text" + JSON.stringify([txt2, t.ps, size, t.tracking, t.lang, t.axes, t.features]), () => {
     const info2 = font_of(t), k = size / info2.upem, tr = t.tracking / 1e3 * size;
@@ -9454,17 +9474,7 @@ function shaped(txt2, t, size) {
     const p = new Path(), starts = [];
     for (const g of buffer.getGlyphInfosAndPositions()) {
       starts.push([g.cluster, x2]);
-      const outline = new Path();
-      for (const c of info2.font.glyphToJson(g.codepoint)) {
-        const v = c.values;
-        if (c.type === "M") outline.moveTo(v);
-        else if (c.type === "L") outline.lineTo(v);
-        else if (c.type === "C") outline.curveTo([v[0], v[1]], [v[2], v[3]], [v[4], v[5]]);
-        else if (c.type === "Q") {
-          const last2 = outline.d[outline.d.length - 1], px = last2[last2.length - 2], py = last2[last2.length - 1];
-          outline.curveTo([px + 2 / 3 * (v[0] - px), py + 2 / 3 * (v[1] - py)], [v[2] + 2 / 3 * (v[0] - v[2]), v[3] + 2 / 3 * (v[1] - v[3])], [v[2], v[3]]);
-        } else outline.closePath();
-      }
+      const outline = glyph_outline(info2, t, g.codepoint).copy();
       outline.scale(k).translate(x2 + (g.xOffset || 0) * k, (g.yOffset || 0) * k);
       p.appendPath(outline);
       x2 += (g.xAdvance || 0) * k + tr;

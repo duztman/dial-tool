@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.38 beta · 2 Nov 2026 — every glyph one outline: no more holes in show mode's ink relief
+
+Okay, 2 Nov 2026, 19:06, a picture of Show Case numerals with light squares and triangles where the strokes of a 4 and a 5 cross: "Some fonts fail with ink height on show case. Why would that be, ho'd you solve it?"; 19:08: "Yes please, go."
+
+- **Why**: a variable font keeps a figure's strokes as pieces lying over each other (it needs them to interpolate between weights). Show mode's ink relief shades "all but the figure" with an even-odd fill, which reads every overlap as outside. Measured over the library's 121 font files, figures 0–9: 8 fonts had such figures, all variable — Anybody (5), Bodoni Moda (1 3), Jost (3 8), Montserrat (4), Noto Serif SC (1), Pathway Extreme (1 2 4 5 6 7 8 9), Reem Kufi (3), Vazirmatn (3 8). After: none.
+- **The fix, upstream** (`geometry.js`, `glyph_outline`): each glyph's outline has its overlaps merged when text becomes outlines, in the font's own units, remembered per font, axes and glyph — so a new size only scales it (measured: 0.077 ms a figure before, 0.333 merged each time, 0.095 remembered). The SVG and PDF get one outline per figure too, where a laser would have burnt the overlaps twice.
+- **Found on the way** (`_wound`): a shape of one outline wasn't set to run the way every outer outline runs, so merging it again turned it round — and the stroke round a figure (#551), which merges once more, came out empty for one-outline figures (Montserrat's 5 and 7; `test/frames.mjs`). One outline now runs counter-clockwise as outer outlines do; merging twice gives the same shape.
+- **Tests**: the whole of `npm test` passes but the icon check, which fails on the `every-strip` icon (#169, v1.1.27, 16 problems) on `dev` without this change too — small pushes skip the icon check, so it went unseen.
+
 ## v1.1.37 beta · 2 Nov 2026 — the hand's Bevel pane under the Show box; Domed stronger; Faceted put away (#531, #573)
 
 Okay, 2 Nov 2026, 18:48, his picture with the place marked under the Show box: "place the bevel settings here in the green area with a black line on top.. round bevel needs more intensity at 100. facets system does not work, remove for now, note for later."
