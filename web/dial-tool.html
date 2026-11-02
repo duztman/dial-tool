@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.25 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.27 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -133,7 +133,6 @@
     --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
     --places: 6;                                   /* a window's place circles on their heading's line: 3 · 6 · 9 · 12 · 4 · ··· (4.46.2); the Shape line's buttons are as high as one */
     --show-high: var(--control); --show-ground: color-mix(in srgb, var(--ink) 12%, var(--ground));      /* the Show box (#261): a thin box, darker than the grey page under it (Okay: "Shows bg darker"), a control high (Okay: "less") */
-    --font-name-col: calc(21 * var(--unit));       /* the font sheet's name column (Okay, 1 Nov 2026: "if adding 3 chars width and we gain 10 more fonts that have …, do it"): measured 2 Nov 2026, 100 names in Inter at --t-m — 64 px fits 42, +25 px (three characters) gains 31, then 14, then 6: 115.5 px, 87 names whole */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
@@ -599,6 +598,8 @@
   .unitmenu.floating.night button.on .quiet { color: var(--white); }
   @media (hover: hover) { .unitmenu.floating.night button:hover { background: var(--night-hover); } }
   .unitmenu.floating.inner { box-shadow: var(--shadow-pop-in); }
+  .unitmenu.floating:focus { outline: none; }      /* the list itself holds the keys while open; only its chosen item's bold says which (Okay, 2 Nov 2026) */
+  .unitmenu.floating.night button { height: calc(var(--line) - 4 * var(--hair)); }      /* the dark lists' rows 4 px lower (Okay, 2 Nov 2026: "Minus 4 px height for each row") */
 
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }
@@ -1329,6 +1330,23 @@
   .fromwide .menubox { flex: 1; min-width: 0; }      /* stretched to the margin (#419) */
   .fromwide .fromword { font-size: var(--t-s); }      /* a word on a heading's line that is not its title: small and grey, as the folded summaries (Okay, 20 Oct 2026, 01:16: "Small and gray like other indicators") */
   .fromwide .fromwords { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Every mark's strip (#169): a cell per position, each mark's value as a bar, a wedge or a dot in ink; the skipped
+     positions in the rule's grey; the line at 0 and the ring's own length as hairlines; the chosen mark boxed; the
+     dial's quarters under it as the rows' small grey words; a line being drawn in the ring's guide colour, its ends
+     the dial's handles (#568, 6-preview.css) */
+  .row.strip { padding: var(--u2) 0; touch-action: none; cursor: crosshair; }
+  .row.strip > svg { grid-column: 1 / -1; display: block; width: 100%; overflow: visible; }      /* drawn at the row's width, followed when the window changes */
+  .strip .axis { stroke: var(--rule); stroke-width: var(--hair); }
+  .strip .axis.dotted { stroke-dasharray: var(--hair) var(--triple); }
+  .strip .bar { stroke-width: var(--thick); stroke-linecap: round; }
+  .strip .bar.ink { stroke: var(--ink); } .strip .bar.faint { stroke: var(--rule); }
+  .strip .fill.ink { fill: var(--ink); } .strip .fill.faint { fill: var(--rule); }
+  .strip .stem { stroke-width: var(--hair); } .strip .stem.ink { stroke: var(--ink); } .strip .stem.faint { stroke: var(--rule); }
+  .strip .chosen { fill: none; stroke: var(--ink); stroke-width: var(--hair); }
+  .strip text { font-size: var(--t-xs); fill: var(--grey); text-anchor: middle; }
+  .strip .drawn line { stroke: var(--handle); stroke-width: var(--glow-line); }
+  .strip .drawn circle { fill: var(--white); stroke: var(--handle); stroke-width: var(--glow-line); }
 }
 
 /* fonts: the font box, the font sheet, stickers and their legend */
@@ -1424,24 +1442,23 @@
   .rail::after { content: ""; position: absolute; inset: 0 calc(-1 * var(--unit)); }      /* reach: a finger finds it from beside it too */
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
-  /* a line of the sheet (Okay, 1 Nov 2026): the name in the tool's own type on a column measured to hold most names whole (--font-name-col), the
-     sample — numerals, then letters — on the rest, cut at the edge; under them, on a second line, every sticker the
-     family has, left to right (Okay: "font names in ui inter, column halved in width … numbers move left … Every font
-     gets a second line listing all the stickers") */
-  .fontrow { display: grid; grid-template-columns: var(--font-name-col) minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; column-gap: var(--unit); width: 100%; min-height: var(--head); padding: var(--unit) var(--btn-pad) 0; border-bottom: var(--hair) solid var(--rule); text-align: left; }
-  .fontrow .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-m); color: var(--ink); }
-  .fontrow .has { grid-column: 1 / -1; }
+  /* a line of the sheet (Okay, 2 Nov 2026: "font name and stickers on the same row. they are below the preview which starts
+     from left zero and on top. below name in full and stickers of font in one row until cropped with the box edge"): the
+     sample — numerals, then letters — on top from the row's left, cut at the edge; under it one line: the name in full in
+     the tool's own type, then the stickers, cut where the row ends; a full line between two (Okay, 1 Nov 2026) */
+  .fontrow { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; width: 100%; min-height: var(--head); padding: var(--unit) var(--btn-pad) 0; border-bottom: var(--hair) solid var(--rule); text-align: left; }
+  .fontrow .meta { display: flex; align-items: center; gap: var(--unit); min-width: 0; overflow: hidden; white-space: nowrap; padding: var(--u2) 0 var(--unit); }
+  .fontrow .name { flex: none; white-space: nowrap; font-size: var(--t-m); color: var(--ink); }      /* in full, never cut */
   @media (hover: hover) { .fontrow:hover { background: var(--hover); } }
   .fontrow.on { background: var(--select); }
   @media (hover: hover) { .fontrow.on:hover { background: var(--select); } }
   .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
   .fontrow .sample { font-size: var(--t-sample); }
-  .fontlist .fontrow .sample { position: relative; left: calc(-1 * (var(--unit) + var(--hair))); }      /* drawn a gap and a hairline to the left, all alike: most numerals' first ink then touches the name column's edge, so they don't look inset (Okay, 14 Oct 2026) */
   .fontrow .face { font-size: var(--t-l); }
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
-  .fontrow .has .sticker { padding-inline: calc(var(--unit) / 3); }      /* a little tighter in the sheet, so even eight stickers take two lines */
-  .fontrow .has { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: var(--u1); padding: var(--u2) 0 var(--unit); overflow: hidden; mask-image: linear-gradient(to right, var(--black) calc(100% - var(--u4)), transparent); }      /* one line (Okay, 24 Oct 2026, 23:32: "One line"), the row's whole width; what still doesn't fit fades out at its edge */
+  .fontrow .has .sticker { padding-inline: calc(var(--unit) / 3); }      /* a little tighter in the sheet */
+  .fontrow .has { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: var(--u1); min-width: 0; }      /* one line after the name, cut by the row's edge (Okay, 2 Nov 2026: "until cropped with the box edge") */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners. */
   .sticker { opacity: var(--pixel-ink);      /* the pixel font a little under full strength, on pale and on black alike (Okay, 13 Oct 2026: "Silkscreen too dark on full black, 70%") */
@@ -7561,7 +7578,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.25 beta";
+var VERSION = "v1.1.27 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7665,7 +7682,36 @@ var RING_BASE = {
   stroke_w: 0.1,
   stroke_join: 0,
   stroke_side: 2,
-  stroke_c: [0.85, 0.1, 0.1, 1]
+  stroke_c: [0.85, 0.1, 0.1, 1],
+  // a rhythm (#169; Okay, 2 Nov 2026: "Rhythm: give the user a dropdown of a few options and custom, L S system done
+  // through actual lengths, dash and gap. Options for line dot and wedge for these"; 12:48: "gap is a gap, it does not
+  // need to have a shape … leave only as length"): from the first position, dash marks then gap marks, again and again
+  // round the ring; a dash has its own shape and length, a gap the ring's shape and its own length. rhythm: a place in
+  // RHYTHMS (0 = none, the ring as it is) · rh_dash, rh_gap: how many of each, read only by Custom · rh_dash_shape: a
+  // place in SHAPES, -1 = the ring's own · rh_*_len: in mm, a dot's its Ø; 0 = the ring's own, a dash's 1.5 times it
+  rhythm: 0,
+  rh_dash: 1,
+  rh_gap: 4,
+  rh_dash_shape: -1,
+  rh_dash_len: 0,
+  rh_gap_len: 0
+};
+var RHYTHMS = ["None", "Every 5th \xB7 dash 1, gap 4", "Quarters \xB7 dash 1, gap 14", "Every 3rd \xB7 dash 1, gap 2", "Alternate \xB7 dash 1, gap 1", "Custom"];
+var RHYTHM_STEPS = [null, [1, 4], [1, 14], [1, 2], [1, 1]];
+var RHYTHM_CUSTOM = RHYTHMS.indexOf("Custom");
+var DASH_START = 1.5;
+function rhythm_mark(ring, i2) {
+  if (!ring.rhythm || !["ticks", "markers"].includes(kind_of(ring))) return null;
+  const [dash, gap] = RHYTHM_STEPS[ring.rhythm] || [max(1, round(ring.rh_dash) || 1), max(0, round(ring.rh_gap) || 0)];
+  const is_dash = i2 % (dash + gap) < dash;
+  const k = is_dash ? ring.rh_dash_shape : -1, own = k >= 0 && k < 3 ? SHAPES[k] : null;
+  const len = (is_dash ? ring.rh_dash_len : ring.rh_gap_len) || rhythm_start_len(ring, own, is_dash);
+  return { shape: own, len, dash: is_dash };
+}
+var rhythm_start_len = (ring, own, is_dash) => ((own || SHAPES[ring.shape]) === "dot" ? ring.w : ring.len) * (is_dash ? DASH_START : 1);
+var mark_length = (ring, i2) => {
+  const rh = rhythm_mark(ring, i2);
+  return rh ? rh.len : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
 };
 var STROKE_JOINS = ["Miter", "Round", "Bevel"];
 var STROKE_SIDES = ["Inside", "Middle", "Outside"];
@@ -7919,6 +7965,8 @@ var DEFAULTS = {
   // the unit lengths are shown and typed in: a place in UNITS. Settings stay in mm (R1)
   ui_colour_as: 1,
   // the mode the colour pop-out opens in: a place in COLOUR_MODES, HEX to start (Settings, #554)
+  ui_strip: 0,
+  // what the Every mark strip shows and sets: a place in STRIP_SHOWS, rows.js (#169; the window's state, not in a link)
   ui_snap: false,
   ui_snap_guides: true,
   // snapping (#184; Settings): a dragged handle lands on rings' edges — off to start; and on the added guides' circles too — on (Okay, 1 Nov 2026: "Snap default is off, snap to guides on")
@@ -8149,6 +8197,7 @@ var NOT_GEOMETRY = [
   "ui_hand",
   "ui_window",
   "ui_preview",
+  "ui_strip",
   "ui_scale",
   "ui_unit",
   "ui_colour_as",
@@ -8699,8 +8748,15 @@ var LINK_KEYS = [
   "stroke_w",
   "stroke_join",
   "stroke_side",
-  "stroke_c"
+  "stroke_c",
   // v1.1 beta (#551): appended; off to start, as every older link
+  "rhythm",
+  "rh_dash",
+  "rh_gap",
+  "rh_dash_shape",
+  "rh_dash_len",
+  "rh_gap_len"
+  // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -9472,9 +9528,11 @@ function mark_at(ring, i2, a, grow = 0, solid2 = false) {
   if (style === "none") return null;
   const n = ring.nudge && ring.nudge[String(i2)] || {};
   const k = (first ? ring.twelve_scale : 1) * (n.s ?? 1);
-  const L = ring.len * k, W2 = ring.w * k;
-  const own = n.shape > 0 && SHAPES[n.shape - 1] && SHAPES[n.shape - 1] !== "file" ? SHAPES[n.shape - 1] : null;
-  const shape3 = own ? mark_outline(ring, L, W2, own, own === "wedge" ? 0 : null, grow, solid2) : style === "triangle" ? mark_outline(ring, L * 1.1, W2 * 2.4, "wedge", 0, grow, solid2) : mark_outline(ring, L, W2, null, null, grow, solid2);
+  const rh = rhythm_mark(ring, i2), rh_dot = rh && (rh.shape || SHAPES[ring.shape]) === "dot";
+  const L = (rh && !rh_dot ? rh.len : ring.len) * k, W2 = (rh_dot ? rh.len : ring.w) * k;
+  const nudged = n.shape > 0 && SHAPES[n.shape - 1] && SHAPES[n.shape - 1] !== "file" ? SHAPES[n.shape - 1] : null;
+  const own = nudged || rh && rh.shape;
+  const shape3 = own ? mark_outline(ring, L, W2, own, own === "wedge" && nudged ? 0 : null, grow, solid2) : style === "triangle" ? mark_outline(ring, L * 1.1, W2 * 2.4, "wedge", 0, grow, solid2) : mark_outline(ring, L, W2, null, null, grow, solid2);
   const b = shape3.bounds();
   if (!b) return null;
   if (n.rot) shape3.rotate(-n.rot, [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);
@@ -12654,6 +12712,17 @@ var hand_is = (...shapes) => (H2) => shapes.includes(HAND_SHAPES[H2.shape]);
 var numerals_only = kind_in("numerals");
 var with_text = kind_in("numerals", "text");
 var nudgeable = kind_in("ticks", "markers", "numerals", "text");
+var marks_ring = (R) => Boolean(R) && ["ticks", "markers"].includes(kind_of(R));
+var rhythm_on = (R) => marks_ring(R) && R.rhythm > 0;
+var RHYTHM_SHAPES = ["Bar", "Wedge", "Dot"];
+var rhythm_shape = (R, k) => k >= 0 ? k : R.shape > 2 ? 0 : R.shape;
+var STRIP_SHOWS = [
+  { text: "Length", key: "s", lo: 0.05, hi: 10, step: 0.05 },
+  // in mm on the strip; kept as the nudge's Scale ×, so a mark follows the ring's length
+  { text: "Radius \xB1", key: "dr", lo: -3, hi: 3, step: 0.05 },
+  { text: "Angle \xB1 \xB0", key: "da", lo: -30, hi: 30, step: 0.1 },
+  { text: "Rotate \xB0", key: "rot", lo: -180, hi: 180, step: 1 }
+];
 var W = { scope: "window" };
 var SVG_LATER = "Your own picture, from an SVG file, comes after v1.";
 var win_on = (T) => T.on;
@@ -12827,6 +12896,23 @@ var ROWS = {
     hdr("Band", { folded: true, show: kind_in("band") }),
     num2("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
     // its width stands in Resize (4.47)
+    // Every mark (#169; Okay: "core to our mission"; drawn and approved 2 Nov 2026, 12:22: "All good. Bar is correct,
+    // implement"): one setting across every mark, as Edit one mark below is every setting of one mark — both write the
+    // ring's nudges. On the heading line what the strip shows; then the strip, a cell per position, each mark's value
+    // as a bar in its shape: a press chooses that mark below, a line drawn across sets the ends and the marks between
+    // follow. Then a rhythm: dash marks with their shape and length, gap marks with their length, a few from the menu or Custom
+    hdr("Every mark", { folded: true, show: marks_ring }),
+    pop("ui_strip", "Show", STRIP_SHOWS.map((s) => s.text), { scope: "global", head: true, show: (T, S, app) => marks_ring(app.ring()) }),
+    custom("strip", { show: marks_ring }),
+    info("Press a mark to choose it below. Draw across to set the ends.", { under: true, show: marks_ring }),
+    pop("rhythm", "Rhythm", RHYTHMS, { show: marks_ring }),
+    num2("rh_dash", "Dash marks", 1, 60, 1, { whole: true, show: (R) => marks_ring(R) && R.rhythm === RHYTHM_CUSTOM }),
+    num2("rh_gap", "Gap marks", 0, 60, 1, { whole: true, show: (R) => marks_ring(R) && R.rhythm === RHYTHM_CUSTOM }),
+    seg("rh_dash_shape", "Dash", RHYTHM_SHAPES, { get: (R) => rhythm_shape(R, R.rh_dash_shape), show: rhythm_on }),
+    num2("rh_dash_len", "Dash length", 0.05, 10, 0.05, { get: (R) => R.rh_dash_len || rhythm_start_len(R, SHAPES[R.rh_dash_shape], true), show: rhythm_on }),
+    num2("rh_gap_len", "Gap length", 0.05, 10, 0.05, { get: (R) => R.rh_gap_len || rhythm_start_len(R, null, false), show: rhythm_on }),
+    // a gap has no shape of its own (Okay, 2 Nov 2026: "gap is a gap")
+    custom("every_reset", { show: marks_ring }),
     // one numeral or one mark of its own (#252; every kind but a band, #349: "Each marker selectable and
     // editable … a tick can grow or become anything else, a wedge"): which one — picked in the list, or on the dial, a
     // first press choosing the ring and a second the one pressed — and its own radius, angle, turn and size; a mark
@@ -16778,7 +16864,7 @@ var FONTS = {
           const title = { added: "Added by you" }[group];
           if (title) list.append(el("div", { className: "group quiet", textContent: title }));
         }
-        const named = el("span", { className: "name", textContent: family, title: family });
+        const named = el("span", { className: "name", textContent: family });
         const row = el(
           "button",
           { type: "button", className: "fontrow", title: f2.what ? `${family} \xB7 ${f2.what}` : family, onclick: () => {
@@ -16787,9 +16873,8 @@ var FONTS = {
             this.picker.close();
           } },
           // choosing a font closes the sheet (Okay, 18 Oct 2026, 22:35)
-          named,
           this.sample(f2),
-          el("span", { className: "has" }, ...this.family_says(fonts2).map(([word, kind]) => el("span", { className: "sticker " + kind, textContent: word })))
+          el("span", { className: "meta" }, named, el("span", { className: "has" }, ...this.family_says(fonts2).map(([word, kind]) => el("span", { className: "sticker " + kind, textContent: word }))))
         );
         row.dataset.family = family;
         row.dataset.group = f2.group;
@@ -17350,7 +17435,7 @@ var PANEL = {
   menu_list(select) {
     let list = this.menus_list;
     if (!list) {
-      list = this.menus_list = el("div", { className: "unitmenu floating", id: "menu-list", hidden: true });
+      list = this.menus_list = el("div", { className: "unitmenu floating", id: "menu-list", hidden: true, tabIndex: -1 });
       list.setAttribute("role", "listbox");
       document.body.append(list);
       this.menus_away = (e) => {
@@ -17372,7 +17457,8 @@ var PANEL = {
     }
     if (!list.hidden && this.menus_for === select) return this.menu_list_close();
     this.menus_for = select;
-    const items = [...select.options].filter((o) => !o.hidden && !o.disabled).map((o) => {
+    const offered = [...select.options].filter((o) => !o.hidden && !o.disabled);
+    const items = [...offered.filter((o) => o.selected), ...offered.filter((o) => !o.selected)].map((o) => {
       const b = el("button", { type: "button", role: "option", className: o.selected ? "on" : "", textContent: o.textContent });
       b.setAttribute("aria-selected", String(o.selected));
       b.onclick = () => {
@@ -17392,18 +17478,15 @@ var PANEL = {
     list.hidden = false;
     const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));
     const box3 = (select.closest(".menubox, .popgroup, .casebox, .menulabel") || select.parentElement || select).getBoundingClientRect();
-    const room_below = innerHeight - box3.bottom, room_above = box3.top, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
+    const flush = list.classList.contains("flush");
+    const room_below = innerHeight - (flush ? box3.bottom : box3.top), room_above = flush ? box3.top : box3.bottom, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
     list.style.minWidth = `${Math.round(box3.width)}px`;
-    list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - 2 * u)}px`;
-    const left = list.classList.contains("flush") ? box3.right - list.offsetWidth : box3.left;
-    list.style.left = `${Math.round(Math.max(u, Math.min(left, innerWidth - list.offsetWidth - u)))}px`;
-    list.style.top = up ? "" : `${Math.round(box3.bottom + u)}px`;
-    list.style.bottom = up ? `${Math.round(innerHeight - box3.top + u)}px` : "";
-    const on = list.querySelector(".on");
-    if (on) {
-      list.scrollTop = on.offsetTop - (list.clientHeight - on.offsetHeight) / 2;
-      on.focus({ preventScroll: true });
-    }
+    list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - u)}px`;
+    list.style.left = `${Math.round(flush ? Math.max(u, box3.right - list.offsetWidth) : box3.left)}px`;
+    list.style.top = up ? "" : `${Math.round(flush ? box3.bottom : box3.top)}px`;
+    list.style.bottom = up ? `${Math.round(innerHeight - (flush ? box3.top : box3.bottom))}px` : "";
+    list.scrollTop = 0;
+    list.focus({ preventScroll: true });
     document.addEventListener("pointerdown", this.menus_away, true);
   },
   menu_list_close() {
@@ -19253,6 +19336,134 @@ var RINGS = {
       grab = null;
       wrap.classList.remove("dragging");
     };
+  },
+  /** Every mark's strip (#169; drawn 2 Nov 2026 and approved, "implement"): a cell per position, left to right from the
+   *  first; in each the mark's value for the setting the pane's heading shows (STRIP_SHOWS) — Length as a bar, a wedge
+   *  or a dot as tall as the mark (the rhythm's and its own scale together), the others as a bar up or down from 0.
+   *  The positions the ring skips are faint. The mark Edit one mark is on is boxed. A press on a cell chooses that mark
+   *  below; a press dragged across draws a line in the ring's guide colour: its two ends are the values at the first
+   *  and the last cell, and every mark between takes the line's height there. Values are the ring's nudges, so Edit
+   *  one mark shows them and its Reset undoes them. */
+  row_strip(wrap, out) {
+    wrap.className = "row strip";
+    wrap.id = "every-strip";
+    const H2 = 60, FOOT = 18, TOP = 4;
+    let grab = null, drawn2 = "";
+    const show = () => STRIP_SHOWS[this.S.ui_strip] || STRIP_SHOWS[0];
+    const drawn_of = (R) => {
+      const built = this.statik && this.statik.rings.find((x2) => x2.ring === R);
+      return new Set(built ? built.at : positions_of(R));
+    };
+    const value = (R, i2) => {
+      const n = R.nudge[String(i2)] || {}, k = show().key;
+      return k === "s" ? mark_length(R, i2) * (n.s ?? 1) : n[k] ?? 0;
+    };
+    const scale_of = (R) => {
+      const at2 = ring_angles(R).map((_, i2) => i2), k = show().key;
+      if (k === "s") return { lo: 0, hi: 2 * Math.max(...at2.map((i2) => mark_length(R, i2)), 0.05) };
+      const most = Math.max(...at2.map((i2) => Math.abs(value(R, i2))), show().hi / 6);
+      return { lo: -1.25 * most, hi: 1.25 * most };
+    };
+    const y_of = (v, sc) => TOP + (1 - (v - sc.lo) / (sc.hi - sc.lo)) * (H2 - TOP);
+    const v_of = (y, sc) => sc.lo + (1 - (y - TOP) / (H2 - TOP)) * (sc.hi - sc.lo);
+    out.refresh = (R) => {
+      const W2 = wrap.clientWidth;
+      if (!W2) return;
+      const angles = ring_angles(R), N = angles.length, used = drawn_of(R), pitch = W2 / N;
+      const sc = grab ? grab.sc : scale_of(R), k = show().key, f2 = (v) => v.toFixed(2);
+      const zero = k === "s" ? H2 : y_of(0, sc);
+      let svg = `<line class="axis" x1="0" x2="${W2}" y1="${f2(zero)}" y2="${f2(zero)}"/>`;
+      if (k === "s") {
+        const own = SHAPES[R.shape] === "dot" ? R.w : R.len;
+        svg += `<line class="axis dotted" x1="0" x2="${W2}" y1="${f2(y_of(own, sc))}" y2="${f2(y_of(own, sc))}"/>`;
+      }
+      angles.forEach((_, i2) => {
+        const x2 = (i2 + 0.5) * pitch, y = y_of(value(R, i2), sc), cls = used.has(i2) ? "ink" : "faint";
+        const rh = rhythm_mark(R, i2), n = R.nudge[String(i2)] || {};
+        const shape3 = k !== "s" ? "bar" : n.shape > 0 ? SHAPES[n.shape - 1] : rh && rh.shape || SHAPES[R.shape];
+        if (shape3 === "wedge") svg += `<path class="${cls} fill" d="M${f2(x2 - 0.6)} ${H2}L${f2(x2 - 2.4)} ${f2(y)}L${f2(x2 + 2.4)} ${f2(y)}L${f2(x2 + 0.6)} ${H2}Z"/>`;
+        else if (shape3 === "dot") {
+          const r = Math.max(Math.min(pitch - 1.5, 5), 1) / 2;
+          svg += `<line class="${cls} stem" x1="${f2(x2)}" x2="${f2(x2)}" y1="${H2}" y2="${f2(y)}"/><circle class="${cls} fill" cx="${f2(x2)}" cy="${f2(y)}" r="${f2(r)}"/>`;
+        } else svg += `<line class="${cls} bar" x1="${f2(x2)}" x2="${f2(x2)}" y1="${f2(zero)}" y2="${f2(y)}"/>`;
+      });
+      const c = +this.nudge_at, cx = (c + 0.5) * pitch;
+      if (c >= 0 && c < N) {
+        const y = Math.min(y_of(value(R, c), sc), zero) - 3;
+        svg += `<rect class="chosen" x="${f2(cx - pitch / 2 + 0.5)}" y="${f2(y)}" width="${f2(pitch - 1)}" height="${f2(Math.max(y_of(value(R, c), sc), zero) - y + 3)}"/>`;
+      }
+      for (const [a, name] of [[0, "12"], [90, "3"], [180, "6"], [270, "9"]]) {
+        const i2 = angles.findIndex((x2) => Math.abs(((x2 - a) % 360 + 540) % 360 - 180) < 180 / Math.max(N, 2));
+        if (i2 >= 0) svg += `<text x="${f2((i2 + 0.5) * pitch)}" y="${H2 + FOOT - 4}">${name}</text>`;
+      }
+      if (grab && grab.to) {
+        const g = ring_guide(this.S, this.S.ui_ring), hex3 = GUIDE_COLOURS[g ?? 0];
+        const [x0, y0] = [(grab.from.i + 0.5) * pitch, y_of(grab.from.v, sc)], [x1, y1] = [(grab.to.i + 0.5) * pitch, y_of(grab.to.v, sc)];
+        svg += `<g class="drawn" style="--handle: ${hex3}"><line x1="${f2(x0)}" y1="${f2(y0)}" x2="${f2(x1)}" y2="${f2(y1)}"/><circle cx="${f2(x0)}" cy="${f2(y0)}" r="5"/><circle cx="${f2(x1)}" cy="${f2(y1)}" r="5"/></g>`;
+      }
+      const now = `<svg height="${H2 + FOOT}" viewBox="0 0 ${W2} ${H2 + FOOT}" aria-hidden="true">${svg}</svg>`;
+      if (now !== drawn2) {
+        drawn2 = now;
+        wrap.innerHTML = now;
+      }
+      wrap.ariaLabel = `${show().text} of each of ${N} marks`;
+    };
+    const at = (e) => {
+      const b = wrap.getBoundingClientRect(), R = this.ring(), N = ring_angles(R).length;
+      return { i: clamp(Math.floor((e.clientX - b.left) / b.width * N), 0, N - 1), y: e.clientY - b.top, x: e.clientX };
+    };
+    const snap2 = (v) => {
+      const st = show().step;
+      return Math.round(v / st) * st;
+    };
+    wrap.onpointerdown = (e) => {
+      const R = this.ring(), p = at(e), sc = scale_of(R);
+      grab = { sc, x: p.x, drawn: drawn_of(R), nudge: JSON.parse(JSON.stringify(R.nudge || {})), from: { i: p.i, v: snap2(v_of(p.y, sc)) }, to: null };
+      wrap.setPointerCapture(e.pointerId);
+    };
+    wrap.onpointermove = (e) => {
+      if (!grab) return;
+      const p = at(e);
+      if (!grab.to && Math.abs(p.x - grab.x) < 4) return;
+      const R = this.ring(), k = show().key, sc = grab.sc;
+      grab.to = { i: p.i, v: snap2(clamp(v_of(p.y, sc), Math.max(sc.lo, show().lo), Math.min(sc.hi, show().hi))) };
+      const all = JSON.parse(JSON.stringify(grab.nudge)), [a, b] = grab.from.i <= grab.to.i ? [grab.from, grab.to] : [grab.to, grab.from];
+      for (let i2 = a.i; i2 <= b.i; i2++) {
+        if (!grab.drawn.has(i2)) continue;
+        const v = b.i === a.i ? b.v : a.v + (b.v - a.v) * (i2 - a.i) / (b.i - a.i);
+        const n = { ...all[String(i2)] || {} };
+        const set = k === "s" ? +(v / mark_length(R, i2)).toFixed(4) : +snap2(v).toFixed(4);
+        if (Math.abs(set - NUDGE_NEUTRAL[k]) < 1e-3) delete n[k];
+        else n[k] = set;
+        if (Object.keys(n).length) all[String(i2)] = n;
+        else delete all[String(i2)];
+      }
+      this.set_value("ring", "nudge", all);
+      out.refresh(this.ring());
+    };
+    wrap.onpointerup = wrap.onpointercancel = (e) => {
+      if (!grab) return;
+      const chose = !grab.to && e.type === "pointerup" && grab.drawn.has(grab.from.i);
+      if (chose) {
+        this.nudge_at = String(grab.from.i);
+        this.unselected = false;
+        const pane = this.rows.find((r) => r.fold && r.row.text === "Edit one numeral");
+        if (pane && this.is_folded(pane)) this.fold(pane, false);
+      }
+      grab = null;
+      this.sync_rows();
+      this.render();
+    };
+  },
+  /** Every mark's Reset: no rhythm, and no mark with values of its own (#169). */
+  row_every_reset(wrap) {
+    wrap.className = "row";
+    wrap.append(el("span"), el("button", { type: "button", className: "btn", id: "every-reset", textContent: "Reset every mark", onclick: () => {
+      this.set_value("ring", "rhythm", 0);
+      this.set_value("ring", "nudge", {});
+      this.sync_rows();
+      this.render();
+    } }));
   }
 };
 

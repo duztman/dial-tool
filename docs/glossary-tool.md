@@ -63,6 +63,10 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Ring settings** | The panes under the list, each shown only for the kinds it applies to (R16). |
 | **Handles** | The selected ring's draggable marks on its guides: disc = radius, square = size, triangles = start and span end. |
 | **Pointer label** | The name beside the pointer for the piece under it. |
+| **Every mark** | The Rings pane for ticks and markers that sets one setting across all marks (`hdr("Every mark")`, rows.js); **Edit one mark** sets every setting of one mark. Both write the ring's `nudge`. |
+| **Strip** | Every mark's picture (`row_strip`, rings.js): a cell per position from the first, each mark's value as a bar in its shape; the setting it shows is the pane's heading selector (`ui_strip`: Length · Radius ± · Angle ± · Rotate °). A press chooses that mark in Edit one mark; a line drawn across sets the two ends and the marks between follow. |
+| **Rhythm** | A ring's repeating pattern of **dash** and **gap** marks from the first position (`rhythm`, `RHYTHMS`): a few from the menu (Every 5th, Quarters, Every 3rd, Alternate) or Custom (`rh_dash`, `rh_gap` counts). None = the ring as it is. |
+| **Dash** · **Gap** | A rhythm's two kinds of mark. A dash has its own shape (Bar · Wedge · Dot, `rh_dash_shape`) and length in mm (`rh_dash_len`; 0 = 1.5 × the ring's); a gap keeps the ring's shape and has only a length (`rh_gap_len`; 0 = the ring's). A dot's length is its Ø. |
 
 ## The preview
 

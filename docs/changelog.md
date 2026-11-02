@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## v1.1.27 beta · 2 Nov 2026 — Every mark (#169); every dropdown over its button; the font sheet's line
+
+Okay, 2 Nov 2026, 12:19: "Rhythm: give the user a dropdown of a few options and custom, L S system done through actual lengths, dash and gap. Options for line dot and wedge for these."; 12:22: "All good. Bar is correct, implement."; 12:48: "gap is a gap, it does not need to have a shape … for the font list: font name and stickers on the same row … the dropdown, when open dhould cover the button it's coming out of … this applies to all dropdowns".
+
+- **Every mark** (#169; `rows.js`, `rings.js` `row_strip` · `row_every_reset`, `4f-rings.css`): a pane for ticks and markers above Edit one mark. On its heading line what the **strip** shows (`ui_strip`: Length · Radius ± · Angle ± · Rotate °). The strip: a cell per position, each mark's value as a bar, a wedge or a dot (Length in mm, the others ± round a line at 0); the positions the dial doesn't draw (Every, Offset, given way) faint; the mark Edit one mark is on boxed; the dial's quarters under it. A press chooses that mark below and opens its pane; a press dragged across draws a line in the ring's guide colour, its ends as the dial's handles, and every drawn mark between takes the line's value. The values are the ring's nudges (Length kept as the mark's Scale ×), so Edit one mark shows them and its Reset undoes them.
+- **Rhythm** (`geometry.js` `rhythm_mark`, `RHYTHMS`; ring keys `rhythm`, `rh_dash`, `rh_gap`, `rh_dash_shape`, `rh_dash_len`, `rh_gap_len`, appended to `LINK_KEYS` — no rhythm to start, so every older link draws as before, no new scheme, R31): None · Every 5th · Quarters · Every 3rd · Alternate · Custom (Dash marks, Gap marks). A dash: Bar · Wedge · Dot and a length (starting at 1.5 × the ring's); a gap: the ring's shape and a length (the ring's). A dot's length is its Ø. Reset every mark: no rhythm, no mark's own values.
+- **Every dropdown lies over its button** (`menu_list`, `panel.js`): its top and left on the button's, the chosen choice its first row, bold, the others under it; no focus ring on the chosen one (the list holds the keys). The dark lists' rows 4 px lower. Added's + still drops its list under it, now touching it, flush right.
+- **The font sheet's line** (`fonts.js`, `4g-fonts.css`): the sample on top from the row's left; under it the family's name in full, then its stickers on the same line, cut at the edge. The name column (`--font-name-col`) and the sample's shift to the left are gone.
+- **The phone**: the window test's phone checks print "phone" and are not counted (Okay: "we do not care about the iphone layout anymore").
+- `test/link-keys.json` brought up to `LINK_KEYS` (it stopped at `bevel`; the test only reads it as the list's start).
+- Checked: `npm run small` (the window test: Every mark — Alternate 1.41 × longer, a dash a wedge, a press chooses mark 4, Reset; a menu's list over its box, the chosen first; the sheet's line — name in full for 100 of 100); crops of the Guides list's Rings menu, Resize from's list, the font sheet, the strip with a drawn line and the dial it draws.
+
 ## v1.1.26 beta · 2 Nov 2026 — a dropped list follows its ground
 
 Okay, 2 Nov 2026, 11:21: "on black boxes like the guides, (items on the canvas) the dropdown is black. Rounded corners. Add guide popup aligned flush right with its button. On white bgs like the main left column, the dropdowns are white with sharp corners."

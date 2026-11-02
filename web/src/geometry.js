@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.26 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.27 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -93,7 +93,32 @@ export const RING_BASE = {
   // options"; 31 Oct: "Stroke on off, miter round sharp, inside middle outside of vector, and its color"): drawn as a
   // grown outline in its own colour, never a stroke in a file (R4). join: a place in STROKE_JOINS · side: in STROKE_SIDES
   stroke: false, stroke_w: 0.1, stroke_join: 0, stroke_side: 2, stroke_c: [0.85, 0.1, 0.1, 1],
+  // a rhythm (#169; Okay, 2 Nov 2026: "Rhythm: give the user a dropdown of a few options and custom, L S system done
+  // through actual lengths, dash and gap. Options for line dot and wedge for these"; 12:48: "gap is a gap, it does not
+  // need to have a shape … leave only as length"): from the first position, dash marks then gap marks, again and again
+  // round the ring; a dash has its own shape and length, a gap the ring's shape and its own length. rhythm: a place in
+  // RHYTHMS (0 = none, the ring as it is) · rh_dash, rh_gap: how many of each, read only by Custom · rh_dash_shape: a
+  // place in SHAPES, -1 = the ring's own · rh_*_len: in mm, a dot's its Ø; 0 = the ring's own, a dash's 1.5 times it
+  rhythm: 0, rh_dash: 1, rh_gap: 4, rh_dash_shape: -1, rh_dash_len: 0, rh_gap_len: 0,
 };
+export const RHYTHMS = ["None", "Every 5th · dash 1, gap 4", "Quarters · dash 1, gap 14", "Every 3rd · dash 1, gap 2", "Alternate · dash 1, gap 1", "Custom"];
+const RHYTHM_STEPS = [null, [1, 4], [1, 14], [1, 2], [1, 1]];      // dash, gap; Custom reads the ring's own
+export const RHYTHM_CUSTOM = RHYTHMS.indexOf("Custom");
+export const DASH_START = 1.5;                     // a dash with no length of its own: 1.5 times the ring's
+/** a mark's shape and length from its ring's rhythm at position i — or null, no rhythm (#169). shape: a name in
+ *  SHAPES, or null for the ring's own; len: its length in mm, a dot's Ø. */
+export function rhythm_mark(ring, i) {
+  if (!ring.rhythm || !["ticks", "markers"].includes(kind_of(ring))) return null;
+  const [dash, gap] = RHYTHM_STEPS[ring.rhythm] || [max(1, round(ring.rh_dash) || 1), max(0, round(ring.rh_gap) || 0)];
+  const is_dash = i % (dash + gap) < dash;
+  const k = is_dash ? ring.rh_dash_shape : -1, own = k >= 0 && k < 3 ? SHAPES[k] : null;      // a gap keeps the ring's shape
+  const len = (is_dash ? ring.rh_dash_len : ring.rh_gap_len) || rhythm_start_len(ring, own, is_dash);
+  return { shape: own, len, dash: is_dash };
+}
+/** what a dash or gap measures when it has no length of its own: the ring's length (a dot's Ø), a dash 1.5 times it. */
+export const rhythm_start_len = (ring, own, is_dash) => ((own || SHAPES[ring.shape]) === "dot" ? ring.w : ring.len) * (is_dash ? DASH_START : 1);
+/** a mark's length before its own nudge — what the Every mark strip shows as 1 × (#169): the rhythm's, or the ring's. */
+export const mark_length = (ring, i) => { const rh = rhythm_mark(ring, i); return rh ? rh.len : SHAPES[ring.shape] === "dot" ? ring.w : ring.len; };
 export const STROKE_JOINS = ["Miter", "Round", "Bevel"];      // Illustrator's three (Okay, 31 Oct 2026: "Miter · Round · Bevel")
 export const STROKE_SIDES = ["Inside", "Middle", "Outside"];  // which side of the outline the stroke stands on
 export const TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
@@ -189,6 +214,7 @@ export const DEFAULTS = {
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
   ui_unit: 0,                                      // the unit lengths are shown and typed in: a place in UNITS. Settings stay in mm (R1)
   ui_colour_as: 1,                                 // the mode the colour pop-out opens in: a place in COLOUR_MODES, HEX to start (Settings, #554)
+  ui_strip: 0,                                     // what the Every mark strip shows and sets: a place in STRIP_SHOWS, rows.js (#169; the window's state, not in a link)
   ui_snap: false, ui_snap_guides: true,            // snapping (#184; Settings): a dragged handle lands on rings' edges — off to start; and on the added guides' circles too — on (Okay, 1 Nov 2026: "Snap default is off, snap to guides on")
   ui_scale: false,                                 // changing the diameter scales everything on the dial with it (the window's state: not in a link)
   ui_weight: 100,                                  // Weight % (#88): every width on the dial times this, from the widths as they were when it was last moved; the widths carry it, so it is the window's state, not in a link
@@ -311,7 +337,7 @@ export const GUIDE_MORE = ["line", "crosshair", "circle"];
 /** the case each `bezel` number draws (R9: numbers keep their meaning; a new kind is appended) and the number the menu writes for a kind */
 export const CASE_OF_BEZEL = ["dress", "diver", "field", "dress", "field", "emre01"];
 export const BEZEL_OF_CASE = { dress: 3, diver: 1, field: 2, emre01: 5 };
-export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit", "ui_colour_as", "ui_snap", "ui_snap_guides",
+export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_strip", "ui_scale", "ui_unit", "ui_colour_as", "ui_snap", "ui_snap_guides",
   "w_style", "w_lighting", "w_view", "w_metal", "c_metal", "w_nato", "c_nato", "w_insert", "c_insert", "w_ink", "w_inks", "w_ink_all", "w_flare_on", "w_bevels", "w_flare", "w_fl_size", "w_fl_tint", "w_fl_bright", "w_glass_fat", "w_glass_len", "w_glass_op", "c_backdrop2", "w_grounds", "w_ground_auto", "out_watch_px", "ui_show", "ui_show_section", "ui_edit_section", "ui_effects", "ui_grey_panel", "ui_case"];
 /** a set of files (#171): its tick's key, its words, the kind export() writes, and what it writes it as — the colour
  *  files plain (not a mask, not mirrored), the masks as said; the print sheet as Print says. */
@@ -550,6 +576,7 @@ export const LINK_KEYS = [
   "ink_d",                  // 4.92.15 (#521): appended for the table's sake; lean() leaves it out of a link (R7)
   "depth", "da_depth",      // 4.95 (#526): appended; null to start = the shared sh_disc, as every older link
   "stroke", "stroke_w", "stroke_join", "stroke_side", "stroke_c",      // v1.1 beta (#551): appended; off to start, as every older link
+  "rhythm", "rh_dash", "rh_gap", "rh_dash_shape", "rh_dash_len", "rh_gap_len",      // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1302,11 +1329,15 @@ function mark_at(ring, i, a, grow = 0, solid = false) {
   // marker could be selected and edited"): radius ±, angle ±, size ×, turn — stored per position in the ring's `nudge`
   const n = (ring.nudge && ring.nudge[String(i)]) || {};
   const k = (first ? ring.twelve_scale : 1) * (n.s ?? 1);
-  const L = ring.len * k, W = ring.w * k;
+  // the ring's rhythm first (#169): a dash or a gap mark's own shape and length (a dot's length is its Ø)
+  const rh = rhythm_mark(ring, i), rh_dot = rh && (rh.shape || SHAPES[ring.shape]) === "dot";
+  const L = (rh && !rh_dot ? rh.len : ring.len) * k, W = (rh_dot ? rh.len : ring.w) * k;
   // its own shape (4.78, #349: "a tick can grow or become anything else … a wedge"): nudge.shape, a place in SHAPES
-  // after "as the ring" (0); a mark of its own shape keeps the ring's length, width and rounding
-  const own = n.shape > 0 && SHAPES[n.shape - 1] && SHAPES[n.shape - 1] !== "file" ? SHAPES[n.shape - 1] : null;
-  const shape = own ? mark_outline(ring, L, W, own, own === "wedge" ? 0 : null, grow, solid)
+  // after "as the ring" (0); a mark of its own shape keeps the ring's length, width and rounding. A rhythm's wedge
+  // keeps the ring's inner width, as the ring's own wedge does
+  const nudged = n.shape > 0 && SHAPES[n.shape - 1] && SHAPES[n.shape - 1] !== "file" ? SHAPES[n.shape - 1] : null;
+  const own = nudged || (rh && rh.shape);
+  const shape = own ? mark_outline(ring, L, W, own, own === "wedge" && nudged ? 0 : null, grow, solid)
     : style === "triangle" ? mark_outline(ring, L * 1.1, W * 2.4, "wedge", 0, grow, solid) : mark_outline(ring, L, W, null, null, grow, solid);
   const b = shape.bounds();
   if (!b) return null;

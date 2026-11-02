@@ -126,6 +126,17 @@ export const with_text = kind_in("numerals", "text");
 
 export const nudgeable = kind_in("ticks", "markers", "numerals", "text");      // what has positions of its own to nudge: all but a band (4.78, #349)      // rings that draw words: numerals, and a text ring (#297)
 
+// Every mark (#169): the rings it is for, what its strip shows (a nudge's key, its range, its step), a rhythm's shapes
+export const marks_ring = (R) => Boolean(R) && ["ticks", "markers"].includes(G.kind_of(R));
+export const rhythm_on = (R) => marks_ring(R) && R.rhythm > 0;
+export const RHYTHM_SHAPES = ["Bar", "Wedge", "Dot"];      // the first three of SHAPES (Okay, 2 Nov 2026: "Bar is correct")
+export const rhythm_shape = (R, k) => (k >= 0 ? k : R.shape > 2 ? 0 : R.shape);      // -1: the ring's own (a file's: a bar)
+export const STRIP_SHOWS = [
+  { text: "Length", key: "s", lo: 0.05, hi: 10, step: 0.05 },      // in mm on the strip; kept as the nudge's Scale ×, so a mark follows the ring's length
+  { text: "Radius ±", key: "dr", lo: -3, hi: 3, step: 0.05 },
+  { text: "Angle ± °", key: "da", lo: -30, hi: 30, step: 0.1 },
+  { text: "Rotate °", key: "rot", lo: -180, hi: 180, step: 1 },
+];
 export const W = { scope: "window" };
 
 /** the note in each place an SVG will go after v1 (#530; Okay, 24 Oct 2026: "spaces set. Moon, ampm, dial only"). */
@@ -271,6 +282,22 @@ export const ROWS = {
     pick("mode", "Placement", G.MODES, PICS.mode, { show: with_text }),
     hdr("Band", { folded: true, show: kind_in("band") }),
     num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),      // its width stands in Resize (4.47)
+    // Every mark (#169; Okay: "core to our mission"; drawn and approved 2 Nov 2026, 12:22: "All good. Bar is correct,
+    // implement"): one setting across every mark, as Edit one mark below is every setting of one mark — both write the
+    // ring's nudges. On the heading line what the strip shows; then the strip, a cell per position, each mark's value
+    // as a bar in its shape: a press chooses that mark below, a line drawn across sets the ends and the marks between
+    // follow. Then a rhythm: dash marks with their shape and length, gap marks with their length, a few from the menu or Custom
+    hdr("Every mark", { folded: true, show: marks_ring }),
+    pop("ui_strip", "Show", STRIP_SHOWS.map((s) => s.text), { scope: "global", head: true, show: (T, S, app) => marks_ring(app.ring()) }),
+    custom("strip", { show: marks_ring }),
+    info("Press a mark to choose it below. Draw across to set the ends.", { under: true, show: marks_ring }),
+    pop("rhythm", "Rhythm", G.RHYTHMS, { show: marks_ring }),
+    num("rh_dash", "Dash marks", 1, 60, 1, { whole: true, show: (R) => marks_ring(R) && R.rhythm === G.RHYTHM_CUSTOM }),
+    num("rh_gap", "Gap marks", 0, 60, 1, { whole: true, show: (R) => marks_ring(R) && R.rhythm === G.RHYTHM_CUSTOM }),
+    seg("rh_dash_shape", "Dash", RHYTHM_SHAPES, { get: (R) => rhythm_shape(R, R.rh_dash_shape), show: rhythm_on }),
+    num("rh_dash_len", "Dash length", 0.05, 10, 0.05, { get: (R) => R.rh_dash_len || G.rhythm_start_len(R, G.SHAPES[R.rh_dash_shape], true), show: rhythm_on }),
+    num("rh_gap_len", "Gap length", 0.05, 10, 0.05, { get: (R) => R.rh_gap_len || G.rhythm_start_len(R, null, false), show: rhythm_on }),      // a gap has no shape of its own (Okay, 2 Nov 2026: "gap is a gap")
+    custom("every_reset", { show: marks_ring }),
     // one numeral or one mark of its own (#252; every kind but a band, #349: "Each marker selectable and
     // editable … a tick can grow or become anything else, a wedge"): which one — picked in the list, or on the dial, a
     // first press choosing the ring and a second the one pressed — and its own radius, angle, turn and size; a mark

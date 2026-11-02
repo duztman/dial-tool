@@ -2,6 +2,16 @@
 
 Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused; the changelog says what each version built.
 
+## 2 Nov 2026 — verified by Okay on every machine ("5 items all verified on all platforms")
+
+| # | Item | Status |
+|---|---|---|
+| 528 | Dramatic lighting more dramatic | **done**, verified 2 Nov 2026 |
+| 439 | Backdrop's swatch loses its outline at times | **done**, verified 2 Nov 2026 |
+| 552 | The Type pane opening jumps the panel's scroll | **done**, verified 2 Nov 2026 |
+| 568 | The ring handles, Okay's drawing | **done**, verified 2 Nov 2026 |
+| 184 | Snapping | **done**, verified 2 Nov 2026 |
+
 ## 1 Nov 2026 — the build list checked with Okay
 
 | # | Item | Status |

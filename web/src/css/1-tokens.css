@@ -98,7 +98,6 @@
     --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
     --places: 6;                                   /* a window's place circles on their heading's line: 3 · 6 · 9 · 12 · 4 · ··· (4.46.2); the Shape line's buttons are as high as one */
     --show-high: var(--control); --show-ground: color-mix(in srgb, var(--ink) 12%, var(--ground));      /* the Show box (#261): a thin box, darker than the grey page under it (Okay: "Shows bg darker"), a control high (Okay: "less") */
-    --font-name-col: calc(21 * var(--unit));       /* the font sheet's name column (Okay, 1 Nov 2026: "if adding 3 chars width and we gain 10 more fonts that have …, do it"): measured 2 Nov 2026, 100 names in Inter at --t-m — 64 px fits 42, +25 px (three characters) gains 31, then 14, then 6: 115.5 px, 87 names whole */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */

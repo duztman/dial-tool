@@ -16,7 +16,7 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 ## 2 · Context and constraints
 
 - Okay: graphic designer; uses Illustrator daily, also InDesign, After Effects, LightBurn. Comfortable with code; wants to understand what it does.
-- Machines: Macs, both Apple Silicon and Intel (macOS 15; the Intel one has integrated graphics — the slowest machine to test speed on), an iPad and an iPhone. The tool runs in Chrome on the Macs and in Safari on the iPad and the phone.
+- Machines: Macs, both Apple Silicon and Intel (macOS 15; the Intel one has integrated graphics — the slowest machine to test speed on), an iPad and an iPhone. The tool runs in Chrome on the Macs and in Safari on the iPad and the phone. The phone's layout is not cared for until Okay says so (2 Nov 2026: "we do not care about the iphone layout anymore, do not fuss over it until this state is changed by me"): the window test's phone checks are said, never counted.
 - Existing practice: prototyping dials by acid-etching brass blanks with toner transfer (PnP Blue film). Pad printing is the industry pipeline.
 - Materials and parts are sourced locally: don't plan around ordering from abroad (books excepted).
 - The movement is not chosen yet — design first, then pick a movement that fits.

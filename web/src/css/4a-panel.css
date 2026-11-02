@@ -115,6 +115,8 @@
   .unitmenu.floating.night button.on .quiet { color: var(--white); }
   @media (hover: hover) { .unitmenu.floating.night button:hover { background: var(--night-hover); } }
   .unitmenu.floating.inner { box-shadow: var(--shadow-pop-in); }
+  .unitmenu.floating:focus { outline: none; }      /* the list itself holds the keys while open; only its chosen item's bold says which (Okay, 2 Nov 2026) */
+  .unitmenu.floating.night button { height: calc(var(--line) - 4 * var(--hair)); }      /* the dark lists' rows 4 px lower (Okay, 2 Nov 2026: "Minus 4 px height for each row") */
 
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }

@@ -256,4 +256,21 @@
   .fromwide .menubox { flex: 1; min-width: 0; }      /* stretched to the margin (#419) */
   .fromwide .fromword { font-size: var(--t-s); }      /* a word on a heading's line that is not its title: small and grey, as the folded summaries (Okay, 20 Oct 2026, 01:16: "Small and gray like other indicators") */
   .fromwide .fromwords { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Every mark's strip (#169): a cell per position, each mark's value as a bar, a wedge or a dot in ink; the skipped
+     positions in the rule's grey; the line at 0 and the ring's own length as hairlines; the chosen mark boxed; the
+     dial's quarters under it as the rows' small grey words; a line being drawn in the ring's guide colour, its ends
+     the dial's handles (#568, 6-preview.css) */
+  .row.strip { padding: var(--u2) 0; touch-action: none; cursor: crosshair; }
+  .row.strip > svg { grid-column: 1 / -1; display: block; width: 100%; overflow: visible; }      /* drawn at the row's width, followed when the window changes */
+  .strip .axis { stroke: var(--rule); stroke-width: var(--hair); }
+  .strip .axis.dotted { stroke-dasharray: var(--hair) var(--triple); }
+  .strip .bar { stroke-width: var(--thick); stroke-linecap: round; }
+  .strip .bar.ink { stroke: var(--ink); } .strip .bar.faint { stroke: var(--rule); }
+  .strip .fill.ink { fill: var(--ink); } .strip .fill.faint { fill: var(--rule); }
+  .strip .stem { stroke-width: var(--hair); } .strip .stem.ink { stroke: var(--ink); } .strip .stem.faint { stroke: var(--rule); }
+  .strip .chosen { fill: none; stroke: var(--ink); stroke-width: var(--hair); }
+  .strip text { font-size: var(--t-xs); fill: var(--grey); text-anchor: middle; }
+  .strip .drawn line { stroke: var(--handle); stroke-width: var(--glow-line); }
+  .strip .drawn circle { fill: var(--white); stroke: var(--handle); stroke-width: var(--glow-line); }
 }

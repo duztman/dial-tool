@@ -398,11 +398,13 @@ export const FONTS = {
           const title = { added: "Added by you" }[group];
           if (title) list.append(el("div", { className: "group quiet", textContent: title }));
         }
-        // a line of the sheet (Okay, 1 Nov 2026): the family's name in the tool's own type · its numerals and letters, cut at
-        // the edge · under them, every sticker it has
-        const named = el("span", { className: "name", textContent: family, title: family });
+        // a line of the sheet (Okay, 2 Nov 2026: "font name and stickers on the same row. they are below the preview which
+        // starts from left zero and on top. below name in full and stickers of font in one row until cropped with the box
+        // edge"): on top its numerals and letters from the row's left, cut at the edge; under them the family's name in
+        // full in the tool's own type, then every sticker it has, on one line, cut where the sheet ends
+        const named = el("span", { className: "name", textContent: family });
         const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); this.picker.close(); } },      // choosing a font closes the sheet (Okay, 18 Oct 2026, 22:35)
-          named, this.sample(f), el("span", { className: "has" }, ...this.family_says(fonts).map(([word, kind]) => el("span", { className: "sticker " + kind, textContent: word }))));
+          this.sample(f), el("span", { className: "meta" }, named, el("span", { className: "has" }, ...this.family_says(fonts).map(([word, kind]) => el("span", { className: "sticker " + kind, textContent: word })))));
         row.dataset.family = family;
         row.dataset.group = f.group;
         list.append(row);

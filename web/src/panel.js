@@ -123,7 +123,7 @@ export const PANEL = {
   menu_list(select) {
     let list = this.menus_list;
     if (!list) {
-      list = this.menus_list = el("div", { className: "unitmenu floating", id: "menu-list", hidden: true });
+      list = this.menus_list = el("div", { className: "unitmenu floating", id: "menu-list", hidden: true, tabIndex: -1 });
       list.setAttribute("role", "listbox");
       document.body.append(list);
       this.menus_away = (e) => { if (!list.contains(e.target) && e.target !== this.menus_for) this.menu_list_close(); };
@@ -137,7 +137,12 @@ export const PANEL = {
     }
     if (!list.hidden && this.menus_for === select) return this.menu_list_close();
     this.menus_for = select;
-    const items = [...select.options].filter((o) => !o.hidden && !o.disabled).map((o) => {
+    // the chosen one first, bold, in the button's own place; the others under it in their order — so the list covers the
+    // button it comes out of and its word is never seen twice (Okay, 2 Nov 2026: "the dropdown, when open should cover
+    // the button it's coming out of to avoid doubling up the selected item's label. Button state selected in bold up top,
+    // options below. this applies to all dropdowns")
+    const offered = [...select.options].filter((o) => !o.hidden && !o.disabled);
+    const items = [...offered.filter((o) => o.selected), ...offered.filter((o) => !o.selected)].map((o) => {
       const b = el("button", { type: "button", role: "option", className: o.selected ? "on" : "", textContent: o.textContent });
       b.setAttribute("aria-selected", String(o.selected));
       b.onclick = () => { this.menu_list_close(); if (select.value !== o.value) { select.value = o.value; select.dispatchEvent(new Event("change", { bubbles: true })); } };
@@ -153,15 +158,20 @@ export const PANEL = {
     list.hidden = false;
     const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));      // the stylesheet's unit: a unit off the box and the window's edges
     const box = (select.closest(".menubox, .popgroup, .casebox, .menulabel") || select.parentElement || select).getBoundingClientRect();
-    const room_below = innerHeight - box.bottom, room_above = box.top, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
+    // over its button: the list's top on the button's top (its bottom on the button's bottom when the room is above), its
+    // left on the button's left at all times (Okay, 2 Nov 2026: "aligned left with button at all times"); the Added +'s
+    // list, which chooses nothing, still hangs from the button flush right (Okay, 2 Nov 2026: "Add guide popup aligned
+    // flush right with its button"), touching it (Okay, 2 Nov 2026: "No visible gap between the lower line of button and
+    // top of dropdown menu")
+    const flush = list.classList.contains("flush");
+    const room_below = innerHeight - (flush ? box.bottom : box.top), room_above = flush ? box.top : box.bottom, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
     list.style.minWidth = `${Math.round(box.width)}px`;
-    list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - 2 * u)}px`;
-    const left = list.classList.contains("flush") ? box.right - list.offsetWidth : box.left;      // flush right with its button (Okay, 2 Nov 2026: "Add guide popup aligned flush right with its button")
-    list.style.left = `${Math.round(Math.max(u, Math.min(left, innerWidth - list.offsetWidth - u)))}px`;
-    list.style.top = up ? "" : `${Math.round(box.bottom + u)}px`;
-    list.style.bottom = up ? `${Math.round(innerHeight - box.top + u)}px` : "";
-    const on = list.querySelector(".on");
-    if (on) { list.scrollTop = on.offsetTop - (list.clientHeight - on.offsetHeight) / 2; on.focus({ preventScroll: true }); }
+    list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - u)}px`;
+    list.style.left = `${Math.round(flush ? Math.max(u, box.right - list.offsetWidth) : box.left)}px`;
+    list.style.top = up ? "" : `${Math.round(flush ? box.bottom : box.top)}px`;
+    list.style.bottom = up ? `${Math.round(innerHeight - (flush ? box.top : box.bottom))}px` : "";
+    list.scrollTop = 0;                            // the chosen one is the first
+    list.focus({ preventScroll: true });           // the list holds the keys (Escape, the arrows), and the chosen one shows only its bold, no focus ring under it (Okay, 2 Nov 2026: "selected does not get a double bottom line when selected, gets highlighted only with bold")
     document.addEventListener("pointerdown", this.menus_away, true);
   },
 

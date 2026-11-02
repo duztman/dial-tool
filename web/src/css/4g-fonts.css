@@ -91,24 +91,23 @@
   .rail::after { content: ""; position: absolute; inset: 0 calc(-1 * var(--unit)); }      /* reach: a finger finds it from beside it too */
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
-  /* a line of the sheet (Okay, 1 Nov 2026): the name in the tool's own type on a column measured to hold most names whole (--font-name-col), the
-     sample — numerals, then letters — on the rest, cut at the edge; under them, on a second line, every sticker the
-     family has, left to right (Okay: "font names in ui inter, column halved in width … numbers move left … Every font
-     gets a second line listing all the stickers") */
-  .fontrow { display: grid; grid-template-columns: var(--font-name-col) minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; column-gap: var(--unit); width: 100%; min-height: var(--head); padding: var(--unit) var(--btn-pad) 0; border-bottom: var(--hair) solid var(--rule); text-align: left; }
-  .fontrow .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-m); color: var(--ink); }
-  .fontrow .has { grid-column: 1 / -1; }
+  /* a line of the sheet (Okay, 2 Nov 2026: "font name and stickers on the same row. they are below the preview which starts
+     from left zero and on top. below name in full and stickers of font in one row until cropped with the box edge"): the
+     sample — numerals, then letters — on top from the row's left, cut at the edge; under it one line: the name in full in
+     the tool's own type, then the stickers, cut where the row ends; a full line between two (Okay, 1 Nov 2026) */
+  .fontrow { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; width: 100%; min-height: var(--head); padding: var(--unit) var(--btn-pad) 0; border-bottom: var(--hair) solid var(--rule); text-align: left; }
+  .fontrow .meta { display: flex; align-items: center; gap: var(--unit); min-width: 0; overflow: hidden; white-space: nowrap; padding: var(--u2) 0 var(--unit); }
+  .fontrow .name { flex: none; white-space: nowrap; font-size: var(--t-m); color: var(--ink); }      /* in full, never cut */
   @media (hover: hover) { .fontrow:hover { background: var(--hover); } }
   .fontrow.on { background: var(--select); }
   @media (hover: hover) { .fontrow.on:hover { background: var(--select); } }
   .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
   .fontrow .sample { font-size: var(--t-sample); }
-  .fontlist .fontrow .sample { position: relative; left: calc(-1 * (var(--unit) + var(--hair))); }      /* drawn a gap and a hairline to the left, all alike: most numerals' first ink then touches the name column's edge, so they don't look inset (Okay, 14 Oct 2026) */
   .fontrow .face { font-size: var(--t-l); }
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
-  .fontrow .has .sticker { padding-inline: calc(var(--unit) / 3); }      /* a little tighter in the sheet, so even eight stickers take two lines */
-  .fontrow .has { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: var(--u1); padding: var(--u2) 0 var(--unit); overflow: hidden; mask-image: linear-gradient(to right, var(--black) calc(100% - var(--u4)), transparent); }      /* one line (Okay, 24 Oct 2026, 23:32: "One line"), the row's whole width; what still doesn't fit fades out at its edge */
+  .fontrow .has .sticker { padding-inline: calc(var(--unit) / 3); }      /* a little tighter in the sheet */
+  .fontrow .has { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: var(--u1); min-width: 0; }      /* one line after the name, cut by the row's edge (Okay, 2 Nov 2026: "until cropped with the box edge") */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners. */
   .sticker { opacity: var(--pixel-ink);      /* the pixel font a little under full strength, on pale and on black alike (Okay, 13 Oct 2026: "Silkscreen too dark on full black, 70%") */

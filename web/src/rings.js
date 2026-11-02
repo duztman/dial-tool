@@ -3,9 +3,9 @@
 
 import * as G from "./geometry.js";
 
-import { $, KEY, RING_ROWS, SNAP_DEG, clamp, el, paint } from "./ui.js";
+import { $, KEY, NUDGE_NEUTRAL, RING_ROWS, SNAP_DEG, clamp, el, paint } from "./ui.js";
 import { DENSE, KIND_PIC, LINE, PICS, SIGNS, TOOL_ICONS, eye, icon, round_sign } from "./icons.js";
-import { VALUE_PICS, chevron_box, num, radius_row, size_row } from "./rows.js";
+import { STRIP_SHOWS, VALUE_PICS, chevron_box, num, radius_row, size_row } from "./rows.js";
 
 export const RINGS = {
   /** the numeral or mark Nudge works on, outlined on the dial in its ring's guide colour while the Nudge pane is open
@@ -692,5 +692,111 @@ export const RINGS = {
       this.set_value("ring", "span", grab.span);
     };
     wrap.onpointerup = wrap.onpointercancel = () => { grab = null; wrap.classList.remove("dragging"); };
+  },
+
+  /** Every mark's strip (#169; drawn 2 Nov 2026 and approved, "implement"): a cell per position, left to right from the
+   *  first; in each the mark's value for the setting the pane's heading shows (STRIP_SHOWS) — Length as a bar, a wedge
+   *  or a dot as tall as the mark (the rhythm's and its own scale together), the others as a bar up or down from 0.
+   *  The positions the ring skips are faint. The mark Edit one mark is on is boxed. A press on a cell chooses that mark
+   *  below; a press dragged across draws a line in the ring's guide colour: its two ends are the values at the first
+   *  and the last cell, and every mark between takes the line's height there. Values are the ring's nudges, so Edit
+   *  one mark shows them and its Reset undoes them. */
+  row_strip(wrap, out) {
+    wrap.className = "row strip";
+    wrap.id = "every-strip";
+    const H = 60, FOOT = 18, TOP = 4;            // the bars' room, the names' room under them, air over the tallest — px
+    let grab = null, drawn = "";
+    const show = () => STRIP_SHOWS[this.S.ui_strip] || STRIP_SHOWS[0];
+    // the marks the dial draws: what Every and Offset keep, less those that give way to the rings above (as Edit one
+    // mark lists them, so a press never chooses one that isn't there)
+    const drawn_of = (R) => { const built = this.statik && this.statik.rings.find((x) => x.ring === R); return new Set(built ? built.at : G.positions_of(R)); };
+    const value = (R, i) => { const n = R.nudge[String(i)] || {}, k = show().key; return k === "s" ? G.mark_length(R, i) * (n.s ?? 1) : n[k] ?? 0; };
+    // the scale: Length from 0 to twice the longest mark as it stands without its own scale; the others ± round 0.
+    // Kept while a line is drawn, so the strip does not move under the finger
+    const scale_of = (R) => {
+      const at = G.ring_angles(R).map((_, i) => i), k = show().key;
+      if (k === "s") return { lo: 0, hi: 2 * Math.max(...at.map((i) => G.mark_length(R, i)), 0.05) };
+      const most = Math.max(...at.map((i) => Math.abs(value(R, i))), show().hi / 6);
+      return { lo: -1.25 * most, hi: 1.25 * most };
+    };
+    const y_of = (v, sc) => TOP + (1 - (v - sc.lo) / (sc.hi - sc.lo)) * (H - TOP);
+    const v_of = (y, sc) => sc.lo + (1 - (y - TOP) / (H - TOP)) * (sc.hi - sc.lo);
+    out.refresh = (R) => {
+      const W = wrap.clientWidth;
+      if (!W) return;                              // folded: drawn when it shows
+      const angles = G.ring_angles(R), N = angles.length, used = drawn_of(R), pitch = W / N;
+      const sc = grab ? grab.sc : scale_of(R), k = show().key, f = (v) => v.toFixed(2);
+      const zero = k === "s" ? H : y_of(0, sc);
+      let svg = `<line class="axis" x1="0" x2="${W}" y1="${f(zero)}" y2="${f(zero)}"/>`;
+      if (k === "s") { const own = G.SHAPES[R.shape] === "dot" ? R.w : R.len; svg += `<line class="axis dotted" x1="0" x2="${W}" y1="${f(y_of(own, sc))}" y2="${f(y_of(own, sc))}"/>`; }      // the ring's own length
+      angles.forEach((_, i) => {
+        const x = (i + 0.5) * pitch, y = y_of(value(R, i), sc), cls = used.has(i) ? "ink" : "faint";
+        const rh = G.rhythm_mark(R, i), n = R.nudge[String(i)] || {};
+        const shape = k !== "s" ? "bar" : n.shape > 0 ? G.SHAPES[n.shape - 1] : (rh && rh.shape) || G.SHAPES[R.shape];
+        if (shape === "wedge") svg += `<path class="${cls} fill" d="M${f(x - 0.6)} ${H}L${f(x - 2.4)} ${f(y)}L${f(x + 2.4)} ${f(y)}L${f(x + 0.6)} ${H}Z"/>`;      // wide at the dial's edge, as on the dial
+        else if (shape === "dot") { const r = Math.max(Math.min(pitch - 1.5, 5), 1) / 2; svg += `<line class="${cls} stem" x1="${f(x)}" x2="${f(x)}" y1="${H}" y2="${f(y)}"/><circle class="${cls} fill" cx="${f(x)}" cy="${f(y)}" r="${f(r)}"/>`; }      // a dot's length is its Ø: a hairline up to it, the dot on top, as a bar's top
+        else svg += `<line class="${cls} bar" x1="${f(x)}" x2="${f(x)}" y1="${f(zero)}" y2="${f(y)}"/>`;
+      });
+      const c = +this.nudge_at, cx = (c + 0.5) * pitch;
+      if (c >= 0 && c < N) { const y = Math.min(y_of(value(R, c), sc), zero) - 3; svg += `<rect class="chosen" x="${f(cx - pitch / 2 + 0.5)}" y="${f(y)}" width="${f(pitch - 1)}" height="${f(Math.max(y_of(value(R, c), sc), zero) - y + 3)}"/>`; }      // a box touching it (Okay, 20 Oct 2026: "rectangular tangent box")
+      for (const [a, name] of [[0, "12"], [90, "3"], [180, "6"], [270, "9"]]) {      // the dial's quarters, under the cell that stands there
+        const i = angles.findIndex((x) => Math.abs((((x - a) % 360) + 540) % 360 - 180) < 180 / Math.max(N, 2));
+        if (i >= 0) svg += `<text x="${f((i + 0.5) * pitch)}" y="${H + FOOT - 4}">${name}</text>`;
+      }
+      if (grab && grab.to) {                       // the line being drawn, its ends as the dial's handles (#568)
+        const g = G.ring_guide(this.S, this.S.ui_ring), hex = G.GUIDE_COLOURS[g ?? 0];
+        const [x0, y0] = [(grab.from.i + 0.5) * pitch, y_of(grab.from.v, sc)], [x1, y1] = [(grab.to.i + 0.5) * pitch, y_of(grab.to.v, sc)];
+        svg += `<g class="drawn" style="--handle: ${hex}"><line x1="${f(x0)}" y1="${f(y0)}" x2="${f(x1)}" y2="${f(y1)}"/><circle cx="${f(x0)}" cy="${f(y0)}" r="5"/><circle cx="${f(x1)}" cy="${f(y1)}" r="5"/></g>`;
+      }
+      const now = `<svg height="${H + FOOT}" viewBox="0 0 ${W} ${H + FOOT}" aria-hidden="true">${svg}</svg>`;
+      if (now !== drawn) { drawn = now; wrap.innerHTML = now; }
+      wrap.ariaLabel = `${show().text} of each of ${N} marks`;
+    };
+    // the pointer: which cell, and what value its height is
+    const at = (e) => { const b = wrap.getBoundingClientRect(), R = this.ring(), N = G.ring_angles(R).length; return { i: clamp(Math.floor((e.clientX - b.left) / b.width * N), 0, N - 1), y: e.clientY - b.top, x: e.clientX }; };
+    const snap = (v) => { const st = show().step; return Math.round(v / st) * st; };
+    wrap.onpointerdown = (e) => {
+      const R = this.ring(), p = at(e), sc = scale_of(R);
+      grab = { sc, x: p.x, drawn: drawn_of(R), nudge: JSON.parse(JSON.stringify(R.nudge || {})), from: { i: p.i, v: snap(v_of(p.y, sc)) }, to: null };
+      wrap.setPointerCapture(e.pointerId);
+    };
+    wrap.onpointermove = (e) => {
+      if (!grab) return;
+      const p = at(e);
+      if (!grab.to && Math.abs(p.x - grab.x) < 4) return;      // not yet a line: a press may still be a choice
+      const R = this.ring(), k = show().key, sc = grab.sc;
+      grab.to = { i: p.i, v: snap(clamp(v_of(p.y, sc), Math.max(sc.lo, show().lo), Math.min(sc.hi, show().hi))) };
+      const all = JSON.parse(JSON.stringify(grab.nudge)), [a, b] = grab.from.i <= grab.to.i ? [grab.from, grab.to] : [grab.to, grab.from];
+      for (let i = a.i; i <= b.i; i++) {
+        if (!grab.drawn.has(i)) continue;          // a mark the dial doesn't draw keeps no value of its own
+        const v = b.i === a.i ? b.v : a.v + (b.v - a.v) * (i - a.i) / (b.i - a.i);
+        const n = { ...(all[String(i)] || {}) };
+        const set = k === "s" ? +(v / G.mark_length(R, i)).toFixed(4) : +snap(v).toFixed(4);      // Length is kept as the mark's scale
+        if (Math.abs(set - NUDGE_NEUTRAL[k]) < 1e-3) delete n[k]; else n[k] = set;
+        if (Object.keys(n).length) all[String(i)] = n; else delete all[String(i)];
+      }
+      this.set_value("ring", "nudge", all);
+      out.refresh(this.ring());                    // the line follows the finger even where the values stay
+    };
+    wrap.onpointerup = wrap.onpointercancel = (e) => {
+      if (!grab) return;
+      const chose = !grab.to && e.type === "pointerup" && grab.drawn.has(grab.from.i);
+      if (chose) {                                 // a press: that mark, below — its pane opens
+        this.nudge_at = String(grab.from.i); this.unselected = false;
+        const pane = this.rows.find((r) => r.fold && r.row.text === "Edit one numeral");
+        if (pane && this.is_folded(pane)) this.fold(pane, false);
+      }
+      grab = null;
+      this.sync_rows(); this.render();
+    };
+  },
+
+  /** Every mark's Reset: no rhythm, and no mark with values of its own (#169). */
+  row_every_reset(wrap) {
+    wrap.className = "row";
+    wrap.append(el("span"), el("button", { type: "button", className: "btn", id: "every-reset", textContent: "Reset every mark", onclick: () => {
+      this.set_value("ring", "rhythm", 0); this.set_value("ring", "nudge", {});
+      this.sync_rows(); this.render();
+    } }));
   },
 };
