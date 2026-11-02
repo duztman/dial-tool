@@ -1027,10 +1027,12 @@ check(show_tick[0] === 9 && Math.abs(show_tick[1] - 6.25) < 0.1, `the Show box $
 await page.click("#hand-tab-0");
 const show_under = [await under_tab("#hand-tab-0")];
 await page.click("#hand-tab-2"); show_under.push(await under_tab("#hand-tab-2")); await page.click("#hand-tab-0");
-// under the box a thin black line opens the hand's pane, from where the tabs start; the hand's box starts there too, its top on the first row's line (Okay, on 4.46.1: "Blue lines, align, black line, new black line, thin")
-const opened = await page.evaluate(() => { const pane = document.querySelector(".form > .pane.headless:not(.bevelpane)"), c = getComputedStyle(pane), d = document.querySelector("#hand-detail").getBoundingClientRect(), t = document.querySelector(".tabsbar .segs").getBoundingClientRect(), rows = [...document.querySelectorAll(".form > .pane.headless:not(.bevelpane) .row.side:not([hidden])")], row = rows[0].getBoundingClientRect(), last = rows.at(-1).getBoundingClientRect(), box = document.querySelector(".form > .showbox > .showline").getBoundingClientRect(), p = pane.getBoundingClientRect();
-  return [c.backgroundImage.includes("linear-gradient") && c.backgroundSize.endsWith(" 1px"), (d.left - t.left).toFixed(1), (d.top - (row.top - 1)).toFixed(1), (d.bottom - last.bottom).toFixed(1), (p.top - box.bottom).toFixed(1) + "/" + (row.top - 1 - (p.top + 1)).toFixed(1)].join(" "); });      // over the line: from the box to its top edge; under it: from its foot to the first row's white line
-check(/^true 0\.0 0\.0 0\.0 (\S+)\/\1$/.test(opened), `under the Show box a thin black line opens the hand's pane, as far under the box as the rows are under it (${opened.split(" ").at(-1)}); the hand's box starts where the tabs do, from the first row's line to the last row's foot (4.46.4: "Enlarge the preview to fit the area")`);
+// under the box a thin black line opens the hand's pane, as far under the box as the hand types are under it (Okay, 2 Nov
+// 2026, 22:25: "The gap after the line for hands, is the same as before, between it and gray show block"); the hand's
+// box starts where the tabs do, its top on the first row's line, its foot on the last row's
+const opened = await page.evaluate(() => { const pane = document.querySelector(".form > .showbox + .pane.headless"), c = getComputedStyle(pane), d = document.querySelector("#hand-detail").getBoundingClientRect(), t = document.querySelector(".tabsbar .segs").getBoundingClientRect(), rows = [...pane.querySelectorAll(".row.side:not([hidden])")], row = rows[0].getBoundingClientRect(), last = rows.at(-1).getBoundingClientRect(), box = document.querySelector(".form > .showbox > .showline").getBoundingClientRect(), p = pane.getBoundingClientRect(), tile = pane.querySelector(".row.thumbs .pickt").getBoundingClientRect();
+  return [c.backgroundImage.includes("linear-gradient") && c.backgroundSize.endsWith(" 1px"), (d.left - t.left).toFixed(1), (d.top - (row.top - 1)).toFixed(1), (d.bottom - last.bottom).toFixed(1), (p.top - box.bottom).toFixed(1) + "/" + (tile.top - p.top).toFixed(1)].join(" "); });      // over the line: from the box to its top edge; under it: from the line to the hand types' tiles
+check(/^true 0\.0 0\.0 0\.0 (\S+)\/\1$/.test(opened), `under the Show box a thin black line opens the hand's pane, as far under the box as the hand types are under it (${opened.split(" ").at(-1)}; Okay, 2 Nov 2026, 22:25: "The gap after the line for hands, is the same as before, between it and gray show block"); the hand's box starts where the tabs do, from the first row's line to the last row's foot (4.46.4: "Enlarge the preview to fit the area")`);
 check(tick_up[0] === "hand-on-Show" && tick_up[1] === "Show" && tick_up[2] && tick_up[3] && tick_up[4] && show_under.every((u) => u === "0.0 0.0 0.0"), `the Show box (#261; 4.46.2): it grows down from the chosen tab, as wide as it, and goes with it (Hour, Seconds: ${show_under.join(" · ")}); a ground of its own, it holds Show; the hand's pane under it has no name line and no thick line`);
 const pill_gaps = await page.$eval(".form .colour", (e) => { const r = e.getBoundingClientRect(), d = e.querySelector(".dot").getBoundingClientRect(), h = e.querySelector(".hex").getBoundingClientRect(), row = e.closest(".row").getBoundingClientRect();
   return { gaps: [d.left - r.left, h.left - d.right, r.right - h.right, d.top - r.top, r.bottom - d.bottom, r.top - row.top, row.bottom - r.bottom], dot: d.height, type: parseFloat(getComputedStyle(e).fontSize) }; });
@@ -1067,13 +1069,14 @@ await page.click("#hand-tab-0");
   const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = document.querySelector(".form .pane:not(.bevelpane) .body").querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".row.thumbs > .picks.thumbs > *")].filter((e) => e.offsetParent).map((e) => e.title);
     return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), high: Math.round(box.height), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].filter((h) => h.checkVisibility()).map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
   const a = await look();
-  check(a.beside === 12 && a.top === -1 && a.bottom === 0 && a.panes === "" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, as high as the rows beside it (${JSON.stringify({ ...a, d: 0 })})`);      // top −1: its line on the first row's (4.46.2; 6 below it until then)
-  // its shapes: a row of thumbs under the box and every row beside it, from the box's left to the end, one line, the SVG tile last (4.46.4; Okay: "Put hand type as a row spanning preview to end, after wall")
+  check(a.beside === 12 && a.top === -1 && a.bottom === 0 && a.panes === "Opening · Bevel" && a.centre === 2, `a hand's pane: at the left a box with the hand itself, its centre marked, as high as the rows beside it; after it the Opening and Bevel panes (Okay, 2 Nov 2026, 22:09: "move bevel as an eye and a tick box below openings") (${JSON.stringify({ ...a, d: 0 })})`);      // top −1: its line on the first row's (4.46.2; 6 below it until then)
+  // its shapes: a row of thumbs over the box and every row beside it, from the box's left to the end, one line, the SVG tile last (Okay, 2 Nov 2026, 22:00: "hand type moves up top of the preview and sliders")
   const thumbs = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), box = r(document.querySelector("#hand-detail")), rows = [...document.querySelectorAll(".form .row.side:not([hidden])")].map(r), t = [...document.querySelectorAll(".row.thumbs > .picks.thumbs > *")].map(r), end = Math.max(...rows.map((x) => x.right));
-    return [t.length, t.every((x) => x.top >= box.bottom && x.top >= Math.max(...rows.map((y) => y.bottom)) && x.height > x.width), new Set(t.map((x) => Math.round(x.top))).size, Math.abs(t[0].left - box.left).toFixed(1) + " " + Math.abs(t.at(-1).right - end).toFixed(1), [...document.querySelectorAll(".row.thumbs .pickt > span")].every((e) => !e.checkVisibility()),
-      (() => { const row = document.querySelector(".row.thumbs"), c = getComputedStyle(row); return [c.borderTopColor, c.borderBottomColor].every((x) => x === "rgb(17, 17, 17)") && c.borderTopWidth === "1px" && Math.abs(r(row).top - box.bottom - parseFloat(getComputedStyle(row.querySelector(".picks")).paddingTop)) < 0.5; })()]; });
-  check(a.tiles.startsWith("baton pencil sword") && a.tiles.includes("disc") && a.tiles.endsWith("not built yet") && thumbs[0] === 11 && thumbs[1] && thumbs[2] === 1 && thumbs[3] === "0.0 0.0" && thumbs[4] && thumbs[5],
-    `a hand's shapes are a row of upright thumbs without words under the box and its rows, every one (${thumbs[0]}, the disc and the SVG tile among them) on one line from the box's left to the end (${thumbs[3]}), between two thin black lines, the first two units under the box's foot, the same space as round them (4.46.5: "THERE'S A SPACE. THEN COMES BLACK LINE")`);
+    const row = document.querySelector(".row.thumbs"), c = getComputedStyle(row), pane = row.closest(".pane"), line = r(pane).top, foot = r(row).bottom;
+    return [t.length, t.every((x) => x.bottom <= box.top && x.bottom <= Math.min(...rows.map((y) => y.top)) && x.height > x.width), new Set(t.map((x) => Math.round(x.top))).size, Math.abs(t[0].left - box.left).toFixed(1) + " " + Math.abs(t.at(-1).right - end).toFixed(1), [...document.querySelectorAll(".row.thumbs .pickt > span")].every((e) => !e.checkVisibility()),
+      c.borderBottomColor === "rgb(17, 17, 17)" && c.borderBottomWidth === "1px" && getComputedStyle(pane).backgroundImage.includes("linear-gradient"), [(t[0].top - line).toFixed(1), (foot - 1 - t[0].bottom).toFixed(1), (box.top + 1 - foot).toFixed(1)].join(" ")]; });
+  check(a.tiles.startsWith("baton pencil sword") && a.tiles.includes("disc") && a.tiles.endsWith("not built yet") && thumbs[0] === 11 && thumbs[1] && thumbs[2] === 1 && thumbs[3] === "0.0 0.0" && thumbs[4] && thumbs[5] && new Set(thumbs[6].split(" ")).size === 1,
+    `a hand's shapes are a row of upright thumbs without words over the box and its rows, every one (${thumbs[0]}, the disc and the SVG tile among them) on one line from the box's left to the end (${thumbs[3]}), between two thin black lines, as much room under the first, over the second and under it (${thumbs[6]}) (Okay, 2 Nov 2026, 22:00: "hand type moves up top of the preview and sliders"; 22:18: "list of hand types gets a thin black line")`);
   await page.click("#hand-shape-Shape-7");
   const b = await look();
   const box_high = await page.$eval("#hand-detail", (e) => Math.round(e.getBoundingClientRect().height));
@@ -1309,8 +1312,8 @@ check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on ===
 await page.evaluate(() => window.dial_tool.set_value("window", "on", true));      // shown: its pane under the Show box
 check(await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6", "shown, the pane says Window at 6");
 const on_box = await page.evaluate(() => { const box = document.querySelector(".form").firstElementChild, c = box.querySelector(".showline").getBoundingClientRect(), t = document.querySelector(".windowcards .card > .tab.on").getBoundingClientRect(); return [box.classList.contains("showbox"), box.querySelector("input").id, box.nextElementSibling.querySelector("h2").textContent, !document.querySelector(".form .pane .headcontrol input"), (c.left - t.left).toFixed(1) + " " + (c.right - t.right).toFixed(1)]; });
-const win_gap = await page.evaluate(() => { const box = document.querySelector(".form > .showbox > .showline").getBoundingClientRect(), pane = document.querySelector(".form > .showbox + .pane").getBoundingClientRect(); return +(pane.top - box.bottom).toFixed(1); });
-check(win_gap === 5.5, `under the window's Show box its pane's heading stands a unit below (${win_gap}; Okay, 19 Oct 2026, 20:37: "closer")`);
+const win_gap = await page.evaluate(() => { const box = document.querySelector(".form > .showbox > .showline").getBoundingClientRect(), pane = document.querySelector(".form > .showbox + .pane"); return +(pane.getBoundingClientRect().top - box.bottom).toFixed(1) + " " + getComputedStyle(pane).borderTopWidth; });
+check(win_gap === "11 2px", `under the window's Show box its pane opens with the thick line, a Show box's room over it (${win_gap}; Okay, 2 Nov 2026, 22:18: "Window at x needs a thick")`);
 check(on_box[0] && on_box[1] === "window-on-Show" && on_box[2] === "Window at 6" && on_box[3] && on_box[4] === "0.0 0.0", `Show stands in the Show box under the chosen card, as wide as it (${on_box[4]}), over the window's pane (#261; 4.46.2): the cards are tabs only`);
 await page.click(".form .pane >> nth=0 >> .fold h2");
 check(await page.isVisible("#window-on-Show"), "the window's pane folded, Show stays in view");
@@ -2738,48 +2741,78 @@ await shot("10-bar");
   await page.mouse.move(1000, 400); await page.keyboard.down("Control"); await page.mouse.wheel(0, -100); await page.keyboard.up("Control"); await frame();
   check(still[0].includes("user-scalable=no") && still[1] === "pan-x pan-y" && still[2] && await S("t.z") > z0, `the window doesn't zoom (a pinch on the panel is refused; ${still[1]}), the dial still does`);
 }
-{ // a hand's own Bevel tick beside Show, from the moment Show is on, off to start; on, its hand bevelled at Bevels %; and the cap in the seconds hand's picture (4.89.1; Okay, 20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on")
-  const r = await page.evaluate(() => {
-    const t = window.dial_tool, S = t.S, was = [S.ui_hand, S.ui_section, S.ha_second.on, S.ha_hour.bevel, S.ha_hour.on];
-    const tick = () => [...document.querySelectorAll(".form label.check")].some((l) => l.textContent.trim() === "Bevel" && l.offsetParent && l.closest(".showline"));
+{ // a hand's Bevel (#531): a pane of its own after the Opening's, its tick box on its heading line while the hand is
+  // shown, off to start (Okay, 2 Nov 2026, 22:09: "move bevel as an eye and a tick box below openings. Show same as
+  // windows' show"); ticked: Bevel Type (Ridge · Domed; Faceted not offered, #573) on the sliders' line, Bevels %, its hand
+  // bevelled; a Domed edge twice a Ridge's half; and the cap in the seconds hand's picture
+  const r = await page.evaluate(async () => {
+    const t = window.dial_tool, S = t.S, was = JSON.stringify([S.ui_hand, S.ui_section, S.ha_second.on, S.ha_hour]);
+    const box = () => document.getElementById("hand-bevel-Bevel"), pane = () => box()?.closest(".pane"), g = () => document.querySelector("g[clip-path='url(#bevel-clip-hour)']");
+    const tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
     const op = () => [...document.querySelectorAll("g[clip-path='url(#bevel-clip-hour)'] rect")].map((x) => +x.getAttribute("fill-opacity"));
-    S.ui_section = 2; t.show_section(); S.ha_second.on = true; S.ui_hand = 0; t.sync_rows(); t.frame();
-    const shown = tick(), off = !S.ha_hour.bevel && op().every((v) => v === 0);
-    t.set_value("hand", "on", false); t.sync_rows(); const gone = !tick(); t.set_value("hand", "on", true); t.sync_rows();
-    t.set_value("hand", "bevel", true); t.frame();
+    S.ui_section = 2; t.show_section(); S.ha_second.on = true; S.ui_hand = 0; t.sync_rows(); t.frame(); await tick();
+    const in_show = [...document.querySelectorAll(".showline label.check")].map((l) => l.textContent.trim()).join(" · ");
+    const shown = Boolean(box()?.checkVisibility()), off = !S.ha_hour.bevel && op().every((v) => v === 0), rows_off = [...pane().querySelectorAll(".body .row")].every((x) => x.hidden);
+    const place = pane().previousElementSibling?.querySelector("h2")?.textContent === "Opening" && pane().querySelector(":scope > .fold h2")?.textContent === "Bevel";
+    t.set_value("hand", "on", false); t.sync_rows(); const gone = !box()?.checkVisibility(); t.set_value("hand", "on", true); t.sync_rows();
+    box().click(); t.frame(); await tick();
     const lit = op().some((v) => v > 0);
+    const words = [...pane().querySelectorAll(".pillswitch button")].filter((b) => !b.hidden).map((b) => b.textContent).join(" · ");
+    const lined = Math.round(pane().querySelector(".pillswitch").getBoundingClientRect().left) === Math.round(pane().querySelector("input[type=range]").getBoundingClientRect().left);
+    const ridge = Math.max(...[...g().querySelectorAll("rect")].map((x) => +x.getAttribute("fill-opacity") || 0));
+    t.set_value("hand", "bevel_look", 2); t.frame(); await tick();
+    const dome = Math.max(...[...document.querySelectorAll("linearGradient[id^='bevel-hour'] stop")].map((x) => +x.getAttribute("stop-opacity") || 0));
     t.set_value("hand", "bevel", false); t.frame();
     const cap_hour = !!document.querySelector("#hand-detail .cap");
     S.ui_hand = 2; t.sync_rows();
     const cap_second = !!document.querySelector("#hand-detail .cap");
-    S.ha_hour.bevel = was[3]; S.ha_second.on = was[2]; S.ui_hand = was[0]; S.ui_section = was[1]; t.show_section(); t.sync_rows();
-    return { shown, off, gone, lit, cap_hour, cap_second };
+    const back = JSON.parse(was); S.ui_hand = back[0]; S.ui_section = back[1]; S.ha_second.on = back[2]; S.ha_hour = back[3]; t.changed(); t.show_section(); t.sync_rows(); t.frame();
+    return { in_show, shown, off, rows_off, place, gone, lit, words, lined, ridge: +ridge.toFixed(3), dome: +dome.toFixed(3), cap_hour, cap_second };
   });
-  check(r.shown && r.off && r.gone && r.lit && !r.cap_hour && r.cap_second,
-    `a hand's Bevel beside Show while it is shown (${r.shown}; hidden with Show off: ${r.gone}), off to start (${r.off}), on: its hand bevelled (${r.lit}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
+  check(r.in_show === "Show" && r.shown && r.off && r.rows_off && r.place && r.gone && r.lit && r.words === "Ridge · Domed" && r.lined && Math.abs(r.dome - Math.min(2 * r.ridge, 1)) < 0.002 && !r.cap_hour && r.cap_second,
+    `a hand's Bevel: Show alone in the Show box (${r.in_show}); a Bevel pane after the Opening's (${r.place}), its tick box shown with the hand (${r.shown}; gone with Show off: ${r.gone}), off to start (${r.off}, no rows: ${r.rows_off}); ticked, its hand bevelled (${r.lit}), Bevel Type ${r.words} on the sliders' line (${r.lined}), Bevels %; a Domed edge ${r.dome}, twice a Ridge half's ${r.ridge}; the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour}) (Okay, 2 Nov 2026, 22:09: "move bevel as an eye and a tick box below openings. Show same as windows' show")`);
 }
-{ // the bevel's pane (#531): under the Show box, before the hand's own pane, once Bevel is ticked — Bevel Type (Ridge ·
-  // Domed; Faceted not offered, #573) on the sliders' line, Bevels % (the Shadows pane's number); the hand's pane keeps its
-  // thin black line under it; a Domed edge twice a Ridge's half
+{ // a hand's openings (#175; Okay, 2 Nov 2026, 21:52: "C · several shapes"; 22:38: "they only get lume, with lume coming
+  // in with our color selector with no other options but lume. Lume colors get L in their swatches and their tag-swatch
+  // versions named with their name"; 22:31: lume height "only on showcase as an ink height")
   const r = await page.evaluate(async () => {
     const t = window.dial_tool, S = t.S, was = JSON.stringify([S.ui_hand, S.ui_section, S.ha_hour]);
-    const pane = () => document.querySelector(".bevelpane"), g = () => document.querySelector("g[clip-path='url(#bevel-clip-hour)']");
     const tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
-    S.ui_section = 2; t.show_section(); S.ui_hand = 0; t.sync_rows(); t.frame(); await tick();
-    const hidden_off = pane().hidden;
-    t.set_value("hand", "bevel", true); t.sync_rows(); t.frame(); await tick();
-    const shown = !pane().hidden, place = pane().previousElementSibling?.classList.contains("showbox") && pane().nextElementSibling?.classList.contains("headless");
-    const words = [...pane().querySelectorAll(".pillswitch button")].filter((b) => !b.hidden).map((b) => b.textContent).join(" · ");
-    const lined = Math.round(pane().querySelector(".pillswitch").getBoundingClientRect().left) === Math.round(pane().querySelector("input[type=range]").getBoundingClientRect().left);
-    const under = getComputedStyle(pane().nextElementSibling).backgroundImage.includes("linear-gradient") && getComputedStyle(pane()).backgroundImage.includes("linear-gradient");
-    const ridge = Math.max(...[...g().querySelectorAll("rect")].map((x) => +x.getAttribute("fill-opacity") || 0));
-    t.set_value("hand", "bevel_look", 2); t.frame(); await tick();
-    const dome = Math.max(...[...document.querySelectorAll("linearGradient[id^='bevel-hour'] stop")].map((x) => +x.getAttribute("stop-opacity") || 0));
-    const back = JSON.parse(was); S.ui_hand = back[0]; S.ui_section = back[1]; S.ha_hour = back[2]; t.changed(); t.show_section(); t.sync_rows(); t.frame();
-    return { hidden_off, shown, place, words, lined, under, ridge: +ridge.toFixed(3), dome: +dome.toFixed(3) };
+    S.ui_section = 2; t.show_section(); S.ui_hand = 0; S.ha_hour.op_on = false; t.changed(true); t.frame(); await tick();
+    const box = document.getElementById("hand-op-on-Opening"), pane = box.closest(".pane");
+    const words = box.closest("label").textContent.trim();
+    box.click(); t.frame(); await tick();
+    const open = !pane.classList.contains("folded"), rows = [...pane.querySelectorAll(".body .row")].filter((x) => !x.hidden).map((x) => x.querySelector("label")?.textContent).join(" · ");
+    const lume = t.items.filter((i) => i.role === "lume" && i.name === "hour").length, holes = document.querySelectorAll("#hand-detail .upright path.lume").length;
+    const fill = [...pane.querySelectorAll(".row.col")].find((x) => x.textContent.trim().startsWith("Fill")), pill = fill.querySelector("button.colour");
+    const said = pill.textContent.trim(), L = getComputedStyle(pill.querySelector(".dot"), "::after").content;
+    pill.click(); await tick();
+    const pop = document.getElementById("colour-pop"), modes = [...pop.querySelectorAll(".asnumbers .segs button")].filter((b) => b.checkVisibility()).length;
+    const tiles = [...pop.querySelectorAll("#pop-lumes > button")].map((b) => b.querySelector("b").textContent).join(" · "), chips = [...pop.querySelectorAll(".chiprow")].some((c) => c.checkVisibility());
+    document.getElementById("pop-lume-open").click(); t.frame(); await tick();
+    const opened = t.items.filter((i) => i.role === "lume").length === 0 && pill.textContent.trim() === "Open";
+    document.getElementById("pop-lume-BGW9").click(); t.frame(); await tick();
+    const bgw9 = pill.textContent.trim();
+    t.pop_close();
+    const restore = JSON.parse(was); S.ui_hand = restore[0]; S.ui_section = restore[1]; S.ha_hour = restore[2]; t.changed(true); t.show_section(); t.sync_rows(); t.frame();
+    return { words, open, rows, lume, holes, said, L, modes, tiles, chips, opened, bgw9 };
   });
-  check(r.hidden_off && r.shown && r.place && r.words === "Ridge · Domed" && r.lined && r.under && Math.abs(r.dome - Math.min(2 * r.ridge, 1)) < 0.002,
-    `a hand's Bevel pane under the Show box, before the hand's pane, once Bevel is ticked (hidden before: ${r.hidden_off}; in place: ${r.place}): Bevel Type ${r.words} on the sliders' line (${r.lined}), Bevels %; a thin black line over it and over the hand's pane (${r.under}); a Domed edge ${r.dome}, twice a Ridge half's ${r.ridge} (Okay, 2 Nov 2026, 18:48: "place the bevel settings here in the green area with a black line on top"; "round bevel needs more intensity at 100"; "facets system does not work, remove for now")`);
+  check(r.words === "" && r.open && r.rows === "Shape · Count · From % · To % · Width · Gap · Fill" && r.lume === 1 && r.holes === 1 && r.said === "C3" && r.L === '"L"' && r.modes === 0 && r.tiles === "Open · C3 · BGW9 · C5 · C1 · Old radium · Dark red" && !r.chips && r.opened && r.bgw9 === "BGW9",
+    `a hand's Opening: a tick box alone on its heading (${JSON.stringify(r.words)}), ticked it opens its pane (${r.open}): ${r.rows}; filled with C3 to start, the lume a part of its own on the dial (${r.lume}) and in the hand's picture (${r.holes}); the Fill pill says its lume's name (${r.said}), its swatch an L (${r.L}); its pop-out Lume alone (${r.modes} modes, chips ${r.chips}): ${r.tiles}; Open leaves the holes empty (${r.opened}); BGW9 says ${r.bgw9} (Okay, 2 Nov 2026, 22:38: "they only get lume … Lume colors get L in their swatches and their tag-swatch versions named with their name")`);
+}
+{ // the hands' lume in show mode: an ink of its own on the Inks pane, under "On the hands", with its height; its relief turns with its hand (#175; Okay, 2 Nov 2026, 22:31: "only on showcase as an ink height"). A page of its own: show mode is left as it was found
+  const own = await (await visitor()).newPage();
+  await own.goto("file://" + process.cwd() + "/dial-tool.html");
+  await own.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  const r = await own.evaluate(async () => {
+    const t = window.dial_tool, S = t.S, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    for (const h of ["hour", "minute"]) Object.assign(S["ha_" + h], { op_on: true, w: 1.6 });
+    t.changed(true); t.show_mode(true, true); await tick();
+    S.ui_section = 5; t.show_section(); t.sync_rows(); await tick();      // show mode's Dial tab (Show dial)
+    return { labels: [...document.querySelectorAll(".inkline label")].map((l) => l.textContent), relief: document.querySelectorAll("[data-hl]").length };
+  });
+  await own.context().close();
+  check(r.labels.includes("Hour · Minute lume") && r.relief === 2, `show mode: the hands' lume is an ink on the Inks pane, its own height (${r.labels.join(" · ")}); its relief turns with each hand (${r.relief})`);
 }
 { // a bare pane (Type) opens in place: its heading leaves the flow when it opens, so the finger anchor holds the pane, not the heading's button (#552)
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring, t.form.scrollTop]; });
@@ -2816,7 +2849,7 @@ await shot("10-bar");
     t.date_pop_open(false); t.set_value("global", "sh_bevel", was[0]); S.ui_section = was[1]; t.show_section(); t.sync_rows();
     return { mids, gaps, bar: +(n.left - d.right).toFixed(2) };
   });
-  check(r.mids.length === 2 && r.mids.every((m) => m < 1.5) && r.gaps.join(" ") === "2 2 4", `the Show box's two ticks on their words' middles (${r.mids.map((m) => m.toFixed(1)).join(" ")}); the date popup's gaps as Okay drew them, 2 between boxes, 4 before − + (${r.gaps.join(" ")}; 20 Oct 2026, 01:05)`);
+  check(r.mids.length === 1 && r.mids.every((m) => m < 1.5) && r.gaps.join(" ") === "2 2 4", `the Show box's tick on its word's middle (Show alone: Okay, 2 Nov 2026, 22:09) (${r.mids.map((m) => m.toFixed(1)).join(" ")}); the date popup's gaps as Okay drew them, 2 between boxes, 4 before − + (${r.gaps.join(" ")}; 20 Oct 2026, 01:05)`);
 }
 { // what stays put ends on the thick line on every tab (Okay, 15 Oct 2026, 06:20)
   const ends = [];

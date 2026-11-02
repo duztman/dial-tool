@@ -238,7 +238,8 @@ export const hand_detail = (h, cap = null) => {
   const d = p.svg(3, true), ring = f(Math.max(high * 0.012, 0.12));
   const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
   const mark = G.paints_mark(h) && G.disc_mark(h), md = mark ? mark.svg(3, true) : "";      // a disc's painted mark, in its own colour (#300)
-  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "")
+  const lume = G.fills_openings(h) ? G.hand_openings(h).svg(3, true) : "";      // its openings' lume, in the lume's colour (#175)
+  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "") + (lume ? `<path class="lume" d="${lume}"${turn} fill="${to_hex(h.op_fill)}"/>` : "")
     + (cap ? `<circle class="cap" r="${f(cap.d / 2)}" fill="currentColor"/>` : "");      // the cap over the hand, at its pivot
   return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<clipPath id="lit-upright"><path class="litarea"/></clipPath><path class="lit" d="${d}" clip-path="url(#lit-upright)"/>${centre("M-999 0L999 0")}</svg>`
     + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<clipPath id="lit-lying"><path class="litarea"/></clipPath><path class="lit" d="${d}" transform="rotate(90)" clip-path="url(#lit-lying)"/>${centre("M0 -999L0 999")}</svg>`;

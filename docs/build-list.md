@@ -4,20 +4,21 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 2 Nov 2026, 22:30 (v1.1.38 beta): #175 drawn to round 5, #574 the disc hand added; #531 (v1.1.37) and #572 (v1.1.34) to verify; Faceted to Later (#573); #175 Now — openings, stacked lume, a lume view in show mode (from #522); caps out.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
+*Last updated 2 Nov 2026, 23:30 (v1.1.39 beta): #175 built but its lume view; #574 the disc hand added; #531 (v1.1.37) and #572 (v1.1.34) to verify; Faceted to Later (#573); #175 Now — openings, stacked lume, a lume view in show mode (from #522); caps out.* v1 is behind us: v1.0 beta went to `main` on 27 Oct 2026 and a beta counts as v1 (Okay, 1 Nov 2026).
 
 ## Now — Okay said build
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 1 | 175 | A hand as a stack: openings and lume openings, the lume stacked (a part with its own height); a lume view in show mode (from #522); the Hands tab re-laid (hand types on top, Opening and Bevel panes after the hand's, Show alone) and a window's thick line under its Show box — draw first (`web/test/sketches/hand-openings.js`, `window-line.js`) | 2 Nov 2026, 22:18 — "New design is good" | build — drawing round 6: lume height, the dial's hands |
+| 1 | 175 | A hand as a stack — built (v1.1.39): openings, lume as a colour mode and an ink, the Hands tab re-laid, a window's thick line; **left: the lume view in show mode** (from #522) — draw first | 2 Nov 2026, 22:55 — "Amazing. Build." | build — lume view next |
 | 2 | 574 | The disc hand: its edge at 85 % of the dial's radius to start; a wedge marker, an equilateral triangle, 10 % in from the disc's edge; Length named Marker at on a disc; a painted marker's stroke (width, colour); its thumb's circle bigger, centred | 2 Nov 2026, 22:18 — "Also the disc hand" | build — after #175 |
 
 ## Verify — built, for Okay's Mac and iPad
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| — | 531 | Hand bevels: a Bevel pane under the Show box once Bevel is ticked — Bevel Type (Ridge · Domed), Bevels % | 2 Nov 2026, 18:48 — "place the bevel settings here in the green area with a black line on top" | verify (v1.1.37) |
+| — | 175 | A hand as a stack, built: Opening and Bevel panes, hand types on top, Show alone; Lume mode, an opening's Fill (Lume alone, Open); the hands' lume an ink in show mode; a window's thick line | 2 Nov 2026, 22:55 — "Amazing. Build." | verify (v1.1.39) |
+| — | 531 | Hand bevels: a Bevel pane of its own after the Opening pane, its tick box on the heading — Bevel Type (Ridge · Domed), Bevels % | 2 Nov 2026, 22:09 — "move bevel as an eye and a tick box below openings" | verify (v1.1.39) |
 | — | 572 | Show mode's sun lock: Lock on the Sun line; drags leave the sun; "Sun is locked" at the canvas's top | 2 Nov 2026, 17:24 — "Sun needs a lock accessible from its first line" | verify (v1.1.34) |
 
 ## Next — the features, in Okay's order, then easier → harder

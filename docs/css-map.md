@@ -122,7 +122,7 @@
 | `--guide-pill-pad` · special | `var(--u2)` | a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) | 6-preview |  |
 | `--guide-row` · special | `30px` | the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) | 3-controls ×2, 6-preview ×5 | 1-tokens `:root` → `38px` |
 | `--guide-tint` | `22%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 1-tokens, 4f-rings ×2 |  |
-| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×13, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×5, 4e-colour ×11, 4f-rings ×32, 4g-fonts ×22, 6-preview ×48, 7-bar ×21, 8-narrow ×7 |  |
+| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×13, 4b-lines-tabs ×20, 4c-rows ×12, 4d-hands ×5, 4e-colour ×14, 4f-rings ×32, 4g-fonts ×22, 6-preview ×48, 7-bar ×21, 8-narrow ×7 |  |
 | `--handle` · the window's | `—` |  | 4f-rings ×2, 6-preview ×3 | set by hands.js, set by preview.js, set by rings.js |
 | `--head` | `40px` | a pane's heading | 3-controls, 4a-panel ×3, 4b-lines-tabs ×2, 4e-colour, 4g-fonts ×2, 8-narrow ×2 |  |
 | `--header` | `calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair))` | the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes | 4a-panel ×2, 4g-fonts |  |
@@ -130,7 +130,7 @@
 | `--hue` · the window's | `—` |  | 4e-colour | set by colour.js |
 | `--in-l` · set in 4b-lines-tabs | `max(calc(var(--cut-l) + 0.414 * var(--hair)), var(--hair))` | the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider | 4b-lines-tabs ×4 |  |
 | `--in-r` · set in 4b-lines-tabs | `max(calc(var(--cut-r) + 0.414 * var(--hair)), var(--hair))` | the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider | 4b-lines-tabs ×4 |  |
-| `--ink` | `#111` | colour | 1-tokens, 2-base, 3-controls ×26, 4a-panel ×24, 4b-lines-tabs ×6, 4c-rows ×10, 4d-hands, 4e-colour ×10, 4f-rings ×24, 4g-fonts ×11, 4h-gallery, 5-chosen ×3, 6-preview ×47, 7-bar ×2, 8-narrow ×3 | 3-controls `.night` → `var(--bar-ink)`; 4f-rings `.numpop .row` → `var(--num-pop-disc)`; 4f-rings `.numpop.lit .row input[type="range"]` → `var(--shade-lit)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-ink)`; 6-preview `.shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"]` → `var(--shade-lit)`; 6-preview `.shaderows .row.side:hover input[type="range"]` → `var(--shade-lit)`; set by show.js |
+| `--ink` | `#111` | colour | 1-tokens, 2-base, 3-controls ×26, 4a-panel ×25, 4b-lines-tabs ×6, 4c-rows ×10, 4d-hands, 4e-colour ×10, 4f-rings ×24, 4g-fonts ×11, 4h-gallery, 5-chosen ×3, 6-preview ×47, 7-bar ×2, 8-narrow ×3 | 3-controls `.night` → `var(--bar-ink)`; 4f-rings `.numpop .row` → `var(--num-pop-disc)`; 4f-rings `.numpop.lit .row input[type="range"]` → `var(--shade-lit)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-ink)`; 6-preview `.shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"]` → `var(--shade-lit)`; 6-preview `.shaderows .row.side:hover input[type="range"]` → `var(--shade-lit)`; set by show.js |
 | `--ink-dx` · the window's | `—` |  | 3-controls, 7-bar | set by bar.js, set by ink.js |
 | `--ink-dy` · the window's | `—` |  | 3-controls, 7-bar ×2 | set by bar.js, set by ink.js |
 | `--ink-hover` | `#333331` | a filled control under the pointer | 3-controls, 5-chosen | 3-controls `.night` → `var(--white)` |
@@ -168,7 +168,7 @@
 | `--name-in` · special | `6px` | a ring's name starts this far into its column; the ring line's buttons too | 4f-rings ×2 |  |
 | `--names` | `18px` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×8 |  |
 | `--nest-from` | `calc((100% + var(--gap)) / 3)` | where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here | 4c-rows |  |
-| `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×4, 4e-colour, 6-preview ×9 | set by show.js |
+| `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×4, 4e-colour ×2, 6-preview ×9 | set by show.js |
 | `--night-chip-rule` | `rgba(255, 255, 255, 0.28)` |  | 3-controls, 4e-colour |  |
 | `--night-field` | `#262624` |  | 3-controls ×2, 4a-panel ×5 | set by show.js |
 | `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview |  |
@@ -260,7 +260,7 @@
 | `--round` | `8px` | …and a sticker's corners, a small swatch's | 4e-colour, 6-preview ×2 |  |
 | `--round-large` | `14px` | …and a sticker's corners, a small swatch's | 3-controls, 8-narrow ×3 |  |
 | `--round-pill` | `999px` | fully round: the signs on the Rings heading line, a value button | 3-controls ×3, 4a-panel, 4c-rows, 4f-rings ×2, 4g-fonts ×3, 6-preview ×4 |  |
-| `--round-small` | `5px` | …and a sticker's corners, a small swatch's | 3-controls ×10, 4e-colour ×7, 4f-rings ×6, 6-preview ×3, 7-bar |  |
+| `--round-small` | `5px` | …and a sticker's corners, a small swatch's | 3-controls ×10, 4e-colour ×9, 4f-rings ×6, 6-preview ×3, 7-bar |  |
 | `--round-switch` | `10px` | the switches on the preview: undo, Guides, Backdrop | 4a-panel, 6-preview ×20, 7-bar ×4, 8-narrow |  |
 | `--round-tiny` | `3px` | …and a sticker's corners, a small swatch's | 4e-colour ×4, 4g-fonts |  |
 | `--row-end` | `calc(var(--frame-pad) - var(--hair) + var(--ringline-inner))` | the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons | 1-tokens, 4f-rings |  |
@@ -272,7 +272,7 @@
 | `--ruler-hour` · special | `0.85` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
 | `--ruler-line` · special | `0.4` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
 | `--ruler-small` · special | `0.38` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
-| `--sans` | `system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif` |  | 1-tokens, 2-base, 4e-colour ×3, 4f-rings ×5, 7-bar |  |
+| `--sans` | `system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif` |  | 1-tokens, 2-base, 4e-colour ×4, 4f-rings ×5, 7-bar |  |
 | `--scroll` | `#E8E8E6` | the part of the panel that scrolls: 8 % darker than the paper; the font box's head stands on it too | 1-tokens, 4a-panel, 4g-fonts ×2 | 4a-panel `.showing .panel` → `transparent` |
 | `--scroll-w` | `6px` | a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar | 6-preview ×2 |  |
 | `--scrollbar` | `var(--unit)` | a scrollbar drawn by the tool: slim | 4g-fonts ×2 |  |
@@ -356,11 +356,11 @@
 | `--t-num-pop` · special | `calc(41px * var(--num-pop-k))` | the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026) | 4f-rings |  |
 | `--t-pixel` | `8px` | the pixel font's own size: its dots fall on the screen's (R32) | 1-tokens, 4c-rows, 4g-fonts ×2, 7-bar, 8-narrow |  |
 | `--t-pixel-legend` · special | `calc(1.5 * var(--t-pixel))` | the pixel font at 12, neither 8 nor 16: the font sheet's legend, its title and stickers (Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen"; on a 2× screen its dots still fall on the screen's) | 4f-rings, 4g-fonts ×2 |  |
-| `--t-s` | `12px` | two more, asked for by Okay, stand with the specials: --t-xxs, --t-time | 1-tokens, 2-base, 3-controls, 4a-panel, 4b-lines-tabs, 4c-rows ×2, 4d-hands ×2, 4e-colour ×3, 4f-rings ×11, 6-preview ×9, 7-bar, 8-narrow |  |
+| `--t-s` | `12px` | two more, asked for by Okay, stand with the specials: --t-xxs, --t-time | 1-tokens, 2-base, 3-controls, 4a-panel, 4b-lines-tabs, 4c-rows ×2, 4d-hands ×2, 4e-colour ×4, 4f-rings ×11, 6-preview ×9, 7-bar, 8-narrow |  |
 | `--t-sample` | `26px` | a font's numerals in the font list, when the browser sets them (as the outlines, app.js sample(): Okay, 24 Oct 2026, "ENLARGE NUMS") | 4g-fonts |  |
 | `--t-time` · special | `20px` | a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; "Barlow larger, don't worry optically will be better") | 7-bar ×2 |  |
 | `--t-time-narrow` · special | `17px` | the time on a phone (Okay, 18 Oct 2026, 21:20: "Time and am too small"); AM · PM is --t-m everywhere (#553) | 8-narrow |  |
-| `--t-xs` | `11px` | two more, asked for by Okay, stand with the specials: --t-xxs, --t-time | 3-controls ×4, 4a-panel ×2, 4e-colour ×7, 4f-rings ×2, 4g-fonts, 6-preview, 7-bar ×2 |  |
+| `--t-xs` | `11px` | two more, asked for by Okay, stand with the specials: --t-xxs, --t-time | 3-controls ×4, 4a-panel ×2, 4e-colour ×9, 4f-rings ×2, 4g-fonts, 6-preview, 7-bar ×2 |  |
 | `--t-xxs` · special | `10px` | a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) | 4g-fonts ×3 |  |
 | `--tab` · the window's | `—` |  | 4b-lines-tabs ×2 | set by rings.js |
 | `--tab-fill` · set in 4b-lines-tabs | `var(--field)` |  | 4b-lines-tabs | 4b-lines-tabs `.tab.hang:last-child` → `var(--hover)`; 4b-lines-tabs `.tab.on` → `var(--ink)`; 4g-fonts `.font .styles > .tab.on` → `var(--wait)` |
@@ -370,7 +370,7 @@
 | `--tab-pad` | `11px` | a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe | 4b-lines-tabs |  |
 | `--tabs` · the window's | `—` |  | 4b-lines-tabs | set by rings.js |
 | `--tag-max` · special | `240px` | a tag's longest line: longer words wrap (Okay, 18 Oct 2026, 21:20: "constrict the width to avoid these unreadable lines") | 4f-rings |  |
-| `--thick` | `2px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 3-controls ×8, 4a-panel ×6, 4b-lines-tabs ×3, 4e-colour ×5, 4f-rings ×2, 6-preview ×5, 7-bar ×3, 8-narrow |  |
+| `--thick` | `2px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 3-controls ×8, 4a-panel ×7, 4b-lines-tabs ×3, 4e-colour ×5, 4f-rings ×2, 6-preview ×5, 7-bar ×3, 8-narrow |  |
 | `--three-quarter` · special | `0.75px` | lines a little heavier than a hairline (Okay, 19 Oct 2026: "Line thicknesses .75 thicker"): Positions' lines, the slider knob's eye edge | 1-tokens, 4f-rings ×2 |  |
 | `--thumb` · special | `18px` | sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens | 3-controls ×7, 6-preview ×5 | 1-tokens `:root` → `26px`; 4f-rings `.numpop .row` → `var(--num-pop-thumb)`; 6-preview `.shadelist .row.named > .lane` → `var(--shade-knob)` |
 | `--thumb-eye` | `2px` | sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens | 1-tokens, 3-controls ×2, 7-bar ×3 | 4f-rings `.numpop .row` → `var(--num-pop-eye)` |
@@ -397,10 +397,10 @@
 | `--track-20` | `0.02em` | tracking 20: the controller's value, a little apart | 4f-rings |  |
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×4 |  |
 | `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4f-rings ×2, 7-bar ×2 |  |
-| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×9, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
-| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×2, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×2, 4e-colour ×10, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
-| `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour, 4f-rings ×9, 4g-fonts ×7, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
-| `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×5, 4d-hands ×2, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
+| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×12, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
+| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×2, 4a-panel ×4, 4c-rows ×2, 4e-colour ×12, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
+| `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour ×4, 4f-rings ×9, 4g-fonts ×7, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
+| `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×4, 4d-hands ×2, 4e-colour ×2, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
 | `--u5` | `calc(2.5 * var(--unit))` |  | 8-narrow ×2 |  |
 | `--u6` | `calc(3 * var(--unit))` |  | 1-tokens ×4, 4a-panel, 4g-fonts ×3, 6-preview, 8-narrow ×2 |  |
 | `--u8` | `calc(4 * var(--unit))` |  | 4g-fonts, 7-bar ×2 |  |

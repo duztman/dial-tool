@@ -120,6 +120,8 @@ export const labels_are = (name) => (R) => G.kind_of(R) === "numerals" && G.LABE
 
 export const hand_is = (...shapes) => (H) => shapes.includes(G.HAND_SHAPES[H.shape]);
 const bevelled = (H) => Boolean(H && H.on && H.bevel && G.HAND_SHAPES[H.shape] !== "disc");      // a hand whose Bevel is ticked: its bevel's rows show (#531)
+const opens = (H) => Boolean(H && H.on && G.HAND_SHAPES[H.shape] !== "disc");      // a shown hand that is not a disc: its Opening and Bevel panes (#175)
+const opening = (H) => opens(H) && Boolean(H.op_on);      // its Opening ticked: the opening's rows
 
 export const numerals_only = kind_in("numerals");
 
@@ -319,15 +321,11 @@ export const ROWS = {
     // the Show box (#261, 4.46; Okay's notes, p. 2): under the tabs, on top of the grey page, Show — the tab says which
     // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (headless)
     custom("show_box", { ...H, bar: true }),
-    // the bevel, a pane of its own between the Show box and the hand's pane, once Bevel is ticked (#531; Okay, 2 Nov 2026,
-    // 18:48, his picture: "place the bevel settings here in the green area with a black line on top"): its look — Bevel
-    // Type, its name at the left, the pill on the sliders' line (17:50) — and its strength, the Shadows pane's Bevels %,
-    // one number for every hand in both places. Faceted is not offered (18:48: "facets system does not work, remove for
-    // now, note for later", #573); its place in BEVEL_LOOKS stays (R9) and a hand that has it draws a Ridge
-    hdr("Bevel", { headless: true, cls: "bevelpane" }),
-    seg("bevel_look", "Bevel Type", G.BEVEL_LOOKS, { ...H, show: bevelled, offered: () => [0, 2] }),
-    num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, show: (S, _, app) => bevelled(app.hand()) }),
     hdr("One hand", { headless: true }),
+    // its shapes first: a row of thumbs over the box and the rows beside it, from the box's left to the end (Okay, 2 Nov
+    // 2026, 22:00: "hand type moves up top of the preview and sliders"; 22:18: "list of hand types gets a thin black
+    // line"), the SVG tile last
+    pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] }),      // every shape but "file": the SVG tile stands for it
     // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
     // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
@@ -364,9 +362,28 @@ export const ROWS = {
     chk("ha_cap_top", "Cap on this hand", { side: true, show: (S) => !S.ha_second.on && S.ui_hand === G.top_hand(S) }),
     num("ha_cap", "Cap Ø", 0, 4, 0.05, { side: true, show: cap_rows }),
     col("c_cap", "Cap colour", { side: true, show: cap_rows }),
-    // its shapes: a row of thumbs under the box and every row beside it, from the box's left to the end (4.46.4; Okay:
-    // "Put hand type as a row spanning preview to end, after wall"; under the box in 4.46.3), the SVG tile last
-    pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] }),      // every shape but "file": the SVG tile stands for it
+    // an opening (#175; Okay, 2 Nov 2026, 22:00: "opening is its own eye list menu below with a switch on off next to the
+    // title … This comes after the preview and sliders beside"; 22:04: "TICK BOX"): shapes cut through the hand along it,
+    // Count of them from From % to To % of its length, Gap between, Width across; open (the dial seen through) or filled
+    // with a lume (22:38: "they only get lume, with lume coming in with our color selector with no other options but lume").
+    // Folded on a first visit as every pane (#270); ticking its box opens it
+    hdr("Opening", { folded: true }),
+    chk("op_on", "Opening", { ...H, head: true, boxonly: true, show: opens }),
+    seg("op_shape", "Shape", ["Bar", "Dot"], { ...H, show: opening }),
+    num("op_count", "Count", 1, 12, 1, { ...H, whole: true, show: opening }),
+    num("op_from", "From %", 0, 100, 1, { ...H, whole: true, show: opening }),
+    num("op_to", "To %", 0, 100, 1, { ...H, whole: true, show: opening }),
+    num("op_w", "Width", 0.05, 3, 0.05, { ...H, show: opening }),
+    num("op_gap", "Gap", 0, 3, 0.05, { ...H, show: opening }),
+    col("op_fill", "Fill", { ...H, lume_only: true, show: opening }),
+    // the bevel, a pane of its own after the opening (Okay, 2 Nov 2026, 22:09: "move bevel as an eye and a tick box below
+    // openings"): its look — Bevel Type — and its strength, the Shadows pane's Bevels %, one number for every hand in both
+    // places. Faceted is not offered (18:48: "facets system does not work, remove for now, note for later", #573); its
+    // place in BEVEL_LOOKS stays (R9) and a hand that has it draws a Ridge
+    hdr("Bevel", { folded: true }),
+    chk("bevel", "Bevel", { ...H, head: true, boxonly: true, show: opens }),
+    seg("bevel_look", "Bevel Type", G.BEVEL_LOOKS, { ...H, show: bevelled, offered: () => [0, 2] }),
+    num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, show: (S, _, app) => bevelled(app.hand()) }),
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)

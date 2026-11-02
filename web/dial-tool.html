@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.38 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.39 beta · built 2026-11-02 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -632,6 +632,7 @@
      are: the toggle column, then the six. Rows stand on the six; a few things (ring list, examples) take all seven. */
   .pane { border-top: var(--thick) solid var(--ink); }
   .pinned:not([hidden]) + .form > .pane:not([hidden]):not(.pane:not([hidden]) ~ .pane) { border-top: 0; }      /* the first pane shown under the pinned part: the pinned part's line already opens it (until 4.51.1 the first in the list, so a hidden one, R16, left the next with a second line — Okay, 18 Oct 2026, notes 2: "The first pane under rings' persistent loses the top bar") */
+  .pinned:not([hidden]) + .form > .showbox + .pane:not([hidden]):not(.headless):not(.pane:not([hidden]) ~ .pane) { border-top: var(--thick) solid var(--ink); }      /* …but a window's first pane, under its Show box, opens with its thick line, a Show box's room over it (Okay, 2 Nov 2026, 22:18: "Window at x needs a thick") */
   .form > .pane.folded:last-child { border-bottom: var(--hair) solid var(--rule); }
   .fold { display: grid; grid-template-columns: var(--eye) auto minmax(0, 1fr); column-gap: var(--gap); align-items: center; width: 100%; height: var(--head); text-align: left; }
   .fold .eye { display: grid; place-items: center; position: relative; left: var(--nudge); }
@@ -736,13 +737,12 @@
      "Thick line stands here"): two units, as over the title on every heading — under the thin line counted from its
      foot to the first row's own white line, which stand a hairline each */
   .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); --tick-gap: var(--show-tick-gap); }      /* its small tick close to its word (Okay, 19 Oct 2026, 20:37: "closer") */
-  .form > .showbox + .pane:not(.headless) { margin-top: calc(var(--u2) - var(--u4)); }      /* a pane with a heading (a window's) stands a unit under it, no line between: the heading is what Show shows ("closer"); the hand's pane keeps its thin line where it is */
   .form > .showbox input[type="checkbox"] { margin-top: 0; }      /* one line, centred by its row */
   .form > .showbox .check { align-items: center; }      /* each tick on its word's middle, Show's and Bevel's alike */
   .form > .showbox input[type="checkbox"]::before { width: calc(var(--tick) - var(--u1)); height: calc(var(--tick) - var(--u1)); }      /* the Show tick fills its box: the box as it is, the tick bigger (Okay, 19 Oct 2026: "'Show tick' in white gets bigger, black box stays the same") */
   .form > .showbox > .showline { grid-column: var(--tab, 1); display: flex; align-items: center; gap: var(--u4); height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
     margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
-  :is(.form > .showbox + .pane.headless, .form > .showbox + .pane.headless + .pane.headless) { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }      /* under the Show box: a hand's Bevel pane, shown or not, then its own pane — each opens with the thin black line (#531; Okay, 2 Nov 2026: "with a black line on top") */
+  .form > .showbox + .pane.headless { border-top: 0; padding-top: var(--u4); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }      /* under the Show box: the hand's pane opens with the thin black line, as much room under it as over it (Okay, 2 Nov 2026, 22:25: "The gap after the line for hands, is the same as before, between it and gray show block") */
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > .menubox { grid-column: 6 / span 2; }
@@ -893,15 +893,14 @@
   .detail .handname { position: absolute; left: var(--unit); bottom: var(--u1); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* the shape's name, small, at its bottom left (4.79) */
   .detail .lit { fill: none; stroke: var(--lit); stroke-width: var(--triple); vector-effect: non-scaling-stroke; }      /* a number's sides: the hand's outline where that number moves it, lit while its row or its side is pointed at (#329, #411), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  /* the hand's shapes as thumbs (Okay: "rectangular thumbs"; a row of their own after the rows): every
-     one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line
-     from the box's left to the end; the dashed SVG tile last (a shape of one's own) */
-  .row.thumbs > .picks.thumbs { grid-column: 1 / -1; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); padding: var(--u4) 0; }
-  /* framed by thin black lines, over it and under it (4.46.5, Okay: "Short black line is part of hand selector. Comes
-     after wall and preview box … THERE'S A SPACE. THEN COMES BLACK LINE. BUT THAT SPACE, IS THE SAME WITH ALL WHITES
-     AND BLACK AROUND HERE"): the box and the last row end on one line, then two units of space, then the black line;
-     two units from it to the thumbs and from them to the closing line, as round the line under the Show box */
-  .row.thumbs { margin-top: var(--u4); border-block: var(--hair) solid var(--ink); box-shadow: none; }
+  /* the hand's shapes as thumbs (Okay: "rectangular thumbs"): the first row of the hand's pane, every one shown,
+     upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line across the
+     pane; the dashed SVG tile last (a shape of one's own) */
+  .row.thumbs > .picks.thumbs { grid-column: 1 / -1; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); padding: 0 0 var(--u4); }
+  /* between thin black lines: the pane's line over it, its own under it, as much room round each as from the Show
+     box to the first (Okay, 2 Nov 2026, 22:18: "list of hand types gets a thin black line"; 22:25: "The gap after the
+     line … is the same as before") */
+  .row.thumbs { margin-bottom: var(--u4); border-bottom: var(--hair) solid var(--ink); box-shadow: none; }      /* first in the hand's pane (Okay, 2 Nov 2026, 22:00: "hand type moves up top of the preview and sliders"): the pane's thin line over it, its own under it */
   .picks.thumbs > .pickt { align-content: center; padding: var(--unit) 0; }
   .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
@@ -915,7 +914,8 @@
        Okay: "Enlarge the preview to fit the area"; "Blue lines, align"): it spans the rows' lines (40: more than a
        hand has; the ones it doesn't use have no height) and shares the first row's line, as two tabs share theirs.
        The thumbs' row goes under it all */
-    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
+    .body > .row.thumbs { grid-row: 1; }
+    .body > .detail { grid-column: 2 / span 2; grid-row: 2 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; }      /* beside the box */
   }
   /* a side row, at every width: the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250); the
@@ -1030,6 +1030,23 @@
   .ralgrid button { position: relative; height: auto; min-width: 0; padding: 0; border: 0; border-radius: var(--round-small); background: var(--c); }
   .ralgrid button.design::after, .charts i.design::after { content: ""; position: absolute; right: var(--u1); bottom: var(--u1); width: 3px; height: 3px; border-radius: 50%; background: var(--white); opacity: 0.8; }
   .ralgrid button.on { outline: var(--thick) solid var(--white); outline-offset: var(--hair); z-index: 1; }
+  /* Lume (#175; lume.js): the research's lumes as tiles, three across — the colour by day with a faded L, a dot of its
+     glow, its name and its strength under it (the drawing of 2 Nov 2026, 22:38: "Amazing. Build."). For an opening's
+     fill the only mode, an Open tile first (hatched: nothing in it), no other modes and no chips */
+  .lumegrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--u2); padding: var(--u3) 0; }
+  .lumegrid > button { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: var(--u2); align-items: center; min-width: 0; height: auto; padding: var(--u1); border: var(--hair) solid transparent; border-radius: var(--round-small); background: none; color: inherit; text-align: left; }
+  .lumegrid > button.on { border-color: currentColor; }
+  .lumegrid .day { position: relative; grid-row: 1 / span 2; width: calc(3 * var(--u4)); height: calc(3 * var(--u4)); border-radius: var(--round-small); }
+  .lumegrid .day > i { position: absolute; right: var(--u1); bottom: var(--u1); width: var(--u3); height: var(--u3); border-radius: 50%; box-shadow: 0 0 0 var(--hair) var(--night); }      /* its glow */
+  .lumegrid b { font-weight: 600; font-size: var(--t-s); }
+  .lumegrid small { font-size: var(--t-xs); opacity: 0.6; }
+  .lumegrid .open .day { background: repeating-linear-gradient(45deg, transparent 0 4px, rgba(255, 255, 255, 0.18) 4px 5px); box-shadow: inset 0 0 0 var(--hair) rgba(255, 255, 255, 0.4); }
+  .colourpop.lumeonly .asnumbers .segs, .colourpop.lumeonly .chiprow { display: none; }
+  /* a lume's swatch anywhere — a tile, a chip, a pill's dot — carries a faded L, centred, as a RAL's carries an R (Okay,
+     2 Nov 2026, 22:38: "Lume colors get L in their swatches"); dark, on lume's light bodies */
+  .lumegrid > button:not(.open) .day::after, .chips button.lume::after, .dot.lume::after { content: "L"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(0, 0, 0, 0.35); font: 600 var(--t-xs)/1 var(--sans); }
+  .chips button.lume, .dot.lume { position: relative; }
+  .colour .dot.lume::after { font-size: 0.7em; }
   .charts { margin-top: calc(-1 * var(--u2)); }
   .charts > button { display: inline-flex; align-items: center; gap: var(--u2); font-size: var(--t-xs); }
   .charts i { position: relative; width: 9px; height: 9px; border-radius: var(--round-tiny); background: var(--pop-key); }      /* the tiles: the shown family's band colour, set by colour.js */
@@ -7579,7 +7596,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.38 beta";
+var VERSION = "v1.1.39 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7765,8 +7782,20 @@ var HAND_BASE = {
   // was drawn before (R31: no new scheme) · 1 Faceted — not offered, drawn as a Ridge (2 Nov 2026, 18:48: "facets
   // system does not work, remove for now, note for later", #573) · 2 Domed — round across, shaded from the middle out
   bevel_look: 0,
-  facet_turn: 3
+  facet_turn: 3,
   // dead with Faceted (#573): kept, as every key is (R8); nothing reads it
+  // its openings (#175; Okay, 2 Nov 2026, 21:52: "C · several shapes"): op_count shapes cut through the hand along it,
+  // from op_from % to op_to % of its Length, op_gap mm between them, each op_w mm across — a Bar as long as its share,
+  // a Dot round — open (op_fill see-through, alpha 0: the dial seen through) or filled with a lume (op_fill: a lume's colour, lume.js;
+  // 22:38: "they only get lume"). Off to start, as every older dial (R31); C3 the lume to start, as drawn
+  op_on: false,
+  op_shape: 0,
+  op_count: 3,
+  op_from: 30,
+  op_to: 92,
+  op_w: 0.8,
+  op_gap: 0.4,
+  op_fill: [0.8941, 0.9176, 0.7608, 1]
 };
 var BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];
 var WINDOW_BASE = {
@@ -8134,7 +8163,7 @@ var DEFAULTS = {
   gd_sel_strength: 95,
   gd_sel_w: 1.5
 };
-var COLOUR_MODES = ["RGB", "HEX", "CMYK", "RAL"];
+var COLOUR_MODES = ["RGB", "HEX", "CMYK", "RAL", "Lume"];
 var UNITS = [
   ["mm", "Millimetres", 1, 0],
   ["pt", "Points", 72 / 25.4, 0],
@@ -8771,8 +8800,17 @@ var LINK_KEYS = [
   // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
   "bevel_look",
   // v1.1.35 beta (#531): appended; Ridge to start, as every older link
-  "facet_turn"
+  "facet_turn",
   // v1.1.36 beta (#531): appended; dead since v1.1.37 with Faceted (#573), kept (R8)
+  "op_on",
+  "op_shape",
+  "op_count",
+  "op_from",
+  "op_to",
+  "op_w",
+  "op_gap",
+  "op_fill"
+  // v1.2 beta (#175): appended; no openings to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -9868,10 +9906,10 @@ var window_turn = (w) => w.turn && window_shape(w) !== "arc" ? (window_angle(w) 
 function moon_parts(w, age) {
   const m = w / 4, base = -0.36 * w;
   const arch = circle(2 * 0.5336 * w).translate(0, base + 0.1864 * w).intersection(new Path().rect(-w, base, 2 * w, 2 * w));
-  const opening = arch.difference(circle(2 * m).translate(-m, base)).difference(circle(2 * m).translate(m, base));
+  const opening2 = arch.difference(circle(2 * m).translate(-m, base)).difference(circle(2 * m).translate(m, base));
   const f2 = (age % 29.53 + 29.53) % 29.53 / 29.53;
   const moon = circle(2 * m).translate(-m * cos(PI * f2), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f2));
-  return { opening, moon };
+  return { opening: opening2, moon };
 }
 function moon_lit(rm, age) {
   const f2 = (age % SYNODIC_DAYS + SYNODIC_DAYS) % SYNODIC_DAYS / SYNODIC_DAYS, c = cos(2 * PI * f2), wx = Math.max(Math.abs(c) * rm, 1e-3);
@@ -9965,23 +10003,23 @@ function shown_window(S, w) {
 }
 function build_window(S, w, index) {
   const centre2 = clock_point(w.r, window_angle(w)), kind = WINDOW_KINDS[w.kind], shape3 = window_shape(w), turn = window_turn(w);
-  const [opening, grown] = window_hole(w);
+  const [opening2, grown] = window_hole(w);
   const high = shape3 === "rectangle" || shape3 === "arc" ? w.h : shape3 === "arch" ? w.w / 2 : w.w;
   let content;
   let more = [];
   if (kind === "moon phase" && w.look === 1) {
     const rm = 0.36 * high, { disc, dark } = moon_lit(rm, w.age);
-    content = opening.copy().difference(disc);
+    content = opening2.copy().difference(disc);
     more = [{ path: dark, key: "c2", or: PICTURE_TONES.shade }];
   } else if (kind === "moon phase" && w.look === 2) {
     const rm = 0.36 * high, t = Math.max(0.05 * high, 0.06), { dark } = moon_lit(rm, w.age);
     const ring = circle(2 * rm).difference(circle(2 * (rm - t)));
-    content = merge([ring, dark]).intersection(opening);
+    content = merge([ring, dark]).intersection(opening2);
   } else if (kind === "moon phase") {
     const { moon } = moon_parts(w.w, w.age);
-    content = opening.copy().difference(moon);
+    content = opening2.copy().difference(moon);
   } else if (kind === "am \xB7 pm" && !w.ampm_form) {
-    content = half_disc(w.w, disc_hour(S, w)).night.intersection(opening);
+    content = half_disc(w.w, disc_hour(S, w)).night.intersection(opening2);
   } else if (kind === "big date") {
     const n = parseInt(w.text, 10), [tens, units] = Number.isFinite(n) ? [n >= 10 ? String(Math.floor(n / 10) % 10) : "", String(n % 10)] : [String(w.text)[0] || "", String(w.text)[1] || ""];
     const dx = ((w.w - pair_gap(w)) / 2 + pair_gap(w)) / 2, t = window_type(S, w), size = w.h * w.size / 100;
@@ -9992,8 +10030,8 @@ function build_window(S, w, index) {
   } else content = centred(text_path(w.text, window_type(S, w), text_room(w) * w.size / 100));
   const put = (p, turned2 = true) => (turn && turned2 ? p.rotate(-turn) : p).translate(...centre2);
   const shows_text = kind === "date" || kind === "day" || kind === "big date" || kind === "am \xB7 pm" && w.ampm_form;
-  const win = put(opening.copy());
-  more = more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) }));
+  const win = put(opening2.copy());
+  more = more.map((m) => ({ ...m, path: put(m.path.intersection(opening2)) }));
   if (w.neighbours && (kind === "date" || kind === "day")) {
     const D = disc_places(S, w), near2 = merge([-2, -1, 1, 2].map((d) => D.at(D.now + d))).intersection(win);
     if (!empty(near2)) more.push({ path: near2, key: "c2", like_number: true });
@@ -10134,9 +10172,26 @@ function hand_shape(h) {
     if (h.wall > 0) p = p.difference(offset(p, -h.wall));
     if (h.hub > 0 && shape3 !== "disc") p = p.union(circle(h.hub));
     if (h.counter > 0) p = p.union(place(circle(h.counter), -h.tail * COUNTER_AT, 0));
+    const holes = hand_openings(h);
+    if (holes) p = p.difference(holes);
     return p;
   });
 }
+function hand_openings(h) {
+  if (!h.op_on || HAND_SHAPES[h.shape] === "disc") return null;
+  return memo("open" + key_of(h), () => {
+    const n = max(Math.round(h.op_count || 1), 1), a = h.len * h.op_from / 100, b = h.len * h.op_to / 100, gap = max(h.op_gap || 0, 0), w = max(h.op_w || 0, 0);
+    const each = (b - a - gap * (n - 1)) / n;
+    if (!(each > 0.01) || !(w > 0.01)) return null;
+    let p = new Path();
+    for (let k = 0; k < n; k++) {
+      const y0 = a + k * (each + gap);
+      p = p.union(h.op_shape === 1 ? circle(min(w, each)).translate(0, y0 + each / 2) : new Path().rect(-w / 2, y0, w, each));
+    }
+    return p;
+  });
+}
+var fills_openings = (h) => Array.isArray(h.op_fill) && (h.op_fill[3] ?? 1) > 0 && Boolean(hand_openings(h));
 function hand_widest(h) {
   const shape3 = HAND_SHAPES[h.shape], L = h.len, T = h.tail;
   if (shape3 === "dauphine") return { at: h.feature_at / 100 * L, key: "feature_at", per_mm: 100 / L };
@@ -10194,6 +10249,19 @@ function dial_inks(S) {
   });
   return [...inks.values()];
 }
+function hand_lumes(S) {
+  const out = /* @__PURE__ */ new Map();
+  if (!S.ha_on) return [];
+  for (const h of HANDS) {
+    const H2 = S["ha_" + h];
+    if (!H2 || !H2.on || !fills_openings(H2)) continue;
+    const hex3 = ink_hex(H2.op_fill);
+    if (!out.has(hex3)) out.set(hex3, { hex: hex3, colour: H2.op_fill, hands: [] });
+    out.get(hex3).hands.push(h);
+  }
+  const word = { hour: "Hour", minute: "Minute", second: "Seconds" };
+  return [...out.values()].map((l) => ({ ...l, name: l.hands.map((h) => word[h]).join(" \xB7 ") + " lume" }));
+}
 var window_name = (w) => {
   const k = WINDOW_KINDS[w.kind] || "window";
   return k[0].toUpperCase() + k.slice(1) + " at " + (w.at_deg != null ? Math.round(w.at_deg) + "\xB0" : (DATE_AT[w.at] || DATE_AT[0])[0]);
@@ -10207,6 +10275,7 @@ function ink_mm(S, x2) {
     const ink = ink_of(S, ink_hex(x2.fill));
     h = ink.two && x2.ring?.ring?.stroke_b ? ink.b : ink.h;
   } else if (x2.role === "date number" || x2.role === "date picture" || x2.role === "disc print") h = windows_of(S)[x2.window]?.print_h ?? INK_MM;
+  else if (x2.role === "lume") h = ink_of(S, ink_hex(x2.fill)).h;
   return Math.max(0, Math.min(INK_MOST, h + (+S.w_ink_all || 0)));
 }
 function inks_of(S) {
@@ -10303,6 +10372,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       for (const [name, colour, path, a, h] of hand_items(S, t)) {
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
         if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), dim(h.mark_c, hands_layer), { name, angle: a });
+        if (fills_openings(h)) add("lume", hand_openings(h), dim(h.op_fill, hands_layer), { name, angle: a });
       }
       if (cap_shows(S)) add("cap", circle(S.ha_cap), dim(S.c_cap, hands_layer));
     }
@@ -10752,6 +10822,18 @@ var inkRelief = (x2, s, L) => {
   const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x2.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
   return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g>`;
 };
+var lumeShift = (L, a, s) => {
+  const ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, c = Math.cos(rad(a)), n = Math.sin(rad(a));
+  return [ux * c - uy * n, ux * n + uy * c];
+};
+var lumeRelief = (x2, s, L, A) => {
+  const K = x2.ink ?? INK_K;
+  if (!K || !x2.hand) return "";
+  const id = "lr" + INK_N++, th = thickness(x2.p) * s, es = Math.min(0.035 * K, th * 0.16), eh = Math.min(0.025 * K, th * 0.1), [ux, uy] = lumeShift(L, A[x2.hand], s);
+  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`);
+  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x2.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
+  return `<g data-hl="${x2.hand}" data-l="${f(L)}" data-s="${f(s)}" data-es="${f(es)}" data-eh="${f(eh)}" transform="rotate(${-A[x2.hand]})"><g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g></g>`;
+};
 var handBevel = (x2, A, L) => {
   if (!HAND_BEVEL || !x2.hand || !x2.bevel) return "";
   const id = "hb" + INK_N++, a = rad(A[x2.hand]), side = Math.cos(a) * Math.cos(rad(L)) + Math.sin(a) * Math.sin(rad(L));
@@ -10768,7 +10850,7 @@ function dialSVG(C2, v, L) {
     const sh = away(HEIGHTS[x2.hand || "cap"] ?? 0.35);
     return `<path d="${x2.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x2.hand ? ` data-hs="${x2.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x2.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`;
   }).join("");
-  const body = items.map((x2) => `<path d="${x2.p}" fill="${col2(x2)}" fill-opacity="${x2.a}"${x2.hand ? ` data-h="${x2.hand}" transform="rotate(${-A[x2.hand]})"` : ""}/>` + (x2.hand ? handBevel(x2, A, L) : x2.role !== "plate" && x2.role !== "cap" ? inkRelief(x2, s, L) : ""));
+  const body = items.map((x2) => `<path d="${x2.p}" fill="${col2(x2)}" fill-opacity="${x2.a}"${x2.hand ? ` data-h="${x2.hand}" transform="rotate(${-A[x2.hand]})"` : ""}/>` + (x2.hand ? x2.role === "lume" ? lumeRelief(x2, s, L, A) : handBevel(x2, A, L) : x2.role !== "plate" && x2.role !== "cap" ? inkRelief(x2, s, L) : ""));
   const firstHand = items.findIndex((x2) => x2.hand || x2.role === "cap");
   body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;
@@ -11502,8 +11584,8 @@ function options(S, items, effects) {
     size: sizeFor(kind, S.dial_d),
     view: VIEW_NAMES[S.w_view] || "detail",
     items: items.map((x2) => {
-      const hand = (x2.role === "hand" || x2.role === "mark") && HANDS2.includes(x2.name) ? x2.name : null;
-      return { role: x2.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) ? ink_mm(S, x2) / INK_STEP_MM : 0 };
+      const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS2.includes(x2.name) ? x2.name : null;
+      return { role: x2.role, hand, bevel: Boolean(hand && x2.role !== "lume" && S["ha_" + hand]?.bevel), p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) ? ink_mm(S, x2) / INK_STEP_MM : 0 };
     }),
     // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
     A: Object.fromEntries(HANDS2.map((h) => [h, 0])),
@@ -11558,6 +11640,12 @@ function draw2(tool2, items) {
   const A = angles_of(items), L = (S.sh_from - 90) * Math.PI / 180;
   for (const n of g.querySelectorAll("[data-h]")) n.setAttribute("transform", `rotate(${-A[n.dataset.h]})`);
   for (const n of g.querySelectorAll("[data-hs]")) n.setAttribute("transform", `translate(${n.dataset.sh}) rotate(${-A[n.dataset.hs]})`);
+  for (const n of g.querySelectorAll("[data-hl]")) {
+    const a = A[n.dataset.hl], [ux, uy] = lumeShift(+n.dataset.l, a, +n.dataset.s), [dark, light] = n.firstElementChild.children;
+    n.setAttribute("transform", `rotate(${-a})`);
+    dark.setAttribute("transform", `translate(${(ux * n.dataset.es).toFixed(3)} ${(uy * n.dataset.es).toFixed(3)})`);
+    light.setAttribute("transform", `translate(${(-ux * n.dataset.eh).toFixed(3)} ${(-uy * n.dataset.eh).toFixed(3)})`);
+  }
   for (const n of g.querySelectorAll("[data-hb]")) {
     const a = A[n.dataset.hb] * Math.PI / 180, side = Math.cos(a) * Math.cos(L) + Math.sin(a) * Math.sin(L), lit = 0.22 * Math.abs(side), dark = 0.26 * Math.abs(side);
     const [right, left] = n.querySelectorAll("rect");
@@ -11956,6 +12044,7 @@ function item_name(item) {
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");
   if (item.role === "ring stroke") return (item.ring.ring.name || item.ring.kind) + " stroke";
   if (item.role === "hand") return { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name;
+  if (item.role === "lume") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " lume";
   if (item.role === "mark") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " mark";
   if (item.window !== void 0) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date picture": "picture", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
   return item.role[0].toUpperCase() + item.role.slice(1);
@@ -11969,7 +12058,7 @@ function file_name(S, ext, now = /* @__PURE__ */ new Date()) {
   return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
 }
 function drawn(S, statik, t, preview, selected) {
-  return scene(S, statik, t, preview, selected).map((item) => item.role === "hand" || item.role === "mark" ? { ...item, path: turned(item.path, item.angle) } : item);
+  return scene(S, statik, t, preview, selected).map((item) => item.role === "hand" || item.role === "mark" || item.role === "lume" ? { ...item, path: turned(item.path, item.angle) } : item);
 }
 var WEIGHTS = [
   ["extralight", 200],
@@ -12490,7 +12579,8 @@ var hand_detail = (h, cap = null) => {
   const d = p.svg(3, true), ring = f2(Math.max(high * 0.012, 0.12));
   const centre2 = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
   const mark = paints_mark(h) && disc_mark(h), md = mark ? mark.svg(3, true) : "";
-  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "") + (cap ? `<circle class="cap" r="${f2(cap.d / 2)}" fill="currentColor"/>` : "");
+  const lume = fills_openings(h) ? hand_openings(h).svg(3, true) : "";
+  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "") + (lume ? `<path class="lume" d="${lume}"${turn} fill="${to_hex(h.op_fill)}"/>` : "") + (cap ? `<circle class="cap" r="${f2(cap.d / 2)}" fill="currentColor"/>` : "");
   return `<svg class="upright" viewBox="${f2(b[0] - m)} ${f2(-b[3] - m)} ${f2(w + 2 * m)} ${f2(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<clipPath id="lit-upright"><path class="litarea"/></clipPath><path class="lit" d="${d}" clip-path="url(#lit-upright)"/>${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f2(b[1] - m)} ${f2(b[0] - m)} ${f2(high + 2 * m)} ${f2(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<clipPath id="lit-lying"><path class="litarea"/></clipPath><path class="lit" d="${d}" transform="rotate(90)" clip-path="url(#lit-lying)"/>${centre2("M0 -999L0 999")}</svg>`;
 };
 var hand_part = (h, row) => {
@@ -12736,6 +12826,8 @@ var marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(kind_of(R))
 var labels_are = (name) => (R) => kind_of(R) === "numerals" && LABEL_SETS[R.labels][0] === name;
 var hand_is = (...shapes) => (H2) => shapes.includes(HAND_SHAPES[H2.shape]);
 var bevelled = (H2) => Boolean(H2 && H2.on && H2.bevel && HAND_SHAPES[H2.shape] !== "disc");
+var opens = (H2) => Boolean(H2 && H2.on && HAND_SHAPES[H2.shape] !== "disc");
+var opening = (H2) => opens(H2) && Boolean(H2.op_on);
 var numerals_only = kind_in("numerals");
 var with_text = kind_in("numerals", "text");
 var nudgeable = kind_in("ticks", "markers", "numerals", "text");
@@ -12964,15 +13056,12 @@ var ROWS = {
     // the Show box (#261, 4.46; Okay's notes, p. 2): under the tabs, on top of the grey page, Show — the tab says which
     // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (headless)
     custom("show_box", { ...H, bar: true }),
-    // the bevel, a pane of its own between the Show box and the hand's pane, once Bevel is ticked (#531; Okay, 2 Nov 2026,
-    // 18:48, his picture: "place the bevel settings here in the green area with a black line on top"): its look — Bevel
-    // Type, its name at the left, the pill on the sliders' line (17:50) — and its strength, the Shadows pane's Bevels %,
-    // one number for every hand in both places. Faceted is not offered (18:48: "facets system does not work, remove for
-    // now, note for later", #573); its place in BEVEL_LOOKS stays (R9) and a hand that has it draws a Ridge
-    hdr("Bevel", { headless: true, cls: "bevelpane" }),
-    seg("bevel_look", "Bevel Type", BEVEL_LOOKS, { ...H, show: bevelled, offered: () => [0, 2] }),
-    num2("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, show: (S, _, app) => bevelled(app.hand()) }),
     hdr("One hand", { headless: true }),
+    // its shapes first: a row of thumbs over the box and the rows beside it, from the box's left to the end (Okay, 2 Nov
+    // 2026, 22:00: "hand type moves up top of the preview and sliders"; 22:18: "list of hand types gets a thin black
+    // line"), the SVG tile last
+    pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] }),
+    // every shape but "file": the SVG tile stands for it
     // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
     // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
@@ -13017,10 +13106,28 @@ var ROWS = {
     chk("ha_cap_top", "Cap on this hand", { side: true, show: (S) => !S.ha_second.on && S.ui_hand === top_hand(S) }),
     num2("ha_cap", "Cap \xD8", 0, 4, 0.05, { side: true, show: cap_rows }),
     col("c_cap", "Cap colour", { side: true, show: cap_rows }),
-    // its shapes: a row of thumbs under the box and every row beside it, from the box's left to the end (4.46.4; Okay:
-    // "Put hand type as a row spanning preview to end, after wall"; under the box in 4.46.3), the SVG tile last
-    pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] })
-    // every shape but "file": the SVG tile stands for it
+    // an opening (#175; Okay, 2 Nov 2026, 22:00: "opening is its own eye list menu below with a switch on off next to the
+    // title … This comes after the preview and sliders beside"; 22:04: "TICK BOX"): shapes cut through the hand along it,
+    // Count of them from From % to To % of its length, Gap between, Width across; open (the dial seen through) or filled
+    // with a lume (22:38: "they only get lume, with lume coming in with our color selector with no other options but lume").
+    // Folded on a first visit as every pane (#270); ticking its box opens it
+    hdr("Opening", { folded: true }),
+    chk("op_on", "Opening", { ...H, head: true, boxonly: true, show: opens }),
+    seg("op_shape", "Shape", ["Bar", "Dot"], { ...H, show: opening }),
+    num2("op_count", "Count", 1, 12, 1, { ...H, whole: true, show: opening }),
+    num2("op_from", "From %", 0, 100, 1, { ...H, whole: true, show: opening }),
+    num2("op_to", "To %", 0, 100, 1, { ...H, whole: true, show: opening }),
+    num2("op_w", "Width", 0.05, 3, 0.05, { ...H, show: opening }),
+    num2("op_gap", "Gap", 0, 3, 0.05, { ...H, show: opening }),
+    col("op_fill", "Fill", { ...H, lume_only: true, show: opening }),
+    // the bevel, a pane of its own after the opening (Okay, 2 Nov 2026, 22:09: "move bevel as an eye and a tick box below
+    // openings"): its look — Bevel Type — and its strength, the Shadows pane's Bevels %, one number for every hand in both
+    // places. Faceted is not offered (18:48: "facets system does not work, remove for now, note for later", #573); its
+    // place in BEVEL_LOOKS stays (R9) and a hand that has it draws a Ridge
+    hdr("Bevel", { folded: true }),
+    chk("bevel", "Bevel", { ...H, head: true, boxonly: true, show: opens }),
+    seg("bevel_look", "Bevel Type", BEVEL_LOOKS, { ...H, show: bevelled, offered: () => [0, 2] }),
+    num2("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, show: (S, _, app) => bevelled(app.hand()) })
   ],
   Date: [
     // "Windows" on its tab: up to four holes in the plate
@@ -13338,7 +13445,7 @@ var instances_write = (list) => {
 };
 function dial_picture(S, statik) {
   const R = S.dial_d / 2 + 0.6, hex3 = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("");
-  const shapes = scene(S, statik, S.t, false).map((i2) => `<path d="${(i2.role === "hand" || i2.role === "mark" ? turned(i2.path, i2.angle) : i2.path).svg(2, true)}" fill="${hex3(i2.fill)}"${i2.fill[3] < 1 ? ` fill-opacity="${i2.fill[3]}"` : ""}/>`).join("");
+  const shapes = scene(S, statik, S.t, false).map((i2) => `<path d="${(i2.role === "hand" || i2.role === "mark" || i2.role === "lume" ? turned(i2.path, i2.angle) : i2.path).svg(2, true)}" fill="${hex3(i2.fill)}"${i2.fill[3] < 1 ? ` fill-opacity="${i2.fill[3]}"` : ""}/>`).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}" aria-hidden="true">${shapes}</svg>`;
 }
 async function pack(S) {
@@ -13425,6 +13532,19 @@ function keep_and_shorten(S) {
   } catch (e) {
   }
 }
+
+// src/lume.js
+var LUMES = [
+  ["C3", "#E4EAC2", "#8CF56A", "Green", "100 %", "pale yellow-green by day, glows green (515 nm); the reference"],
+  ["BGW9", "#F4F4F0", "#62DDF5", "Blue-green", "95 %", "white by day, glows blue-green (485 nm); about 95 % of C3"],
+  ["C5", "#E9EDB0", "#B7F06A", "Green", "89 %", "greenish-yellow by day; 89 % of C3, unsourced"],
+  ["C1", "#F7F7F4", "#8CF56A", "Green, weaker", "31 %", "a white body, glows green, weaker; about 31 % of C3, unsourced"],
+  ["Old radium", "#E6D3B0", "#E9A86A", "Weaker", "tint", "a tan tint in the body; glows weaker (the research's illustration)"],
+  ["Dark red", "#D8574C", "#F0645A", "Red, faint", "22 %", "a red tint; about 22 % of C3, unsourced (the research's illustration)"]
+].map(([name, hex3, glow, glows, k, what]) => ({ name, hex: hex3, glow, glows, k, what }));
+var BY_HEX = new Map(LUMES.map((l) => [l.hex, l]));
+var lume_exact = (hex3) => BY_HEX.get(String(hex3).toUpperCase()) || null;
+var lume_by_name = (name) => LUMES.find((l) => l.name.toLowerCase() === String(name).trim().toLowerCase()) || null;
 
 // src/ral.js
 var RAL_FAMILIES = [["1", "Yellow", "1023"], ["2", "Orange", "2004"], ["3", "Red", "3020"], ["4", "Violet", "4008"], ["5", "Blue", "5015"], ["6", "Green", "6024"], ["7", "Grey", "7042"], ["8", "Brown", "8023"], ["9", "White \xB7 black", "9003"]];
@@ -15577,9 +15697,10 @@ function parse_hex(text) {
   return m ? "#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]).toUpperCase() : null;
 }
 function colour_word(c) {
-  const hex3 = to_hex(c).toUpperCase(), ral = ral_exact(hex3);
-  return ral ? "R" + ral.code.replace(/ /g, "-") : hex3;
+  const hex3 = to_hex(c).toUpperCase(), lume = lume_exact(hex3), ral = ral_exact(hex3);
+  return lume ? lume.name : ral ? "R" + ral.code.replace(/ /g, "-") : hex3;
 }
+var is_open = (c) => Array.isArray(c) && (c[3] ?? 1) === 0;
 var COLOUR = {
   /** this dial's colours: every part that has one, each colour once — in the order the Colours pane lists them (rings
    *  and their sectors, hands, cap, windows), or with the page: plate, backdrop, cap, then the rest (the colour
@@ -15623,6 +15744,7 @@ var COLOUR = {
       P2.hsv = [x2 * 360, P2.hsv[1], P2.hsv[2]];
       put(hsv_rgb(P2.hsv));
     });
+    P2.lumes = el("div", { className: "lumegrid", id: "pop-lumes", hidden: true });
     P2.design = true;
     P2.ral = el("div", { className: "ralgrid", id: "pop-ralgrid", title: "RAL: down, darker; across, more vivid", hidden: true });
     const chart = (id, on, ...kids) => el("button", { type: "button", id, onclick: () => {
@@ -15682,6 +15804,7 @@ var COLOUR = {
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P2.palette_chips),
       P2.field,
       P2.ral,
+      P2.lumes,
       P2.charts,
       P2.hues,
       P2.bands,
@@ -15729,7 +15852,8 @@ var COLOUR = {
     pill.setAttribute("aria-expanded", "false");
     pill.show = (c) => {
       paint(dot, c);
-      hex3.textContent = colour_word(c);
+      dot.classList.toggle("lume", !is_open(c) && Boolean(lume_exact(to_hex(c))));
+      hex3.textContent = is_open(c) ? "Open" : colour_word(c);
       if (title) pill.ariaLabel = `${title} ${hex3.textContent}`;
     };
     return pill;
@@ -15738,8 +15862,10 @@ var COLOUR = {
    *  It follows the scope, so with a ring's colour open, selecting another ring shows that ring's. */
   colour_of_row(row) {
     return {
-      alpha: row.scope === "ring" || row.scope === "hand",
-      // rings (Okay, 12 Oct 2026) and hands (#163, 14 Oct 2026) can be see-through
+      alpha: (row.scope === "ring" || row.scope === "hand") && !row.lume_only,
+      // rings (Okay, 12 Oct 2026) and hands (#163, 14 Oct 2026) can be see-through; a lume never: an ink, laid whole
+      lume_only: Boolean(row.lume_only),
+      // an opening's fill: Lume alone, with Open (#175)
       read: () => {
         const T = this.target(row.scope);
         return T ? (row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : null) : null;
@@ -15761,7 +15887,7 @@ var COLOUR = {
     if (P2.at) P2.at.swatch.setAttribute("aria-expanded", "false");
     P2.at = { ...colour, swatch };
     P2.family = null;
-    this.colour_mode = COLOUR_MODES[this.S.ui_colour_as] || "HEX";
+    this.colour_mode = colour.lume_only ? "Lume" : COLOUR_MODES[this.S.ui_colour_as] || "HEX";
     swatch.setAttribute("aria-expanded", "true");
     P2.el.hidden = false;
     this.pop_wide(false);
@@ -15812,6 +15938,10 @@ var COLOUR = {
       const { colour, exact } = ral_nearest(rgb2, this.pop.design);
       return `${exact ? "" : "\u2248 "}RAL ${colour.code} ${colour.name}`;
     }
+    if (mode === "Lume") {
+      const l = lume_exact(to_hex(rgb2));
+      return l ? `Lume ${l.name}` : to_hex(rgb2).toUpperCase();
+    }
     return mode === "HEX" ? to_hex(rgb2).toUpperCase() : (mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100))).join(", ");
   },
   /** the pop-out shows the setting it edits. */
@@ -15825,7 +15955,7 @@ var COLOUR = {
     P2.title.textContent = P2.at.label();
     const put = (c) => P2.pick(c);
     const chip = (c) => {
-      const ral2 = ral_exact(c), b = el("button", { type: "button", className: ral2 ? "ral" : "", title: ral2 ? `RAL ${ral2.code} ${ral2.name}` : c, ariaLabel: ral2 ? `RAL ${ral2.code} ${ral2.name}` : c, onclick: () => put(c) });
+      const lume2 = lume_exact(c), ral2 = !lume2 && ral_exact(c), said = lume2 ? `Lume ${lume2.name}` : ral2 ? `RAL ${ral2.code} ${ral2.name}` : c, b = el("button", { type: "button", className: lume2 ? "lume" : ral2 ? "ral" : "", title: said, ariaLabel: said, onclick: () => put(c) });
       b.style.background = c;
       b.dataset.colour = c;
       return b;
@@ -15850,9 +15980,37 @@ var COLOUR = {
       P2.palette_chips.replaceChildren(...this.palette.map(chip), change);
     }
     for (const b of P2.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
-    const ral = this.colour_mode === "RAL", near2 = ral ? ral_nearest(rgb2, P2.design) : null;
-    P2.field.hidden = P2.hues.hidden = ral;
+    const ral = this.colour_mode === "RAL", near2 = ral ? ral_nearest(rgb2, P2.design) : null, lumed = this.colour_mode === "Lume", only = Boolean(P2.at.lume_only);
+    P2.field.hidden = P2.hues.hidden = ral || lumed;
     P2.ral.hidden = P2.charts.hidden = P2.bands.hidden = !ral;
+    P2.lumes.hidden = !lumed;
+    P2.el.classList.toggle("lumeonly", only);
+    if (lumed) {
+      const shown = only ? "open+" : "lumes";
+      if (P2.lumes.dataset.shown !== shown) {
+        P2.lumes.dataset.shown = shown;
+        const tile = (id, name, small, title, day, glow, take) => {
+          const b = el("button", { type: "button", id, title, ariaLabel: title, onclick: take }, el("span", { className: "day" }), el("b", { textContent: name }), el("small", { textContent: small }));
+          if (day) {
+            b.firstChild.style.background = day;
+            b.firstChild.append(el("i"));
+            b.firstChild.lastChild.style.background = glow;
+          }
+          return b;
+        };
+        P2.lumes.replaceChildren(
+          ...only ? [tile("pop-lume-open", "Open", "no fill", "Open: no fill, the dial seen through", null, null, () => P2.at.write([...P2.at.read().slice(0, 3), 0]))] : [],
+          ...LUMES.map((l) => {
+            const b = tile("pop-lume-" + l.name.replace(/ /g, "-"), l.name, l.k, `${l.name}: ${l.what}`, l.hex, l.glow, () => P2.at.write([...from_hex(l.hex).slice(0, 3), 1]));
+            b.dataset.hex = l.hex;
+            return b;
+          })
+        );
+        if (only) P2.lumes.firstChild.classList.add("open");
+      }
+      const at = is_open(colour) ? null : value;
+      for (const b of P2.lumes.children) b.classList.toggle("on", b.classList.contains("open") ? at === null : b.dataset.hex === at);
+    }
     if (ral) {
       const family = P2.family || near2.colour.family, shown = family + (P2.design ? "+" : "");
       if (P2.ral.dataset.shown !== shown) {
@@ -15884,7 +16042,7 @@ var COLOUR = {
     P2.hues.firstChild.style.left = `${P2.hsv[0] / 360 * 100}%`;
     P2.hues.firstChild.style.background = `hsl(${P2.hsv[0]} 100% 50%)`;
     const a = colour[3] ?? 1;
-    P2.alpha_row.hidden = !P2.at.alpha;
+    P2.alpha_row.hidden = !P2.at.alpha || lumed;
     P2.alpha.style.setProperty("--solid", value);
     P2.alpha.firstChild.style.left = `${a * 100}%`;
     if (!has_focus(P2.alpha_field)) P2.alpha_field.value = `${Math.round(a * 100)}%`;
@@ -15908,6 +16066,12 @@ var COLOUR = {
           else this.pop_refresh();
           return;
         }
+        if (mode === "Lume") {
+          const l = lume_by_name(fields[0].value);
+          if (l) P2.at.write([...from_hex(l.hex).slice(0, 3), 1]);
+          else this.pop_refresh();
+          return;
+        }
         const all = fields.map((x2) => parseFloat(x2.value) || 0);
         const next = mode === "RGB" ? all.map((v) => v / 255) : cmyk_rgb(all.map((v) => v / 100));
         P2.put(next);
@@ -15920,11 +16084,13 @@ var COLOUR = {
         return c;
       };
       const field = (letter, i2) => cell(letter, i2, el("input", { type: "text", inputMode: mode === "HEX" || mode === "RAL" ? "text" : "numeric", ariaLabel: letter, id: "pop-" + letter, spellcheck: false, onchange: commit }));
-      P2.numbers.replaceChildren(...mode === "HEX" ? [field("hex", 0)] : mode === "RAL" ? [field("ral", 0), cell("name", 1, el("span", { id: "pop-ral-name" }))] : [...mode].map((letter, i2) => field(letter, i2)));
+      P2.numbers.replaceChildren(...mode === "HEX" ? [field("hex", 0)] : mode === "RAL" ? [field("ral", 0), cell("name", 1, el("span", { id: "pop-ral-name" }))] : mode === "Lume" ? [field("lume", 0), cell("glow", 1, el("span", { id: "pop-lume-glow" }))] : [...mode].map((letter, i2) => field(letter, i2)));
     }
-    const values = mode === "HEX" ? [value] : mode === "RAL" ? [(near2.exact ? "" : "\u2248 ") + near2.colour.code, near2.colour.name] : mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100));
+    const lume = mode === "Lume" ? lume_exact(value) : null;
+    const values = mode === "Lume" ? is_open(colour) ? ["Open", "none"] : lume ? [lume.name, lume.glows] : ["\u2248 " + value, "not a lume"] : mode === "HEX" ? [value] : mode === "RAL" ? [(near2.exact ? "" : "\u2248 ") + near2.colour.code, near2.colour.name] : mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100));
     for (const f2 of P2.numbers.querySelectorAll("input")) if (!has_focus(f2)) f2.value = values[f2.dataset.i];
     if (mode === "RAL") $("#pop-ral-name").textContent = values[1];
+    if (mode === "Lume") $("#pop-lume-glow").textContent = values[1];
     const grown = P2.el.getBoundingClientRect().height - before.height;
     if (grown && !P2.el.hidden && !this.pop_is_sheet() && before.top + before.height / 2 > innerHeight / 2) this.pop_place(before.left, before.top - grown);
   },
@@ -16127,10 +16293,10 @@ var COLOUR = {
       rows.push(made);
       return made.el;
     };
-    const swatch = (id, title, read, write, pill = false) => {
+    const swatch = (id, title, read, write, pill = false, lume_only = false) => {
       const b = pill ? this.colour_pill("colour-" + id, title) : el("button", { type: "button", className: "swatch", id: "colour-" + id, title });
       b.dataset.tip = title;
-      b.onclick = () => this.pop_open({ read, write, label: () => title }, b, b.parentElement);
+      b.onclick = () => this.pop_open({ read, write, label: () => title, lume_only }, b, b.parentElement);
       rows.push({ refresh: () => b.show ? b.show(read()) : paint(b, read()) });
       return b;
     };
@@ -16221,6 +16387,27 @@ var COLOUR = {
           kids.push(el("div", { className: "row showline inkpart" }, said, mark(kind), el("label", { textContent: name }), pill2 ? pill2.el : el("i"), place2(box3)));
         });
       });
+      const lumes = hand_lumes(S());
+      if (lumes.length) kids.push(sub("On the hands"));
+      lumes.forEach((l, n) => {
+        const now = () => hand_lumes(S())[n] || l;
+        const write = (v) => {
+          for (const h of now().hands) S()["ha_" + h].op_fill = v;
+          this.changed(true);
+        };
+        const pill = swatch(`lume-${n}`, `${l.name}: its lume`, () => now().colour, write, true, true);
+        kids.push(el(
+          "div",
+          { className: "row showline inkline" },
+          el("i"),
+          mark(),
+          el("label", { textContent: l.name }),
+          pill,
+          place2(height(`lume-${n}-h`, `${l.name}: its lume's height`, () => ink_of(S(), now().hex).h + all(), (v) => {
+            entry(now().hex).h = +(v - all()).toFixed(3);
+          }))
+        ));
+      });
       const wins = windows_of(S()).map((w, k) => [w, k]).filter(([w]) => w.on);
       if (wins.length) kids.push(sub("On the discs"));
       for (const [w, k] of wins) {
@@ -16257,6 +16444,7 @@ var COLOUR = {
     };
     out.refresh = () => {
       const sig = JSON.stringify([
+        hand_lumes(this.S).map((l) => [l.hex, l.name]),
         dial_inks(this.S).map((ink) => [ink.parts.map((p) => [p.kind, p.i, p.sectors, Boolean(this.part_b(p))]), this.ink_open.has(ink.hex), ink_of(this.S, ink.hex).two]),
         windows_of(this.S).map((w, k) => [w.on, w.kind, w.at, w.at_deg, w.neighbours, w.look, w.ampm_form, disc_of(this.S, k) ? 1 : 0])
       ]);
@@ -17559,7 +17747,7 @@ var PANEL = {
         shown();
       } },
       { kind: "note", text: "Every length in the app" },
-      { kind: "seg", key: "ui_colour_as", text: "Colours", items: COLOUR_MODES, id: "settings-colours", put: (app, v) => {
+      { kind: "seg", key: "ui_colour_as", text: "Colours", items: COLOUR_MODES.slice(0, 4), id: "settings-colours", put: (app, v) => {
         app.S.ui_colour_as = v;
         app.colour_mode = COLOUR_MODES[v];
         shown();
@@ -18065,8 +18253,12 @@ var PANEL = {
     }
     if (row.kind === "chk") {
       const box3 = el("input", { type: "checkbox", id });
-      box3.onchange = () => set(box3.checked);
-      wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box3, el("span", { className: "words", textContent: row.text })));
+      box3.onchange = () => {
+        set(box3.checked);
+        if (row.boxonly && box3.checked && out.group && this.is_folded(out.group)) this.fold(out.group, false);
+      };
+      if (row.boxonly) box3.ariaLabel = row.text;
+      wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box3, ...row.boxonly ? [] : [el("span", { className: "words", textContent: row.text })]));
       if (row.tip) wrap.append(this.info_sign(row.tip));
       out.refresh = (T) => {
         box3.checked = Boolean(row.get ? row.get(T) : T[row.key]);
@@ -19202,25 +19394,16 @@ var RINGS = {
    *  there. The two are a side row's parts, each still its own row (build_row), so they do all a number does. */
   /** the Show box (#261, 4.46; Okay's notes, p. 2: "Show this window moves with the tab and says just Show: a thin box,
    *  darker than the pane's grey, grows down from the tab and holds it"; one word for windows and hands alike): the
-   *  tick that shows the chosen hand or window, on top of the grey page under the tabs. */
+   *  tick that shows the chosen hand or window, on top of the grey page under the tabs. Show alone, for a hand as for a
+   *  window (Okay, 2 Nov 2026, 22:09: "Show same as windows' show"): a hand's Bevel is a pane of its own (rows.js). */
   row_show_box(wrap, out, row) {
     const id = `${row.scope}-on-Show`, box3 = el("input", { type: "checkbox", id });
     box3.onchange = () => this.set_value(row.scope, "on", box3.checked);
     wrap.className = "showbox";
     const line = el("span", { className: "showline" }, el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box3, " Show"));
-    const bevel = row.scope === "hand" ? el("input", { type: "checkbox", id: "hand-bevel" }) : null;
-    const bevel_word = bevel ? el("label", { className: "check", htmlFor: "hand-bevel", title: "This hand's bevel, the light and dark halves the shadows' light gives it" }, bevel, " Bevel") : null;
-    if (bevel) {
-      bevel.onchange = () => this.set_value("hand", "bevel", bevel.checked);
-      line.append(bevel_word);
-    }
     wrap.append(line);
     out.refresh = (T) => {
       box3.checked = Boolean(T.on);
-      if (bevel) {
-        bevel.checked = Boolean(T.bevel);
-        bevel_word.hidden = !(T.on && HAND_SHAPES[T.shape] !== "disc");
-      }
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);
@@ -19545,7 +19728,7 @@ var HANDS3 = {
       clip.id = "bevel-clip-" + item.name;
       shape3.setAttribute("d", this.slots[i2].d);
       let n = i2 + 1;
-      while (items[n]?.role === "mark" && items[n].name === item.name) n++;
+      while ((items[n]?.role === "mark" || items[n]?.role === "lume") && items[n].name === item.name) n++;
       const g = part2(key, "g", this.dial, nodes[n] || null);
       g.setAttribute("transform", `rotate(${f2(-item.angle)})`);
       g.setAttribute("pointer-events", "none");
@@ -20877,7 +21060,7 @@ var PREVIEW = {
     const S = this.S, mm = this.to_mm(p), r = Math.hypot(mm[0], mm[1]);
     const item = node && node.dataset && node.dataset.i !== void 0 ? this.items[+node.dataset.i] : null;
     const role = item ? item.role : null;
-    if (role === "hand" || role === "mark") return { kind: "hand", hand: HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
+    if (role === "hand" || role === "mark" || role === "lume") return { kind: "hand", hand: HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
     if (role === "cap") return { kind: "cap", name: "Cap", path: item.path, angle: 0 };
     if (role && (role.startsWith("date") || role === "cutline")) {
       const x2 = this.statik.windows.find((b) => b.index === item.window), kind = WINDOW_KINDS[x2.w.kind];
@@ -21393,7 +21576,7 @@ var GUIDES = {
     }
     const after = (i2) => {
       let n = i2 + 1;
-      while (items[n]?.role === "mark" && items[n].name === items[i2].name) n++;
+      while ((items[n]?.role === "mark" || items[n]?.role === "lume") && items[n].name === items[i2].name) n++;
       return n;
     };
     for (const h of hands) if (hands.some((o) => o.z > h.z) || cap_r && top > h.z) surface("hand-" + h.item.name, nodes[after(h.i)] || null, [[h.d, h.item.angle]], h.z);

@@ -386,7 +386,7 @@ export const GUIDES = {
       surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
     }
     // each hand catches the hands above it
-    const after = (i) => { let n = i + 1; while (items[n]?.role === "mark" && items[n].name === items[i].name) n++; return n; };      // past a disc's painted mark, which catches the shadow too (#300)
+    const after = (i) => { let n = i + 1; while ((items[n]?.role === "mark" || items[n]?.role === "lume") && items[n].name === items[i].name) n++; return n; };      // past a disc's painted mark, which catches the shadow too (#300)
     for (const h of hands) if (hands.some((o) => o.z > h.z) || (cap_r && top > h.z)) surface("hand-" + h.item.name, nodes[after(h.i)] || null, [[h.d, h.item.angle]], h.z);
     finish();
   },

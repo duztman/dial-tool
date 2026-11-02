@@ -200,7 +200,7 @@ export const PANEL = {
     const rows = [
       { kind: "seg", key: "ui_unit", text: "Unit", items: G.UNITS.map((u) => u[0]), id: "settings-unit", put: (app, v) => { app.S.ui_unit = v; shown(); } },
       { kind: "note", text: "Every length in the app" },
-      { kind: "seg", key: "ui_colour_as", text: "Colours", items: G.COLOUR_MODES, id: "settings-colours", put: (app, v) => { app.S.ui_colour_as = v; app.colour_mode = G.COLOUR_MODES[v]; shown(); } },
+      { kind: "seg", key: "ui_colour_as", text: "Colours", items: G.COLOUR_MODES.slice(0, 4), id: "settings-colours", put: (app, v) => { app.S.ui_colour_as = v; app.colour_mode = G.COLOUR_MODES[v]; shown(); } },
       { kind: "note", text: "The colour pop-out opens in it" },
       { kind: "seg", bool: true, key: "ui_snap", text: "Snap", id: "settings-snap", put: (app, v) => { app.S.ui_snap = v; shown(); } },      // a dragged handle lands on rings' edges (#184; Okay, 1 Nov 2026: "snap on off, snap to guides on off, in their own lines")
       { kind: "note", text: "Dragged handles land on rings’ edges" },
@@ -599,8 +599,10 @@ export const PANEL = {
 
     if (row.kind === "chk") {
       const box = el("input", { type: "checkbox", id });
-      box.onchange = () => set(box.checked);
-      wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box, el("span", { className: "words", textContent: row.text })));      // the words after the box by a set gap (--tick-gap), so a note under them can start where they do
+      box.onchange = () => { set(box.checked); if (row.boxonly && box.checked && out.group && this.is_folded(out.group)) this.fold(out.group, false); };      // a heading's box ticked opens its pane
+      // boxonly: the box alone, on a heading line that already says its name (Opening, Bevel: Okay, 2 Nov 2026, 22:04: "TICK BOX")
+      if (row.boxonly) box.ariaLabel = row.text;
+      wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box, ...(row.boxonly ? [] : [el("span", { className: "words", textContent: row.text })])));      // the words after the box by a set gap (--tick-gap), so a note under them can start where they do
       if (row.tip) wrap.append(this.info_sign(row.tip));
       out.refresh = (T) => { box.checked = Boolean(row.get ? row.get(T) : T[row.key]); };
     }

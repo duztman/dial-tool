@@ -32,6 +32,7 @@ export const insert_picture = (i) => { const [a, b] = INSERTS[i] || INSERTS[0];
 const STYLE_NAMES = ["engineer", "miyazaki"], VIEW_NAMES = ["detail", "full", "dial"];
 const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
 const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc"].includes(role);      // what carries ink relief: a window's disc is the ground under its hole, not ink
+// a hand's lume is printed too: an ink on the hand (#175), its height the ink's
 const HANDS = ["hour", "minute", "second"];
 
 /** what watch.js draws for this dial and these settings — the Show Case's `options()` */
@@ -40,8 +41,8 @@ export function options(S, items, effects) {
   const P = WATCH.presets(style), lit = effects;
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
-    items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark") && HANDS.includes(x.name) ? x.name : null;
-      return { role: x.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
+    items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && HANDS.includes(x.name) ? x.name : null;
+      return { role: x.role, hand, bevel: Boolean(hand && x.role !== "lume" && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,
@@ -81,6 +82,12 @@ export function draw(tool, items) {
   const A = angles_of(items), L = (S.sh_from - 90) * Math.PI / 180;
   for (const n of g.querySelectorAll("[data-h]")) n.setAttribute("transform", `rotate(${-A[n.dataset.h]})`);
   for (const n of g.querySelectorAll("[data-hs]")) n.setAttribute("transform", `translate(${n.dataset.sh}) rotate(${-A[n.dataset.hs]})`);
+  for (const n of g.querySelectorAll("[data-hl]")) {      // a hand's lume: its relief shifted toward the light in the hand's own frame (#175)
+    const a = A[n.dataset.hl], [ux, uy] = WATCH.lumeShift(+n.dataset.l, a, +n.dataset.s), [dark, light] = n.firstElementChild.children;
+    n.setAttribute("transform", `rotate(${-a})`);
+    dark.setAttribute("transform", `translate(${(ux * n.dataset.es).toFixed(3)} ${(uy * n.dataset.es).toFixed(3)})`);
+    light.setAttribute("transform", `translate(${(-ux * n.dataset.eh).toFixed(3)} ${(-uy * n.dataset.eh).toFixed(3)})`);
+  }
   for (const n of g.querySelectorAll("[data-hb]")) {
     const a = A[n.dataset.hb] * Math.PI / 180, side = Math.cos(a) * Math.cos(L) + Math.sin(a) * Math.sin(L), lit = 0.22 * Math.abs(side), dark = 0.26 * Math.abs(side);
     const [right, left] = n.querySelectorAll("rect");

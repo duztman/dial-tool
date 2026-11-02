@@ -1,5 +1,18 @@
 # Dial Tool — changelog
 
+## v1.1.39 beta · 2 Nov 2026 — a hand as a stack: openings, lume as a colour and an ink; the Hands tab re-laid (#175)
+
+Drawn in six rounds on the real page (`web/test/sketch.mjs`), then built on Okay's word, 22:55: "Amazing. Build."
+
+- **Openings** (`geometry.js`: `hand_openings`, `fills_openings`; HAND_BASE `op_on op_shape op_count op_from op_to op_w op_gap op_fill`, appended to LINK_KEYS): Count shapes cut through a hand from From % to To % of its Length, Gap between, Width across — Bar or Dot (21:52: "C · several shapes"). Off to start (R31). Open (the fill at alpha 0) or filled with a lume, C3 to start; the lume a scene part of its own (role `lume`), turning with its hand, named "Hour hand lume" in the files. A disc hand has none.
+- **Lume, a colour mode** (`lume.js`, `colour.js`): the pop-out's fifth mode after RAL — the research's six lumes (C3 · BGW9 · C5 · C1 · Old radium · Dark red; v31 §6.1) as tiles: the colour by day with a faded L, a dot of its glow, its strength against C3; the values line LUME · GLOW (22:25: "Lume is a swatch! Add it next to ral on colors"). A lume's chip carries an L, its pill says its name, C3 (22:38). Settings still offers the first four modes.
+- **An opening's Fill**: one colour row whose pop-out is Lume alone — an Open tile first, no other modes, no chips (22:38: "with lume coming in with our color selector with no other options but lume").
+- **Lume as an ink** (`geometry.js`: `ink_mm`, `hand_lumes`; `colour.js` Inks pane; `watch.js` `lumeRelief`; `show.js`): in show mode a hand's lume stands its ink's height over the blade, with the ink relief, turned with its hand every frame; the Inks pane lists it under "On the hands" with its height (22:31: "only on showcase as an ink height"). No lume row in the Shadows pane.
+- **The Hands tab** (`rows.js`, `rings.js`, `panel.js`, `4b-lines-tabs.css`, `4d-hands.css`): the Show box holds Show alone, as a window's (22:09); the hand types first in the hand's pane, between the pane's thin line and their own, 11 px round each (22:18, 22:25); then the hand's picture and sliders; then an Opening pane and a Bevel pane, each with its eye and a tick box alone on its heading line (`boxonly`), folded on a first visit, opened by ticking (22:00–22:09). The `.bevelpane` under the Show box is gone.
+- **A window's first pane** opens with its thick line under the Show box (`4a-panel.css`; 22:18: "Window at x needs a thick").
+- **Not built yet**: the lume view in show mode (the glow, #175's last part).
+- **Tests**: the window test's checks for the hand's pane, the hand types, the window's line, the Show box and Bevel rewritten, two new (an opening and its Fill; the hands' lume in show mode). `npm test` passes but the icon check (`every-strip`, #169, known). `same.mjs`: differences only on Hands, the Windows tab's line and the pop-out's two new elements.
+
 ## v1.1.38 beta · 2 Nov 2026 — every glyph one outline: no more holes in show mode's ink relief
 
 Okay, 2 Nov 2026, 19:06, a picture of Show Case numerals with light squares and triangles where the strokes of a 4 and a 5 cross: "Some fonts fail with ink height on show case. Why would that be, ho'd you solve it?"; 19:08: "Yes please, go."

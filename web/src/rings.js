@@ -558,7 +558,8 @@ export const RINGS = {
    *  there. The two are a side row's parts, each still its own row (build_row), so they do all a number does. */
   /** the Show box (#261, 4.46; Okay's notes, p. 2: "Show this window moves with the tab and says just Show: a thin box,
    *  darker than the pane's grey, grows down from the tab and holds it"; one word for windows and hands alike): the
-   *  tick that shows the chosen hand or window, on top of the grey page under the tabs. */
+   *  tick that shows the chosen hand or window, on top of the grey page under the tabs. Show alone, for a hand as for a
+   *  window (Okay, 2 Nov 2026, 22:09: "Show same as windows' show"): a hand's Bevel is a pane of its own (rows.js). */
   row_show_box(wrap, out, row) {
     // under the chosen tab alone, as wide as it, and it travels with it (4.46.2; Okay on 4.46.1: "the top tab attaches
     // traveling show ticker"; what #261 said: "grows down from the tab"): the box stands in the same columns as the
@@ -567,15 +568,9 @@ export const RINGS = {
     box.onchange = () => this.set_value(row.scope, "on", box.checked);
     wrap.className = "showbox";
     const line = el("span", { className: "showline" }, el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box, " Show"));
-    // a hand's Bevel beside Show, once it is shown (Okay, 19 Oct 2026, 23:53: "Bevel on off moves next to show under the
-    // tab just above. appears after show is switched on"), off to start; Shadows → Bevels % is its strength
-    const bevel = row.scope === "hand" ? el("input", { type: "checkbox", id: "hand-bevel" }) : null;
-    const bevel_word = bevel ? el("label", { className: "check", htmlFor: "hand-bevel", title: "This hand's bevel, the light and dark halves the shadows' light gives it" }, bevel, " Bevel") : null;
-    if (bevel) { bevel.onchange = () => this.set_value("hand", "bevel", bevel.checked); line.append(bevel_word); }
     wrap.append(line);
     out.refresh = (T) => {
       box.checked = Boolean(T.on);
-      if (bevel) { bevel.checked = Boolean(T.bevel); bevel_word.hidden = !(T.on && G.HAND_SHAPES[T.shape] !== "disc"); }      // with Show, Shadows on or off (#531)      // with Show, at once (20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on"); a disc hand is flat; no shadows, no bevels
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);

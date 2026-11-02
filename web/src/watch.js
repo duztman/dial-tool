@@ -255,6 +255,15 @@ const inkRelief = (x, s, L) => { const K = x.ink ?? INK_K; if (!K) return "";
   CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
   const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
   return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g>`; };
+// a hand's lume (#175; Okay, 2 Nov 2026, 22:25: "It is treated as an ink"; 22:31: "only on showcase as an ink height"):
+// the ink's relief, as a printed part's, but on a hand that turns — its edges' dark and light cut in the hand's own
+// frame, so the shift toward the light is the dial's light turned back by the hand's angle. show.js turns it every frame.
+export const lumeShift = (L, a, s) => { const ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, c = Math.cos(rad(a)), n = Math.sin(rad(a)); return [ux * c - uy * n, ux * n + uy * c]; };
+const lumeRelief = (x, s, L, A) => { const K = x.ink ?? INK_K; if (!K || !x.hand) return "";
+  const id = "lr" + (INK_N++), th = thickness(x.p) * s, es = Math.min(0.035 * K, th * 0.16), eh = Math.min(0.025 * K, th * 0.1), [ux, uy] = lumeShift(L, A[x.hand], s);
+  CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
+  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
+  return `<g data-hl="${x.hand}" data-l="${f(L)}" data-s="${f(s)}" data-es="${f(es)}" data-eh="${f(eh)}" transform="rotate(${-A[x.hand]})"><g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g></g>`; };
 const handBevel = (x, A, L) => { if (!HAND_BEVEL || !x.hand || !x.bevel) return "";      // a hand bevelled as the dial side says: its own tick, at Bevels % (HAND_BEVEL, 0–1)
   const id = "hb" + (INK_N++), a = rad(A[x.hand]), side = Math.cos(a) * Math.cos(rad(L)) + Math.sin(a) * Math.sin(rad(L));
   CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
@@ -270,7 +279,7 @@ function dialSVG(C, v, L) {
   const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
   const handsShadow = items.filter((x) => x.hand || x.role === "cap").map((x) => { const sh = away(HEIGHTS[x.hand || "cap"] ?? 0.35);
     return `<path d="${x.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x.hand ? ` data-hs="${x.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`; }).join("");
-  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? handBevel(x, A, L) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
+  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? (x.role === "lume" ? lumeRelief(x, s, L, A) : handBevel(x, A, L)) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
   const firstHand = items.findIndex((x) => x.hand || x.role === "cap");
   body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;

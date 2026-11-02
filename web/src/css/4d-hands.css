@@ -16,15 +16,14 @@
   .detail .handname { position: absolute; left: var(--unit); bottom: var(--u1); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* the shape's name, small, at its bottom left (4.79) */
   .detail .lit { fill: none; stroke: var(--lit); stroke-width: var(--triple); vector-effect: non-scaling-stroke; }      /* a number's sides: the hand's outline where that number moves it, lit while its row or its side is pointed at (#329, #411), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  /* the hand's shapes as thumbs (Okay: "rectangular thumbs"; a row of their own after the rows): every
-     one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line
-     from the box's left to the end; the dashed SVG tile last (a shape of one's own) */
-  .row.thumbs > .picks.thumbs { grid-column: 1 / -1; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); padding: var(--u4) 0; }
-  /* framed by thin black lines, over it and under it (4.46.5, Okay: "Short black line is part of hand selector. Comes
-     after wall and preview box … THERE'S A SPACE. THEN COMES BLACK LINE. BUT THAT SPACE, IS THE SAME WITH ALL WHITES
-     AND BLACK AROUND HERE"): the box and the last row end on one line, then two units of space, then the black line;
-     two units from it to the thumbs and from them to the closing line, as round the line under the Show box */
-  .row.thumbs { margin-top: var(--u4); border-block: var(--hair) solid var(--ink); box-shadow: none; }
+  /* the hand's shapes as thumbs (Okay: "rectangular thumbs"): the first row of the hand's pane, every one shown,
+     upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line across the
+     pane; the dashed SVG tile last (a shape of one's own) */
+  .row.thumbs > .picks.thumbs { grid-column: 1 / -1; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); padding: 0 0 var(--u4); }
+  /* between thin black lines: the pane's line over it, its own under it, as much room round each as from the Show
+     box to the first (Okay, 2 Nov 2026, 22:18: "list of hand types gets a thin black line"; 22:25: "The gap after the
+     line … is the same as before") */
+  .row.thumbs { margin-bottom: var(--u4); border-bottom: var(--hair) solid var(--ink); box-shadow: none; }      /* first in the hand's pane (Okay, 2 Nov 2026, 22:00: "hand type moves up top of the preview and sliders"): the pane's thin line over it, its own under it */
   .picks.thumbs > .pickt { align-content: center; padding: var(--unit) 0; }
   .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
@@ -38,7 +37,8 @@
        Okay: "Enlarge the preview to fit the area"; "Blue lines, align"): it spans the rows' lines (40: more than a
        hand has; the ones it doesn't use have no height) and shares the first row's line, as two tabs share theirs.
        The thumbs' row goes under it all */
-    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
+    .body > .row.thumbs { grid-row: 1; }
+    .body > .detail { grid-column: 2 / span 2; grid-row: 2 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; }      /* beside the box */
   }
   /* a side row, at every width: the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250); the

@@ -37,7 +37,7 @@ export const HANDS = {
       const side = Math.sin((from - item.angle) * Math.PI / 180);      // + : the light comes from the hand's right
       const key = "bevel-" + item.name, clip = part(key + "/clip", "clipPath", this.light_defs), shape = part(key + "/clip/hand", "path", clip);
       clip.id = "bevel-clip-" + item.name; shape.setAttribute("d", this.slots[i].d);
-      let n = i + 1; while (items[n]?.role === "mark" && items[n].name === item.name) n++;
+      let n = i + 1; while ((items[n]?.role === "mark" || items[n]?.role === "lume") && items[n].name === item.name) n++;
       const g = part(key, "g", this.dial, nodes[n] || null);
       g.setAttribute("transform", `rotate(${f(-item.angle)})`); g.setAttribute("pointer-events", "none");
       const inner = part(key + "/in", "g", g);

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.38 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.39 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -155,6 +155,11 @@ export const HAND_BASE = {
   // system does not work, remove for now, note for later", #573) · 2 Domed — round across, shaded from the middle out
   bevel_look: 0,
   facet_turn: 3,      // dead with Faceted (#573): kept, as every key is (R8); nothing reads it
+  // its openings (#175; Okay, 2 Nov 2026, 21:52: "C · several shapes"): op_count shapes cut through the hand along it,
+  // from op_from % to op_to % of its Length, op_gap mm between them, each op_w mm across — a Bar as long as its share,
+  // a Dot round — open (op_fill see-through, alpha 0: the dial seen through) or filled with a lume (op_fill: a lume's colour, lume.js;
+  // 22:38: "they only get lume"). Off to start, as every older dial (R31); C3 the lume to start, as drawn
+  op_on: false, op_shape: 0, op_count: 3, op_from: 30, op_to: 92, op_w: 0.8, op_gap: 0.4, op_fill: [0.8941, 0.9176, 0.7608, 1],
 };
 export const BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];      // R9: a new look is appended; Faceted (1) is not offered (#573) and draws as a Ridge
 
@@ -299,7 +304,7 @@ export const DEFAULTS = {
 /** units a length can be shown and typed in: [short name, name, how many make a millimetre, extra decimals].
  *  Only for the window: every setting, link and file stays in mm (R1). The list only grows at its end (R9).
  *  A ligne is the watchmakers' unit for movement sizes: 2.2558 mm. */
-export const COLOUR_MODES = ["RGB", "HEX", "CMYK", "RAL"];      // how a colour is written in the colour pop-out; Settings says which it opens in (#554)
+export const COLOUR_MODES = ["RGB", "HEX", "CMYK", "RAL", "Lume"];      // how a colour is written in the colour pop-out; Settings says which of the first four it opens in (#554); Lume the fifth (#175)
 export const UNITS = [["mm", "Millimetres", 1, 0], ["pt", "Points", 72 / 25.4, 0], ["in", "Inches", 1 / 25.4, 2], ["lig", "Lignes", 1 / 2.2558, 1],
   ["thou", "Thou", 1 / 0.0254, -1]];      // thou: a thousandth of an inch (Okay, 16 Oct 2026, #299); one decimal fewer than mm. Only grows at its end (R9)
 
@@ -587,6 +592,7 @@ export const LINK_KEYS = [
   "rhythm", "rh_dash", "rh_gap", "rh_dash_shape", "rh_dash_len", "rh_gap_len",      // v1.1.27 beta (#169): appended; no rhythm to start, as every older link
   "bevel_look",             // v1.1.35 beta (#531): appended; Ridge to start, as every older link
   "facet_turn",             // v1.1.36 beta (#531): appended; dead since v1.1.37 with Faceted (#573), kept (R8)
+  "op_on", "op_shape", "op_count", "op_from", "op_to", "op_w", "op_gap", "op_fill",      // v1.2 beta (#175): appended; no openings to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2058,9 +2064,31 @@ export function hand_shape(h) {
     if (h.wall > 0) p = p.difference(offset(p, -h.wall));
     if (h.hub > 0 && shape !== "disc") p = p.union(circle(h.hub));      // its hub, solid even on a hollow hand (#370)
     if (h.counter > 0) p = p.union(place(circle(h.counter), -h.tail * COUNTER_AT, 0));
+    const holes = hand_openings(h);
+    if (holes) p = p.difference(holes);      // cut through: open, the dial shows; filled, the scene lays the lume in them
     return p;
   });
 }
+
+/** a hand's openings (#175), upright, one path; null when it has none (Opening off, a disc hand, nothing left to cut).
+ *  Along the hand from From % to To % of its Length: Count shapes, Gap between them, each Width across — a Bar as long
+ *  as its share, a Dot round, as wide as the narrower of its share and Width. */
+export function hand_openings(h) {
+  if (!h.op_on || HAND_SHAPES[h.shape] === "disc") return null;
+  return memo("open" + key_of(h), () => {
+    const n = max(Math.round(h.op_count || 1), 1), a = h.len * h.op_from / 100, b = h.len * h.op_to / 100, gap = max(h.op_gap || 0, 0), w = max(h.op_w || 0, 0);
+    const each = (b - a - gap * (n - 1)) / n;
+    if (!(each > 0.01) || !(w > 0.01)) return null;
+    let p = new Path();
+    for (let k = 0; k < n; k++) {
+      const y0 = a + k * (each + gap);
+      p = p.union(h.op_shape === 1 ? circle(min(w, each)).translate(0, y0 + each / 2) : new Path().rect(-w / 2, y0, w, each));
+    }
+    return p;
+  });
+}
+/** a hand whose openings are filled with lume (#175): they are a part of their own, in the lume's colour */
+export const fills_openings = (h) => Array.isArray(h.op_fill) && (h.op_fill[3] ?? 1) > 0 && Boolean(hand_openings(h));      // Open: alpha 0, nothing laid in them
 
 /** where a hand is widest, for the handles on its picture (#368): its height up the hand in mm, the number that moves
  *  it and how much that number changes per mm. Only for the shapes whose widest place is their width's own (a
@@ -2141,6 +2169,21 @@ export function dial_inks(S) {
   windows_of(S).forEach((w, i) => { if (w.on) put(w.ink, { kind: "frame", i, name: window_name(w) + " frame", sectors: 0 }); });
   return [...inks.values()];
 }
+/** the hands' lumes (#175): each lume colour laid in shown hands' openings, once — [{ hex, colour, hands, name }],
+ *  named by its hands ("Hour · Minute lume") */
+export function hand_lumes(S) {
+  const out = new Map();
+  if (!S.ha_on) return [];
+  for (const h of HANDS) {
+    const H = S["ha_" + h];
+    if (!H || !H.on || !fills_openings(H)) continue;
+    const hex = ink_hex(H.op_fill);
+    if (!out.has(hex)) out.set(hex, { hex, colour: H.op_fill, hands: [] });
+    out.get(hex).hands.push(h);
+  }
+  const word = { hour: "Hour", minute: "Minute", second: "Seconds" };
+  return [...out.values()].map((l) => ({ ...l, name: l.hands.map((h) => word[h]).join(" · ") + " lume" }));
+}
 /** a window's name in the lists: its kind and where it is ("Date at 3", "Moon phase at 6") */
 export const window_name = (w) => { const k = WINDOW_KINDS[w.kind] || "window"; return k[0].toUpperCase() + k.slice(1) + " at " + (w.at_deg != null ? Math.round(w.at_deg) + "°" : (DATE_AT[w.at] || DATE_AT[0])[0]); };
 /** how high a printed item of the scene stands, mm: its ink's height (A, or B when the ink is split and the part on B),
@@ -2154,6 +2197,7 @@ export function ink_mm(S, x) {
     const ink = ink_of(S, ink_hex(x.fill));
     h = ink.two && x.ring?.ring?.stroke_b ? ink.b : ink.h;
   } else if (x.role === "date number" || x.role === "date picture" || x.role === "disc print") h = windows_of(S)[x.window]?.print_h ?? INK_MM;
+  else if (x.role === "lume") h = ink_of(S, ink_hex(x.fill)).h;      // a hand's lume: its ink's height, over the blade it sits in (#175)
   return Math.max(0, Math.min(INK_MOST, h + (+S.w_ink_all || 0)));
 }
 /** the inks a dial is printed in (#35): every shown ring's colour (each sector's of a band), every shown window's frame;
@@ -2267,6 +2311,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
       for (const [name, colour, path, a, h] of hand_items(S, t)) {
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
         if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), dim(h.mark_c, hands_layer), { name, angle: a });      // a disc's painted mark turns with it (#300)
+        if (fills_openings(h)) add("lume", hand_openings(h), dim(h.op_fill, hands_layer), { name, angle: a });      // its openings' lume turns with it (#175)
       }
       if (cap_shows(S)) add("cap", circle(S.ha_cap), dim(S.c_cap, hands_layer));
     }

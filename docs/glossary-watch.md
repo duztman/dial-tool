@@ -17,7 +17,7 @@ What each word means **in this project**; Turkish where it is the trade word. On
 | **Hub** | | The round boss at a hand's pivot (`hub`, Ø per hand; 0 = none). |
 | **Disc hand** | | Hand shape `disc`: a disc on the pivot (`disc_d`) carrying one marker (`mark`, `mark_len`, `mark_w`), a **Hole** (cut) or a **Mark** (painted, `mark_c`) by `mark_as`; *Inside the disc* = `mark_in`. |
 | **Bevel** | | A hand's top lit and shaded by the sun, preview only (`bevel` per hand; strength `sh_bevel`, Bevels %), in a **Bevel Type** (`bevel_look`): **Ridge** — two long halves meeting on the spine · **Domed** — round across, shaded from the spine out. Its pane, the **Bevel pane**, stands under the Show box once Bevel is ticked. (Faceted is not offered, #573.) |
-| **Opening** | | Planned (#175): a shape cut through a hand, the dial showing through; with lume in it, a lume opening. Not *window*, which is a hole in the plate. |
+| **Opening** | | A shape cut through a hand, the dial showing through (#175): a hand's Opening pane cuts Count of them, Bar or Dot, from From % to To % of its length; filled with a lume, a lume opening. Not *window*, which is a hole in the plate. |
 | **Track** · minute track · chapter ring | | The minute marks round the edge: a **ticks ring**; its rails thin **band rings**. |
 | **Tick** | | One mark of a ticks ring. |
 | **Railroad** | | Two thin rails along a track, ticks between: two thin bands. |
