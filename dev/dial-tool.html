@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.46 beta · built 2026-11-03 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.47 beta · built 2026-11-03 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1946,6 +1946,9 @@
   .sunpic .dial, .sunpic .hole { fill: none; stroke: var(--night-rule); stroke-width: var(--hair); }
   .sunpic .fall { fill: none; stroke: var(--night-rule); stroke-width: var(--sun-dot); stroke-linecap: round; stroke-dasharray: 0 var(--sun-dot-gap); }      /* where the shadows fall: the far side of the dial, as a ring of dots */
   .sunpic .sun > circle { fill: var(--ink); }
+  .sunpic .sun > .shade { display: none; }      /* the crescent's dark side: only as the moon (show mode's Night, #175) */
+  .sunpic .sun.moon > .shade { display: block; fill: var(--column-solid); }
+  .sunpic .sun.moon > .rays { display: none; }
   .sunpic .rays line { stroke: var(--ink); stroke-width: var(--sun-ray); stroke-linecap: round; }
   .sunbox .sunpic :is(.dial, .hole, .fall) { stroke: var(--grey); }      /* in show mode's Light tab (4c-rows.css): the picture faded in the column's grey, the sun and its rays in ink ("Faded colors") */
   .sunbox .sunpic .word { display: none; }      /* the pane's heading says Sun */
@@ -3097,7 +3100,7 @@ var require_pathkit = __commonJS({
         function vb(b) {
           b = wb(b);
           var a = R(b);
-          Y(b);
+          Y2(b);
           return a;
         }
         function xb(b, a) {
@@ -3633,7 +3636,7 @@ var require_pathkit = __commonJS({
               for (k = 0; k < e; ++k) l[k] = String.fromCharCode(B[d + 4 + k]);
               l = l.join("");
             }
-            Y(d);
+            Y2(d);
             return l;
           }, toWireType: function(d, e) {
             e instanceof ArrayBuffer && (e = new Uint8Array(e));
@@ -3651,14 +3654,14 @@ var require_pathkit = __commonJS({
             if (c && g) qa(e, h + 4, k + 1);
             else if (g) for (g = 0; g < k; ++g) {
               var l = e.charCodeAt(g);
-              255 < l && (Y(h), T("String has UTF-16 code units that do not fit in 8 bits"));
+              255 < l && (Y2(h), T("String has UTF-16 code units that do not fit in 8 bits"));
               B[h + 4 + g] = l;
             }
             else for (g = 0; g < k; ++g) B[h + 4 + g] = e[g];
-            null !== d && d.push(Y, h);
+            null !== d && d.push(Y2, h);
             return h;
           }, argPackAdvance: 8, readValueFromPointer: L, ja: function(d) {
-            Y(d);
+            Y2(d);
           } });
         }, m: function(b, a, c) {
           c = R(c);
@@ -3674,17 +3677,17 @@ var require_pathkit = __commonJS({
               var t = l + 4 + u * a;
               if (u == m || 0 == n[t >> h]) r = d(r, t - r), void 0 === p ? p = r : (p += String.fromCharCode(0), p += r), r = t + a;
             }
-            Y(l);
+            Y2(l);
             return p;
           }, toWireType: function(l, m) {
             "string" !== typeof m && T("Cannot pass non-string to C++ string type " + c);
             var n = g(m), p = Vb(4 + n + a);
             G[p >> 2] = n >> h;
             e(m, p + 4, n + a);
-            null !== l && l.push(Y, p);
+            null !== l && l.push(Y2, p);
             return p;
           }, argPackAdvance: 8, readValueFromPointer: L, ja: function(l) {
-            Y(l);
+            Y2(l);
           } });
         }, t: function(b, a, c, d, e, g) {
           Na[b] = { name: R(a), sa: X(c, d), la: X(e, g), elements: [] };
@@ -3870,8 +3873,8 @@ var require_pathkit = __commonJS({
         f2.__Z8ToPath2DRK6SkPath = function() {
           return (f2.__Z8ToPath2DRK6SkPath = f2.asm.Z).apply(null, arguments);
         };
-        var Y = f2._free = function() {
-          return (Y = f2._free = f2.asm.$).apply(null, arguments);
+        var Y2 = f2._free = function() {
+          return (Y2 = f2._free = f2.asm.$).apply(null, arguments);
         }, Vb = f2._malloc = function() {
           return (Vb = f2._malloc = f2.asm.aa).apply(null, arguments);
         }, wb = f2.___getTypeName = function() {
@@ -7635,7 +7638,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.46 beta";
+var VERSION = "v1.1.47 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -8151,6 +8154,12 @@ var DEFAULTS = {
   // show mode's sun held where it is: a drag on the canvas or the sun's picture no longer moves it; the sliders still do (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line. Applies to showcase only")
   w_bevels: true,
   // show mode draws the hands' bevels (Shenanigans' Bevels: Okay, 23 Oct 2026)
+  w_night: 0,
+  // show mode's Light › Time: 0 Day, 1 Night — the watch in its lume under a night filter (night.js, #175; Okay, 3 Nov 2026: "Night is lume mode")
+  w_moon: 50,
+  // Night's Moon › Strength %: how much of the daylight picture survives (Okay: "Moon strength defaults to 50%")
+  w_decay: 0,
+  // Night's Lume decay %: 0 freshly charged, 100 gone
   w_gradients: true,
   // show mode's gradients — the backdrop's, Dramatic's spotlight, the outline's light — on (Shenanigans' Gradients, #525: "Both")
   ui_case: false,
@@ -8328,7 +8337,10 @@ var NOT_GEOMETRY = [
   "ui_edit_section",
   "ui_effects",
   "ui_grey_panel",
-  "ui_case"
+  "ui_case",
+  "w_night",
+  "w_moon",
+  "w_decay"
 ];
 var FILE_SET = [
   ["out_f_pdf", "Dial \xB7 PDF", "pdf", { out_production: false, out_mirror: false }],
@@ -9989,8 +10001,8 @@ function moon_lit(rm, age) {
 var SYNODIC_DAYS = 29.530588853;
 function half_disc(w, hour) {
   const R = w / 2, pivot = [0, -w / 4], turn = (hour % 24 + 24) % 24 / 24 * 360;
-  const night = sector(0, R + DISC_PAD, -90, 90).rotate(-turn).translate(...pivot);
-  return { night, r: R };
+  const night2 = sector(0, R + DISC_PAD, -90, 90).rotate(-turn).translate(...pivot);
+  return { night: night2, r: R };
 }
 function text_room(w) {
   const shape3 = window_shape(w), high = shape3 === "rectangle" || shape3 === "arc" ? w.h : shape3 === "arch" ? w.w / 2 : w.w;
@@ -10131,8 +10143,8 @@ function window_disc(S, x2) {
     return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
   }
   if (kind === "am \xB7 pm") {
-    const { night, r } = half_disc(w.w, disc_hour(S, w)), rho = r + DISC_PAD;
-    const band = put(circle(2 * rho).translate(0, -w.w / 4)), print = put(night.copy());
+    const { night: night2, r } = half_disc(w.w, disc_hour(S, w)), rho = r + DISC_PAD;
+    const band = put(circle(2 * rho).translate(0, -w.w / 4)), print = put(night2.copy());
     const off = put(new Path().rect(-1e-3, -w.w / 4 - 1e-3, 2e-3, 2e-3)).bounds(), pv = [(off[0] + off[2]) / 2, (off[1] + off[3]) / 2];
     const reach = Math.hypot(...pv) + rho;
     return { band, print, inner: 0, outer: rho, centre: pv, reach, fits: w.physics === false || reach <= room };
@@ -11631,6 +11643,61 @@ function draw(o) {
   return ground(make("off"), two ? "none" : o.floor).replace("__VB__", vb(...box3));
 }
 
+// src/lume.js
+var LUMES = [
+  ["C3", "#E4EAC2", "#8CF56A", "Green", "100 %", "pale yellow-green by day, glows green (515 nm); the reference"],
+  ["BGW9", "#F4F4F0", "#62DDF5", "Blue-green", "95 %", "white by day, glows blue-green (485 nm); about 95 % of C3"],
+  ["C5", "#E9EDB0", "#B7F06A", "Green", "89 %", "greenish-yellow by day; 89 % of C3, unsourced"],
+  ["C1", "#F7F7F4", "#8CF56A", "Green, weaker", "31 %", "a white body, glows green, weaker; about 31 % of C3, unsourced"],
+  ["Old radium", "#E6D3B0", "#E9A86A", "Weaker", "tint", "a tan tint in the body; glows weaker (the research's illustration)"],
+  ["Dark red", "#D8574C", "#F0645A", "Red, faint", "22 %", "a red tint; about 22 % of C3, unsourced (the research's illustration)"]
+].map(([name, hex3, glow, glows, k, what]) => ({ name, hex: hex3, glow, glows, k, what }));
+var BY_HEX = new Map(LUMES.map((l) => [l.hex, l]));
+var lume_exact = (hex3) => BY_HEX.get(String(hex3).toUpperCase()) || null;
+var lume_by_name = (name) => LUMES.find((l) => l.name.toLowerCase() === String(name).trim().toLowerCase()) || null;
+
+// src/night.js
+var Y = [0.2126, 0.7152, 0.0722];
+var BLUE = [0.6, 0.7, 1];
+function night_matrix(dark) {
+  const k = Math.pow(1 - dark, 1.5), dim = (1 - 0.88 * dark) * (0.75 + 0.25 * (1 - dark));
+  const rows = BLUE.map((b, i2) => Y.map((y, j) => ((i2 === j ? k : 0) + (1 - k) * b * y) * dim));
+  return rows.map((r) => [...r.map((v) => v.toFixed(4)), "0", "0"].join(" ")).join(" ") + " 0 0 0 1 0";
+}
+function night(svg, moon, decay) {
+  const dark = Math.max(0, Math.min(1, 1 - moon / 100)), glow_k = Math.max(0, Math.min(1, 1 - decay / 100));
+  const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement, NS = root.namespaceURI;
+  const kids = [...root.childNodes];
+  const defs = doc.createElementNS(NS, "defs");
+  defs.innerHTML = `<filter id="night" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${night_matrix(dark)}"/><feComponentTransfer><feFuncR type="gamma" exponent="${(1 + 0.4 * dark).toFixed(3)}"/><feFuncG type="gamma" exponent="${(1 + 0.4 * dark).toFixed(3)}"/><feFuncB type="gamma" exponent="${(1 + 0.4 * dark).toFixed(3)}"/></feComponentTransfer></filter><filter id="lumeglow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${(1.2 + 2.4 * dark).toFixed(2)}" result="halo"/><feComponentTransfer in="halo" result="halo2"><feFuncA type="linear" slope="${(0.9 * dark).toFixed(3)}"/></feComponentTransfer><feMerge><feMergeNode in="halo2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  const under = doc.createElementNS(NS, "g");
+  under.setAttribute("filter", "url(#night)");
+  for (const k of kids) under.append(k);
+  const over = under.cloneNode(true);
+  over.removeAttribute("filter");
+  over.setAttribute("class", "lumeglow");
+  over.setAttribute("filter", "url(#lumeglow)");
+  over.setAttribute("opacity", glow_k.toFixed(3));
+  for (const d of over.querySelectorAll("defs")) d.remove();
+  for (const e of over.querySelectorAll("*")) {
+    if (e.tagName === "g") continue;
+    const hand = e.closest("[data-hl]");
+    const lume = lume_exact(e.getAttribute("fill") || "") || hand && (lume_exact(hand.querySelector("[fill]")?.getAttribute("fill") || "") || lume_exact("#E4EAC2"));
+    if (lume) {
+      e.setAttribute("fill", lume.glow);
+      e.removeAttribute("stroke");
+      e.removeAttribute("fill-opacity");
+      e.setAttribute("visibility", "visible");
+      continue;
+    }
+    e.setAttribute("visibility", "hidden");
+    e.removeAttribute("filter");
+  }
+  root.replaceChildren(defs, under, over);
+  const out = new XMLSerializer().serializeToString(doc);
+  return out.replace(/^(<svg[^>]*>)/, "$1\n");
+}
+
 // src/show.js
 var METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
 var NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey", "solid"];
@@ -11700,6 +11767,7 @@ function options(S, items, effects) {
 var rgba = (h) => [1, 3, 5].map((i2) => parseInt(h.slice(i2, i2 + 2), 16) / 255).concat(1);
 var auto_ground = (S) => rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").floor);
 var metal_colour = (S) => rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
+var at_night = (S, svg) => S.w_night ? night(svg, S.w_moon, S.w_decay) : svg;
 var angles_of = (items) => {
   const A = {};
   for (const x2 of items) if (x2.role === "hand" && HANDS2.includes(x2.name)) A[x2.name] = x2.angle;
@@ -11712,7 +11780,7 @@ function draw2(tool2, items) {
   if (key !== tool2.watch_key || !tool2.watch_statik || tool2.statik !== tool2.watch_statik) {
     tool2.watch_key = key;
     tool2.watch_statik = tool2.statik;
-    const o = options(S, shapes, S.ui_effects), svg = draw(o);
+    const o = options(S, shapes, S.ui_effects), svg = at_night(S, draw(o));
     g.innerHTML = `<g transform="scale(1 -1)">${svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>"))}</g>`;
     const frame_key = [S.w_view, S.bezel, S.strap, S.dial_d].join();
     if (frame_key !== tool2.watch_frame && tool2.fitted) tool2.fit();
@@ -11814,7 +11882,7 @@ async function picture(tool2, px) {
   const o = options(S, items, S.ui_effects);
   o.A = angles_of(scene(S, tool2.statik, S.t, true, null));
   if (o.view === "dial") o.view = "detail";
-  const svg = draw(o), [, , w, h] = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
+  const svg = at_night(S, draw(o)), [, , w, h] = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
   const k = px / Math.max(w, h), cw = Math.round(w * k), ch = Math.round(h * k);
   const url2 = URL.createObjectURL(new Blob([svg.replace("<svg ", `<svg width="${cw}" height="${ch}" `)], { type: "image/svg+xml" }));
   const img = new Image();
@@ -12506,8 +12574,8 @@ var CURVE = LINE + 2 / 16;
 var DENSE = LINE - 4 / 16;
 var sw = (w) => `stroke-width="${w}"`;
 var box = (x2, y, w, h, r, side = LINE, corner = CURVE) => {
-  const X = x2 + w, Y = y + h;
-  return `<path d="M${x2 + r} ${y}H${X - r}M${X} ${y + r}V${Y - r}M${X - r} ${Y}H${x2 + r}M${x2} ${Y - r}V${y + r}"${side === LINE ? "" : ` ${sw(side)}`}/><path d="M${X - r} ${y}A${r} ${r} 0 0 1 ${X} ${y + r}M${X} ${Y - r}A${r} ${r} 0 0 1 ${X - r} ${Y}M${x2 + r} ${Y}A${r} ${r} 0 0 1 ${x2} ${Y - r}M${x2} ${y + r}A${r} ${r} 0 0 1 ${x2 + r} ${y}" ${sw(corner)}/>`;
+  const X = x2 + w, Y2 = y + h;
+  return `<path d="M${x2 + r} ${y}H${X - r}M${X} ${y + r}V${Y2 - r}M${X - r} ${Y2}H${x2 + r}M${x2} ${Y2 - r}V${y + r}"${side === LINE ? "" : ` ${sw(side)}`}/><path d="M${X - r} ${y}A${r} ${r} 0 0 1 ${X} ${y + r}M${X} ${Y2 - r}A${r} ${r} 0 0 1 ${X - r} ${Y2}M${x2 + r} ${Y2}A${r} ${r} 0 0 1 ${x2} ${Y2 - r}M${x2} ${y + r}A${r} ${r} 0 0 1 ${x2 + r} ${y}" ${sw(corner)}/>`;
 };
 var icon = (inside, size = 16, high = size) => `<svg viewBox="0 0 ${size} ${high}" width="${size}" height="${high}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
 var ticks = (n, r0, r1, c = 0) => Array.from({ length: n }, (_, i2) => {
@@ -13500,9 +13568,14 @@ ROWS.Watch = [
 ROWS.Light = [
   hdr("Light", { pin: true, headless: true }),
   // the Show Case's fixed lines: Style and Lighting stay put under the tabs, no heading (Okay, 21 Oct 2026, 01:50); everything else in show mode scrolls, so the top band is small
+  seg("w_night", "Time", ["Day", "Night"]),
+  // first (Okay, 3 Nov 2026, 01:06: "Light gets another pill selector, top: day/night. Night is lume mode"); the drawing: night.js
+  num2("w_decay", "Lume decay %", 0, 100, 1, { whole: true, show: (S) => S.w_night === 1 }),
+  // "Lume mode opens up a slider below for lume decay": 0 freshly charged, 100 gone
   seg("w_style", "Style", ["Engineer", "Miyazaki"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
-  hdr("Sun", { folded: false }),
+  hdr("Sun", { folded: false, title: (S) => S.w_night === 1 ? "Moon" : "Sun" }),
+  // at night the pane is the Moon's ("Sun is replaced by the "moon" below"): the same light, its own Strength
   chk("w_sun_lock", "Lock", { head: true }),
   // on the Sun heading line (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line"): drags leave the sun where it is
   custom("sunbox"),
@@ -13510,8 +13583,10 @@ ROWS.Light = [
   num2("sh_from", "Angle \xB0", 0, 359, 1, { whole: true }),
   // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026); named as in the Shadows pane
   num2("sh_rise", "Height \xB0", 5, 85, 1, { whole: true }),
-  num2("sh_dark", "Strength %", 0, 100, 1, { whole: true }),
+  num2("sh_dark", "Strength %", 0, 100, 1, { whole: true, show: (S) => S.w_night !== 1 }),
   // the shadows' darkness, the Shadows pane's Strength (Okay, 25 Oct 2026: "Darkness becomes the box's Strength slider")
+  num2("w_moon", "Strength %", 0, 100, 1, { whole: true, show: (S) => S.w_night === 1 }),
+  // the Moon's: how much of the daylight picture survives, 50 to start ("Moon strength defaults to 50%")
   chk("sh_blur", "Soft shadows"),
   info("One finger or the pointer moves the sun: its direction is where the light comes from; nearer the middle, higher. Two fingers zoom and move the drawing; on a trackpad, pinch and scroll.", {}),
   // the Show Case's words
@@ -13655,19 +13730,6 @@ function keep_and_shorten(S) {
   } catch (e) {
   }
 }
-
-// src/lume.js
-var LUMES = [
-  ["C3", "#E4EAC2", "#8CF56A", "Green", "100 %", "pale yellow-green by day, glows green (515 nm); the reference"],
-  ["BGW9", "#F4F4F0", "#62DDF5", "Blue-green", "95 %", "white by day, glows blue-green (485 nm); about 95 % of C3"],
-  ["C5", "#E9EDB0", "#B7F06A", "Green", "89 %", "greenish-yellow by day; 89 % of C3, unsourced"],
-  ["C1", "#F7F7F4", "#8CF56A", "Green, weaker", "31 %", "a white body, glows green, weaker; about 31 % of C3, unsourced"],
-  ["Old radium", "#E6D3B0", "#E9A86A", "Weaker", "tint", "a tan tint in the body; glows weaker (the research's illustration)"],
-  ["Dark red", "#D8574C", "#F0645A", "Red, faint", "22 %", "a red tint; about 22 % of C3, unsourced (the research's illustration)"]
-].map(([name, hex3, glow, glows, k, what]) => ({ name, hex: hex3, glow, glows, k, what }));
-var BY_HEX = new Map(LUMES.map((l) => [l.hex, l]));
-var lume_exact = (hex3) => BY_HEX.get(String(hex3).toUpperCase()) || null;
-var lume_by_name = (name) => LUMES.find((l) => l.name.toLowerCase() === String(name).trim().toLowerCase()) || null;
 
 // src/ral.js
 var RAL_FAMILIES = [["1", "Yellow", "1023"], ["2", "Orange", "2004"], ["3", "Red", "3020"], ["4", "Violet", "4008"], ["5", "Blue", "5015"], ["6", "Green", "6024"], ["7", "Grey", "7042"], ["8", "Brown", "8023"], ["9", "White \xB7 black", "9003"]];
@@ -22030,7 +22092,7 @@ var GUIDES = {
     const W2 = token("--sun-w", 297), H2 = token("--sun-h", 204), cx = 136, cy = H2 / 2, R = 81.5, NEAR = 12, FAR = 123;
     const box3 = el("div", { className: "sunpic", id: id + "-sun" });
     const VX = centred2 ? cx - H2 / 2 : 0, VW = centred2 ? H2 : W2;
-    box3.innerHTML = `<svg viewBox="${VX} 0 ${VW} ${H2}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
+    box3.innerHTML = `<svg viewBox="${VX} 0 ${VW} ${H2}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><circle class="shade" cx="3.2" cy="-2.4" r="6.2"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
     const sun = box3.querySelector(".sun"), rays = box3.querySelector(".rays"), fall = box3.querySelector(".fall");
     for (let i2 = 0; i2 < 16; i2++) rays.append(svg_el("line"));
     const where = () => {
@@ -22040,6 +22102,7 @@ var GUIDES = {
     const refresh = () => {
       const { a, d, x: x2, y } = where();
       sun.setAttribute("transform", `translate(${x2.toFixed(1)} ${y.toFixed(1)})`);
+      sun.classList.toggle("moon", Boolean(this.S.ui_show && this.S.w_night === 1));
       const len = (4 + 10 * clamp(this.S.sh_dark, 0, 100) / 100) * (0.8 + 0.4 * (d - NEAR) / (FAR - NEAR));
       const hide = 0.05 + 0.7 * clamp((d - NEAR) / (FAR - NEAR), 0, 1), toward = a + Math.PI;
       [...rays.children].forEach((line, i2) => {
