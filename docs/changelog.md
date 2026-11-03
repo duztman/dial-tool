@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.45 beta · 3 Nov 2026 — show mode's LINK pill as the Windows tab's; parts without the outer top line; group names centred
+
+Okay, 3 Nov 2026, 09:13: "Linked gets full and -ed, link is outlined pill with no line that crosses behind them. I need you to find the other used instance of this pill … tuned to perfection"; 11:15: "make link text black when off and how can you remove the bg color from the pill but also remove the line from under it?"; 11:29: "ok this looks great, implement. also these last rows of indented groups have a longer top line, why'd that be?"
+
+- **The LINK pill in show mode** (`colour.js` `ink_link`, `4e-colour.css`): the Windows tab's Width · Height pill (#358), made show mode's. Linked: **LINKED**, filled `--ink`, the word in the column's colour. Unlinked: **LINK**, hollow — no ground, outline and word in the line's colour (`--row-rule`). The word follows the state, as `panel.js` does for Width · Height. Size and place unchanged (14 px, on the line, at the names' column).
+- **No line under or left of a pill**: the row no longer paints its colour line as a background; a strip at its foot (`.linkline`) holds the pill and, after it, the line (`.rule`) — a flex strip, so the line begins where the pill ends (measured: the outline ends at 228, the line starts at 230, picture pixels at 2×). `4c-rows.css` styles the pill as a descendant now (`.row.haslink .linkpill`), so the Windows tab's pill is untouched.
+- **A part draws only its own bottom line** (`.colourlist > .row.part`): every row carried a full-width outer top line (`4c-rows.css` line 7); a part followed by a part had it switched off, the last one not — that was the full line under a LINK pill and the long line over a window's or hand's last colour (Neighbours, Picture; #581's second half).
+- **A group's name centred** (`.row.showsub`): `padding-bottom` `--u2` → `--u3`; the name's ink 12 px under the line above, 11.5 over the line below (was 14.5 and 9).
+- **Tests**: a check in the show-mode block (`window.mjs`) holds the pill's words and looks, the line from its end, a part's single line, the heading centred. `npm run small` passes.
+
 ## v1.1.44 beta · 3 Nov 2026 — Inks a line a part, linked heights; a hand's colours and prints in show mode; no bevel on a disc
 
 Okay, 3 Nov 2026, 02:11: "This 3 items thing aborted. All 4 items expand from on the dial. This logic for all the inks. Disc hands have more colors, all the hands that have other colors or lume areas are expanded here. Disc hand does not get bevels."; his picks: "Share one height unless switched to separate heights or colors?"; the hands' colours in "Colours pane, Inks pane, On the hands, Hands pane".

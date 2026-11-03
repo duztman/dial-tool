@@ -656,15 +656,16 @@ export const COLOUR = {
     };
   },
 
-  /** the LINK pill on the line between two parts of one ink (the windows' Width · Height fitting, #358): filled, the part
-   *  below shares the ink's height; pressed, it gets its own (toggle null: always linked, not pressable) */
+  /** the LINK pill on the line between two parts of one ink (the windows' Width · Height fitting, #358): LINKED, filled, the
+   *  part below shares the ink's height; pressed, LINK, hollow, it gets its own (toggle null: always linked, not pressable) */
   ink_link(above, name, linked, toggle, rows, id) {
     const link = el("button", { type: "button", className: "linkpill", id, ariaLabel: `${name}: linked to the part above`, textContent: "LINK",
       title: toggle ? "Linked: the same height as the part above. Press to give this part its own" : "One height for every print on this disc" });
     link.disabled = !toggle;
     if (toggle) link.onclick = toggle;
-    rows.push({ refresh: () => { const on = linked(); link.classList.toggle("on", on); link.setAttribute("aria-pressed", String(on)); } });
-    above.append(link); above.classList.add("haslink");
+    rows.push({ refresh: () => { const on = linked(); link.classList.toggle("on", on); link.textContent = on ? "LINKED" : "LINK"; link.setAttribute("aria-pressed", String(on)); } });      // the word follows the state, as the Width · Height pill's does
+    above.append(el("span", { className: "linkline" }, link, el("i", { className: "rule" })));      // the strip at the row's foot: the pill, then the line from its end (4e-colour.css)
+    above.classList.add("haslink");
   },
 
   /** an ink's part's own height, mm (null: its ink's) — a window's frame, a ring's stroke or the ring; with v, set it (null: linked again) */

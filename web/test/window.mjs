@@ -2561,6 +2561,13 @@ await shot("10-bar");
       const pair2 = all(".inklist .inkline").filter((l) => /1C9E78/.test(l.textContent)), box2 = pair2[1].querySelector("input");
       box2.value = "0.12"; box2.dispatchEvent(new Event("change"));
       const own = Math.abs(S.rings[1].ink_h - 0.12) < 1e-6 && Math.abs(S.w_inks["#1C9E78"].h - 0.3) < 1e-6 && !pair2[0].querySelector(".linkpill").classList.contains("on");
+      // #581 (Okay, 3 Nov 2026, 11:15: "make link text black when off … remove the bg color from the pill but also remove the line from under it"):
+      // the pill reads LINKED filled, LINK hollow in the line's colour; the strip's line begins where the pill ends; a part has no outer top line
+      const pill2 = pair2[0].querySelector(".linkpill"), rule2 = pair2[0].querySelector(".linkline > .rule"), ps = getComputedStyle(pill2), pr = pill2.getBoundingClientRect(), rr = rule2.getBoundingClientRect();
+      const hollow = pill2.textContent === "LINK" && ps.backgroundColor === "rgba(0, 0, 0, 0)" && ps.color === ps.borderTopColor && ps.borderTopColor === getComputedStyle(rule2).backgroundColor && Math.abs(rr.left - pr.right) < 0.5 && Math.abs((rr.top + rr.bottom) / 2 - (pr.top + pr.bottom) / 2) < 1 && Math.abs(pr.left - (pair2[0].getBoundingClientRect().left + 24 + 5.5)) < 0.5;
+      const part_lines = all(".colourlist > .row.part").every((r) => !/, rgb/.test(getComputedStyle(r).boxShadow) && !/^rgb\([^)]*\) 0px -1px 0px 0px$/.test(getComputedStyle(r).boxShadow));      // one inset line at most, never the outer one
+      pill2.click();      // linked again: the list is rebuilt, so the pill is found anew
+      const pill3 = all(".inklist .inkline").filter((l) => /1C9E78/.test(l.textContent))[0].querySelector(".linkpill"), worded = pill3.textContent === "LINKED" && getComputedStyle(pill3).backgroundColor !== "rgba(0, 0, 0, 0)"; pill3.click();
       S.rings[1].ink_h = null; const two = linked, on_b = shared, b_h = own ? 0.33 : 0, n1 = n0 + 1;
       const rights = new Set(all(".inklist .numbox").map((b) => Math.round(b.getBoundingClientRect().right))).size;
       // the Hands pane: a swatch, a height and the Bevels pills
@@ -2581,12 +2588,26 @@ await shot("10-bar");
       seen.click(); const greyed = seen.closest(".row").classList.contains("off") !== !was_on || seen.closest(".row").classList.contains("off"); seen.click();
       const dots = !eye_drawn && Boolean(seen.querySelector("circle")) && greyed;
       [S.rings, S.w_inks, S.w_ink_all] = JSON.parse(keep); t.ink_open.clear(); t.changed();
-      return { dots, eyes_left, lefts, inside, caps, pair_ok, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head }; });
+      return { dots, eyes_left, lefts, inside, caps, pair_ok, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head, hollow, part_lines, worded }; });
     await shot("12b-show-dial-tab");
+    // a group's name as far from the line above as from the line below, measured on its ink from the screen's dots (R21; Okay, 3 Nov 2026, 08:15: "Greens and blues, are they equal?")
+    const gaps = await page.evaluate(async (src) => {
+      const img = new Image(); img.src = "data:image/png;base64," + src; await img.decode();
+      const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+      const g = c.getContext("2d"); g.drawImage(img, 0, 0); const d = g.getImageData(0, 0, c.width, c.height).data;
+      const at = (x, y) => d.slice((y * c.width + x) * 4, (y * c.width + x) * 4 + 3), ground = at(Math.round(c.width / 2), 2);
+      let y0 = 1e9, y1 = -1, line = c.height;
+      for (let y = 0; y < c.height; y++) { let n = 0; for (let x = 0; x < c.width; x++) { const p = at(x, y); if (Math.abs(p[0] - ground[0]) + Math.abs(p[1] - ground[1]) + Math.abs(p[2] - ground[2]) > 150) n++; }
+        if (n > c.width * 0.8) line = Math.min(line, y); else if (n) { y0 = Math.min(y0, y); y1 = Math.max(y1, y); } }      // a row of dots that is nearly all ink is the line below, the first such row its top
+      return [y0 / 2, (line - (y1 + 1)) / 2];      // CSS px: ink top from the line above (the row's top), ink bottom to the line below
+    }, (await page.locator(".inklist .row.showsub").first().screenshot()).toString("base64"));
+    r.centred = Math.abs(gaps[0] - gaps[1]) <= 1 && gaps[0] >= 11 && gaps[1] >= 11;
     check(r.panes.join() === "Colours,Inks,Hands" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
       `show mode's Dial tab is Colours · Inks · Hands (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands")`);
     check(r.pair_ok && r.two && r.on_b && Math.abs(r.b_h - 0.33) < 1e-6 && r.rights === 1,
       `Inks: a line a part, straight under On the dial (${r.pair_ok}); two rings of one colour share its height, a LINK filled between them (${r.two}, ${r.on_b}); pressed, the second its own height (${r.b_h ? "yes" : "no"}); every height box on one right edge (Okay: "One thick red one thin possible via a switch on the pane")`);
+    check(r.hollow && r.worded && r.part_lines && r.centred,
+      `the LINK pill as the Windows tab's: LINK hollow, outline and word in the line's colour, the line from the pill's end, no line under it (${r.hollow}); LINKED filled (${r.worded}); a part draws only its own bottom line (${r.part_lines}); a group's name as far from the line above as from the one below (${r.centred}, ${gaps.join(" · ")}) (Okay, 3 Nov 2026: "remove the bg color from the pill but also remove the line from under it"; "Greens and blues, are they equal?")`);
     check(r.lefts === 1 && r.inside && !r.caps && r.eyes_left, `every colour of the tab on one swatch column (${r.lefts}), the group names not in capitals, the Bevels pills inside their line, the lines' eyes under the panes' eyes (Okay: "All colors aligned on a line like rings on main … don't use allcaps everywhere")`);
     check(r.dots, `a line's show/hide is a dot, filled shown, a ring hidden, the hidden line greyed; the eye only the panes' fold (Okay: "Eyes doing different functions, make the second levels something else?"; "A · dot")`);
     check(r.hands && r.flipped, `Hands: each hand's colour and height on its line, the Bevels pills turn its bevel (Okay: "colors also editable on hands pane everywhere"; "Bevels % slider plus the pill")`);

@@ -48,7 +48,7 @@
      column, its chevron in the dots' column, its line from the pane's left (Okay, 3 Nov 2026, 01:13: "These separator
      lines, extend all the way to the start of this first column … is bold, as is hands and windows"; 01:17: "Rings and
      hands get chevrons"; 01:31: "start from 2nd column for expanded items" — an item's line keeps the marks' column) */
-  .colourlist > .row.showsub { position: relative; display: flex; align-items: end; min-height: var(--line); padding-bottom: var(--u2); }
+  .colourlist > .row.showsub { position: relative; display: flex; align-items: end; min-height: var(--line); padding-bottom: var(--u3); }      /* the name's ink as far from the line above as from the line below (Okay, 3 Nov 2026, 08:15: "Greens and blues, are they equal?" — they were not: 14.5 over 9) */
   .colourlist > .row.showsub .colhead { color: var(--ink); font-weight: 600; font-size: var(--t-s); }
   .colourlist > :is(.row.showsub, .row.showline.lead) { margin-left: calc(-1 * var(--lead)); padding-left: var(--lead); }
   .colourlist > .row.showsub > .chev { position: absolute; top: 0; bottom: 0; left: calc(var(--nudge) - var(--eye) - var(--gap) + var(--lead)); width: var(--eye); }
@@ -64,10 +64,20 @@
   .colourlist > .row.part:has(+ .row.part) { box-shadow: none; background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--kind-pic) - var(--u2)) var(--hair) no-repeat; }
   .pane > .colhead { justify-self: end; margin-left: auto; color: var(--grey); font-size: var(--t-xs); }
   /* Inks: its lines on the same columns; the ink's fold in the eye's place, its part count as its name */
-  /* the LINK between two parts of one ink (02:11): on the line between them, at the names' column; filled, linked */
-  .colourlist > .row.haslink > .linkpill { left: calc(var(--kind-pic) + var(--u2)); }
-  .colourlist > .row.haslink > .linkpill.on { color: var(--column, var(--paper)); }      /* the pane's own ground, so the word reads on the filled pill in both modes */
-  .colourlist > .row.haslink > .linkpill:disabled { cursor: default; }
+  /* a part draws only its own bottom line, never the outer top one every row has (4c-rows.css): that line ran full width
+     under a LINK pill and over a window's last colour (Okay, 3 Nov 2026, 02:34: "neighbors top line loses length") */
+  .colourlist > .row.part { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  /* the LINK between two parts of one ink (02:11), the Windows tab's Width · Height pill (#358) made show mode's: LINKED
+     filled when linked, LINK a hollow outline when not, outline and word in the line's colour (Okay, 3 Nov 2026, 11:15:
+     "make link text black when off … remove the bg color from the pill but also remove the line from under it"). The row
+     paints no line of its own; a strip at its foot (.linkline) holds the pill and, after it, the line — so the line
+     begins where the pill ends, whatever word it carries */
+  .colourlist > .row.showline.part.haslink { background: none; box-shadow: none; }
+  .colourlist > .row.haslink > .linkline { position: absolute; z-index: 1; left: calc(var(--kind-pic) + var(--u2)); right: 0; bottom: 0; translate: 0 50%; display: flex; align-items: center; }
+  .colourlist > .row.haslink > .linkline > .rule { flex: 1; height: var(--hair); background: var(--row-rule); }
+  .colourlist > .row.haslink .linkpill { position: static; translate: none; background: none; color: var(--row-rule); }
+  .colourlist > .row.haslink .linkpill.on { background: var(--ink); color: var(--column-solid); }
+  .colourlist > .row.haslink .linkpill:disabled { cursor: default; }
   .colourlist .chev { display: grid; place-items: center; color: var(--grey); }
   .colourlist .chev:not(.open) svg { transform: rotate(-90deg); }      /* one chevron, turned (icon canon: "up is the same, turned") */
   @media (hover: hover) { .colourlist .chev:hover { color: var(--ink); } }

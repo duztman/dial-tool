@@ -4,20 +4,20 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 3 Nov 2026, 02:40 (v1.1.44 beta): show mode's lists built (v1.1.42–44, #576 to verify); #581 and #579 next, #580 later; #175's lume view after them.*
+*Last updated 3 Nov 2026, 11:45 (v1.1.45 beta): #581 built (to verify, with #576); #579 next, #580 later; #175's lume view after them.*
 
 ## Now — Okay said build
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 1 | 581 | Show mode's lists, round 2: the LINK pill — linked filled in the line's colour with its word in a contrasting colour; unlinked not cutting into the line (its look to draw); the lines round a window's colours — the line under Date at 3 full length, the line over Neighbours as short as the others (Neighbours belongs to the window's group) | 3 Nov 2026, 02:34 — "Link was a good touch but is that how we do the unselected?" | open — draw first |
-| 2 | 579 | Show mode's Colours: the rings get the 6-dot gripper and are reordered top-down by dragging, as the ring list on the dial side, the gripper just before the colour swatches | 3 Nov 2026, 02:34 — "Rings also need a 6 dot gripper and ring top-down arranger here as well" | open |
-| 3 | 175 | A hand as a stack — built (v1.1.39); **left: the lume view in show mode** — Light gets a Day · Night pill on top; Night is lume mode: a Lume decay slider under it, the Sun replaced by the Moon (Strength 50 % to start), a darkness filter true to colour theory — note, not to build yet | 3 Nov 2026, 01:06 — "Light gets another pill selector, top: day/night … Do not build, note." | open — noted |
+| 1 | 579 | Show mode's Colours: the rings get the 6-dot gripper and are reordered top-down by dragging, as the ring list on the dial side, the gripper just before the colour swatches | 3 Nov 2026, 02:34 — "Rings also need a 6 dot gripper and ring top-down arranger here as well" | open |
+| 2 | 175 | A hand as a stack — built (v1.1.39); **left: the lume view in show mode** — Light gets a Day · Night pill on top; Night is lume mode: a Lume decay slider under it, the Sun replaced by the Moon (Strength 50 % to start), a darkness filter true to colour theory — note, not to build yet | 3 Nov 2026, 01:06 — "Light gets another pill selector, top: day/night … Do not build, note." | open — noted |
 
 ## Verify — built, for Okay's Mac and iPad
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
+| — | 581 | Show mode's lists, round 2 (v1.1.45): LINKED filled · LINK hollow, no line under a pill, a part's single bottom line, group names centred | 3 Nov 2026, 11:29 — "ok this looks great, implement" | verify (v1.1.45) |
 | — | 576 | Show mode's lists (v1.1.42–44): groups and parts of several colours open and close by chevrons; hand, cap, outlined window marks; a hidden part's dotted dot; Bevels pills, Bevels % and Bevel Type working, no bevel on a disc; hands see-through; Inks a line a part with LINK; a hand's colours and prints opened | 3 Nov 2026, 01:43 — "Exactly as this. Build."; 02:11 | verify (v1.1.44) |
 
 ## Next — the features, in Okay's order, then easier → harder

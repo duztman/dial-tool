@@ -99,9 +99,9 @@
      the pill stands on the line under the first row, starting where the names start, over the next row's line. Width and
      height were one line, two numbers to it, from 4.46.1 to 4.56 (#265) */
   .row.haslink { position: relative; }
-  .row.haslink > .linkpill { position: absolute; z-index: 1; grid-column: 1 / -1; grid-row: 1; justify-self: start; left: 0; bottom: 0; translate: 0 50%; display: grid; place-items: center; height: var(--link-pill); padding: 0 var(--u2); border: var(--hair) solid var(--row-rule); border-radius: var(--round-pill); background: var(--surface); color: var(--grey); font: 400 var(--t-pixel)/1 var(--pixel); letter-spacing: 0; }
-  @media (hover: hover) { .row.haslink > .linkpill:hover { border-color: var(--grey); } }
-  .row.haslink > .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
+  .row.haslink .linkpill { position: absolute; z-index: 1; grid-column: 1 / -1; grid-row: 1; justify-self: start; left: 0; bottom: 0; translate: 0 50%; display: grid; place-items: center; height: var(--link-pill); padding: 0 var(--u2); border: var(--hair) solid var(--row-rule); border-radius: var(--round-pill); background: var(--surface); color: var(--grey); font: 400 var(--t-pixel)/1 var(--pixel); letter-spacing: 0; }
+  @media (hover: hover) { .row.haslink .linkpill:hover { border-color: var(--grey); } }
+  .row.haslink .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
   /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
 
   /* show mode: a number's slider on a line of its own under its name and box, as wide as the row — the column is narrow,
