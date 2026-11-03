@@ -6,6 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
+| 579 | Show mode's Colours: the Rings tab's 6-dot grip before each ring's swatch; dragged, the rings reorder top-down, undoable | **built** v1.1.46 beta, to verify |
 | 581 | Show mode's lists, round 2: the LINK pill as the Windows tab's (LINKED filled, LINK hollow in the line's colour), no line under a pill, a part draws only its own bottom line, group names centred | **built** v1.1.45 beta, to verify |
 
 ## 3 Nov 2026, 00:54 — verified by Okay ("All confirmed verified")

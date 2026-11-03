@@ -2590,6 +2590,21 @@ await shot("10-bar");
       [S.rings, S.w_inks, S.w_ink_all] = JSON.parse(keep); t.ink_open.clear(); t.changed();
       return { dots, eyes_left, lefts, inside, caps, pair_ok, panes, subs, colours_boxes, n0, n1, two, on_b, b_h, rights, flipped, hands, head, hollow, part_lines, worded }; });
     await shot("12b-show-dial-tab");
+    { // #579 (Okay, 3 Nov 2026, 02:34: "Rings also need a 6 dot gripper and ring top-down arranger here as well. just before the color swatches. Like rings on tool side."):
+      // each ring's line a grip at the end of the name's cell, dots' ink 10 px from the swatch; dragged two rows down, the rings' order changes in S and in the Rings tab's list; undo puts it back
+      const g = await page.evaluate(() => { const rows = [...document.querySelectorAll(".colourlist:not(.inklist) > .row.showline")].filter((r) => r.querySelector(":scope > .grip")), hands = [...document.querySelectorAll(".colourlist:not(.inklist) > .row.showline")].filter((r) => !r.querySelector(":scope > .grip") && r.querySelector("label")?.textContent.includes("hand"));
+        const r = rows[0], svg = r.querySelector(".grip svg").getBoundingClientRect(), sw = r.querySelector(".single, .swatches").getBoundingClientRect(), gb = r.querySelector(".grip").getBoundingClientRect(), rb = r.getBoundingClientRect(), nb = rows[1].getBoundingClientRect();
+        return { n: rows.length, rings: window.dial_tool.S.rings.length, hands_bare: hands.length, dots_to_swatch: +(sw.left - (svg.left + 11.5)).toFixed(2), row_h: rb.height, x: gb.left + gb.width / 2, y: gb.top + gb.height / 2, step: nb.top - rb.top, order: window.dial_tool.S.rings.map((x) => x.name) }; });
+      await page.mouse.move(g.x, g.y); await page.mouse.down(); await page.mouse.move(g.x, g.y + g.step * 1.2, { steps: 4 });
+      const line = await page.isVisible(".colourlist > .dropline");
+      await page.mouse.move(g.x, g.y + g.step * 2.2, { steps: 4 }); await page.mouse.up(); await frame(); await frame();
+      const after = await page.evaluate(() => ({ order: window.dial_tool.S.rings.map((x) => x.name), list: [...document.querySelectorAll(".colourlist:not(.inklist) > .row.showline")].filter((r) => r.querySelector(":scope > .grip")).map((r) => r.querySelector("label").textContent) }));
+      await page.evaluate(() => window.dial_tool.undo(-1)); await frame();
+      const back = await S("S.rings.map((r) => r.name)");
+      const want = [g.order[1], g.order[2], g.order[0], ...g.order.slice(3)];
+      check(g.n === g.rings && g.n >= 3 && g.hands_bare >= 2 && Math.abs(g.dots_to_swatch - 10) <= 0.5 && g.row_h === 34 && line && JSON.stringify(after.order) === JSON.stringify(want) && JSON.stringify(after.list) === JSON.stringify(want) && JSON.stringify(back) === JSON.stringify(g.order),
+        `show mode's Colours: a 6-dot grip on every ring's line and on no hand's (${g.n} of ${g.rings}, ${g.hands_bare} hands bare), its dots 10 px before the swatch (${g.dots_to_swatch}), the row still 34 (${g.row_h}); dragged two rows down with the drop line showing (${line}) the order changed in the dial and in this list (${after.order.join(" · ")} · ${after.list.join(" · ")}; the Rings tab's list is filled again when show mode closes); undo brings it back (${back.join(" · ")}) (#579, Okay: "a 6 dot gripper and ring top-down arranger here as well. just before the color swatches")`);
+    }
     // a group's name as far from the line above as from the line below, measured on its ink from the screen's dots (R21; Okay, 3 Nov 2026, 08:15: "Greens and blues, are they equal?")
     const gaps = await page.evaluate(async (src) => {
       const img = new Image(); img.src = "data:image/png;base64," + src; await img.decode();

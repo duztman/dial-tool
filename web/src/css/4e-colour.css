@@ -32,6 +32,16 @@
   .colourlist > .row.showline.off > :is(.mark, label, .single, .swatches) { color: var(--rule); opacity: 0.5; }      /* a part hidden on the watch: its line greys, as a hidden ring's in main's list (#547) */
   .colourlist > .row.showline > .mark { display: grid; place-items: center; height: 100%; color: var(--grey); }      /* a tiny mark, quiet beside the name */
   .colourlist > .row.showline > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* a ring's 6-dot grip (#579, the Rings tab's, 4f-rings.css) in the name's cell at its end, before the swatch, which keeps
+     the column every line shares; the name stops short of it (Okay, 3 Nov 2026, 02:34: "just before the color swatches.
+     Like rings on tool side."). Dragged: the row dims and a drop line shows where it lands, as in the ring list */
+  .colourlist { position: relative; }
+  .colourlist > .row.showline > .grip { grid-column: 2; grid-row: 1; justify-self: end; display: grid; place-items: center; height: 100%; color: var(--rule); cursor: grab; touch-action: none; }
+  .colourlist > .row.showline:has(> .grip) > label { grid-column: 2; grid-row: 1; padding-right: calc(var(--u4) + var(--u2)); }
+  @media (hover: hover) { .colourlist > .row.showline:hover > .grip { color: var(--grey); } }
+  .colourlist > .row.showline.dragged { opacity: var(--dim); }
+  .colourlist > .row.showline.dragged > .grip { cursor: grabbing; }
+  .colourlist > .dropline { position: absolute; left: 0; right: 0; height: var(--triple); background: var(--ink); pointer-events: none; }
   .colourlist > .row.showline > :is(.colour, .single) { justify-self: start; }
   .colourlist > .row.showline > .single { display: flex; }
   .colourlist > .row.showline > .swatches { display: flex; flex-wrap: wrap; align-items: center; gap: var(--chip-gap); padding: var(--chip-gap) 0; }

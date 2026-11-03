@@ -380,7 +380,7 @@ export const COLOUR = {
       return [{ ...l, colours: [], note: null, eye: null, parent: key },
         ...l.colours.map((c, n) => ({ text: colour_part(c.title), colours: [{ ...c, square: false }], part: key, eye: n === 0 ? l.eye : null, mark: c.id.startsWith("cap") ? PICS.cap : "" }))];
     }) : raw;
-    const signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id), Boolean(l.eye), Boolean(l.sub), l.mark || "", l.note || "", (l.tail || []).map((t) => t.key), l.parent || l.part || "", Boolean(l.lead)]));
+    const signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id), Boolean(l.eye), Boolean(l.sub), l.mark || "", l.note || "", (l.tail || []).map((t) => t.key), l.parent || l.part || "", l.grip ?? "", Boolean(l.lead)]));
     if (holder.dataset.list !== signature) {
       holder.dataset.list = signature;
       holder.extras = [];
@@ -407,7 +407,13 @@ export const COLOUR = {
         if (line.mark) mark.innerHTML = line.mark;
         const number = el("span", { className: "place" });
         for (const t of line.tail || []) { const made = t.make(); number.append(made.el); holder.extras.push(made); }
-        const row = el("div", { className: "row showline" + (line.tail ? "" : " bare") + (line.lead ? " lead" : "") + (line.parent ? " many" : "") + (line.part ? " part" : "") }, eye_place, mark, name, group, number);      // bare: colours only (Colours), the swatches may run on into the number's room
+        const row = el("div", { className: "row showline" + (line.tail ? "" : " bare") + (line.lead ? " lead" : "") + (line.parent ? " many" : "") + (line.part ? " part" : "") }, eye_place, mark, name, group, number);
+        if (line.grip != null) {      // a ring's grip, the Rings tab's (#579, Okay: "a 6 dot gripper and ring top-down arranger here as well. just before the color swatches"): dragged, drag_ring moves the ring in both lists
+          const grip = el("span", { className: "grip", title: "Drag to change the order" });
+          grip.innerHTML = icon(TOOL_ICONS.grip);
+          grip.onpointerdown = (e) => this.drag_ring(e, line.grip, { list: holder, rows: [...holder.children].filter((r) => r.querySelector(":scope > .grip")), after: () => { holder.dataset.list = ""; } });
+          name.after(grip);
+        }      // bare: colours only (Colours), the swatches may run on into the number's room
         if (line.parent) row.dataset.key = line.parent;
         if (line.eye) holder.extras.push({ refresh: () => { const on = Boolean(line.eye.read()); eye_place.innerHTML = list_dot(on); eye_place.setAttribute("aria-pressed", String(on)); row.classList.toggle("off", !on); } });      // hidden: the line greys, its dot a dotted ring (01:27)
         return row;
@@ -475,6 +481,7 @@ export const COLOUR = {
         if (show) {
           line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i] || {}).on, write: (on) => this.show_ring(i, on) };
           line.mark = PICS.kind(ring.kind);      // the ring list's kind mark
+          line.grip = i;      // the ring list's 6-dot grip before the swatch: dragged, the rings' order (#579)
           if (line.colours.length > 1) line.note = `${line.colours.length} sectors`;
         }
         lines.push(line);

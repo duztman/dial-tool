@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.46 beta · 3 Nov 2026 — rings reordered in show mode's Colours by a 6-dot grip (#579)
+
+Okay, 3 Nov 2026, 02:34: "Rings also need a 6 dot gripper and ring top-down arranger here as well. just before the color swatches. Like rings on tool side."; 13:22, on the drawing: "awesome, go on?"
+
+- **The grip** (`colour.js`, `4e-colour.css`): every ring's line in Colours › Rings gets the Rings tab's 6-dot grip (`icons.js`), at the end of the name's cell before the swatch — the swatch column stays where every line of the tab has it; the dots' ink 10 px from the swatch (the icon's 4.5 inside its box plus the column gap 5.5), the name stopping 5 px short of the dots. `--rule` at rest, `--grey` under the pointer; a finger reaches it a little into the name and the gap (`3-controls.css`). A ring of several colours carries it on its parent line. Hands and windows have none.
+- **The drag** (`rings.js` `drag_ring`): the Rings tab's own drag, told which list and rows to work on and what to rebuild after the drop: the row dims, a drop line shows where the ring lands, the order changes top-down in the dial, this list and the Rings tab (filled again when show mode closes); undo brings it back.
+- **Tests**: a check in the show-mode block: the grips, their place, a drag of two rows and its undo. Window test passes.
+
 ## v1.1.45 beta · 3 Nov 2026 — show mode's LINK pill as the Windows tab's; parts without the outer top line; group names centred
 
 Okay, 3 Nov 2026, 09:13: "Linked gets full and -ed, link is outlined pill with no line that crosses behind them. I need you to find the other used instance of this pill … tuned to perfection"; 11:15: "make link text black when off and how can you remove the bg color from the pill but also remove the line from under it?"; 11:29: "ok this looks great, implement. also these last rows of indented groups have a longer top line, why'd that be?"

@@ -464,10 +464,11 @@ export const RINGS = {
   },
 
   /** drag a ring by its grip to another place in the list. The list's order is the stacking order:
-   *  the top row is drawn last, in front. A line shows where the ring will land. */
-  drag_ring(e, from) {
+   *  the top row is drawn last, in front. A line shows where the ring will land. The Rings tab's list by default;
+   *  show mode's Colours list (#579) passes its own rows and what to rebuild after the drop. */
+  drag_ring(e, from, where = null) {
     e.preventDefault();
-    const list = this.ring_list, rows = this.ring_rows(), grip = e.currentTarget;
+    const list = where ? where.list : this.ring_list, rows = where ? where.rows : this.ring_rows(), grip = e.currentTarget;
     const line = el("div", { className: "dropline" });
     list.append(line);
     rows[from].classList.add("dragged");
@@ -486,12 +487,12 @@ export const RINGS = {
       grip.onpointermove = grip.onpointerup = grip.onpointercancel = null;
       line.remove();
       rows[from].classList.remove("dragged");
-      if (to === from) return this.select_ring(from);
+      if (to === from) return where ? undefined : this.select_ring(from);
       const rings = this.S.rings, [ring] = rings.splice(from, 1);
       rings.splice(to, 0, ring);
       this.S.ui_ring = to;
       this.static_dirty = true;
-      this.steady(() => { this.fill_ring_list(); this.sync_rows(); });
+      this.steady(() => { this.fill_ring_list(); if (where) where.after(); this.sync_rows(); });
       this.render();
     };
     grip.onpointermove = move;
