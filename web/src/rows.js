@@ -358,6 +358,10 @@ export const ROWS = {
     num("feature_at", "Barrel from %", 0, 100, 1, { ...H, side: true, short: "Barrel %", show: hand_is("syringe") }),
     num("feature_at", "Circle at %", 0, 100, 1, { ...H, side: true, short: "Circle at %", show: hand_is("breguet", "lollipop") }),
     num("hub", "Hub Ø", 0, 4, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),      // the round boss the hand sits on (#370, 4.80; Okay: "a ball that the leaf attaches to")
+    // the pipe's hole through the hub (#404; Okay, 3 Nov 2026: "both should be options"): None · Fit — the commonest hand
+    // fit, the Ø by the hand (G.HOLE_FIT: hour 1.50, minute 0.90, second 0.20) · Own, with its Ø in the row under
+    seg("hole_as", "Hole", ["None", "Fit", "Own"], { ...H, side: true, show: (H) => H.hub > 0 && G.HAND_SHAPES[H.shape] !== "disc" }),
+    num("hole", "Hole Ø", 0.1, 3, 0.05, { ...H, side: true, show: (H) => H.hub > 0 && H.hole_as === 2 && G.HAND_SHAPES[H.shape] !== "disc" }),
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
     num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
     // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all

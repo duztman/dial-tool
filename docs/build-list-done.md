@@ -2,6 +2,12 @@
 
 Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused; the changelog says what each version built.
 
+## 3 Nov 2026, 22:10 — built, for Okay to verify
+
+| # | Item | Status |
+|---|---|---|
+| 404 | Every hand a real hub: the pipe's hole (None · Fit · Own), the boss lit as a dome in show mode | **built** v1.1.52 beta, to verify |
+
 ## 3 Nov 2026, 21:40 — verified by Okay ("all verified"); one fold
 
 | # | Item | Status |

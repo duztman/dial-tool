@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.51 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.52 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -134,6 +134,9 @@ export const HAND_BASE = {
   // round boss the hand sits on at the pivot, its Ø (0: none, as every hand before 4.80; a disc hand has none) ·
   // bulge — where a leaf is widest, its two curves' middle as a share of the length (37.5: the leaf as it always was)
   hub: 0.0, bulge: 37.5,
+  // the pipe's hole through the hub (#404; Okay, 3 Nov 2026: "The pipe's hole" at the centre, "both should be options"):
+  // hole_as — 0 none (every hub before #404), 1 the common fit, the hole's Ø by the hand (HOLE_FIT), 2 its own Ø, hole (mm)
+  hole_as: 0, hole: 1.0,
   // a disc hand (#164, 14 Oct 2026; Okay: "disk just gets a marker now… one marker as the arrow"): a disc of Ø disc_d
   // on the pivot, carrying one marker drawn as a markers ring draws its marks — mark: a place in SHAPES (bar · wedge ·
   // dot), mark_len · mark_w its length and width — with its outer end at the hand's Length. Used only by shape "disc"
@@ -606,6 +609,7 @@ export const LINK_KEYS = [
   "op_on", "op_shape", "op_count", "op_from", "op_to", "op_w", "op_gap", "op_fill",      // v1.1.39 beta (#175): appended; no openings to start, as every older link
   "mark_tri", "mark_stroke_w", "mark_stroke_c",      // v1.1.40 beta (#574): appended; a wedge as before and no stroke to start, as every older link
   "ink_h", "stroke_h", "frame_h",      // v1.1.44 beta: appended for the table's sake; a part's own ink height, show mode's, lean() leaves it out of a link (R7)
+  "hole_as", "hole",        // v1.1.52 beta (#404): appended; no hole to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2068,14 +2072,29 @@ function hand_outline(shape, L, W, T, tip, F, at, R = 0, bulge = 37.5) {
   return new Path();
 }
 
-/** one hand, upright, remembered until its settings change (only turning happens per frame). */
-export function hand_shape(h) {
-  return memo("hand" + key_of(h), () => {
+/** the commonest hand fit, the hole's Ø by the hand (mm): hour 1.50 · minute 0.90 · second 0.20 — the pairing
+ *  the parts houses sell most (Esslinger's 0.90/1.50 hands; the second's collet 0.20). #89 would add real movements. */
+export const HOLE_FIT = { hour: 1.5, minute: 0.9, second: 0.2 };
+/** the Ø of the pipe's hole through a hand's hub (#404): 0 when the hand has no hub or Hole is None. */
+export const hole_of = (h, name = "") => (!(h.hub > 0) || HAND_SHAPES[h.shape] === "disc" ? 0 : h.hole_as === 1 ? HOLE_FIT[name] || 0 : h.hole_as === 2 ? max(+h.hole || 0, 0) : 0);
+/** a hand's boss as a part of its own — the hub disc with the hole through it, upright — for show mode's lit picture
+ *  (#404: "the boss itself, as a round disc"); null when the hand has no hub. The dial side keeps it in the hand's shape. */
+export function hand_boss(h, name = "") {
+  if (!(h.hub > 0) || HAND_SHAPES[h.shape] === "disc") return null;
+  const hole = hole_of(h, name);
+  return memo("boss" + name + key_of(h), () => (hole > 0 && hole < h.hub ? circle(h.hub).difference(circle(hole)) : circle(h.hub)));
+}
+/** one hand, upright, remembered until its settings change (only turning happens per frame).
+ *  name: which hand (hour · minute · second), only for the hole's common fit (hole_of). */
+export function hand_shape(h, name = "") {
+  return memo("hand" + (h.hole_as === 1 ? name : "") + key_of(h), () => {
     let shape = HAND_SHAPES[h.shape];
     if (shape === "file") { file_shape(h.file); shape = "baton"; }       // no file: a baton (R17)
     let p = shape === "disc" ? disc_hand(h) : hand_outline(shape, h.len, h.w, h.tail, h.tip, h.feature, h.feature_at / 100 * h.len, h.round || 0, h.bulge ?? 37.5);
     if (h.wall > 0) p = p.difference(offset(p, -h.wall));
     if (h.hub > 0 && shape !== "disc") p = p.union(circle(h.hub));      // its hub, solid even on a hollow hand (#370)
+    const hole = hole_of(h, name);
+    if (hole > 0) p = p.difference(circle(hole));      // the pipe's hole through the hub, and through the hand's tail under it (#404)
     if (h.counter > 0) p = p.union(place(circle(h.counter), -h.tail * COUNTER_AT, 0));
     const holes = hand_openings(h);
     if (holes) p = p.difference(holes);      // cut through: open, the dial shows; filled, the scene lays the lume in them
@@ -2144,7 +2163,7 @@ export const mark_stroke = (h) => (paints_mark(h) && h.mark_stroke_w > 0 && disc
 function hand_items(S, t) {
   const angles = hand_angles(t, BEATS[S.ha_beat][1]);
   return HANDS.map((name, i) => [name, S["ha_" + name].c, S["ha_" + name], angles[i]])
-    .filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h), a, h]);
+    .filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h, name), a, h]);
 }
 
 // ═════════════════════════════════════════════════════════════
@@ -2424,7 +2443,7 @@ export const turned = (path, angle) => path.copy().rotate(-angle);
  *  counts, percentages or the page margin; and not the diameter itself, which the caller sets.
  *  measures(S) → the values, in a fixed order; set_measures(S, values) puts a list of the same length back. */
 export const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
-export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub"];
+export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub", "hole"];
 export const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
 function each_measure(S, visit, keys = null) {
   if (keys) {                                      // a chosen set: Weight's widths (#88)

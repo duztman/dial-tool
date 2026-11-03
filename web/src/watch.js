@@ -274,6 +274,13 @@ const handBevel = (x, A, L) => { if (!HAND_BEVEL || !x.hand || !x.bevel) return 
     return `<g data-hb="${x.hand}" data-dome="${id}" transform="rotate(${-A[x.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="url(#${id}r)"/><rect x="-50" y="-50" width="50" height="100" fill="url(#${id}l)"/></g></g>`;
   }
   return `<g data-hb="${x.hand}" transform="rotate(${-A[x.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="${side > 0 ? "#fff" : "#000"}" fill-opacity="${f(side > 0 ? lit : dark)}"/><rect x="-50" y="-50" width="50" height="100" fill="${side > 0 ? "#000" : "#fff"}" fill-opacity="${f(side > 0 ? dark : lit)}"/></g></g>`; };
+// a hand's boss lit as a dome (#404; Okay, 3 Nov 2026: "the boss itself, as a round disc"): a ramp across the disc from its
+// side toward the light to its side away from it, as a Domed hand's halves are lit, at Bevels % when the bevels are on
+// and at a modest 60 % when they are off, so the boss still stands proud of the hand. Round, so it turns with no hand.
+const bossLight = (x, L) => { const id = "bs" + (INK_N++), k = HAND_BEVEL || 0.6, lit = 0.22 * k, dark = 0.26 * k;
+  const ux = Math.cos(rad(L)), uy = -Math.sin(rad(L));      // toward the light: the shadows fall the other way (away())
+  CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`, `<linearGradient id="${id}g" gradientUnits="userSpaceOnUse" x1="${f(ux * x.r)}" y1="${f(uy * x.r)}" x2="${f(-ux * x.r)}" y2="${f(-uy * x.r)}"><stop offset="0" stop-color="#fff" stop-opacity="${f(lit)}"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${f(dark)}"/></linearGradient>`);
+  return `<g clip-path="url(#${id})"><rect x="${f(-x.r)}" y="${f(-x.r)}" width="${f(2 * x.r)}" height="${f(2 * x.r)}" fill="url(#${id}g)"/></g>`; };
 function dialSVG(C, v, L) {
   const D = DIALS[0], s = (C.dial - (C.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
   const col = (x) => clampL(x.f);      // every colour's lightness kept between 15 and 85 %
@@ -284,7 +291,7 @@ function dialSVG(C, v, L) {
   const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
   const handsShadow = items.filter((x) => x.hand || x.role === "cap").map((x) => { const sh = away(HEIGHTS[x.hand || "cap"] ?? 0.35);
     return `<path d="${x.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x.hand ? ` data-hs="${x.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`; }).join("");
-  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? (x.role === "lume" || x.role === "mark" ? lumeRelief(x, s, L, A) : handBevel(x, A, L)) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
+  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? (x.role === "lume" || x.role === "mark" ? lumeRelief(x, s, L, A) : handBevel(x, A, L)) : x.role === "boss" ? bossLight(x, L) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
   const firstHand = items.findIndex((x) => x.hand || x.role === "cap");
   body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;

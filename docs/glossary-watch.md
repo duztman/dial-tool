@@ -14,7 +14,8 @@ What each word means **in this project**; Turkish where it is the trade word. On
 | **Counterweight** | | A disc on a hand's tail, centred at 73 % of it. |
 | **Cap** | | The disc over the pivot (`ha_cap`, `c_cap`); part of the seconds hand; on the topmost hand only with **Cap on this hand** (`ha_cap_top`). |
 | **Centre hole** | | The hole for the hand pipes (`dial_hole`, Ø mm; 0 = none); a production mask always has its cut line. |
-| **Hub** | | The round boss at a hand's pivot (`hub`, Ø per hand; 0 = none). |
+| **Hub** | | The round boss at a hand's pivot (`hub`, Ø per hand; 0 = none). In show mode a part of its own over the hand, lit as a dome (#404). |
+| **Hole** (of a hub) | | The pipe's hole through a hub (`hole_as`: None · Fit · Own; `hole`, Ø). Fit is the commonest hand fit, by the hand: hour 1.50 · minute 0.90 · second 0.20 (`HOLE_FIT`). |
 | **Disc hand** | | Hand shape `disc`: a disc on the pivot (`disc_d`) carrying one marker (`mark`, `mark_len`, `mark_w`), a **Hole** (cut) or a **Mark** (painted, `mark_c`) by `mark_as`; *Inside the disc* = `mark_in`. |
 | **Bevel** | | A hand's top lit and shaded by the sun, preview only (`bevel` per hand; strength `sh_bevel`, Bevels %), in a **Bevel Type** (`bevel_look`): **Ridge** — two long halves meeting on the spine · **Domed** — round across, shaded from the spine out. Its pane, the **Bevel pane**, stands under the Show box once Bevel is ticked. (Faceted is not offered, #573.) |
 | **Opening** | | A shape cut through a hand, the dial showing through (#175): a hand's Opening pane cuts Count of them, Bar or Dot, from From % to To % of its length; filled with a lume, a lume opening. Not *window*, which is a hole in the plate. |

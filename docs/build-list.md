@@ -4,18 +4,19 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 3 Nov 2026, 21:45 — Okay: "404 first, then 580"; both in Now. 21:40: #175's Night, #579, #581 and #576 verified by Okay ("all verified"); #349 folded into #169 (done), its dial-side press to #61; Now is empty — #346 with #83 is next in line, #580 later.*
+*Last updated 3 Nov 2026, 22:10 (v1.1.52 beta): #404 built, to verify — the hub one circle still, the pipe's hole None · Fit · Own, the boss lit as a dome in show mode; #580 next in Now. 21:45 — Okay: "404 first, then 580"; both in Now. 21:40: #175's Night, #579, #581 and #576 verified by Okay ("all verified"); #349 folded into #169 (done), its dial-side press to #61; Now is empty — #346 with #83 is next in line, #580 later.*
 
 ## Now — Okay said build
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 1 | 404 | Every hand gets a real hub, life-accurate at the cannon pinion; dauphine and leaf first, their details kept in the lit picture (#421 folded in) | 3 Nov 2026, 21:36 — "404 first, then 580" | build |
-| 2 | 580 | Show mode: the hands' heights — the Shadows pane's side view and its rows — as a pane at the end of the Dial tab's column | 3 Nov 2026, 21:36 — "404 first, then 580" | build |
+| 1 | 580 | Show mode: the hands' heights — the Shadows pane's side view and its rows — as a pane at the end of the Dial tab's column | 3 Nov 2026, 21:36 — "404 first, then 580" | build |
 
 ## Verify — built, for Okay's Mac and iPad
 
-Nothing: everything built has been verified.
+| Order | # | Item | From | Status |
+|---|---|---|---|---|
+| — | 404 | Every hand a real hub (v1.1.52): the pipe's hole through it — Hole None · Fit (hour 1.50 · minute 0.90 · second 0.20) · Own Ø — and the boss lit as a dome of its own in show mode; the cap over it as before (#421 folded in) | 3 Nov 2026, 21:36 — "404 first, then 580"; 21:45 — "both should be options. also cap is an option still." | verify (v1.1.52) |
 
 ## Next — the features, in Okay's order, then easier → harder
 

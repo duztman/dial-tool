@@ -245,8 +245,8 @@ export const hand_pic = (i) => {
  *  cap: {d} when the cap is drawn with this hand (the seconds hand, or the topmost with Cap on this hand), as on the
  *  dial — over the hand, in the picture's ink: colour stays on the face (Okay, 19 Oct 2026: "seconds preview needs cap
  *  preview"; "do not color cap on preview. Color stays on the face"). */
-export const hand_detail = (h, cap = null) => {
-  const p = G.hand_shape(h), b = p.bounds();
+export const hand_detail = (h, cap = null, name = "") => {
+  const p = G.hand_shape(h, name), b = p.bounds();      // name: which hand, for the hole's common fit (#404)
   if (!b) return "";
   if (cap) { const r = cap.d / 2; b[0] = Math.min(b[0], -r); b[1] = Math.min(b[1], -r); b[2] = Math.max(b[2], r); b[3] = Math.max(b[3], r); }      // the box holds the cap too
   const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f = (v) => v.toFixed(3);      // m: a little room round it

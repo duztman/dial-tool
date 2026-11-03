@@ -240,7 +240,7 @@ export function svg_hand(S, name, ambient = false) {
   const handConfig = S["ha_" + name];
   if (!handConfig || !handConfig.on) return null;
 
-  const path = hand_shape(handConfig);
+  const path = hand_shape(handConfig, name);
   let fill = handConfig.c;
 
   if (ambient && ambient !== "plate") {
@@ -298,7 +298,7 @@ export function svg_preview(S, statik) {
     hands.forEach((name, i) => {
       const h = S["ha_" + name];
       if (h && h.on) {
-        items.push({ role: "hand", path: turned(hand_shape(h), angles[i]), fill: h.c });
+        items.push({ role: "hand", path: turned(hand_shape(h, name), angles[i]), fill: h.c });
       }
     });
 

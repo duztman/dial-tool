@@ -118,7 +118,7 @@ export const HANDS = {
     this.hand_grip_events(wrap, grips);
     out.refresh = (T) => {
       const S = this.S, cap = G.cap_shows(S) && S.ui_hand === G.top_hand(S) ? { d: +S.ha_cap } : null;      // the cap goes with the hand it is drawn on (cap_rows)
-      const now = hand_detail(T, cap);
+      const now = hand_detail(T, cap, G.HANDS[S.ui_hand]);
       if (now !== drawn) {
         drawn = now;
         // the drawings under the handles replaced, the handles' own layer kept in place (moving it would drop a drag's hold on the pointer)

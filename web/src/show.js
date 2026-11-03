@@ -36,16 +36,25 @@ const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc"].include
 // a hand's lume is printed too: an ink on the hand (#175), its height the ink's
 const HANDS = ["hour", "minute", "second"];
 
+// one part of the scene as watch.js takes it: its role, which hand, its bevel, its path and colour, its ink height
+const one = (x, hand, H, S) => {
+  // a disc hand is flat, as on the dial side (Okay, 3 Nov 2026, 02:11: "Disc hand does not get bevels")
+  return { role: x.role, hand, bevel: Boolean(H && x.role === "hand" && H.bevel && G.HAND_SHAPES[H.shape] !== "disc"), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) || x.role === "mark" ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 };
+};      // a disc's painted mark is printed on it: an ink (02:11)      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
+
 /** what watch.js draws for this dial and these settings — the Show Case's `options()` */
 export function options(S, items, effects) {
   const style = STYLE_NAMES[S.w_style] || "miyazaki", kind = G.CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P = WATCH.presets(style), lit = effects;
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
-    items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && HANDS.includes(x.name) ? x.name : null;
+    items: items.flatMap((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && HANDS.includes(x.name) ? x.name : null;
       const H = hand ? S["ha_" + hand] : null;
-      // a disc hand is flat, as on the dial side (Okay, 3 Nov 2026, 02:11: "Disc hand does not get bevels")
-      return { role: x.role, hand, bevel: Boolean(H && x.role === "hand" && H.bevel && G.HAND_SHAPES[H.shape] !== "disc"), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) || x.role === "mark" ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 }; }),      // a disc's painted mark is printed on it: an ink (02:11)      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
+      // a hand's boss as a part of its own over the hand (#404; Okay, 3 Nov 2026: "The boss itself, as a round disc"): the
+      // hub disc with the pipe's hole, lit as a dome by watch.js (bossLight); round, so it needs no turning with the hand
+      const boss = x.role === "hand" && H ? G.hand_boss(H, hand) : null;
+      const part = one(x, hand, H, S);
+      return boss ? [part, { role: "boss", hand: null, bevel: false, dome: false, hw: 0, r: H.hub / 2, p: boss.svg(3), f: part.f, a: part.a, ink: 0 }] : [part]; }),
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,

@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.52 beta · 3 Nov 2026 — #404: the hub a real boss — the pipe's hole, and lit as a dome in show mode
+
+Okay, 3 Nov 2026, 21:36: "404 first, then 580"; asked, "Per-shape boss only" · "The pipe's hole" · "The boss itself, as a round disc"; 21:45: "both should be options. also cap is an option still."
+
+- **The pipe's hole** (`geometry.js`, `hole_of`, `hand_shape`): a Hole pill under Hub Ø on the Hands tab once a hand has a hub — None · Fit · Own. Fit cuts the hole at the commonest hand fit, the Ø by the hand (`HOLE_FIT`: hour 1.50 · minute 0.90 · second 0.20); Own at the Hole Ø row's value. The hole goes through the hub and the hand's tail under it; the cap stays over whatever hub is under it, as before. Keys `hole_as` (0 to start: no hole, every older link as before) and `hole`, appended to the link table.
+- **The boss in show mode** (`show.js` `one`/`hand_boss`, `watch.js` `bossLight`): the hub drawn once more over the hand as a part of its own, lit as a dome — a ramp from its side toward the light to its side away from it, at Bevels % with the bevels on, at 60 % of that strength with them off. Round, so it needs no turning. The dial side, the SVG and the PDF keep the hub in the hand's shape (R4).
+- **The sketch** `web/test/sketches/hub.mjs` (round 1's picture); the hand's name now reaches `hand_shape` (the Wear OS export too) for the fit.
+- **Tests**: `window.mjs` — the Hole pill and Hole Ø rows, the hole in the hand's picture.
+
 ## v1.1.51 beta · 3 Nov 2026 — the icon check clean: the Every mark strip is not an icon; the Guides list's + on the grid
 
 Okay, 3 Nov 2026, 21:20: "Which icons fail and why?"; 21:21: "Do it".

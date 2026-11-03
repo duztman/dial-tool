@@ -1118,6 +1118,18 @@ await page.click("#hand-tab-0");
     await page.evaluate(() => window.dial_tool.set_value("hand", "hub", 2.5)); await frame();
     const hub = await page.evaluate(() => { const t = window.dial_tool, row = document.querySelector("#hand-hub-Hub-")?.closest(".row"); return [!!row && row.offsetParent !== null, t.statik ? 1 : 0]; });
     const wide = await page.evaluate(() => { const p = [...document.querySelectorAll("#hand-detail svg:not(.grips)")].find((v) => v.getBoundingClientRect().width > 0).querySelector("path").getBBox(); return +p.width.toFixed(2); });
+    // the pipe's hole through the hub (#404; Okay, 3 Nov 2026: "The pipe's hole" · "both should be options"): a Hole pill
+    // under Hub Ø once there is a hub — None · Fit · Own; Fit cuts the hour's hole at 1.50 (HOLE_FIT), Own at its own Ø
+    const hole_row = async () => page.evaluate(() => { const seg = document.querySelector("#hand-hole-as-Hole-0")?.closest(".row"), own = document.querySelector("#hand-hole-Hole-")?.closest(".row"); return [!!seg && seg.offsetParent !== null, !!own && own.offsetParent !== null]; });
+    const subpaths = async () => page.evaluate(() => ([...document.querySelectorAll("#hand-detail svg:not(.grips)")].find((v) => v.getBoundingClientRect().width > 0).querySelector("path").getAttribute("d").match(/M/g) || []).length);
+    await page.waitForTimeout(300);      // the rows sync after the hub's value, as the hand's picture does
+    const [seg_on, own0] = await hole_row(), whole = await subpaths();
+    await page.evaluate(() => window.dial_tool.set_value("hand", "hole_as", 1)); await frame(); await page.waitForTimeout(300);
+    const fit = await subpaths();
+    await page.evaluate(() => { window.dial_tool.set_value("hand", "hole_as", 2); window.dial_tool.set_value("hand", "hole", 1.2); }); await frame(); await page.waitForTimeout(300);
+    const [, own2] = await hole_row(), own = await subpaths();
+    check(seg_on && !own0 && whole === 1 && fit === 2 && own2 && own === 2,
+      `with a hub, a Hole pill stands under Hub Ø (${seg_on}) and Hole Ø only with Own (${own0} → ${own2}); Fit cuts the pipe's hole through the hand, one subpath more in its picture (${whole} → ${fit}), Own too at its own Ø (${own}) (#404: "The pipe's hole")`);
     await page.evaluate((h) => { const t = window.dial_tool; t.S.ha_hour = JSON.parse(h); t.static_dirty = true; t.sync_rows(); t.render(); }, keep); await frame();
     check(b0 === 37.5 && off0 < 1 && off1 < 1 && Math.abs(b1 - b0 - 800 / (6 * L)) < 1 && w1 === w0 && hub[0] && wide >= 2.5,
       `a leaf's width handles stand where it bulges (${off0.toFixed(2)}, ${off1.toFixed(2)} points off); dragged along the hand a mm, the bulge moves (${b0} → ${b1}) and the width stays (${w1}); a Hub Ø of 2.5 makes the hand at least that wide (${wide}) (#368, #370, 4.80)`);
