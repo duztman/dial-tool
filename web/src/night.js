@@ -34,15 +34,15 @@ export function night_colour(hex, dark) {
 export function night(svg, moon, decay, blurs = false) {
   const dark = Math.max(0, Math.min(1, 1 - moon / 100)), glow_k = Math.max(0, Math.min(1, 1 - decay / 100));
   const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement;
-  // the halo: three steps outward, each a third as strong as the one inside it (Okay, 19:18: "too big. make them smaller
-  // and 3 degradations and decaying fast"); with Blurs on, one small blur filter a shape instead — small enough for
+  // the halo: three steps outward, 1 · 2.5 · 5 units wide, each a third as strong as the one inside it (Okay, 19:18: "too
+  // big. make them smaller and 3 degradations and decaying fast"; 19:28: "small large larger"); with Blurs on, one small blur filter a shape instead — small enough for
   // Safari, which blurs a filtered group the size of the watch
-  const halo_w = 0.2 + 0.4 * dark, halo_a = (0.22 + 0.4 * dark) * glow_k, STEPS = [[3, 1 / 9], [2, 1 / 3], [1, 1]];      // the width's unit (the drawing's) and the strength's share, outermost first
+  const halo_w = 0.1 + 0.2 * dark, halo_a = (0.22 + 0.4 * dark) * glow_k, STEPS = [[5, 1 / 9], [2.5, 1 / 3], [1, 1]];      // the width's unit (the drawing's) and the strength's share, outermost first: small, large, larger (Okay, 19:28: "small large larger, not the same size all three. the smallest size is too big")
   let n_blur = 0;
   const glow = (e, lume) => { e.setAttribute("fill", lume.glow); e.removeAttribute("stroke"); e.removeAttribute("fill-opacity"); if (glow_k < 1) e.setAttribute("opacity", glow_k.toFixed(3)); };
   const halo = (e, lume) => {
     if (blurs) {      // the shape again, glow-coloured, blurred: its own filter, its region the shape's box plus the halo
-      const id = "lh" + (n_blur++), sd = (0.8 * halo_w * 3).toFixed(2), h = e.cloneNode(true);
+      const id = "lh" + (n_blur++), sd = (0.8 * halo_w * 5).toFixed(2), h = e.cloneNode(true);
       const f = doc.createElementNS(root.namespaceURI, "filter"); f.setAttribute("id", id); f.setAttribute("x", "-60%"); f.setAttribute("y", "-60%"); f.setAttribute("width", "220%"); f.setAttribute("height", "220%");
       f.innerHTML = `<feGaussianBlur stdDeviation="${sd}"/>`; root.querySelector("defs")?.append(f);
       h.setAttribute("class", "lumehalo"); h.setAttribute("filter", `url(#${id})`); h.setAttribute("opacity", Math.min(1, 1.4 * halo_a).toFixed(3));

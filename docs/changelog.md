@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## v1.1.50 beta · 3 Nov 2026 — the halo's three steps small · large · larger
+
+Okay, 3 Nov 2026, 19:28: "make the glow shapes small large larger, not the same size all three. the smallest size is too big. although blurred version seems right."
+
+- **The halo** (`night.js`): the three strokes 1 · 2.5 · 5 units wide, the unit halved (0.1 + 0.2 × darkness, 0.2 at moon 50): the first stroke a thin rim, the last a wide faint wash. The blur with Blurs on scaled to the same reach.
+
 ## v1.1.49 beta · 3 Nov 2026 — the lume's halo: three steps, fading fast; a real glow with Blurs on
 
 Okay, 3 Nov 2026, 19:18: "there are two blobbed up pieces on every lume item right? they are too big. make them smaller and 3 degradations and decaying fast. blurs on makes them glow?"
