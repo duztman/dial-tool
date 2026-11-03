@@ -4,7 +4,7 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 3 Nov 2026, 19:30 (v1.1.48 beta): #175's Night, #579 and #581 built (to verify, with #576); Now is empty — #346 with #83 is next in line, #580 later.*
+*Last updated 3 Nov 2026, 19:40 (v1.1.49 beta): #175's Night, #579 and #581 built (to verify, with #576); Now is empty — #346 with #83 is next in line, #580 later.*
 
 ## Now — Okay said build
 
@@ -14,7 +14,7 @@ Nothing: the next item is his to call.
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| — | 175 | Night, show mode's lume view (v1.1.48, no SVG filters — Safari): the Time pill, Lume decay, the Moon pane, the night filter and the glow | 3 Nov 2026, 16:42 — "moon 50 lume 100 is the default. go" | verify (v1.1.48) |
+| — | 175 | Night, show mode's lume view (v1.1.49; no filter over the watch — Safari; the halo three steps, a blur with Blurs on): the Time pill, Lume decay, the Moon pane, the night filter and the glow | 3 Nov 2026, 16:42 — "moon 50 lume 100 is the default. go" | verify (v1.1.49) |
 | — | 579 | Show mode's Colours: a 6-dot grip before each ring's swatch, dragged to reorder the rings | 3 Nov 2026, 13:22 — "awesome, go on?" | verify (v1.1.46) |
 | — | 581 | Show mode's lists, round 2 (v1.1.45): LINKED filled · LINK hollow, no line under a pill, a part's single bottom line, group names centred | 3 Nov 2026, 11:29 — "ok this looks great, implement" | verify (v1.1.45) |
 | — | 576 | Show mode's lists (v1.1.42–44): groups and parts of several colours open and close by chevrons; hand, cap, outlined window marks; a hidden part's dotted dot; Bevels pills, Bevels % and Bevel Type working, no bevel on a disc; hands see-through; Inks a line a part with LINK; a hand's colours and prints opened | 3 Nov 2026, 01:43 — "Exactly as this. Build."; 02:11 | verify (v1.1.44) |

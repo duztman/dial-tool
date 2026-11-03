@@ -67,7 +67,7 @@ export const auto_ground = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "
 export const metal_colour = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
 
 /** Night (the Light tab's Time pill): the drawing under the night filter with its lume glowing, by the Moon's Strength and Lume decay (night.js) */
-const at_night = (S, svg) => (S.w_night ? night(svg, S.w_moon, S.w_decay) : svg);
+const at_night = (S, svg) => (S.w_night ? night(svg, S.w_moon, S.w_decay, Boolean(S.ui_effects && S.sh_blur)) : svg);      // Blurs on: the halo a real blur, one small filter a shape (Okay, 19:18: "blurs on makes them glow?")
 
 const angles_of = (items) => { const A = {}; for (const x of items) if (x.role === "hand" && HANDS.includes(x.name)) A[x.name] = x.angle; return A; };
 

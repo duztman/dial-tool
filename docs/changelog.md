@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.49 beta · 3 Nov 2026 — the lume's halo: three steps, fading fast; a real glow with Blurs on
+
+Okay, 3 Nov 2026, 19:18: "there are two blobbed up pieces on every lume item right? they are too big. make them smaller and 3 degradations and decaying fast. blurs on makes them glow?"
+
+- **The halo** (`night.js`): a lume shape's halo is now three strokes under it, 1 · 2 · 3 of a unit wide (0.2 + 0.4 × darkness, in the drawing's units), each a third as strong as the one inside it (1, ⅓, ⅑ of 0.22 + 0.4 × darkness, by Lume decay).
+- **Blurs on**: the halo is one blurred copy of the shape instead, with a filter of its own whose region is the shape's box plus the halo — small, so Safari renders it true. Blurs off keeps the strokes (nothing costly on an old computer).
+- **Tests**: the Night check counts three halo strokes a shape. Window test passes.
+
 ## v1.1.48 beta · 3 Nov 2026 — Night without SVG filters: Safari blurred the whole watch
 
 Okay, 3 Nov 2026, 18:50, his screenshot on an M4 Mac: "this is what i see on night mode. Safari" — the watch a blur.

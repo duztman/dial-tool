@@ -30,17 +30,29 @@ export function night_colour(hex, dark) {
   return rgb_hex(c.map((v, i) => Math.pow((k * v + (1 - k) * y * BLUE[i]) * dim, gamma)));
 }
 
-/** the SVG at night: every colour recomputed, the lume shapes glowing over a halo. moon: Strength 0–100; decay: Lume decay 0–100 */
-export function night(svg, moon, decay) {
+/** the SVG at night: every colour recomputed, the lume shapes glowing over a halo. moon: Strength 0–100; decay: Lume decay 0–100; blurs: the halo blurred (Blurs on) */
+export function night(svg, moon, decay, blurs = false) {
   const dark = Math.max(0, Math.min(1, 1 - moon / 100)), glow_k = Math.max(0, Math.min(1, 1 - decay / 100));
   const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement;
-  const halo_w = 0.5 + 1.1 * dark, halo_a = (0.18 + 0.32 * dark) * glow_k;      // the halo's width (the drawing's units) and strength
+  // the halo: three steps outward, each a third as strong as the one inside it (Okay, 19:18: "too big. make them smaller
+  // and 3 degradations and decaying fast"); with Blurs on, one small blur filter a shape instead — small enough for
+  // Safari, which blurs a filtered group the size of the watch
+  const halo_w = 0.2 + 0.4 * dark, halo_a = (0.22 + 0.4 * dark) * glow_k, STEPS = [[3, 1 / 9], [2, 1 / 3], [1, 1]];      // the width's unit (the drawing's) and the strength's share, outermost first
+  let n_blur = 0;
   const glow = (e, lume) => { e.setAttribute("fill", lume.glow); e.removeAttribute("stroke"); e.removeAttribute("fill-opacity"); if (glow_k < 1) e.setAttribute("opacity", glow_k.toFixed(3)); };
-  const halo = (e, lume) => {      // two strokes under the shape, the wide one faint, the narrow one stronger: a soft edge without a blur
-    for (const [w, a] of [[2 * halo_w, halo_a / 3], [halo_w, halo_a]]) {
+  const halo = (e, lume) => {
+    if (blurs) {      // the shape again, glow-coloured, blurred: its own filter, its region the shape's box plus the halo
+      const id = "lh" + (n_blur++), sd = (0.8 * halo_w * 3).toFixed(2), h = e.cloneNode(true);
+      const f = doc.createElementNS(root.namespaceURI, "filter"); f.setAttribute("id", id); f.setAttribute("x", "-60%"); f.setAttribute("y", "-60%"); f.setAttribute("width", "220%"); f.setAttribute("height", "220%");
+      f.innerHTML = `<feGaussianBlur stdDeviation="${sd}"/>`; root.querySelector("defs")?.append(f);
+      h.setAttribute("class", "lumehalo"); h.setAttribute("filter", `url(#${id})`); h.setAttribute("opacity", Math.min(1, 1.4 * halo_a).toFixed(3));
+      for (const s of [h, ...h.querySelectorAll("*")]) if (s.tagName !== "g") { s.setAttribute("fill", lume.glow); s.setAttribute("stroke", lume.glow); s.setAttribute("stroke-width", (halo_w * 2).toFixed(2)); s.setAttribute("stroke-linejoin", "round"); }
+      e.before(h); return;
+    }
+    for (const [k, share] of STEPS) {      // strokes only: the shape itself is painted over them
       const h = e.cloneNode(true); h.setAttribute("class", "lumehalo");
-      for (const s of [h, ...h.querySelectorAll("*")]) if (s.tagName !== "g") { s.setAttribute("fill", "none"); s.setAttribute("stroke", lume.glow); s.setAttribute("stroke-width", w.toFixed(2)); s.setAttribute("stroke-linejoin", "round"); }      // a stroke only: the shape itself is painted over it
-      h.setAttribute("opacity", a.toFixed(3)); e.before(h);
+      for (const s of [h, ...h.querySelectorAll("*")]) if (s.tagName !== "g") { s.setAttribute("fill", "none"); s.setAttribute("stroke", lume.glow); s.setAttribute("stroke-width", (2 * k * halo_w).toFixed(2)); s.setAttribute("stroke-linejoin", "round"); }
+      h.setAttribute("opacity", (halo_a * share).toFixed(3)); e.before(h);
     }
   };
   // a hand's lume opening is a lume-coloured shape like any other, glowing below; its daylight relief (the data-hl
