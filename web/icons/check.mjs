@@ -58,7 +58,7 @@ let n = 0;
 // what an icon is, read in the page: size, scale, every drawn child with its width, path and the transform it sits in
 const collect = async (state) => {
   const found = await page.evaluate(() => {
-    const skip = (s) => s.closest(".preview, .ruler, .fontrow, .examples, .detail, .sample, .face, .tip, .fontname, .sheetpage") || s.classList.contains("preview") || s.classList.contains("ruler");
+    const skip = (s) => s.closest(".preview, .ruler, .fontrow, .examples, .detail, .sample, .face, .tip, .fontname, .sheetpage, .strip") || s.classList.contains("preview") || s.classList.contains("ruler");      // .strip: the Every mark strip (#169), a data drawing like the Positions preview, not an icon
     document.querySelectorAll("[data-icon]").forEach((e) => e.removeAttribute("data-icon"));
     const res = [];
     document.querySelectorAll("svg").forEach((s, i) => {
@@ -68,7 +68,7 @@ const collect = async (state) => {
       for (let p = s; p && p !== document.body; p = p.parentElement) if (getComputedStyle(p).display === "none" || getComputedStyle(p).visibility === "hidden") return;
       const vb = s.viewBox.baseVal, scale = vb && vb.width ? r.width / vb.width : 1;
       const host = s.closest(".kindicon, button, a, label, li, summary, .card, h2") || s.parentElement;      // .kindicon: a ring row's kind picture names itself (ring-kind-row-…), not its row (4.50)
-      const name = host.id || host.getAttribute("data-tab") || host.title || host.getAttribute("aria-label") || (host.textContent || "").trim().slice(0, 24);
+      const name = host.id || host.getAttribute("data-tab") || host.title || host.getAttribute("aria-label") || (host.textContent || "").trim().slice(0, 24) || `<${host.tagName.toLowerCase()} class="${host.className}">`;      // a nameless host: say where it is
       const root = s.getCTM();
       const parts = [...s.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")].filter((e) => !e.closest("mask, clipPath, defs")).map((e) => {
         const cs = getComputedStyle(e), m = root.inverse().multiply(e.getCTM());

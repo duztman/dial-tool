@@ -138,7 +138,7 @@ export const GUIDES = {
       add_select.value = "";
       this.sync_rows(); this.render();
     };
-    const plus_sign = el("span", { className: "sign" }); plus_sign.innerHTML = icon(`<path d="M3 6H9M6 3V9" ${sw(LINE)}/>`, 12);
+    const plus_sign = el("span", { className: "sign" }); plus_sign.innerHTML = icon(`<path d="M3.25 6.25H9.25M6.25 3.25V9.25" ${sw(LINE)}/>`, 12);      // its runs on the quarter grid, as every icon's (R33: a 1.5 line centred on x.25 lands on whole and half pixels)
     const plus = el("span", { className: "minus plus", id: "guide-more-add", title: "Add a guide" }, plus_sign, add_select);      // the select kept as the element it is: its change handler lives on it
     this.guide_more_head = head("Added", plus);
     // one column, four groups, each a bold heading over its lines inset a unit (#539; Okay, 25 Oct 2026: "One column layout

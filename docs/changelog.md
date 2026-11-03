@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.51 beta · 3 Nov 2026 — the icon check clean: the Every mark strip is not an icon; the Guides list's + on the grid
+
+Okay, 3 Nov 2026, 21:20: "Which icons fail and why?"; 21:21: "Do it".
+
+- **The icon check** (`icons/check.mjs`): the Every mark strip (#169, the Rings tab's row of bars) is a data drawing like the Positions preview and the ruler, and is skipped as they are — it was being judged by the icon rules (16 "problems" since v1.1.3x: none of them an icon). A nameless host is now named by its tag and class in a failure.
+- **The Guides list's +** (`guides.js`, the Added rows' menu): its two runs centred on 6 in a 12 box, off the quarter grid; now 6.25, as every icon (R33) — a quarter-pixel move.
+- **Tests**: the full `npm test` passes whole, icon check included.
+
 ## v1.1.50 beta · 3 Nov 2026 — the halo's three steps small · large · larger
 
 Okay, 3 Nov 2026, 19:28: "make the glow shapes small large larger, not the same size all three. the smallest size is too big. although blurred version seems right."

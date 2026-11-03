@@ -4,7 +4,7 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 3 Nov 2026, 19:45 (v1.1.50 beta): #175's Night, #579 and #581 built (to verify, with #576); Now is empty — #346 with #83 is next in line, #580 later.*
+*Last updated 3 Nov 2026, 21:30 (v1.1.51 beta): #175's Night, #579 and #581 built (to verify, with #576); Now is empty — #346 with #83 is next in line, #580 later.*
 
 ## Now — Okay said build
 
