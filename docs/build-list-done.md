@@ -2,6 +2,16 @@
 
 Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused; the changelog says what each version built.
 
+## 3 Nov 2026, 21:40 — verified by Okay ("all verified"); one fold
+
+| # | Item | Status |
+|---|---|---|
+| 175 | Night, show mode's lume view (v1.1.50 beta) | **done**, verified 3 Nov 2026 |
+| 579 | Show mode's Colours: the 6-dot grip, rings reordered by drag (v1.1.46 beta) | **done**, verified 3 Nov 2026 |
+| 581 | Show mode's lists, round 2 (v1.1.45 beta) | **done**, verified 3 Nov 2026 |
+| 576 | Show mode's lists (v1.1.42–44 beta) | **done**, verified 3 Nov 2026 |
+| 349 | Each marker selectable and editable | **folded into #169** (Every mark's Edit one mark edits one mark, picked from the strip); picking a mark by pressing it on the dial goes to #61 (parked); an SVG for a mark is #173. Okay, 3 Nov 2026: "we already have a system for that, no? … do fold." |
+
 ## 3 Nov 2026, 11:45 — built, for Okay to verify
 
 | # | Item | Status |
