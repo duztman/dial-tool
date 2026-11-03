@@ -611,3 +611,4 @@ The dated record of every decision, with Okay's words as the reason. Not read be
 | 3 Nov 2026 | Night is drawn in the colours and shapes themselves, never through an SVG filter over the watch: Safari blurs one | Okay, 18:50, his screenshot: "this is what i see on night mode. Safari on m4 mac" |
 | 3 Nov 2026 | The lume's night halo: smaller, three steps fading fast; with Blurs on a real blur, one small filter a shape | Okay, 19:18: "they are too big. make them smaller and 3 degradations and decaying fast. blurs on makes them glow?" |
 | 3 Nov 2026 | #349 (each marker editable) is folded into #169, Every mark: Edit one mark already does it; the press on the dial itself goes to parked #61 | Okay, 21:31: "we already have a system for that, no?"; 21:33: "do fold." |
+| 3 Nov 2026 | Now: #404 (every hand a real hub), then #580 (the hands' heights as a pane at the end of show mode's Dial column) | Okay, 21:36: "404 first, then 580" |
