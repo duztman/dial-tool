@@ -2736,9 +2736,11 @@ await shot("10-bar");
       const rows = () => [...document.querySelectorAll(".panel .pinned .row, .panel .form .row")].filter((r) => r.checkVisibility()).map((r) => r.querySelector("label")?.textContent).filter(Boolean);
       const day = { rows: rows().slice(0, 4), head: q(".panel .form h2").textContent, glow: document.querySelectorAll(".lumeglow").length, moon: q(".sunbox .sun").classList.contains("moon") };
       t.set_value("global", "w_night", 1); await wait(500);
-      const g = q(".lumeglow"), filtered = g && g.previousElementSibling, strength = [...document.querySelectorAll(".panel .form .row.num")].find((r) => r.checkVisibility() && r.querySelector("label").textContent === "Strength %");
-      const night = { rows: rows().slice(0, 4), head: q(".panel .form h2").textContent, glow: document.querySelectorAll(".lumeglow").length, lumes: g ? g.querySelectorAll('[visibility="visible"]').length : 0, hidden: g ? g.querySelectorAll('[visibility="hidden"]').length : 0,
-        filter: filtered && filtered.getAttribute("filter"), matrix: Boolean(q("#night feColorMatrix")), halo: Boolean(q("#lumeglow feGaussianBlur")), moon: q(".sunbox .sun").classList.contains("moon"), strength: strength && strength.querySelector("input:not([type=range])").value, decay: S.w_decay, w_moon: S.w_moon };
+      const strength = [...document.querySelectorAll(".panel .form .row.num")].find((r) => r.checkVisibility() && r.querySelector("label").textContent === "Strength %"), W = t.watch_g;
+      const halos = W.querySelectorAll(".lumehalo"), glowing = [...W.querySelectorAll('[fill="#8CF56A"]:not(.lumehalo)')].filter((e) => !e.closest(".lumehalo"));      // C3's glow colour (lume.js)
+      const night = { rows: rows().slice(0, 4), head: q(".panel .form h2").textContent, glow: glowing.length, halos: halos.length, filters: W.querySelectorAll('[filter^="url(#night"], [filter^="url(#lumeglow"]').length,      // no SVG filter (Safari blurs a filtered watch)
+        ground: q(".sunbox") && getComputedStyle(document.body).backgroundColor, moon: q(".sunbox .sun").classList.contains("moon"), strength: strength && strength.querySelector("input:not([type=range])").value, decay: S.w_decay, w_moon: S.w_moon,
+        black_kept: W.querySelectorAll('[fill="#000"]').length, dark_fills: [...W.querySelectorAll("[fill]")].filter((e) => /^#[0-9a-f]{6}$/i.test(e.getAttribute("fill"))).length };
       window.__night_keep = keep;
       return { day, night }; });
     // the export draws the night too (picture() runs the same pass): the PNG comes out, with the night in it
@@ -2751,9 +2753,9 @@ await shot("10-bar");
       [S.rings[1].c, S.ha_hour.op_on, S.ha_hour.op_fill] = JSON.parse(window.__night_keep); t.changed(true); q('button[data-tab="Show dial"]').click(); await wait(200);
       return { back }; }));
     check(nt.day.rows.join() === "Time,Style,Lighting,Angle °" && nt.day.head === "Sun" && nt.day.glow === 0 && !nt.day.moon
-      && nt.night.rows.join() === "Time,Lume decay %,Style,Lighting" && nt.night.head === "Moon" && nt.night.glow === 1 && nt.night.lumes >= 3 && nt.night.hidden > nt.night.lumes && nt.night.filter === "url(#night)" && nt.night.matrix && nt.night.halo && nt.night.moon && nt.night.strength === "50" && nt.night.decay === 0 && nt.night.w_moon === 50
+      && nt.night.rows.join() === "Time,Lume decay %,Style,Lighting" && nt.night.head === "Moon" && nt.night.glow >= 2 && nt.night.halos >= 2 && nt.night.halos % 2 === 0 && nt.night.filters === 0 && nt.night.dark_fills > 20 && nt.night.moon && nt.night.strength === "50" && nt.night.decay === 0 && nt.night.w_moon === 50
       && nt.exported && /\.png$/.test(nt.exported[0]) && nt.exported[1] > 10000 && nt.back.glow === 0 && nt.back.head === "Sun" && !nt.back.moon,
-      `Night on the Light tab: Time first (${nt.day.rows.join(" · ")}), at Night a Lume decay slider under it (${nt.night.rows.join(" · ")}); the Sun pane reads Moon (${nt.night.head}), its disc a crescent (${nt.night.moon}), Strength 50 (${nt.night.strength}); the watch under the night filter (${nt.night.filter}, matrix ${nt.night.matrix}) with its lume glowing in a copy (${nt.night.lumes} lume shapes, ${nt.night.hidden} unpainted, halo ${nt.night.halo}); the PNG export carries it (${nt.exported && nt.exported.join(", ")}); Day brings the sun back (${nt.back.head}) (#175, Okay: "Night is lume mode … Moon strength defaults to 50%")`);
+      `Night on the Light tab: Time first (${nt.day.rows.join(" · ")}), at Night a Lume decay slider under it (${nt.night.rows.join(" · ")}); the Sun pane reads Moon (${nt.night.head}), its disc a crescent (${nt.night.moon}), Strength 50 (${nt.night.strength}); the watch's colours recomputed for the night, no SVG filter (${nt.night.filters}; Safari blurs one), ${nt.night.glow} lume shapes in their glow colour, two halo strokes under each (${nt.night.halos} halos; the openings of a hand are one shape); the PNG export carries it (${nt.exported && nt.exported.join(", ")}); Day brings the sun back (${nt.back.head}) (#175, Okay: "Night is lume mode … Moon strength defaults to 50%")`);
   }
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(2400);

@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.48 beta · 3 Nov 2026 — Night without SVG filters: Safari blurred the whole watch
+
+Okay, 3 Nov 2026, 18:50, his screenshot on an M4 Mac: "this is what i see on night mode. Safari" — the watch a blur.
+
+- **Cause**: v1.1.47's night was an SVG filter over the whole watch (a colour matrix, and a blur for the lume's halo). WebKit renders a filtered group that large at a clamped resolution and scales it up: the whole picture blurs. Chromium didn't.
+- **Night now** (`night.js`): no filter at all. Every colour in the drawing — fills, strokes, gradient stops, the ground — is recomputed for the night by the same maths (Krawczyk–Myszkowski–Seidel 2005, as before). A lume shape is painted in its glow colour in place; its halo is the same shape twice under it with a wide glow-coloured stroke, the wider one fainter — a soft edge without a blur. A hand's lume openings are such shapes; their daylight relief (the ink's lit and shaded edges) goes out at night.
+- **Tests**: the Night check now holds that no `filter` is on the watch, the glow colours, and two halo strokes a shape. Window test passes.
+
 ## v1.1.47 beta · 3 Nov 2026 — Night: show mode's lume view (#175)
 
 Okay, 3 Nov 2026, 01:06: "Light gets another pill selector, top: day/night. Night is lume mode. Lume mode opens up a slider below for lume decay. Sun is replaced by the "moon" below and color theory-accurate darkness filter applied. Moon strength defaults to 50%."; 13:34: "let's draw the night mode as a whole, first the ui then the actual what happens to the canvas part"; 13:44, on the drawing: "ui looks great"; 16:42, on six trial renders: "moon 50 lume 100 is the default. go".

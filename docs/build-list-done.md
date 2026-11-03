@@ -6,7 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
-| 175 | Night, show mode's lume view: the Time pill, Lume decay, the Moon pane (Strength 50), the night filter and the lume glow, in the export too | **built** v1.1.47 beta, to verify |
+| 175 | Night, show mode's lume view: the Time pill, Lume decay, the Moon pane (Strength 50), the night filter and the lume glow, in the export too; drawn without SVG filters (Safari) | **built** v1.1.48 beta, to verify |
 | 579 | Show mode's Colours: the Rings tab's 6-dot grip before each ring's swatch; dragged, the rings reorder top-down, undoable | **built** v1.1.46 beta, to verify |
 | 581 | Show mode's lists, round 2: the LINK pill as the Windows tab's (LINKED filled, LINK hollow in the line's colour), no line under a pill, a part draws only its own bottom line, group names centred | **built** v1.1.45 beta, to verify |
 
