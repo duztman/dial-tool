@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.49 beta · built 2026-11-03 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.50 beta · built 2026-11-03 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7638,7 +7638,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.49 beta";
+var VERSION = "v1.1.50 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11671,7 +11671,7 @@ function night_colour(hex3, dark) {
 function night(svg, moon, decay, blurs = false) {
   const dark = Math.max(0, Math.min(1, 1 - moon / 100)), glow_k = Math.max(0, Math.min(1, 1 - decay / 100));
   const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement;
-  const halo_w = 0.2 + 0.4 * dark, halo_a = (0.22 + 0.4 * dark) * glow_k, STEPS = [[3, 1 / 9], [2, 1 / 3], [1, 1]];
+  const halo_w = 0.1 + 0.2 * dark, halo_a = (0.22 + 0.4 * dark) * glow_k, STEPS = [[5, 1 / 9], [2.5, 1 / 3], [1, 1]];
   let n_blur = 0;
   const glow = (e, lume) => {
     e.setAttribute("fill", lume.glow);
@@ -11681,7 +11681,7 @@ function night(svg, moon, decay, blurs = false) {
   };
   const halo = (e, lume) => {
     if (blurs) {
-      const id = "lh" + n_blur++, sd = (0.8 * halo_w * 3).toFixed(2), h = e.cloneNode(true);
+      const id = "lh" + n_blur++, sd = (0.8 * halo_w * 5).toFixed(2), h = e.cloneNode(true);
       const f2 = doc.createElementNS(root.namespaceURI, "filter");
       f2.setAttribute("id", id);
       f2.setAttribute("x", "-60%");
