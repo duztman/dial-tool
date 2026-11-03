@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.50 beta · built 2026-11-03 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.51 beta · built 2026-11-03 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7638,7 +7638,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.50 beta";
+var VERSION = "v1.1.51 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -21634,7 +21634,7 @@ var GUIDES = {
       this.render();
     };
     const plus_sign = el("span", { className: "sign" });
-    plus_sign.innerHTML = icon(`<path d="M3 6H9M6 3V9" ${sw(LINE)}/>`, 12);
+    plus_sign.innerHTML = icon(`<path d="M3.25 6.25H9.25M6.25 3.25V9.25" ${sw(LINE)}/>`, 12);
     const plus = el("span", { className: "minus plus", id: "guide-more-add", title: "Add a guide" }, plus_sign, add_select);
     this.guide_more_head = head("Added", plus);
     const rings_head = head("Rings", this.guide_which.box);
