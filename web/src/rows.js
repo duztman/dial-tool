@@ -598,14 +598,17 @@ ROWS.Watch = [
 
 ROWS.Light = [
   hdr("Light", { pin: true, headless: true }),      // the Show Case's fixed lines: Style and Lighting stay put under the tabs, no heading (Okay, 21 Oct 2026, 01:50); everything else in show mode scrolls, so the top band is small
+  seg("w_night", "Time", ["Day", "Night"]),      // first (Okay, 3 Nov 2026, 01:06: "Light gets another pill selector, top: day/night. Night is lume mode"); the drawing: night.js
+  num("w_decay", "Lume decay %", 0, 100, 1, { whole: true, show: (S) => S.w_night === 1 }),      // "Lume mode opens up a slider below for lume decay": 0 freshly charged, 100 gone
   seg("w_style", "Style", ["Engineer", "Miyazaki"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
-  hdr("Sun", { folded: false }),
+  hdr("Sun", { folded: false, title: (S) => (S.w_night === 1 ? "Moon" : "Sun") }),      // at night the pane is the Moon's ("Sun is replaced by the "moon" below"): the same light, its own Strength
   chk("w_sun_lock", "Lock", { head: true }),      // on the Sun heading line (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line"): drags leave the sun where it is
   custom("sunbox"),      // the sun's picture alone (guides.js, row_sunbox; Okay, 25 Oct 2026: "sun locked"; 2 Nov 2026: the values out)
   num("sh_from", "Angle °", 0, 359, 1, { whole: true }),      // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026); named as in the Shadows pane
   num("sh_rise", "Height °", 5, 85, 1, { whole: true }),
-  num("sh_dark", "Strength %", 0, 100, 1, { whole: true }),      // the shadows' darkness, the Shadows pane's Strength (Okay, 25 Oct 2026: "Darkness becomes the box's Strength slider")
+  num("sh_dark", "Strength %", 0, 100, 1, { whole: true, show: (S) => S.w_night !== 1 }),      // the shadows' darkness, the Shadows pane's Strength (Okay, 25 Oct 2026: "Darkness becomes the box's Strength slider")
+  num("w_moon", "Strength %", 0, 100, 1, { whole: true, show: (S) => S.w_night === 1 }),      // the Moon's: how much of the daylight picture survives, 50 to start ("Moon strength defaults to 50%")
   chk("sh_blur", "Soft shadows"),
   info("One finger or the pointer moves the sun: its direction is where the light comes from; nearer the middle, higher. Two fingers zoom and move the drawing; on a trackpad, pinch and scroll.", {}),      // the Show Case's words
   hdr("Flare", { folded: false, show: (S) => S.ui_effects }),

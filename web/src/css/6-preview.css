@@ -295,6 +295,9 @@
   .sunpic .dial, .sunpic .hole { fill: none; stroke: var(--night-rule); stroke-width: var(--hair); }
   .sunpic .fall { fill: none; stroke: var(--night-rule); stroke-width: var(--sun-dot); stroke-linecap: round; stroke-dasharray: 0 var(--sun-dot-gap); }      /* where the shadows fall: the far side of the dial, as a ring of dots */
   .sunpic .sun > circle { fill: var(--ink); }
+  .sunpic .sun > .shade { display: none; }      /* the crescent's dark side: only as the moon (show mode's Night, #175) */
+  .sunpic .sun.moon > .shade { display: block; fill: var(--column-solid); }
+  .sunpic .sun.moon > .rays { display: none; }
   .sunpic .rays line { stroke: var(--ink); stroke-width: var(--sun-ray); stroke-linecap: round; }
   .sunbox .sunpic :is(.dial, .hole, .fall) { stroke: var(--grey); }      /* in show mode's Light tab (4c-rows.css): the picture faded in the column's grey, the sun and its rays in ink ("Faded colors") */
   .sunbox .sunpic .word { display: none; }      /* the pane's heading says Sun */

@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.47 beta · 3 Nov 2026 — Night: show mode's lume view (#175)
+
+Okay, 3 Nov 2026, 01:06: "Light gets another pill selector, top: day/night. Night is lume mode. Lume mode opens up a slider below for lume decay. Sun is replaced by the "moon" below and color theory-accurate darkness filter applied. Moon strength defaults to 50%."; 13:34: "let's draw the night mode as a whole, first the ui then the actual what happens to the canvas part"; 13:44, on the drawing: "ui looks great"; 16:42, on six trial renders: "moon 50 lume 100 is the default. go".
+
+- **The Light tab** (`rows.js`): a **Time** pill, Day · Night, first in the fixed band over Style and Lighting. Night: a **Lume decay %** slider under it (0 freshly charged, 100 gone); the Sun pane reads **Moon**, its disc a crescent without rays (`guides.js`, `6-preview.css`), with its own **Strength %** (50 to start; the sun's stays for the day); Angle, Height, Lock and Soft shadows as the sun's. Settings `w_night`, `w_moon`, `w_decay` — show mode's, not in the link, as the Light tab's other settings.
+- **The drawing** (`night.js`, one pass over the watch's SVG in `show.js`, screen and export alike): the whole watch, ground included, under a night filter — how much of the daylight picture survives is the Moon's Strength; colour goes first, pulled toward the blue-grey of night vision, then light, then the mid-tones (after Krawczyk, Myszkowski & Seidel 2005, the research). Over it a second copy of the watch in which only the lume shapes are drawn — every shape whose colour is exactly a lume's (`lume.js`), and a hand's lume openings — in that lume's glow colour, with a halo that widens as the night darkens; Lume decay fades the glow. A copy, so every shape keeps its place and turns with its hand.
+- **Tests**: a check on the Light tab's rows by day and night, the Moon pane, the filter and the glow copy, the PNG export, and Day restoring the sun. Window test passes.
+
 ## v1.1.46 beta · 3 Nov 2026 — rings reordered in show mode's Colours by a 6-dot grip (#579)
 
 Okay, 3 Nov 2026, 02:34: "Rings also need a 6 dot gripper and ring top-down arranger here as well. just before the color swatches. Like rings on tool side."; 13:22, on the drawing: "awesome, go on?"

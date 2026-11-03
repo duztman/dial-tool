@@ -2727,6 +2727,34 @@ await shot("10-bar");
     check(lk.id && lk.slip[0] === lk.was && lk.slip[1] === "" && lk.long[0] === lk.was && lk.long[1] === "Sun is locked" && lk.slider === 200 && lk.off === false,
       `show mode's sun lock on the Sun line: locked, an 8 px slip leaves the sun at ${lk.slip?.[0]} with no note, an 80 px drag leaves it there too and says "${lk.long?.[1]}", the slider still moves it (${lk.slider}°) (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line … If a user does excessive dragging, alert top canvas: sun is locked")`);
   }
+  { // Night (#175's lume view; Okay, 3 Nov 2026, 01:06: "Light gets another pill selector, top: day/night. Night is lume mode. Lume mode opens up a slider below for lume decay.
+    // Sun is replaced by the "moon" below and color theory-accurate darkness filter applied. Moon strength defaults to 50%"; 16:42: "moon 50 lume 100 is the default. go")
+    const nt = await page.evaluate(async () => { const t = window.dial_tool, S = t.S, q = (x) => document.querySelector(x), wait = (ms) => new Promise((r) => setTimeout(r, ms)), vis = (x) => Boolean(q(x)?.checkVisibility());
+      const C3 = [0.8941, 0.9176, 0.7608, 1], keep = JSON.stringify([S.rings[1].c, S.ha_hour.op_on, S.ha_hour.op_fill]);
+      S.rings[1].c = C3; S.ha_hour.op_on = true; S.ha_hour.op_fill = C3; t.changed(true);
+      q('button[data-tab="Light"]').click(); await wait(200);
+      const rows = () => [...document.querySelectorAll(".panel .pinned .row, .panel .form .row")].filter((r) => r.checkVisibility()).map((r) => r.querySelector("label")?.textContent).filter(Boolean);
+      const day = { rows: rows().slice(0, 4), head: q(".panel .form h2").textContent, glow: document.querySelectorAll(".lumeglow").length, moon: q(".sunbox .sun").classList.contains("moon") };
+      t.set_value("global", "w_night", 1); await wait(500);
+      const g = q(".lumeglow"), filtered = g && g.previousElementSibling, strength = [...document.querySelectorAll(".panel .form .row.num")].find((r) => r.checkVisibility() && r.querySelector("label").textContent === "Strength %");
+      const night = { rows: rows().slice(0, 4), head: q(".panel .form h2").textContent, glow: document.querySelectorAll(".lumeglow").length, lumes: g ? g.querySelectorAll('[visibility="visible"]').length : 0, hidden: g ? g.querySelectorAll('[visibility="hidden"]').length : 0,
+        filter: filtered && filtered.getAttribute("filter"), matrix: Boolean(q("#night feColorMatrix")), halo: Boolean(q("#lumeglow feGaussianBlur")), moon: q(".sunbox .sun").classList.contains("moon"), strength: strength && strength.querySelector("input:not([type=range])").value, decay: S.w_decay, w_moon: S.w_moon };
+      window.__night_keep = keep;
+      return { day, night }; });
+    // the export draws the night too (picture() runs the same pass): the PNG comes out, with the night in it
+    await page.click('button[data-tab="Show export"]'); await page.waitForTimeout(300);
+    const png = await download("#export-watch-png"); nt.exported = [path.basename(png), fs.statSync(png).size];
+    Object.assign(nt, await page.evaluate(async () => { const t = window.dial_tool, S = t.S, q = (x) => document.querySelector(x), wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      q('button[data-tab="Light"]').click(); await wait(200);
+      t.set_value("global", "w_night", 0); await wait(400);
+      const back = { glow: document.querySelectorAll(".lumeglow").length, head: q(".panel .form h2").textContent, moon: q(".sunbox .sun").classList.contains("moon") };
+      [S.rings[1].c, S.ha_hour.op_on, S.ha_hour.op_fill] = JSON.parse(window.__night_keep); t.changed(true); q('button[data-tab="Show dial"]').click(); await wait(200);
+      return { back }; }));
+    check(nt.day.rows.join() === "Time,Style,Lighting,Angle °" && nt.day.head === "Sun" && nt.day.glow === 0 && !nt.day.moon
+      && nt.night.rows.join() === "Time,Lume decay %,Style,Lighting" && nt.night.head === "Moon" && nt.night.glow === 1 && nt.night.lumes >= 3 && nt.night.hidden > nt.night.lumes && nt.night.filter === "url(#night)" && nt.night.matrix && nt.night.halo && nt.night.moon && nt.night.strength === "50" && nt.night.decay === 0 && nt.night.w_moon === 50
+      && nt.exported && /\.png$/.test(nt.exported[0]) && nt.exported[1] > 10000 && nt.back.glow === 0 && nt.back.head === "Sun" && !nt.back.moon,
+      `Night on the Light tab: Time first (${nt.day.rows.join(" · ")}), at Night a Lume decay slider under it (${nt.night.rows.join(" · ")}); the Sun pane reads Moon (${nt.night.head}), its disc a crescent (${nt.night.moon}), Strength 50 (${nt.night.strength}); the watch under the night filter (${nt.night.filter}, matrix ${nt.night.matrix}) with its lume glowing in a copy (${nt.night.lumes} lume shapes, ${nt.night.hidden} unpainted, halo ${nt.night.halo}); the PNG export carries it (${nt.exported && nt.exported.join(", ")}); Day brings the sun back (${nt.back.head}) (#175, Okay: "Night is lume mode … Moon strength defaults to 50%")`);
+  }
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(2400);
   const off = await q();

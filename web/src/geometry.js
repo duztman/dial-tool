@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.46 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.47 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -279,6 +279,9 @@ export const DEFAULTS = {
   ui_grey_panel: false,      // show mode's panel in greys, like the bar, instead of the backdrop's colour (the round swatch at the title line's end; Okay, 22 Oct 2026)
   w_sun_lock: false,   // show mode's sun held where it is: a drag on the canvas or the sun's picture no longer moves it; the sliders still do (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line. Applies to showcase only")
   w_bevels: true,      // show mode draws the hands' bevels (Shenanigans' Bevels: Okay, 23 Oct 2026)
+  w_night: 0,          // show mode's Light › Time: 0 Day, 1 Night — the watch in its lume under a night filter (night.js, #175; Okay, 3 Nov 2026: "Night is lume mode")
+  w_moon: 50,          // Night's Moon › Strength %: how much of the daylight picture survives (Okay: "Moon strength defaults to 50%")
+  w_decay: 0,          // Night's Lume decay %: 0 freshly charged, 100 gone
   w_gradients: true,   // show mode's gradients — the backdrop's, Dramatic's spotlight, the outline's light — on (Shenanigans' Gradients, #525: "Both")
   ui_case: false,      // the case round the dial on the dial side: off to start (Okay, 23 Oct 2026: "On main default is caseless"); its kind is `bezel`, shared with show mode, which always has one
   ui_effects: true,      // the costly layers in show mode — blurs, the flare, the glass shine, the silhouette outline (Okay: "turn off shenanigans")
@@ -359,7 +362,7 @@ export const GUIDE_MORE = ["line", "crosshair", "circle"];
 export const CASE_OF_BEZEL = ["dress", "diver", "field", "dress", "field", "emre01"];
 export const BEZEL_OF_CASE = { dress: 3, diver: 1, field: 2, emre01: 5 };
 export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_strip", "ui_scale", "ui_unit", "ui_colour_as", "ui_snap", "ui_snap_guides",
-  "w_style", "w_lighting", "w_view", "w_metal", "c_metal", "w_nato", "c_nato", "w_insert", "c_insert", "w_ink", "w_inks", "w_ink_all", "w_flare_on", "w_bevels", "w_sun_lock", "w_flare", "w_fl_size", "w_fl_tint", "w_fl_bright", "w_glass_fat", "w_glass_len", "w_glass_op", "c_backdrop2", "w_grounds", "w_ground_auto", "out_watch_px", "ui_show", "ui_show_section", "ui_edit_section", "ui_effects", "ui_grey_panel", "ui_case"];
+  "w_style", "w_lighting", "w_view", "w_metal", "c_metal", "w_nato", "c_nato", "w_insert", "c_insert", "w_ink", "w_inks", "w_ink_all", "w_flare_on", "w_bevels", "w_sun_lock", "w_flare", "w_fl_size", "w_fl_tint", "w_fl_bright", "w_glass_fat", "w_glass_len", "w_glass_op", "c_backdrop2", "w_grounds", "w_ground_auto", "out_watch_px", "ui_show", "ui_show_section", "ui_edit_section", "ui_effects", "ui_grey_panel", "ui_case", "w_night", "w_moon", "w_decay"];
 /** a set of files (#171): its tick's key, its words, the kind export() writes, and what it writes it as — the colour
  *  files plain (not a mask, not mirrored), the masks as said; the print sheet as Print says. */
 export const FILE_SET = [

@@ -577,13 +577,14 @@ export const GUIDES = {
     const W = token("--sun-w", 297), H = token("--sun-h", 204), cx = 136, cy = H / 2, R = 81.5, NEAR = 12, FAR = 123;      // his drawing of 25 Oct 2026: the dial's ring r 81.5 at (136, 102) in the picture's 297 × 204; at Height 25 the sun stands 14 past the rim; a low sun goes past the box's top or bottom, as its rays do      // the picture's grid, as the stylesheet sizes its box (--sun-w × --sun-h); the sun's distance from the middle: Height 85 = NEAR, 5 = FAR
     const box = el("div", { className: "sunpic", id: id + "-sun" });
     const VX = centred ? cx - H / 2 : 0, VW = centred ? H : W;      // the view: the whole grid, or the square centred on the dial
-    box.innerHTML = `<svg viewBox="${VX} 0 ${VW} ${H}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;
+    box.innerHTML = `<svg viewBox="${VX} 0 ${VW} ${H}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="4.4"/><circle class="fall" r="13"/><g class="sun"><circle r="7.1"/><circle class="shade" cx="3.2" cy="-2.4" r="6.2"/><g class="rays"></g></g></svg><span class="word">Sun</span>`;      // shade: the crescent's dark side, drawn only as the moon (show mode's Night, #175)
     const sun = box.querySelector(".sun"), rays = box.querySelector(".rays"), fall = box.querySelector(".fall");
     for (let i = 0; i < 16; i++) rays.append(svg_el("line"));
     const where = () => { const a = this.S.sh_from * Math.PI / 180, d = FAR - (clamp(this.S.sh_rise, 5, 85) - 5) / 80 * (FAR - NEAR); return { a, d, x: cx + Math.sin(a) * d, y: cy - Math.cos(a) * d }; };      // clock angles: 0 at 12, clockwise (R2)
     const refresh = () => {
       const { a, d, x, y } = where();
       sun.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+      sun.classList.toggle("moon", Boolean(this.S.ui_show && this.S.w_night === 1));      // at night the disc is a crescent without rays (the pane reads Moon)
       // sixteen rays; Strength lengthens them ("Strength more less lengthens the sun's rays"); a sun far out shows the
       // fewest — 5 % of them hidden near the dial, 75 % at the corners — and the ones facing away from the dial go
       // first, the ones toward it always stay ("Imagine magnet attracting iron shavings", Okay, 25 Oct 2026, 01:58)

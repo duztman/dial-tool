@@ -44,7 +44,7 @@
 | `--clock-gap` · special | `4px` | the bar's time: a colon's split hairline this far from the ink of the figure either side, and its own gap the same (Okay, 31 Oct 2026, 01:35: "Notice the gaps"; 01:41: "The hr gaps before after line segments should be equal"; approved 01:49) | 7-bar ×2 | read by bar.js |
 | `--col` | `54px` |  | 1-tokens ×5, 3-controls, 4a-panel, 4e-colour, 4g-fonts, 6-preview ×2 | 4a-panel `.showing .panel` → `var(--show-col)`; 8-narrow `:root` → `calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6)` |
 | `--column` · the window's | `—` |  | 4a-panel | set by show.js |
-| `--column-solid` · the window's | `—` |  | 4a-panel, 4e-colour | set by show.js |
+| `--column-solid` · the window's | `—` |  | 4a-panel, 4e-colour, 6-preview | set by show.js |
 | `--column-top` · the window's | `—` |  | 4a-panel ×3 | set by show.js |
 | `--columns` | `var(--eye) repeat(6, minmax(0, 1fr))` |  | 4a-panel ×2, 4b-lines-tabs ×2 |  |
 | `--compare-d` | `0px` | set by compare_place(): the size every saved dial is shown at in Compare (#435) | 6-preview ×2 | set by cards.js |

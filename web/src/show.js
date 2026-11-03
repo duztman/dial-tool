@@ -11,6 +11,7 @@
 //     the glass shine, the silhouette outline. Stored as ui_effects, so it stays.
 // Everything here takes the tool (the window, app.js) as its first argument and touches only what it names.
 import * as G from "./geometry.js";
+import { night } from "./night.js";      // the night laid over the watch's drawing (#175)
 import * as WATCH from "./watch.js";
 
 export const METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
@@ -65,6 +66,9 @@ export const auto_ground = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "
 /** the metal's preset colour, for the Case colour row when none of your own is set */
 export const metal_colour = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
 
+/** Night (the Light tab's Time pill): the drawing under the night filter with its lume glowing, by the Moon's Strength and Lume decay (night.js) */
+const at_night = (S, svg) => (S.w_night ? night(svg, S.w_moon, S.w_decay) : svg);
+
 const angles_of = (items) => { const A = {}; for (const x of items) if (x.role === "hand" && HANDS.includes(x.name)) A[x.name] = x.angle; return A; };
 
 /** the watch for this frame. The whole drawing is made again only when something but the time changed (the shapes,
@@ -75,7 +79,7 @@ export function draw(tool, items) {
   const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), G.windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(","), HANDS.map((h) => `${+Boolean(S["ha_" + h].bevel)}${S["ha_" + h].bevel_look || 0}`).join("")].join("|");      // a hand's Bevel and its look redraw the watch (Okay, 3 Nov 2026, 01:56: "Bevels is not working on of or edit on show mode")      // which ink each part is printed with (#545)
   if (key !== tool.watch_key || !tool.watch_statik || tool.statik !== tool.watch_statik) {
     tool.watch_key = key; tool.watch_statik = tool.statik;
-    const o = options(S, shapes, S.ui_effects), svg = WATCH.draw(o);
+    const o = options(S, shapes, S.ui_effects), svg = at_night(S, WATCH.draw(o));
     g.innerHTML = `<g transform="scale(1 -1)">${svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>"))}</g>`;      // the page's own box is not used: the view is the tool's zoom
     const frame_key = [S.w_view, S.bezel, S.strap, S.dial_d].join();      // a new view, case, strap or size: fitted again, if the view was fitted (the light never moves it)
     if (frame_key !== tool.watch_frame && tool.fitted) tool.fit();
@@ -148,7 +152,7 @@ export function tint_panel(panel, on, backdrop, in_greys = false) {
 async function picture(tool, px) {
   const S = tool.S, items = G.scene(S, tool.statik, S.t, true, null).filter((x) => x.fill && !x.stroke);
   const o = options(S, items, S.ui_effects); o.A = angles_of(G.scene(S, tool.statik, S.t, true, null)); if (o.view === "dial") o.view = "detail";
-  const svg = WATCH.draw(o), [, , w, h] = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
+  const svg = at_night(S, WATCH.draw(o)), [, , w, h] = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
   const k = px / Math.max(w, h), cw = Math.round(w * k), ch = Math.round(h * k);
   const url = URL.createObjectURL(new Blob([svg.replace("<svg ", `<svg width="${cw}" height="${ch}" `)], { type: "image/svg+xml" }));
   const img = new Image();
