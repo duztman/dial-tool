@@ -578,6 +578,10 @@ ROWS["Show dial"] = [
     put: (tool, v) => { for (const h of G.HANDS) if (bevelled(tool.S["ha_" + h])) tool.S["ha_" + h].bevel_look = v; tool.changed(true); },
     show: (S) => G.HANDS.some((h) => bevelled(S["ha_" + h])) }),
   num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }),      // the hands' bevels' strength: the Shadows pane's Bevels %, one number in both places
+  // the parts at their heights, the Shadows pane's lower half here too (#580; Okay, 3 Nov 2026, 02:34: "Hand height
+  // screen and settings should also be added as a pane at the end of this whole column"): the rows and the diagram
+  hdr("Heights", { folded: false }),
+  custom("heights"),
 ];
 
 ROWS.Watch = [

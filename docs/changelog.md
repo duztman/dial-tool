@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.53 beta · 3 Nov 2026 — #580: the Heights pane, last on show mode's Dial tab
+
+Okay, 3 Nov 2026, 02:34: "Hand height screen and settings should also be added as a pane at the end of this whole column"; 22:07: "go for 580".
+
+- **The Heights pane** (`rows.js` Show dial, `guides.js` `row_heights`): the Shadows pane's parts block — Cap · Seconds · Minutes · Hours · Plate, a row per date disc, and the diagram — after Hands, at the end of the Dial tab. The same numbers as the Shadows pane and the Hands pane's heights; a row pointed at, focused or with its controller open lights its part in every diagram in view.
+- **The block is one builder** (`heights_block`): the Shadows pane and the Heights pane each make one; `stack_picture(id, rows)` reads the rows it is given; `sync_shadows` keeps every block in view current and builds the disc rows per block; `shade_light` lights every diagram.
+- **On the column** (`4c-rows.css` `.heightsrow`, `.heightsbox`; `6-preview.css`): the night's tokens stand for the column's (rule, grey, the column's solid); the column being narrower than the pane, a row keeps its name and number box and the slider goes (the box opens the controller, as every number in show mode does) — the rows 172 wide (name 76 + box 96), the diagram the rest (128 in a 312 column); the parts faded in the column's grey, the lit one in ink, as the Light tab's sun picture.
+- **Tests**: `window.mjs` — the pane last, its rows, no slider, the diagram, the lighting, the number the Shadows pane's.
+
 ## v1.1.52 beta · 3 Nov 2026 — #404: the hub a real boss — the pipe's hole, and lit as a dome in show mode
 
 Okay, 3 Nov 2026, 21:36: "404 first, then 580"; asked, "Per-shape boss only" · "The pipe's hole" · "The boss itself, as a round disc"; 21:45: "both should be options. also cap is an option still."

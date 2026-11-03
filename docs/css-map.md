@@ -44,7 +44,7 @@
 | `--clock-gap` · special | `4px` | the bar's time: a colon's split hairline this far from the ink of the figure either side, and its own gap the same (Okay, 31 Oct 2026, 01:35: "Notice the gaps"; 01:41: "The hr gaps before after line segments should be equal"; approved 01:49) | 7-bar ×2 | read by bar.js |
 | `--col` | `54px` |  | 1-tokens ×5, 3-controls, 4a-panel, 4e-colour, 4g-fonts, 6-preview ×2 | 4a-panel `.showing .panel` → `var(--show-col)`; 8-narrow `:root` → `calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6)` |
 | `--column` · the window's | `—` |  | 4a-panel | set by show.js |
-| `--column-solid` · the window's | `—` |  | 4a-panel, 4e-colour, 6-preview | set by show.js |
+| `--column-solid` · the window's | `—` |  | 4a-panel, 4c-rows, 4e-colour, 6-preview | set by show.js |
 | `--column-top` · the window's | `—` |  | 4a-panel ×3 | set by show.js |
 | `--columns` | `var(--eye) repeat(6, minmax(0, 1fr))` |  | 4a-panel ×2, 4b-lines-tabs ×2 |  |
 | `--compare-d` | `0px` | set by compare_place(): the size every saved dial is shown at in Compare (#435) | 6-preview ×2 | set by cards.js |
@@ -100,7 +100,7 @@
 | `--glow` | `#FF7300` | the outline of what the pointer is on, in the preview | 6-preview |  |
 | `--glow-line` · special | `1.5px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 4f-rings ×2, 6-preview ×3 |  |
 | `--glow-under` · special | `4px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview |  |
-| `--grey` | `#5C5C58` | colour | 1-tokens, 2-base ×2, 3-controls ×4, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×6, 4d-hands ×3, 4e-colour ×9, 4f-rings ×15, 4g-fonts ×12, 6-preview ×18, 8-narrow ×2 | 3-controls `.night` → `var(--bar-quiet)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)`; set by show.js |
+| `--grey` | `#5C5C58` | colour | 1-tokens, 2-base ×2, 3-controls ×4, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×7, 4d-hands ×3, 4e-colour ×9, 4f-rings ×15, 4g-fonts ×12, 6-preview ×20, 8-narrow ×2 | 3-controls `.night` → `var(--bar-quiet)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)`; set by show.js |
 | `--grip` | `18px` | the ring list's drag handle column | 4f-rings |  |
 | `--grip-groove` | `12px` | the one line across it, as a gripper's lines are | 3-controls |  |
 | `--grip-h` | `10px` | the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it | 4f-rings ×2, 8-narrow ×2 |  |
@@ -130,7 +130,7 @@
 | `--hue` · the window's | `—` |  | 4e-colour | set by colour.js |
 | `--in-l` · set in 4b-lines-tabs | `max(calc(var(--cut-l) + 0.414 * var(--hair)), var(--hair))` | the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider | 4b-lines-tabs ×4 |  |
 | `--in-r` · set in 4b-lines-tabs | `max(calc(var(--cut-r) + 0.414 * var(--hair)), var(--hair))` | the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider | 4b-lines-tabs ×4 |  |
-| `--ink` | `#111` | colour | 1-tokens, 2-base, 3-controls ×26, 4a-panel ×25, 4b-lines-tabs ×6, 4c-rows ×10, 4d-hands, 4e-colour ×15, 4f-rings ×24, 4g-fonts ×11, 4h-gallery, 5-chosen ×3, 6-preview ×47, 7-bar ×2, 8-narrow ×3 | 3-controls `.night` → `var(--bar-ink)`; 4f-rings `.numpop .row` → `var(--num-pop-disc)`; 4f-rings `.numpop.lit .row input[type="range"]` → `var(--shade-lit)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-ink)`; 6-preview `.shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"]` → `var(--shade-lit)`; 6-preview `.shaderows .row.side:hover input[type="range"]` → `var(--shade-lit)`; set by show.js |
+| `--ink` | `#111` | colour | 1-tokens, 2-base, 3-controls ×26, 4a-panel ×25, 4b-lines-tabs ×6, 4c-rows ×10, 4d-hands, 4e-colour ×15, 4f-rings ×24, 4g-fonts ×11, 4h-gallery, 5-chosen ×3, 6-preview ×49, 7-bar ×2, 8-narrow ×3 | 3-controls `.night` → `var(--bar-ink)`; 4f-rings `.numpop .row` → `var(--num-pop-disc)`; 4f-rings `.numpop.lit .row input[type="range"]` → `var(--shade-lit)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-ink)`; 6-preview `.shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"]` → `var(--shade-lit)`; 6-preview `.shaderows .row.side:hover input[type="range"]` → `var(--shade-lit)`; set by show.js |
 | `--ink-dx` · the window's | `—` |  | 3-controls, 7-bar | set by bar.js, set by ink.js |
 | `--ink-dy` · the window's | `—` |  | 3-controls, 7-bar ×2 | set by bar.js, set by ink.js |
 | `--ink-hover` | `#333331` | a filled control under the pointer | 3-controls, 5-chosen | 3-controls `.night` → `var(--white)` |
@@ -168,12 +168,12 @@
 | `--name-in` · special | `6px` | a ring's name starts this far into its column; the ring line's buttons too | 4f-rings ×2 |  |
 | `--names` | `18px` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×8 |  |
 | `--nest-from` | `calc((100% + var(--gap)) / 3)` | where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here | 4c-rows |  |
-| `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×4, 4e-colour ×2, 6-preview ×9 | set by show.js |
+| `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×4, 4e-colour ×2, 6-preview ×9 | 4c-rows `.heightsbox` → `var(--column-solid, var(--paper))`; set by show.js |
 | `--night-chip-rule` | `rgba(255, 255, 255, 0.28)` |  | 3-controls, 4e-colour |  |
 | `--night-field` | `#262624` |  | 3-controls ×2, 4a-panel ×5 | set by show.js |
-| `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview |  |
+| `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview | 4c-rows `.heightsbox` → `var(--grey)` |
 | `--night-hover` | `#34342F` |  | 3-controls, 4a-panel, 6-preview |  |
-| `--night-rule` | `#4A4A46` |  | 3-controls ×3, 4a-panel, 5-chosen, 6-preview ×14 |  |
+| `--night-rule` | `#4A4A46` |  | 3-controls ×3, 4a-panel, 5-chosen, 6-preview ×14 | 4c-rows `.heightsbox` → `var(--rule)` |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
 | `--nudge` · special | `2px` | the eyes stand this much right of the margin: a pane's eye and a ring row's alike | 4a-panel, 4e-colour ×2, 4f-rings ×2 |  |
 | `--num-columns` | `var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w)` | a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges | 4c-rows, 4g-fonts |  |
@@ -206,7 +206,7 @@
 | `--p` · the window's | `—` |  | 3-controls, 4f-rings ×2 | read by panel.js, set by ui.js |
 | `--panel` | `calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap))` |  | 1-tokens ×2, 4g-fonts, 7-bar |  |
 | `--panel-w` | `calc(var(--panel) + var(--hair))` | the panel's column: its lines and its right hairline | 2-base ×2, 4a-panel ×5, 6-preview ×4 | 2-base `.showing` → `var(--show-panel-w)` |
-| `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×8, 4b-lines-tabs, 4e-colour ×3, 4f-rings ×6, 4g-fonts, 5-chosen ×2, 6-preview ×6, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
+| `--paper` | `#FCFCFA` | colour | 1-tokens, 2-base, 3-controls ×5, 4a-panel ×8, 4b-lines-tabs, 4c-rows, 4e-colour ×3, 4f-rings ×6, 4g-fonts, 5-chosen ×2, 6-preview ×6, 8-narrow ×4 | 3-controls `.night` → `var(--night)`; 4a-panel `.showing .panel` → `var(--night)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night)` |
 | `--picked` · the window's | `—` |  | 6-preview | set by rings.js |
 | `--pill` | `calc(1em + 2 * var(--pill-gap))` | its height. The swatch is as high as the hex is set (1em) | 4e-colour |  |
 | `--pill-gap` | `var(--unit)` | a colour pill (and the font name line beside its swatch): this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these | 1-tokens ×2, 4e-colour ×2, 4g-fonts |  |
@@ -265,7 +265,7 @@
 | `--round-tiny` | `3px` | …and a sticker's corners, a small swatch's | 4e-colour ×4, 4g-fonts |  |
 | `--row-end` | `calc(var(--frame-pad) - var(--hair) + var(--ringline-inner))` | the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons | 1-tokens, 4f-rings |  |
 | `--row-rule` | `var(--line-on-paper)` |  | 4c-rows ×8, 4e-colour ×8, 4f-rings ×4, 6-preview ×4 | 3-controls `.night` → `var(--night-rule)`; 4a-panel `.showing .panel` → `var(--uiblack, var(--rule))`; 4a-panel `.settingsbox` → `var(--line-on-grey)`; 4a-panel `.form` → `var(--line-on-grey)`; 4f-rings `.numpop .row` → `transparent` |
-| `--rule` | `#B9B9B4` | colour | 1-tokens ×2, 3-controls ×11, 4a-panel ×10, 4b-lines-tabs ×2, 4c-rows, 4d-hands ×2, 4e-colour ×4, 4f-rings ×23, 4g-fonts ×18, 6-preview ×2, 8-narrow ×2 | 3-controls `.night` → `var(--night-rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)`; set by show.js |
+| `--rule` | `#B9B9B4` | colour | 1-tokens ×2, 3-controls ×11, 4a-panel ×10, 4b-lines-tabs ×2, 4c-rows ×2, 4d-hands ×2, 4e-colour ×4, 4f-rings ×23, 4g-fonts ×18, 6-preview ×2, 8-narrow ×2 | 3-controls `.night` → `var(--night-rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)`; set by show.js |
 | `--rule-light` | `#D4D4CF` | colour | 4g-fonts ×2 | 4a-panel `.showing .panel` → `var(--rule)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-rule)` |
 | `--ruler` | `26px` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×7 |  |
 | `--ruler-half` · special | `0.6` | the day's ruler: its lines' strength by their rank (hours, halves, the small ones) | 7-bar |  |
@@ -317,9 +317,9 @@
 | `--show-tick` · special | `9px` | the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom") | 4b-lines-tabs ×2 |  |
 | `--show-tick-gap` · special | `calc(var(--u3) - 2px)` | the Show box's ticks to their words (Show, Bevel): 2 px closer than a unit and a half (Okay, 19 Oct 2026, 20:37: "closer"; 20 Oct 2026, 00:08: "Show and bevel 2px closer to tick boxes") | 4b-lines-tabs |  |
 | `--show-time` | `1000ms` | into show mode and out (swoop() in app.js): each panel's slide; the second starts when the first is halfway, the drawing moves over one and a half of it (Okay, 23 Oct 2026: "smoother, slower") | 2-base | read by mode.js |
-| `--side-columns` | `var(--side-label) minmax(0, 1fr) var(--gap) var(--side-num)` |  | 4d-hands, 4f-rings, 6-preview | 6-preview `.shaderows` → `var(--stack-name) var(--shade-slide) var(--gap) var(--side-num)` |
+| `--side-columns` | `var(--side-label) minmax(0, 1fr) var(--gap) var(--side-num)` |  | 4d-hands, 4f-rings, 6-preview | 6-preview `.shaderows` → `var(--stack-name) var(--shade-slide) var(--gap) var(--side-num)`; 6-preview `.heightsbox .shaderows` → `var(--stack-name) 0 0 var(--side-num)` |
 | `--side-label` | `4.75em` | …and the names there: as wide as the longest allowed, "Counter Ø" at 12 (Okay's notes, p. 18, #250) | 1-tokens |  |
-| `--side-num` | `calc(var(--box-side-value) + 2 * var(--box-side-step))` | …so that column is this wide; the Shadows pane's rows and the colour list use the same column | 1-tokens, 4e-colour, 6-preview |  |
+| `--side-num` | `calc(var(--box-side-value) + 2 * var(--box-side-step))` | …so that column is this wide; the Shadows pane's rows and the colour list use the same column | 1-tokens, 4e-colour, 6-preview ×3 |  |
 | `--sign-16` · special | `16px` | a canvas switch's sign, as drawn: 18 for Guides and the case, 16 for Versions | 6-preview |  |
 | `--sign-18` · special | `18px` | a canvas switch's sign, as drawn: 18 for Guides and the case, 16 for Versions | 6-preview ×2 |  |
 | `--sign-w` · set in 6-preview | `var(--sign-18)` |  | 6-preview ×4 | 6-preview `.versionsbox` → `var(--sign-16)`; 6-preview `.guidesbox` → `var(--sign-18)`; 6-preview `.backdropbox` → `var(--dot)` |
@@ -339,7 +339,7 @@
 | `--st-tint` | `var(--guide-tint)` |  | 1-tokens ×7 |  |
 | `--st-weight` | `color-mix(in srgb, #FFE600 var(--st-tint), var(--field))` |  | 4g-fonts |  |
 | `--st-width` | `color-mix(in srgb, #00E5FF var(--st-tint), var(--field))` |  | 4g-fonts |  |
-| `--stack-name` | `76px` | the Shadows pane's right column — the three sliders' and the diagram's, one width (Okay's drawing, 25 Oct 2026); the rows' names beside it, "Date discs" whole | 6-preview |  |
+| `--stack-name` | `76px` | the Shadows pane's right column — the three sliders' and the diagram's, one width (Okay's drawing, 25 Oct 2026); the rows' names beside it, "Date discs" whole | 6-preview ×3 |  |
 | `--stack-w` | `151px` | the Shadows pane's right column — the three sliders' and the diagram's, one width (Okay's drawing, 25 Oct 2026); the rows' names beside it, "Date discs" whole | 6-preview ×2 |  |
 | `--stop-short` · set in 6-preview | `max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away))))` | the dial alone: Backdrop and Shadows ride left with the preview's edge and stop short, on the mark's line (the margin) | 6-preview ×2 | 8-narrow `main` → `var(--canvas-inset)` |
 | `--sun-dot` | `3px` | where the shadows fall: a ring of dots on the dial's far side, a dot and the space to the next (Okay's drawing, 25 Oct 2026) | 6-preview |  |
@@ -398,7 +398,7 @@
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×4 |  |
 | `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4e-colour, 4f-rings ×2, 7-bar ×2 |  |
 | `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×12, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
-| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×3, 4a-panel ×4, 4c-rows ×2, 4e-colour ×15, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
+| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×3, 4a-panel ×4, 4c-rows ×3, 4e-colour ×15, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
 | `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour ×5, 4f-rings ×9, 4g-fonts ×7, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
 | `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×4, 4d-hands ×2, 4e-colour ×3, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
 | `--u5` | `calc(2.5 * var(--unit))` |  | 8-narrow ×2 |  |

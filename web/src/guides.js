@@ -229,48 +229,18 @@ export const GUIDES = {
     const light = [row(num("sh_from", "Angle°", 0, 359, 1, { whole: true, named: true })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true, named: true })),
       row(num("sh_dark", "Strength %", 0, 100, 1, { whole: true, named: true }))];
     const top = el("div", { className: "suntop" }, sun.el, el("div", { className: "three" }, ...light.map((r) => r.el)));
-    // the parts, one line each (Okay's drawing: "a stellar example of one line" — each part of the diagram stands on its
-    // row's line): Cap · Seconds · Minutes · Hours · Plate (the reference, nothing to size: "plate untouchable") · a row
-    // per window that shows a disc, under the plate (built in sync_shadows as the windows change). The rings' ink
-    // heights are show mode's Colours alone (Okay, 25 Oct 2026: "Ink heights only on show case. Remove from the tool side")
-    const part = (key, text, lo, hi, step, name, o = {}) => row(num(key, text, lo, hi, step, { side: true, part: name, ...o }));
-    // the heights keep their order — cap over seconds over minutes over hours, the plate at 0 (Okay, 25 Oct 2026:
-    // "seconds hand cant go below minutes and so on. Limit every value to their obvious limits"): each row's slider
-    // runs between its neighbours' heights, a step clear of each (a hidden hand does not count), and a value at an
-    // end flashes LIMIT (panel.js, `bounds`)
-    const STEP = 0.05, ORDER = ["cap", "second", "minute", "hour"], KEY = { cap: "sh_cap", second: "sh_second", minute: "sh_minute", hour: "sh_hour" };
-    const shown = (S, h) => h === "cap" || (S.ha_on && S["ha_" + h] && S["ha_" + h].on);
-    const bounds = (name, lo, hi) => (S) => {
-      const i = ORDER.indexOf(name), above = ORDER.slice(0, i).filter((h) => shown(S, h)).at(-1), below = ORDER.slice(i + 1).filter((h) => shown(S, h))[0];
-      return [below ? +(S[KEY[below]] + STEP).toFixed(2) : lo, above ? +(S[KEY[above]] - STEP).toFixed(2) : hi];
-    };
-    // the ends from a real watch: a hand stack under the crystal is 1–2.5 mm, the cap's top the highest (Okay, 25 Oct 2026,
-    // 17:08: "Cap height should not be thiiiiis high")
-    const CAP_MAX = 2, HAND_MAX = 1.5;
-    const heights = [part("sh_cap", "Cap", 0, CAP_MAX, STEP, "cap", { bounds: bounds("cap", 0, CAP_MAX) }), part("sh_second", "Seconds", 0, HAND_MAX, STEP, "second", { bounds: bounds("second", 0, HAND_MAX) }),
-      part("sh_minute", "Minutes", 0, HAND_MAX, STEP, "minute", { bounds: bounds("minute", 0, HAND_MAX) }), part("sh_hour", "Hours", 0, HAND_MAX, STEP, "hour", { bounds: bounds("hour", 0, HAND_MAX) })];
-    const plate = el("div", { className: "row side ref" }, el("label", { textContent: "Plate" }));
-    this.shadow_discs = el("div", { className: "shadowdiscs" });
-    this.shadow_disc_rows = [];
+    // then the parts at their heights, the rows and the diagram (heights_block — show mode's Heights pane shows the same)
+    const block = this.heights_block("shadows-stack");
+    const parts = block.el;
     // the foot: Shadows (the switch itself, mirrored) · Soft edges · Bevels % · Reset, in the footer's cells
-    const on = row(chk("sh_on", "Shadows", { id: "shadows-on" })), soft = row(chk("sh_blur", "Soft edges")), bevel = row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, block: true }));      // the hands' bevels' strength; each hand's own Bevel tick turns its bevel on
-    this.shadow_rows = [...light, ...heights, on, soft, bevel];
+    const on = row(chk("sh_on", "Shadows", { id: "shadows-on" })), soft = row(chk("sh_blur", "Soft edges")), bevel = row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, block: true }));      // the hands' bevels' strength; each hand's own Bevel tick turns it on
+    this.shadow_rows = [...light, on, soft, bevel];
     const reset = el("button", { type: "button", className: "gword", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(G.DEFAULTS[key]);
       for (const w of G.windows_of(this.S)) w.depth = G.WINDOW_BASE.depth;      // every disc back to the shared depth
       this.sync_rows();
       this.render();
     } });
-    const rows = el("div", { className: "shaderows" }, ...heights.map((r) => r.el), plate, this.shadow_discs);
-    const col = el("div", { className: "shadecol" }, el("div", { className: "shadehead", textContent: "Part Heights" }), rows);
-    this.shadow_stack = this.stack_picture();
-    const parts = el("div", { className: "shadeparts" }, col, this.shadow_stack.el);
-    // a row pointed at, focused or with its controller open lights its part in the picture
-    // …and while its controller is open the part stays lit, whatever the pointer leaves (Okay, 2 Nov 2026: "Tapping line
-    // labels on left highlights the diagram but using controller later is done on a gray diagram. While adjusting, the
-    // diagram must still be lighting up"); the controller's closing puts it out (value_pop_close)
-    const lit = (e) => { const r = e.target.closest(".row"); this.shade_light((r && r.dataset.part && (e.type === "pointerover" || e.type === "focusin") ? r.dataset.part : null) || this.value_pop?.row?.part || null); };
-    for (const kind of ["pointerover", "pointerout", "focusin", "focusout"]) rows.addEventListener(kind, lit);
     const scroll = el("div", { className: "shadescroll" }, top, parts);
     const cell = (cls, ...kids) => el("div", { className: "cell " + cls }, ...kids);
     list.append(scroll, el("div", { className: "popfoot shadefoot" }, cell("lead", on.el), cell("", soft.el), cell("", bevel.el), cell("", reset)));
@@ -460,26 +430,82 @@ export const GUIDES = {
     if (this.guide_snap) this.guide_snap.setAttribute("aria-checked", String(Boolean(S.ui_snap_guides)));      // the Settings switch, mirrored here      // the chosen one filled: the chosen layer's rule for a pill switch
   },
 
+  /** the parts at their heights — the rows at the left, the diagram (stack_picture) at the right: the Shadows pane's
+   *  lower half, and show mode's Heights pane at the end of the Dial tab (#580; Okay, 3 Nov 2026, 02:34: "Hand height
+   *  screen and settings should also be added as a pane at the end of this whole column"). One block per place; every
+   *  block shows the same numbers and lights the same part. Each keeps its own disc rows (sync_shadows builds them). */
+  heights_block(id) {
+    const row = (r) => this.build_row({ ...r, scope: "global" });
+    const part = (key, text, lo, hi, step, name, o = {}) => row(num(key, text, lo, hi, step, { side: true, part: name, ...o }));
+    // the heights keep their order — cap over seconds over minutes over hours, the plate at 0 (Okay, 25 Oct 2026:
+    // "seconds hand cant go below minutes and so on. Limit every value to their obvious limits"): each row's slider
+    // runs between its neighbours' heights, a step clear of each (a hidden hand does not count), and a value at an
+    // end flashes LIMIT (panel.js, `bounds`)
+    const STEP = 0.05, ORDER = ["cap", "second", "minute", "hour"], KEY = { cap: "sh_cap", second: "sh_second", minute: "sh_minute", hour: "sh_hour" };
+    const shown = (S, h) => h === "cap" || (S.ha_on && S["ha_" + h] && S["ha_" + h].on);
+    const bounds = (name, lo, hi) => (S) => {
+      const i = ORDER.indexOf(name), above = ORDER.slice(0, i).filter((h) => shown(S, h)).at(-1), below = ORDER.slice(i + 1).filter((h) => shown(S, h))[0];
+      return [below ? +(S[KEY[below]] + STEP).toFixed(2) : lo, above ? +(S[KEY[above]] - STEP).toFixed(2) : hi];
+    };
+    // the ends from a real watch: a hand stack under the crystal is 1–2.5 mm, the cap's top the highest (Okay, 25 Oct 2026,
+    // 17:08: "Cap height should not be thiiiiis high")
+    const CAP_MAX = 2, HAND_MAX = 1.5;
+    // the parts, one line each (Okay's drawing: "a stellar example of one line" — each part of the diagram stands on its
+    // row's line): Cap · Seconds · Minutes · Hours · Plate (the reference, nothing to size: "plate untouchable") · a row
+    // per window that shows a disc, under the plate (built in sync_shadows as the windows change). The rings' ink
+    // heights are show mode's Colours alone (Okay, 25 Oct 2026: "Ink heights only on show case. Remove from the tool side")
+    const heights = [part("sh_cap", "Cap", 0, CAP_MAX, STEP, "cap", { bounds: bounds("cap", 0, CAP_MAX) }), part("sh_second", "Seconds", 0, HAND_MAX, STEP, "second", { bounds: bounds("second", 0, HAND_MAX) }),
+      part("sh_minute", "Minutes", 0, HAND_MAX, STEP, "minute", { bounds: bounds("minute", 0, HAND_MAX) }), part("sh_hour", "Hours", 0, HAND_MAX, STEP, "hour", { bounds: bounds("hour", 0, HAND_MAX) })];
+    const plate = el("div", { className: "row side ref" }, el("label", { textContent: "Plate" }));
+    const discs = el("div", { className: "shadowdiscs" });
+    const rows = el("div", { className: "shaderows" }, ...heights.map((r) => r.el), plate, discs);
+    const col = el("div", { className: "shadecol" }, el("div", { className: "shadehead", textContent: "Part Heights" }), rows);
+    const stack = this.stack_picture(id, rows);
+    const parts = el("div", { className: "shadeparts" }, col, stack.el);
+    // a row pointed at, focused or with its controller open lights its part in the picture
+    // …and while its controller is open the part stays lit, whatever the pointer leaves (Okay, 2 Nov 2026: "Tapping line
+    // labels on left highlights the diagram but using controller later is done on a gray diagram. While adjusting, the
+    // diagram must still be lighting up"); the controller's closing puts it out (value_pop_close)
+    const lit = (e) => { const r = e.target.closest(".row"); this.shade_light((r && r.dataset.part && (e.type === "pointerover" || e.type === "focusin") ? r.dataset.part : null) || this.value_pop?.row?.part || null); };
+    for (const kind of ["pointerover", "pointerout", "focusin", "focusout"]) rows.addEventListener(kind, lit);
+    const block = { el: parts, rows: heights, discs, disc_rows: [], stack };
+    (this.height_blocks ||= []).push(block);
+    return block;
+  },
+
   /** the shadows' switch and list show the settings. */
   sync_shadows() {
     const on = Boolean(this.S.sh_on);
     this.shadows_tick.setAttribute("aria-pressed", String(on));
     this.shadows_tick.title = on ? "Shadows are on: press to hide them" : "Shadows are off: press to show them";
-    if ($("#shadow-list").hidden) return;
-    // a row per window that shows a disc, built again as the windows change: its depth under the plate
+    // a row per window that shows a disc, built again as the windows change: its depth under the plate — in every
+    // heights block in view (the Shadows pane open, show mode's Heights pane); the blocks of panes torn down are dropped
+    this.height_blocks = (this.height_blocks || []).filter((b) => b.el.isConnected);
     const wins = G.windows_of(this.S), angle = (w) => w.at_deg != null ? w.at_deg : G.DATE_AT[w.at][1];
     const shown = wins.map((w, i) => [w, i]).filter(([w, i]) => w.on && G.disc_of(this.S, i)).sort((a, b) => angle(a[0]) - angle(b[0]));      // round the dial from 12
     const key = JSON.stringify(shown.map(([w, i]) => [i, w.at, w.at_deg]));
-    if (this.shadow_discs.dataset.wins !== key) {
-      this.shadow_discs.dataset.wins = key;
-      this.shadow_disc_rows = shown.map(([w, i]) => this.build_row({ ...num("depth", `Disc at ${w.at_deg != null ? Math.round(w.at_deg) + "°" : G.DATE_AT[w.at][0]}`, 0, 1, 0.05, { side: true, part: "disc-" + i,
-        get: () => this.disc_depth(G.windows_of(this.S)[i]),
-        put: (app, v) => { const W = G.windows_of(this.S)[i]; if (W) { W.depth = clamp(v, 0, 1); this.changed(); } } }), scope: "global" }));
-      this.shadow_discs.replaceChildren(...this.shadow_disc_rows.map((r) => r.el));
+    const pane_open = !$("#shadow-list").hidden;
+    if (pane_open) { for (const r of this.shadow_rows) r.refresh(this.S); this.shadow_sun.refresh(); }
+    for (const block of this.height_blocks) {
+      if (block.el.offsetParent === null) continue;      // out of sight: nothing to lay out (the diagram reads its rows from the screen)
+      if (block.discs.dataset.wins !== key) {
+        block.discs.dataset.wins = key;
+        block.disc_rows = shown.map(([w, i]) => this.build_row({ ...num("depth", `Disc at ${w.at_deg != null ? Math.round(w.at_deg) + "°" : G.DATE_AT[w.at][0]}`, 0, 1, 0.05, { side: true, part: "disc-" + i,
+          get: () => this.disc_depth(G.windows_of(this.S)[i]),
+          put: (app, v) => { const W = G.windows_of(this.S)[i]; if (W) { W.depth = clamp(v, 0, 1); this.changed(); } } }), scope: "global" }));
+        block.discs.replaceChildren(...block.disc_rows.map((r) => r.el));
+      }
+      for (const r of [...block.rows, ...block.disc_rows]) r.refresh(this.S);
+      block.stack.refresh();
     }
-    for (const r of [...this.shadow_rows, ...this.shadow_disc_rows]) r.refresh(this.S);
-    this.shadow_sun.refresh();
-    this.shadow_stack.refresh();
+  },
+
+  /** show mode's Heights pane, at the end of the Dial tab (#580): the parts at their heights, as the Shadows pane
+   *  shows them — the same block, on the column's ground */
+  row_heights(wrap, out) {
+    wrap.classList.add("heightsrow");
+    wrap.append(el("div", { className: "heightsbox" }, this.heights_block("show-stack").el));
+    out.refresh = () => {};      // sync_shadows keeps every block in view current
   },
 
   /** a window's disc under the plate: its own depth, or the shared one (R7: `depth` starts null = sh_disc) */
@@ -491,8 +517,8 @@ export const GUIDES = {
    *  hole and a window; a date disc a flat ring under it. The part being sized (its row under the pointer) is white,
    *  and a line in the lit colour drops from it down the axis to the plate's hole, which turns that colour too. The
    *  y of each part is read from its row in the window (R21), so the picture follows the rows whatever they are. */
-  stack_picture() {
-    const box = el("div", { className: "stackpic", id: "shadows-stack" });
+  stack_picture(id, rows_el) {      // rows_el: the .shaderows this picture draws, read from the screen
+    const box = el("div", { className: "stackpic", id });
     box.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><g class="drop"><line class="knock"/><line class="fixed"/><line class="moving"/></g><g class="parts top"></g></svg><span class="word">Parts</span>`;      // the order: the parts, the red drop over them, the lit part over all (Okay, 25 Oct 2026, 16:59: "White indicator drawing is the topest of all")
     const svg = box.querySelector("svg"), parts = box.querySelector(".parts:not(.top)"), top = box.querySelector(".parts.top"), axis = box.querySelector(".axis"), drop = box.querySelector(".drop");
     const LEN = { hour: 23.5, minute: 34.5, second: 46 }, TAIL = 10;      // a hand's reach right of the axis, and left (his drawing)
@@ -514,7 +540,7 @@ export const GUIDES = {
       const b = svg.getBoundingClientRect(), W = Math.round(b.width), H = Math.round(b.height), ax = W / 2;      // the svg's own box, inside the frame's line
       if (!W || !H) return;
       svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", W); svg.setAttribute("height", H);
-      const rows = [...document.querySelectorAll("#shadow-list .shaderows > .row, #shadow-list .shadowdiscs > .row")].filter((r) => !r.hidden);
+      const rows = [...rows_el.querySelectorAll(":scope > .row, .shadowdiscs > .row")].filter((r) => !r.hidden);
       if (!rows.length) return;
       const plate_row = rows.find((r) => r.classList.contains("ref")), pr = plate_row.getBoundingClientRect();
       const first = +(rows[0].getBoundingClientRect().top - b.top).toFixed(1), plate_y = +(pr.top + pr.height / 2 - b.top).toFixed(1);
@@ -546,7 +572,7 @@ export const GUIDES = {
   shade_light(name) {
     if (name === this.shade_lit) return;
     this.shade_lit = name || null;
-    this.shadow_stack.refresh();
+    for (const b of this.height_blocks || []) if (b.el.offsetParent !== null) b.stack.refresh();
   },
 
   /** the sun's picture (#526; Okay's drawing, 24 Oct 2026): the dial as a ring, the sun outside it with rays, a faint

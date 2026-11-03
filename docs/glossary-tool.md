@@ -79,6 +79,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Eye switch** | Square switch at the bottom right, drawn as an eye: the **dial alone**; under it show mode's switch (the **rays**), over it the Tiny Preview's iris. |
 | **Dial alone** | Panel away, the dial fills the preview. |
 | **Tiny Preview** | A small draggable window showing the dial at its own size (96 px to the inch). |
+| **Heights pane** | | Show mode's last pane on the Dial tab (#580): the Shadows pane's parts block — the rows (name and number box, no slider) and the **diagram** — on the column's ground (`heights_block`, `row_heights`, guides.js). |
 | **Shadows pane** | The Shadows switch's pane over the panel's column: the **sun picture** with Angle · Height · Strength in one box; then one line per part — the rows at the left, the **diagram** (`.stackpic`) at the right, each part on its row's line; the **footer** in cells. |
 | **Footer** (of a night popup) | `.popfoot`: a band of the field colour, cells divided by hairlines of the night, content 13 in from each line, the last cell to the edge (the Shadows pane; Okay's drawing, 25 Oct 2026). |
 | **LIMIT** | What a number row's name says, in red, for a moment, when its value reaches an end its neighbours set (`bounds`; the Shadows pane's heights). |

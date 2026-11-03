@@ -343,6 +343,17 @@
   .stackpic .drop .moving { stroke-dasharray: var(--shade-dash); }      /* the piece this row changes: from the part to the next one toward the plate */
   .stackpic .drop:not(.on) { display: none; }
   .stackpic .parts > g.plate.dropped .hole { stroke: var(--shade-lit); }
+  /* show mode's Heights pane (#580; 4c-rows.css sets its ground's tokens): the column is narrower than the pane, so the
+     rows keep the name and the number box, the slider goes (the box opens the controller, as every number in show mode
+     does), and the diagram takes what is left; its parts faded in the column's grey, as the Light tab's sun picture, the
+     lit one in ink */
+  .heightsbox .shadeparts { grid-template-columns: calc(var(--stack-name) + var(--side-num)) minmax(0, 1fr); margin-top: 0; margin-bottom: 0; }
+  .heightsbox .shaderows { --side-columns: var(--stack-name) 0 0 var(--side-num); }
+  .heightsbox .shaderows .row.side input[type="range"] { display: none; }
+  .heightsbox .stackpic .parts > g { stroke: var(--grey); }
+  .heightsbox .stackpic .parts > g .fill { fill: var(--grey); }
+  .heightsbox .stackpic .parts > g.lit { stroke: var(--ink); }
+  .heightsbox .stackpic .parts > g.lit .fill { fill: var(--ink); }
   /* §popfoot — a night popup's footer (Okay's drawing, 25 Oct 2026: "logically pixel perfect … objects snap to edges,
      in-between padding equal, black lines connect to top"): a band of the field colour across the whole popup, its
      bottom corners the popup's; cells divided by hairlines of the night that run the band's full height; each cell

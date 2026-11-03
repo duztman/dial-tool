@@ -2629,8 +2629,19 @@ await shot("10-bar");
       return [y0 / 2, (line - (y1 + 1)) / 2];      // CSS px: ink top from the line above (the row's top), ink bottom to the line below
     }, (await page.locator(".inklist .row.showsub").first().screenshot()).toString("base64"));
     r.centred = Math.abs(gaps[0] - gaps[1]) <= 1 && gaps[0] >= 11 && gaps[1] >= 11;
-    check(r.panes.join() === "Colours,Inks,Hands" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
-      `show mode's Dial tab is Colours · Inks · Hands (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands")`);
+    check(r.panes.join() === "Colours,Inks,Hands,Heights" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
+      `show mode's Dial tab is Colours · Inks · Hands · Heights (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands"; #580: "a pane at the end of this whole column")`);
+    // the Heights pane (#580; Okay, 3 Nov 2026, 02:34: "Hand height screen and settings should also be added as a pane at the end
+    // of this whole column"): the Shadows pane's parts block — Cap · Seconds · Minutes · Hours · Plate and the diagram, no
+    // sliders in the narrower column; a row pointed at lights its part in the diagram; its number is the Shadows pane's
+    const hts = await page.evaluate(async () => { const t = window.dial_tool, q = (s) => document.querySelector(s), box = q(".heightsbox"), rows = [...box.querySelectorAll(".shaderows .row")].filter((e) => !e.hidden).map((e) => e.querySelector("label").textContent);
+      const sliders = [...box.querySelectorAll('input[type="range"]')].filter((e) => e.checkVisibility()).length, diagram = q("#show-stack svg .parts g[data-part='second']");
+      const row = box.querySelector(".row[data-part='second']"); row.dispatchEvent(new PointerEvent("pointerover", { bubbles: true })); await new Promise((r) => requestAnimationFrame(r));
+      const lit = Boolean(q("#show-stack .parts.top g[data-part='second'].lit")); row.dispatchEvent(new PointerEvent("pointerout", { bubbles: true }));
+      const b = box.getBoundingClientRect(), p = q(".panel .form").getBoundingClientRect(), last = q(".form > .pane:last-of-type .fold h2")?.textContent;
+      return { rows: rows.join(","), sliders, diagram: Boolean(diagram), lit, fits: b.right <= p.right + 1, last, num: box.querySelector(".row[data-part='hour'] input").value, same: t.S.sh_hour }; });
+    check(hts.rows.startsWith("Cap,Seconds,Minutes,Hours,Plate") && hts.sliders === 0 && hts.diagram && hts.lit && hts.fits && hts.last === "Heights" && +hts.num === hts.same,
+      `the Heights pane, last on the Dial tab (${hts.last}): the parts' rows, a disc's after the plate (${hts.rows}) with their boxes and no slider (${hts.sliders}) beside the diagram (${hts.diagram}), inside the column (${hts.fits}); a row pointed at lights its part (${hts.lit}); Hours' box is sh_hour (${hts.num} = ${hts.same}) (#580: "Hand height screen and settings … as a pane at the end of this whole column")`);
     check(r.pair_ok && r.two && r.on_b && Math.abs(r.b_h - 0.33) < 1e-6 && r.rights === 1,
       `Inks: a line a part, straight under On the dial (${r.pair_ok}); two rings of one colour share its height, a LINK filled between them (${r.two}, ${r.on_b}); pressed, the second its own height (${r.b_h ? "yes" : "no"}); every height box on one right edge (Okay: "One thick red one thin possible via a switch on the pane")`);
     check(r.hollow && r.worded && r.part_lines && r.centred,

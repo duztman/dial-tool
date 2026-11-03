@@ -122,5 +122,9 @@
   .row.sunrow { display: block; padding: var(--u2) 0; box-shadow: none; }
   .sunbox { display: flex; height: calc(5 * var(--line)); outline: var(--hair) solid var(--ink); outline-offset: calc(-1 * var(--hair)); }
   .sunbox > .sunpic { flex: 1; overflow: hidden; }
+  /* show mode's Heights pane at the end of the Dial tab (#580; guides.js, row_heights): the Shadows pane's parts block
+     — rows and diagram — on the column's ground: the night's tokens it is drawn with stand for the column's here */
+  .row.heightsrow { display: block; padding: var(--u2) 0; box-shadow: none; }
+  .heightsbox { --night-rule: var(--rule); --night-grey: var(--grey); --night: var(--column-solid, var(--paper)); }
       /* the picture's own colours: 6-preview.css, after the Shadows pane's, a later layer */
 }
