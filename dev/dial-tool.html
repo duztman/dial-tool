@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.47 beta · built 2026-11-03 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.48 beta · built 2026-11-03 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7638,7 +7638,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.47 beta";
+var VERSION = "v1.1.48 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11659,41 +11659,53 @@ var lume_by_name = (name) => LUMES.find((l) => l.name.toLowerCase() === String(n
 // src/night.js
 var Y = [0.2126, 0.7152, 0.0722];
 var BLUE = [0.6, 0.7, 1];
-function night_matrix(dark) {
-  const k = Math.pow(1 - dark, 1.5), dim = (1 - 0.88 * dark) * (0.75 + 0.25 * (1 - dark));
-  const rows = BLUE.map((b, i2) => Y.map((y, j) => ((i2 === j ? k : 0) + (1 - k) * b * y) * dim));
-  return rows.map((r) => [...r.map((v) => v.toFixed(4)), "0", "0"].join(" ")).join(" ") + " 0 0 0 1 0";
+var COLOURED = ["fill", "stroke", "stop-color", "flood-color"];
+var hex_rgb = (h) => h.length === 4 ? [1, 2, 3].map((i2) => parseInt(h[i2] + h[i2], 16) / 255) : [1, 3, 5].map((i2) => parseInt(h.slice(i2, i2 + 2), 16) / 255);
+var rgb_hex = (c) => "#" + c.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
+function night_colour(hex3, dark) {
+  if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex3)) return hex3;
+  const c = hex_rgb(hex3), y = c[0] * Y[0] + c[1] * Y[1] + c[2] * Y[2];
+  const k = Math.pow(1 - dark, 1.5), dim = (1 - 0.88 * dark) * (0.75 + 0.25 * (1 - dark)), gamma = 1 + 0.4 * dark;
+  return rgb_hex(c.map((v, i2) => Math.pow((k * v + (1 - k) * y * BLUE[i2]) * dim, gamma)));
 }
 function night(svg, moon, decay) {
   const dark = Math.max(0, Math.min(1, 1 - moon / 100)), glow_k = Math.max(0, Math.min(1, 1 - decay / 100));
-  const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement, NS = root.namespaceURI;
-  const kids = [...root.childNodes];
-  const defs = doc.createElementNS(NS, "defs");
-  defs.innerHTML = `<filter id="night" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${night_matrix(dark)}"/><feComponentTransfer><feFuncR type="gamma" exponent="${(1 + 0.4 * dark).toFixed(3)}"/><feFuncG type="gamma" exponent="${(1 + 0.4 * dark).toFixed(3)}"/><feFuncB type="gamma" exponent="${(1 + 0.4 * dark).toFixed(3)}"/></feComponentTransfer></filter><filter id="lumeglow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${(1.2 + 2.4 * dark).toFixed(2)}" result="halo"/><feComponentTransfer in="halo" result="halo2"><feFuncA type="linear" slope="${(0.9 * dark).toFixed(3)}"/></feComponentTransfer><feMerge><feMergeNode in="halo2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
-  const under = doc.createElementNS(NS, "g");
-  under.setAttribute("filter", "url(#night)");
-  for (const k of kids) under.append(k);
-  const over = under.cloneNode(true);
-  over.removeAttribute("filter");
-  over.setAttribute("class", "lumeglow");
-  over.setAttribute("filter", "url(#lumeglow)");
-  over.setAttribute("opacity", glow_k.toFixed(3));
-  for (const d of over.querySelectorAll("defs")) d.remove();
-  for (const e of over.querySelectorAll("*")) {
-    if (e.tagName === "g") continue;
-    const hand = e.closest("[data-hl]");
-    const lume = lume_exact(e.getAttribute("fill") || "") || hand && (lume_exact(hand.querySelector("[fill]")?.getAttribute("fill") || "") || lume_exact("#E4EAC2"));
+  const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement;
+  const halo_w = 0.5 + 1.1 * dark, halo_a = (0.18 + 0.32 * dark) * glow_k;
+  const glow = (e, lume) => {
+    e.setAttribute("fill", lume.glow);
+    e.removeAttribute("stroke");
+    e.removeAttribute("fill-opacity");
+    if (glow_k < 1) e.setAttribute("opacity", glow_k.toFixed(3));
+  };
+  const halo = (e, lume) => {
+    for (const [w, a] of [[2 * halo_w, halo_a / 3], [halo_w, halo_a]]) {
+      const h = e.cloneNode(true);
+      h.setAttribute("class", "lumehalo");
+      for (const s of [h, ...h.querySelectorAll("*")]) if (s.tagName !== "g") {
+        s.setAttribute("fill", "none");
+        s.setAttribute("stroke", lume.glow);
+        s.setAttribute("stroke-width", w.toFixed(2));
+        s.setAttribute("stroke-linejoin", "round");
+      }
+      h.setAttribute("opacity", a.toFixed(3));
+      e.before(h);
+    }
+  };
+  for (const g of root.querySelectorAll("[data-hl]")) g.setAttribute("visibility", "hidden");
+  for (const e of [...root.querySelectorAll("*")]) {
+    if (e.closest("[data-hl], .lumehalo")) continue;
+    const lume = lume_exact(e.getAttribute("fill") || "");
     if (lume) {
-      e.setAttribute("fill", lume.glow);
-      e.removeAttribute("stroke");
-      e.removeAttribute("fill-opacity");
-      e.setAttribute("visibility", "visible");
+      halo(e, lume);
+      glow(e, lume);
       continue;
     }
-    e.setAttribute("visibility", "hidden");
-    e.removeAttribute("filter");
+    for (const a of COLOURED) {
+      const v = e.getAttribute(a);
+      if (v) e.setAttribute(a, night_colour(v, dark));
+    }
   }
-  root.replaceChildren(defs, under, over);
   const out = new XMLSerializer().serializeToString(doc);
   return out.replace(/^(<svg[^>]*>)/, "$1\n");
 }
