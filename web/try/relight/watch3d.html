@@ -21,6 +21,9 @@
   canvas#gl { display: block; touch-action: none; cursor: crosshair; }
   #side { padding: 16px 18px; background: #2a2622; border-left: 1px solid #000; overflow: auto; }
   h1 { font-size: 13px; font-weight: 600; margin: 0 0 14px; }
+  .pills { display: flex; gap: 4px; margin-bottom: 14px; }
+  .pills button { flex: 1; border: 1px solid #666; background: none; color: #ddd; border-radius: 99px; padding: 5px 0; font: inherit; cursor: pointer; }
+  .pills button.on { background: #ddd; color: #111; border-color: #ddd; }
   label { display: grid; grid-template-columns: 1fr 44px; align-items: center; gap: 8px; margin: 10px 0 2px; }
   input[type=range] { width: 100%; margin: 0 0 6px; }
   .num { text-align: right; font-variant-numeric: tabular-nums; color: #aaa; }
@@ -30,7 +33,8 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 1</h1>
+  <h1>Watch 3D · round 2</h1>
+  <div class="pills" id="light"><button data-m="studio" class="on">Studio</button><button data-m="sun">Sun</button></div>
   <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
   <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
@@ -78,7 +82,7 @@ const MATERIALS = {
   leather: () => new THREE.MeshPhysicalMaterial({ color: leatherHex, metalness: 0, roughness: 0.75 }),
   floor: () => new THREE.MeshStandardMaterial({ color: floorHex, metalness: 0, roughness: 0.9 }),
   ink: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 0, roughness: 0.5 }),
-  hand: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 1, roughness: 0.3 }),
+  hand: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 0.9, roughness: 0.42 }),
 };
 
 // ── 3 · the scene ──
@@ -113,12 +117,25 @@ for (const [name, p] of Object.entries(SHEET)) {
     const s = new THREE.Shape(), p = (x, y) => [sx * x, sy * y];
     s.moveTo(...p(xi, yi)); s.lineTo(...p(xi, half - r)); s.quadraticCurveTo(...p(xi, half), ...p(xi + r, half)); s.lineTo(...p(xo - r, half)); s.quadraticCurveTo(...p(xo, half), ...p(xo, half - r));
     s.bezierCurveTo(...p(xo, half - (half - yb) * 0.5), ...p(xb - 0.6, yb + 1.2), ...p(xb, yb)); s.closePath();
-    const depth = LUG.zTop - LUG.zBottom, geo = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 3 });
-    // the slope: the top face sinks toward the tip (the extrusion runs along local z; the tip is at |y| = half)
-    const pos = geo.attributes.position; for (let i = 0; i < pos.count; i++) { const y = Math.abs(pos.getY(i)), t = Math.max(0, Math.min(1, (y - yb) / (half - yb))); pos.setZ(i, pos.getZ(i) * (1 - t * (LUG.zTop - LUG.zTip) / depth)); } geo.computeVertexNormals();
-    const m = new THREE.Mesh(geo, MATERIALS.brushed()); m.rotation.x = -Math.PI / 2; m.position.y = LUG.zBottom - DIAL_Z; m.castShadow = m.receiveShadow = true; watch.add(m); } }
+    const depth = LUG.zTop - LUG.zBottom, geo = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: 0.45, bevelSize: 0.45, bevelSegments: 4, curveSegments: 24 });
+    // the droop (Okay: "not straight? Sloping"): the whole slab bends down toward the tip, more and more — a curve, not a
+    // ramp — and thins a little on the way (the extrusion runs along local z; the tip is at |y| = half)
+    const pos = geo.attributes.position; for (let i = 0; i < pos.count; i++) { const y = Math.abs(pos.getY(i)), t = Math.max(0, Math.min(1, (y - yb) / (half - yb))), droop = (LUG.zTop - LUG.zTip) * Math.pow(t, 1.7);
+      pos.setZ(i, pos.getZ(i) * (1 - 0.22 * t) - droop); } geo.computeVertexNormals();
+    // two skins on one lug: the top face brushed, the flanks and the chamfer polished (ExtrudeGeometry's two material groups)
+    const m = new THREE.Mesh(geo, [MATERIALS.brushed(), MATERIALS.polished()]); m.rotation.x = -Math.PI / 2; m.position.y = LUG.zBottom - DIAL_Z; m.castShadow = m.receiveShadow = true; watch.add(m); } }
+// the insert's markings: five-minute ticks and the triangle, a hair proud of the insert, matte off-white
+{ const z = 12.3 - DIAL_Z + 0.02, mat = new THREE.MeshPhysicalMaterial({ color: 0xd8d5cc, roughness: 0.6 }), ri = 16.7 + 0.5;
+  const g = new THREE.Group();
+  for (let m = 0; m < 60; m += 5) { const sh = new THREE.Shape();
+    if (m === 0) { sh.moveTo(0, 19.0 - 0.6); sh.lineTo(-1.3, ri + 0.3); sh.lineTo(1.3, ri + 0.3); sh.closePath(); }
+    else { const w = 0.35, r0 = ri + 0.3, r1 = ri + 1.9; sh.moveTo(-w, r0); sh.lineTo(w, r0); sh.lineTo(w, r1); sh.lineTo(-w, r1); sh.closePath(); }
+    const mesh = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.06, bevelEnabled: false }), mat); mesh.rotation.z = -m * 6 * Math.PI / 180; g.add(mesh); }
+  g.rotation.x = -Math.PI / 2; g.position.y = z; watch.add(g); }
 // the crown: a cylinder lying along x, out of the case's right side
-{ const geo = new THREE.CylinderGeometry(CROWN.w / 2, CROWN.w / 2, CROWN.h + 1.2, 48); const m = new THREE.Mesh(geo, MATERIALS.polished()); m.rotation.z = Math.PI / 2; m.position.set(40.5 / 2 + CROWN.h / 2 + 0.3, CROWN.z - DIAL_Z, 0); m.castShadow = m.receiveShadow = true; watch.add(m); }
+{ const geo = new THREE.CylinderGeometry(CROWN.w / 2, CROWN.w / 2, CROWN.h + 1.2, 144, 1, false);      // knurled: 18 ridges round its grip
+  const pos = geo.attributes.position; for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), zz = pos.getZ(i), rr = Math.hypot(x, zz); if (rr < 0.01) continue; const th = Math.atan2(zz, x), k = 1 + 0.045 * Math.cos(18 * th); pos.setX(i, x * k); pos.setZ(i, zz * k); } geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, MATERIALS.polished()); m.rotation.z = Math.PI / 2; m.position.set(40.5 / 2 + CROWN.h / 2 + 0.3, CROWN.z - DIAL_Z, 0); m.castShadow = m.receiveShadow = true; watch.add(m); }
 // the strap: a flat bar under the lugs, both ways
 for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.thick, 60); const m = new THREE.Mesh(geo, MATERIALS.leather()); m.position.set(0, STRAP.z + STRAP.thick / 2 - DIAL_Z, sy * (40.5 / 2 - 3 + 30)); m.castShadow = m.receiveShadow = true; watch.add(m); }
 // the ground, far below the case (the wrist is not here yet)
@@ -155,7 +172,7 @@ for (const it of scene3.items) {
 // ── 5 · the light and the controls ──
 const sun = new THREE.DirectionalLight(0xffffff, 1); sun.castShadow = true; scene.add(sun); scene.add(sun.target);
 sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = sun.shadow.camera.bottom = -45; sun.shadow.camera.right = sun.shadow.camera.top = 45; sun.shadow.camera.near = 50; sun.shadow.camera.far = 400; sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.05; sun.shadow.radius = 4;
-const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, polish: 0.75 };
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, polish: 0.75, mode: "studio" };
 const $ = (id) => document.getElementById(id);
 function render() {
   const t0 = performance.now();
@@ -163,12 +180,16 @@ function render() {
   if (canvas.clientWidth !== side) { renderer.setSize(side, side, true); camera.aspect = 1; camera.updateProjectionMatrix(); }
   const a = (90 - S.from) * Math.PI / 180, r = S.rise * Math.PI / 180;      // the sun's clock angle (0 at 12, clockwise) and its height
   sun.position.set(Math.cos(a) * Math.cos(r) * 200, Math.sin(r) * 200, -Math.sin(a) * Math.cos(r) * 200);      // dial y (12 o'clock) is −z
-  sun.intensity = S.sun * 4; scene.environmentIntensity = S.room * 1.6;
+  // two lights (Okay: "select among studio and sun modes"): Studio — the room does the work, the key light is broad and
+  // soft (a softbox from the sun's side, wide shadows); Sun — a hard, strong sun, the room dimmed to a fill
+  if (S.mode === "studio") { sun.intensity = S.sun * 1.2; sun.shadow.radius = 14; scene.environmentIntensity = S.room * 2.0; }
+  else { sun.intensity = S.sun * 5; sun.shadow.radius = 2; scene.environmentIntensity = S.room * 0.9; }
   for (const m of watch.children) if (m.isMesh && (m.name === "band" || m.name === "rehaut")) m.material.roughness = 0.35 - 0.3 * S.polish;
   renderer.render(scene, camera);
   status.textContent = `${canvas.width} × ${canvas.height} px · frame ${(performance.now() - t0).toFixed(1)} ms · ${renderer.info.render.triangles} triangles`;
 }
 const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-sun").textContent = Math.round(S.sun * 100) + " %"; $("v-room").textContent = Math.round(S.room * 100) + " %"; $("v-polish").textContent = Math.round(S.polish * 100) + " %"; };
+for (const b of document.querySelectorAll("#light button")) b.onclick = () => { document.querySelector("#light .on").classList.remove("on"); b.classList.add("on"); S.mode = b.dataset.m; render(); };
 for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01], ["polish", "polish", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
 let dragging = false;
 const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
@@ -178,5 +199,5 @@ canvas.onpointermove = (e) => { if (dragging) sunAt(e); };
 canvas.onpointerup = canvas.onpointercancel = () => { dragging = false; };
 window.onresize = render;
 show(); render();
-window.watch3d = { S, render, scene, camera, renderer };
+window.watch3d = { S, render, scene, camera, renderer, setMode: (m) => document.querySelector(`#light [data-m="${m}"]`).click() };
 </script>
