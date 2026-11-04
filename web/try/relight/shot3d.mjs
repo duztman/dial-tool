@@ -8,7 +8,7 @@ const page = await browser.newPage({ viewport: { width: 1000, height: 760 }, dev
 page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") console.log("console:", m.text().slice(0, 300)); });
 page.on("pageerror", (e) => console.log("page error:", e.message));
 await page.route("https://cdn.jsdelivr.net/npm/three@0.170.0/**", (route) => { const p = route.request().url().replace("https://cdn.jsdelivr.net/npm/three@0.170.0/", "node_modules/three/"); route.fulfill({ body: fs.readFileSync(p), contentType: "text/javascript" }); });
-await page.goto("file://" + process.cwd() + "/try/relight/watch3d.html");
+await page.goto("file://" + process.cwd() + "/try/relight/watch3d.html", { timeout: 240000 });
 await page.waitForFunction(() => window.watch3d, null, { timeout: 120000 });
 await page.evaluate(([f, r, m]) => { window.watch3d.S.from = +f; window.watch3d.S.rise = +r; window.watch3d.setMode(m); window.watch3d.render(); }, [from, rise, mode]);
 await page.waitForTimeout(500);
