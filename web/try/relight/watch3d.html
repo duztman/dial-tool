@@ -33,8 +33,9 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 3</h1>
+  <h1>Watch 3D · round 4</h1>
   <div class="pills" id="light"><button data-m="studio" class="on">Studio</button><button data-m="sun">Sun</button></div>
+  <div class="pills" id="strap"><button data-s="leather">Leather</button><button data-s="bracelet" class="on">Bracelet</button></div>
   <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
   <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
@@ -144,8 +145,31 @@ for (const [name, p] of Object.entries(SHEET)) {
 { const geo = new THREE.CylinderGeometry(CROWN.w / 2, CROWN.w / 2, CROWN.h + 1.2, 144, 1, false);      // knurled: 18 ridges round its grip
   const pos = geo.attributes.position; for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), zz = pos.getZ(i), rr = Math.hypot(x, zz); if (rr < 0.01) continue; const th = Math.atan2(zz, x), k = 1 + 0.045 * Math.cos(18 * th); pos.setX(i, x * k); pos.setZ(i, zz * k); } geo.computeVertexNormals();
   const m = new THREE.Mesh(geo, MATERIALS.polished()); m.rotation.z = Math.PI / 2; m.position.set(40.5 / 2 + CROWN.h / 2 + 0.3, CROWN.z - DIAL_Z, 0); m.castShadow = m.receiveShadow = true; watch.add(m); }
-// the strap: a flat bar under the lugs, both ways
-for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.thick, 60); const m = new THREE.Mesh(geo, MATERIALS.leather()); m.position.set(0, STRAP.z + STRAP.thick / 2 - DIAL_Z, sy * (40.5 / 2 - 3 + 30)); m.castShadow = m.receiveShadow = true; watch.add(m); }
+// the strap: a flat leather bar under the lugs, both ways — or a bracelet (Okay: "Strap is next, try a bracelet")
+const straps = { leather: new THREE.Group(), bracelet: new THREE.Group() }; watch.add(straps.leather, straps.bracelet);
+for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.thick, 60); const m = new THREE.Mesh(geo, MATERIALS.leather()); m.position.set(0, STRAP.z + STRAP.thick / 2 - DIAL_Z, sy * (40.5 / 2 - 3 + 30)); m.castShadow = m.receiveShadow = true; straps.leather.add(m); }
+// the bracelet: three-link rows (two brushed outer links, a polished centre link), 3 mm tall with rounded tops, laid on
+// an arc that falls away from the case as a wrist would (the Show Case's rule: bracelets are never seen flat), tapering
+// from the lug width to 18 mm; the end link one solid piece the lugs' width, its inner edge following the case
+{ const W0 = LUG.lugw, W1 = 18, PITCH = 7.6, GAP = 0.7, LINK_H = 3.0, LEN = 72, WR = 34;      // WR: the wrist's radius the bracelet lies on
+  const yStart = Math.sqrt((40.5 / 2) ** 2 - (W0 / 2) ** 2) + 0.2, zTop = LUG.zBottom + 0.3;      // the end link meets the case between the lugs
+  const rounded = (w, l, h, r) => { const sh = new THREE.Shape(); sh.moveTo(-w / 2 + r, -l / 2); sh.lineTo(w / 2 - r, -l / 2); sh.quadraticCurveTo(w / 2, -l / 2, w / 2, -l / 2 + r); sh.lineTo(w / 2, l / 2 - r); sh.quadraticCurveTo(w / 2, l / 2, w / 2 - r, l / 2); sh.lineTo(-w / 2 + r, l / 2); sh.quadraticCurveTo(-w / 2, l / 2, -w / 2, l / 2 - r); sh.lineTo(-w / 2, -l / 2 + r); sh.quadraticCurveTo(-w / 2, -l / 2, -w / 2 + r, -l / 2);
+    return new THREE.ExtrudeGeometry(sh, { depth: h - 0.7, bevelEnabled: true, bevelThickness: 0.7, bevelSize: 0.6, bevelSegments: 4, curveSegments: 6 }); };      // the bevel is the vault: a soft top edge all round
+  const place = (mesh, sy, sAlong) => { const th = sAlong / WR;      // sAlong: mm from the case along the bracelet; the arc tips it over the wrist
+    mesh.rotation.x = -Math.PI / 2; const g = new THREE.Group(); g.add(mesh); g.position.set(0, zTop - DIAL_Z - WR * (1 - Math.cos(th)), -sy * (yStart + WR * Math.sin(th))); g.rotation.x = sy * th; straps.bracelet.add(g); };
+  for (const sy of [-1, 1]) {
+    // the end link: the lugs' width, its inner edge the case's circle; the first row starts after it
+    { const R = 40.5 / 2, w = W0 - 0.3, l = 5.2, sh = new THREE.Shape(); sh.moveTo(-w / 2, 0); sh.lineTo(w / 2, 0); sh.lineTo(w / 2, -l); sh.lineTo(-w / 2, -l); sh.closePath();
+      const hole = new THREE.Path(); hole.absarc(0, -(R - yStart) - 0.01, R, 0, Math.PI * 2, false);      // the case's circle cuts the end link's inner edge
+      const sh2 = new THREE.Shape(); sh2.moveTo(-w / 2, -l); sh2.lineTo(-w / 2, 0); for (let k = 0; k <= 24; k++) { const x = -w / 2 + w * k / 24; sh2.lineTo(x, -(yStart - Math.sqrt(Math.max(0, R * R - x * x)))); } sh2.lineTo(w / 2, -l); sh2.closePath();
+      const geo = new THREE.ExtrudeGeometry(sh2, { depth: LINK_H - 0.7, bevelEnabled: true, bevelThickness: 0.7, bevelSize: 0.5, bevelSegments: 4 });
+      const m = new THREE.Mesh(geo, MATERIALS.brushed()); m.castShadow = m.receiveShadow = true; m.scale.y = -1; place(m, sy, 0); }
+    for (let i = 0; i * PITCH + 5.2 < LEN; i++) { const sAlong = 5.2 + 0.3 + i * PITCH + PITCH / 2, t = Math.min(1, sAlong / LEN), w = W0 - (W0 - W1) * t, centre = w * 0.36, outer = (w - centre - 2 * GAP) / 2, l = PITCH - GAP;
+      const row = [[-(centre / 2 + GAP + outer / 2), outer, "brushed"], [0, centre, "polished"], [centre / 2 + GAP + outer / 2, outer, "brushed"]];
+      for (const [x, lw, mat] of row) { const m = new THREE.Mesh(rounded(lw, l, LINK_H, 0.4), MATERIALS[mat]()); m.position.x = x; m.castShadow = m.receiveShadow = true;
+        const g = new THREE.Group(); g.add(m); place(g, sy, sAlong); } } } }
+const setStrap = (which) => { for (const k in straps) straps[k].visible = k === which; };
+setStrap("bracelet");
 // the ground, far below the case (the wrist is not here yet)
 { const m = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), MATERIALS.floor()); m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z; m.receiveShadow = true; watch.add(m); }
 
@@ -197,6 +221,7 @@ function render() {
   status.textContent = `${canvas.width} × ${canvas.height} px · frame ${(performance.now() - t0).toFixed(1)} ms · ${renderer.info.render.triangles} triangles`;
 }
 const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-sun").textContent = Math.round(S.sun * 100) + " %"; $("v-room").textContent = Math.round(S.room * 100) + " %"; $("v-polish").textContent = Math.round(S.polish * 100) + " %"; };
+for (const b of document.querySelectorAll("#strap button")) b.onclick = () => { document.querySelector("#strap .on").classList.remove("on"); b.classList.add("on"); setStrap(b.dataset.s); render(); };
 for (const b of document.querySelectorAll("#light button")) b.onclick = () => { document.querySelector("#light .on").classList.remove("on"); b.classList.add("on"); S.mode = b.dataset.m; render(); };
 for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01], ["polish", "polish", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
 let dragging = false;
