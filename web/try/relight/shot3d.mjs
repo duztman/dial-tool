@@ -13,5 +13,5 @@ await page.waitForFunction(() => window.watch3d, null, { timeout: 120000 });
 await page.evaluate(([f, r, m, v]) => { window.watch3d.S.from = +f; window.watch3d.S.rise = +r; window.watch3d.setMode(m); if (v) document.querySelector(`#view [data-v="${v}"]`).click(); window.watch3d.render(); }, [from, rise, mode, view]);
 await page.waitForTimeout(500);
 console.log(await page.evaluate(() => document.getElementById("status").textContent));
-await page.screenshot({ path: out });
+await page.screenshot({ path: out, timeout: 300000 });
 await browser.close();
