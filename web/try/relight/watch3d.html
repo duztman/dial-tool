@@ -160,7 +160,7 @@ for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.th
   // the bracelet lies on the table as the reference's does: from the case (3 mm up) it bends down over the first 18 mm and
   // then runs flat on the leather; each row sits on that curve and tilts with it
   const DROP = LUG.zBottom + 0.3, BEND = 18;
-  const curve = (sA) => { const t = Math.min(1, sA / BEND), e = t * t * (3 - 2 * t); return { z: DROP * (1 - e), slope: t < 1 ? -DROP * 6 * t * (1 - t) / BEND : 0 }; };
+  const curve = (sA) => { const t = Math.max(0, Math.min(1, (sA - 7) / BEND)), e = t * t * (3 - 2 * t); return { z: DROP * (1 - e), slope: t > 0 && t < 1 ? -DROP * 6 * t * (1 - t) / BEND : 0 }; };      // level for 7 mm past the lugs, then down
   const place = (mesh, sy, sAlong) => { const { z, slope } = curve(sAlong), th = Math.atan(slope);      // sAlong: mm from the case along the bracelet
     mesh.rotation.x = -Math.PI / 2; const g = new THREE.Group(); g.add(mesh); g.position.set(0, z - DIAL_Z, -sy * (yStart + sAlong)); g.rotation.x = -sy * th; straps.bracelet.add(g); };
   for (const sy of [-1, 1]) {
