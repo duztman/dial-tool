@@ -174,7 +174,7 @@ for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.th
 // brushed and flat; the bracelet's outer edge wears a polished bevel; the seams read as thin dark lines with a hair of
 // light on the rounded end above each. It tapers from the lug width toward the clasp. The end link is one solid piece,
 // the lugs' width, its inner edge the case's circle, and it carries the first half centre link.
-{ const W0 = LUG.lugw, W1 = 18, P = 7.8, GAP = 0.4, GAPX = 0.3, H = 3.1, LEN = 70, CENTRE = 0.40, END = 5.6;
+{ const W0 = LUG.lugw, W1 = 18, P = 7.8, GAP = 0.22, GAPX = 0.18, H = 3.1, LEN = 70, CENTRE = 0.40, END = 5.6;
   const yStart = Math.sqrt((40.5 / 2) ** 2 - (W0 / 2) ** 2) + 0.2;      // the end link meets the case between the lugs
   // one link: a bar `l` long, `h` thick with round ends, `w` wide; the two side faces (its ends across the bracelet) polished, the rest brushed
   const link = (w, l, h, outer) => { const r = 0.9, hh = h / 2, sh = new THREE.Shape();      // the side view: a bar with its end edges rounded (r 0.9), the top flat between them — a half-cylinder end would read as a roller
@@ -195,7 +195,7 @@ for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.th
     { const R = 40.5 / 2, w = W0 - 0.3, sh = new THREE.Shape(); sh.moveTo(-w / 2, -END); sh.lineTo(-w / 2, 0);
       for (let k = 0; k <= 24; k++) { const x = -w / 2 + w * k / 24; sh.lineTo(x, -(yStart - Math.sqrt(Math.max(0, R * R - x * x)))); } sh.lineTo(w / 2, -END); sh.closePath();
       const geo = new THREE.ExtrudeGeometry(sh, { depth: H - 0.5, bevelEnabled: true, bevelThickness: 0.25, bevelSize: 0.25, bevelSegments: 3 });
-      const m = new THREE.Mesh(geo, [MATERIALS.brushed(), MATERIALS.polished()]); m.rotation.x = Math.PI / 2; m.position.y = -H / 2 + 0.25; m.castShadow = m.receiveShadow = true;      // laid flat, its inner edge at the case
+      const m = new THREE.Mesh(geo, [MATERIALS.brushed(), MATERIALS.polished()]); m.rotation.x = Math.PI / 2; m.scale.y = sy; m.position.y = -H / 2 + 0.25; m.castShadow = m.receiveShadow = true;      // laid flat, its inner edge at the case; mirrored for the 6 o'clock side, so it runs away from the case there too (found 5 Nov 2026: one side ran into the case)
       place(m, sy, 0);
       place(link(widthAt(END) * CENTRE, P / 2 + 0.6, H, false), sy, END + P / 4); }
     for (let i = 0; i * P + END < LEN; i++) {
