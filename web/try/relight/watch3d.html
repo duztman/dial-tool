@@ -33,7 +33,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 2</h1>
+  <h1>Watch 3D · round 3</h1>
   <div class="pills" id="light"><button data-m="studio" class="on">Studio</button><button data-m="sun">Sun</button></div>
   <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
@@ -56,7 +56,7 @@ const scene3 = window.SCENE;      // the dial's parts (dump.mjs)
 const DIAL_Z = 10.0;
 const SHEET = {
   band: { material: "polished", pts: [[0, 0], [17.5, 0], [19.0, 0.6], [20.25, 3.0], [20.25, 9.3], [19.9, 9.6], [16.3, 9.6], [16.3, 9.0], [0, 9.0]] },      // the case: caseback, flank with its lower chamfer, the seat the bezel sits on
-  rehaut: { material: "polished", pts: [[15.0, DIAL_Z], [15.4, 11.2], [16.1, 11.4], [16.3, 11.4], [16.3, 9.6], [15.0, 9.6]] },      // the ring from the dial up to the bezel: the slope you see round the dial
+  rehaut: { material: "polished", pts: [[14.6, DIAL_Z], [15.2, 11.35], [16.1, 11.5], [16.3, 11.5], [16.3, 9.6], [14.6, 9.6]] },      // the ring from the dial up to the bezel: a steep polished wall 1.35 mm tall and 0.6 wide, then a flat top — the slope you see round the dial
   bezel: { material: "brushed", pts: [[16.3, 9.6], [20.0, 9.6], [20.0, 11.9], [19.4, 12.45], [19.0, 12.45], [19.0, 11.9], [16.7, 11.9], [16.7, 12.4], [16.5, 12.45], [16.4, 11.6], [16.3, 11.6]] },      // the rotating bezel: coin edge, chamfer, the outer lip, the seat the insert lies in, the inner lip, the inner wall
   insert: { material: "insert", pts: [[16.7, 11.9], [19.0, 11.9], [19.0, 12.3], [16.7, 12.4]] },      // the black insert, a hair sloped outward
   crystal: { material: "sapphire", pts: [[0, 11.55], [15.9, 11.55], [15.9, 12.3], [15.6, 12.5], [12.0, 13.0], [6.0, 13.3], [0, 13.4]] },      // boxed sapphire: a vertical rim, then a shallow dome
@@ -76,7 +76,7 @@ const STRAP = { thick: 3.0, z: 3.2 };
 const metalHex = scene3.metal, leatherHex = scene3.leather, floorHex = scene3.floor;
 const MATERIALS = {
   polished: () => new THREE.MeshPhysicalMaterial({ color: metalHex, metalness: 1, roughness: 0.18 }),
-  brushed: () => new THREE.MeshPhysicalMaterial({ color: metalHex, metalness: 1, roughness: 0.38 }),
+  brushed: () => new THREE.MeshPhysicalMaterial({ color: metalHex, metalness: 1, roughness: 0.5 }),
   insert: () => new THREE.MeshPhysicalMaterial({ color: scene3.insert.top, metalness: 0.6, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
   sapphire: () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.0, transmission: 1, thickness: 0.25, ior: 1.76, transparent: true, side: THREE.DoubleSide }),
   leather: () => new THREE.MeshPhysicalMaterial({ color: leatherHex, metalness: 0, roughness: 0.75 }),
@@ -111,19 +111,27 @@ for (const [name, p] of Object.entries(SHEET)) {
   const geo = new THREE.LatheGeometry(p.pts.map(([r, z]) => new THREE.Vector2(r, z - DIAL_Z)), 256);
   const m = new THREE.Mesh(geo, MATERIALS[p.material]()); m.castShadow = name !== "crystal"; m.receiveShadow = true; m.name = name; watch.add(m);
 }
-// the lugs: the plan outline (watch.js lugPath), pulled up from zBottom to zTop and sloping down to zTip at the tip
-{ const R = 40.5 / 2, { l2l, lugw, lugT, flare } = LUG, half = l2l / 2, xi = lugw / 2, xo = xi + lugT, xb = xo + flare, yb = Math.sqrt(R * R - xb * xb), yi = Math.sqrt(R * R - xi * xi) - 1.5, r = 0.8;
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-    const s = new THREE.Shape(), p = (x, y) => [sx * x, sy * y];
-    s.moveTo(...p(xi, yi)); s.lineTo(...p(xi, half - r)); s.quadraticCurveTo(...p(xi, half), ...p(xi + r, half)); s.lineTo(...p(xo - r, half)); s.quadraticCurveTo(...p(xo, half), ...p(xo, half - r));
-    s.bezierCurveTo(...p(xo, half - (half - yb) * 0.5), ...p(xb - 0.6, yb + 1.2), ...p(xb, yb)); s.closePath();
-    const depth = LUG.zTop - LUG.zBottom, geo = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: 0.45, bevelSize: 0.45, bevelSegments: 4, curveSegments: 24 });
-    // the droop (Okay: "not straight? Sloping"): the whole slab bends down toward the tip, more and more — a curve, not a
-    // ramp — and thins a little on the way (the extrusion runs along local z; the tip is at |y| = half)
-    const pos = geo.attributes.position; for (let i = 0; i < pos.count; i++) { const y = Math.abs(pos.getY(i)), t = Math.max(0, Math.min(1, (y - yb) / (half - yb))), droop = (LUG.zTop - LUG.zTip) * Math.pow(t, 1.7);
-      pos.setZ(i, pos.getZ(i) * (1 - 0.22 * t) - droop); } geo.computeVertexNormals();
-    // two skins on one lug: the top face brushed, the flanks and the chamfer polished (ExtrudeGeometry's two material groups)
-    const m = new THREE.Mesh(geo, [MATERIALS.brushed(), MATERIALS.polished()]); m.rotation.x = -Math.PI / 2; m.position.y = LUG.zBottom - DIAL_Z; m.castShadow = m.receiveShadow = true; watch.add(m); } }
+// the lugs (Okay: "Lugs look weird. You might check references"): after the SPB143 — a brushed flat top level with the
+// case top, a wide polished chamfer along the outer top edge, brushed flanks, and the whole lug curving down to the tip.
+// Built as a section swept along the lug: at every station from the case out to the tip the section is five points —
+// inner wall, top, chamfer, outer wall, underside — placed at that station's width (the outer edge flares into the case),
+// thickness (thinning a little) and droop (a curve, steepening toward the tip). Every face is its own strip, so edges stay hard.
+{ const R = 40.5 / 2, { l2l, lugw, lugT, flare } = LUG, half = l2l / 2, xi = lugw / 2, xo = xi + lugT, yb = Math.sqrt(R * R - (xo + flare) ** 2), yi = Math.sqrt(R * R - xi * xi) - 1.5;
+  const H = LUG.zTop - LUG.zBottom, CH = 1.1, N = 40;      // the lug's thickness and the chamfer's width
+  const yc = Math.sqrt(R * R - xo * xo), y0 = half - (half - yb) * 0.5;      // yc: where the lug's top leaves the case; y0: where the outer edge starts to flare in to the case (lugPath's curve)
+  const station = (s) => { const y = yb + (half - yb) * s, f = Math.max(0, Math.min(1, (y0 - y) / (y0 - yb)));      // f: toward the case the outer edge flares out to meet it
+    const xOut = xo + flare * f * f, t = Math.max(0, (y - yc) / (half - yc)), droop = (LUG.zTop - LUG.zTip) * Math.pow(t, 1.8), h = H * (1 - 0.18 * t), ch = CH * Math.min(1, 0.6 + 0.4 * (1 - t));
+    return { y, pts: [[xi, LUG.zBottom - droop], [xi, LUG.zBottom + h - droop], [xOut - ch, LUG.zBottom + h - droop], [xOut, LUG.zBottom + h - ch * 0.8 - droop], [xOut, LUG.zBottom - droop]] }; };      // x, z of: inner foot, inner top, chamfer start, chamfer end, outer foot
+  const FACES = [[0, 1, "brushed"], [1, 2, "brushed"], [2, 3, "polished"], [3, 4, "brushed"], [4, 0, "brushed"]];      // inner wall, top, chamfer, outer wall, underside
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const [a, b, mat] of FACES) {
+    const v = [], idx = [];
+    for (let k = 0; k <= N; k++) { const st = station(k / N); for (const i of [a, b]) v.push(sx * st.pts[i][0], st.pts[i][1] - DIAL_Z, -sy * st.y); }      // dial y (12 o'clock) is −z
+    for (let k = 0; k < N; k++) { const o = 2 * k; idx.push(o, o + 1, o + 2, o + 1, o + 3, o + 2); }
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.setIndex(idx); g.computeVertexNormals();
+    const m = new THREE.Mesh(g, MATERIALS[mat]()); m.material.side = THREE.DoubleSide; m.castShadow = m.receiveShadow = true; watch.add(m); }
+  // the tip: a flat end wall
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) { const st = station(1), sh = new THREE.Shape(); sh.moveTo(st.pts[0][0], st.pts[0][1]); for (const q of st.pts.slice(1)) sh.lineTo(q[0], q[1]); sh.closePath();
+    const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), MATERIALS.brushed()); m.material.side = THREE.DoubleSide; m.scale.x = sx; m.position.set(0, -DIAL_Z, -sy * st.y); m.castShadow = true; watch.add(m); } }
 // the insert's markings: five-minute ticks and the triangle, a hair proud of the insert, matte off-white
 { const z = 12.3 - DIAL_Z + 0.02, mat = new THREE.MeshPhysicalMaterial({ color: 0xd8d5cc, roughness: 0.6 }), ri = 16.7 + 0.5;
   const g = new THREE.Group();
