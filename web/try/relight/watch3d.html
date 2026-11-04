@@ -1,0 +1,182 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watch 3D trial</title>
+<!--
+  watch3d.html — round 1 of the 3D exercise (4 Nov 2026; Okay: "Profiles and rehaut and all them necessary … let's think
+  of a sustainable system … Draft sheets as we go").
+
+  The system: a case is a SHEET — cross-section profiles in millimetres (r out from the axis, z up from the caseback),
+  one per round part, each with a material name. Each profile is spun round the dial's axis (a lathe); the parts that
+  aren't round (lugs, crown, strap) are outlines pulled up to a height. The dial is Dial Tool's own drawing laid on the
+  plate as a picture; the hands are their own paths pulled up with a bevel. One studio room lights everything (reflections
+  on the metal), one soft sun from the app's angle and height casts the shadows.
+
+  Round 1: the diver only (Seiko SPB143's numbers, scaled to the dial), three.js's built-in room, no crown knurl, no bracelet.
+  The SHEET below is what you will later draw in Illustrator; for now it is written here, and drawn on the right.
+-->
+<style>
+  body { margin: 0; background: #1c1c1f; color: #ddd; font: 13px/1.4 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; display: grid; grid-template-columns: 1fr 260px; height: 100vh; }
+  #stage { position: relative; display: grid; place-items: center; overflow: hidden; }
+  canvas#gl { display: block; touch-action: none; cursor: crosshair; }
+  #side { padding: 16px 18px; background: #2a2622; border-left: 1px solid #000; overflow: auto; }
+  h1 { font-size: 13px; font-weight: 600; margin: 0 0 14px; }
+  label { display: grid; grid-template-columns: 1fr 44px; align-items: center; gap: 8px; margin: 10px 0 2px; }
+  input[type=range] { width: 100%; margin: 0 0 6px; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; color: #aaa; }
+  p.note { color: #998; margin: 14px 0 0; }
+  #sheet { width: 100%; margin-top: 14px; background: #1c1c1f; border: 1px solid #000; }
+  #status { position: absolute; left: 12px; bottom: 10px; color: #998; }
+</style>
+<div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
+<div id="side">
+  <h1>Watch 3D · round 1</h1>
+  <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
+  <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
+  <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
+  <label>Room light <span class="num" id="v-room"></span></label><input type="range" id="room" min="0" max="100" value="60">
+  <label>Polish <span class="num" id="v-polish"></span></label><input type="range" id="polish" min="0" max="100" value="75">
+  <p class="note">Drag on the watch: the direction is the sun's angle, the middle high, the edge low. The sheet: the diver's cross-section — what is spun round the axis. Blue is the crystal.</p>
+  <svg id="sheet" viewBox="0 0 24 16"></svg>
+</div>
+<script src="scene.js"></script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from "three";
+import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
+const scene3 = window.SCENE;      // the dial's parts (dump.mjs)
+
+// ── 1 · the sheet: the diver's cross-sections, mm at the published size (SPB143: Ø 40.5, 13.2 tall, l2l 47.6, lugs 20) ──
+// Each profile is a list of [r, z] points walked round the part's section (r out from the axis, z up from the
+// caseback); spun round the axis it becomes the part. Z of the dial's face: DIAL_Z.
+const DIAL_Z = 10.0;
+const SHEET = {
+  band: { material: "polished", pts: [[0, 0], [17.5, 0], [19.0, 0.6], [20.25, 3.0], [20.25, 9.3], [19.9, 9.6], [16.3, 9.6], [16.3, 9.0], [0, 9.0]] },      // the case: caseback, flank with its lower chamfer, the seat the bezel sits on
+  rehaut: { material: "polished", pts: [[15.0, DIAL_Z], [15.4, 11.2], [16.1, 11.4], [16.3, 11.4], [16.3, 9.6], [15.0, 9.6]] },      // the ring from the dial up to the bezel: the slope you see round the dial
+  bezel: { material: "brushed", pts: [[16.3, 9.6], [20.0, 9.6], [20.0, 11.9], [19.4, 12.45], [19.0, 12.45], [19.0, 11.9], [16.7, 11.9], [16.7, 12.4], [16.5, 12.45], [16.4, 11.6], [16.3, 11.6]] },      // the rotating bezel: coin edge, chamfer, the outer lip, the seat the insert lies in, the inner lip, the inner wall
+  insert: { material: "insert", pts: [[16.7, 11.9], [19.0, 11.9], [19.0, 12.3], [16.7, 12.4]] },      // the black insert, a hair sloped outward
+  crystal: { material: "sapphire", pts: [[0, 11.55], [15.9, 11.55], [15.9, 12.3], [15.6, 12.5], [12.0, 13.0], [6.0, 13.3], [0, 13.4]] },      // boxed sapphire: a vertical rim, then a shallow dome
+};
+const LUG = { l2l: 47.6, lugw: 20, lugT: 2.9, flare: 3.6, zTop: 9.3, zTip: 6.2, zBottom: 3.0 };
+const CROWN = { w: 6.4, h: 3.0, z: 6.0 };
+const STRAP = { thick: 3.0, z: 3.2 };
+
+// draw the sheet so it can be read (and, later, drawn in Illustrator)
+{ const svg = document.getElementById("sheet"); let html = "";
+  for (const [name, p] of Object.entries(SHEET)) { const d = p.pts.map(([r, z], i) => `${i ? "L" : "M"}${(r - 0).toFixed(2)} ${(15 - z).toFixed(2)}`).join("") + "Z";
+    html += `<path d="${d}" fill="${name === "crystal" ? "#4c8fd4" : name === "insert" ? "#555" : "#9b8a5a"}" fill-opacity="0.5" stroke="#ddd" stroke-width="0.08"/>`; }
+  html += `<line x1="0" y1="0" x2="0" y2="16" stroke="#777" stroke-width="0.06" stroke-dasharray="0.3 0.3"/><line x1="0" y1="${15 - DIAL_Z}" x2="15" y2="${15 - DIAL_Z}" stroke="#d44" stroke-width="0.06"/>`;
+  svg.innerHTML = html; }
+
+// ── 2 · materials: a small named list ──
+const metalHex = scene3.metal, leatherHex = scene3.leather, floorHex = scene3.floor;
+const MATERIALS = {
+  polished: () => new THREE.MeshPhysicalMaterial({ color: metalHex, metalness: 1, roughness: 0.18 }),
+  brushed: () => new THREE.MeshPhysicalMaterial({ color: metalHex, metalness: 1, roughness: 0.38 }),
+  insert: () => new THREE.MeshPhysicalMaterial({ color: scene3.insert.top, metalness: 0.6, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
+  sapphire: () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.0, transmission: 1, thickness: 0.25, ior: 1.76, transparent: true, side: THREE.DoubleSide }),
+  leather: () => new THREE.MeshPhysicalMaterial({ color: leatherHex, metalness: 0, roughness: 0.75 }),
+  floor: () => new THREE.MeshStandardMaterial({ color: floorHex, metalness: 0, roughness: 0.9 }),
+  ink: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 0, roughness: 0.5 }),
+  hand: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 1, roughness: 0.3 }),
+};
+
+// ── 3 · the scene ──
+const canvas = document.getElementById("gl"), status = document.getElementById("status");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(floorHex);
+// the room the metal and the glass reflect: a studio, not three.js's RoomEnvironment — that one has a bright ceiling panel
+// straight over the watch, which the crystal threw back into the camera as a white disc. Here the zenith (the camera's
+// side) is dark, two big softboxes stand low at the sides, a smaller fill behind the camera's shoulder
+function studio() { const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(100, 32, 16), new THREE.MeshBasicMaterial({ color: 0x151515, side: THREE.BackSide })));
+  const box = (w, h, x, y, z, lum) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color().setScalar(lum) })); m.position.set(x, y, z); m.lookAt(0, 0, 0); s.add(m); };
+  box(60, 40, -70, 25, 0, 6); box(60, 40, 70, 25, 0, 4); box(40, 20, 0, 20, 70, 2.5); box(50, 30, 0, 12, -70, 1.5); box(30, 30, 0, 90, 20, 0.35);      // left, right, front, back, a faint one high
+  return s; }
+const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(studio(), 0.04).texture;
+// the camera looks straight down the dial's axis (three's Y); 12 o'clock is −Z on screen's up. A long lens: little perspective
+const camera = new THREE.PerspectiveCamera(10, 1, 10, 2000); camera.position.set(0, 420, 0); camera.up.set(0, 0, -1); camera.lookAt(0, 0, 0);
+const K = scene3.size;      // the case scaled to the dial, as watch.js does
+const watch = new THREE.Group(); watch.scale.setScalar(K); scene.add(watch);
+const Z0 = -DIAL_Z * K;     // the dial's face at y = 0 of the world, the caseback below
+
+// the lathe parts from the sheet
+for (const [name, p] of Object.entries(SHEET)) {
+  const geo = new THREE.LatheGeometry(p.pts.map(([r, z]) => new THREE.Vector2(r, z - DIAL_Z)), 256);
+  const m = new THREE.Mesh(geo, MATERIALS[p.material]()); m.castShadow = name !== "crystal"; m.receiveShadow = true; m.name = name; watch.add(m);
+}
+// the lugs: the plan outline (watch.js lugPath), pulled up from zBottom to zTop and sloping down to zTip at the tip
+{ const R = 40.5 / 2, { l2l, lugw, lugT, flare } = LUG, half = l2l / 2, xi = lugw / 2, xo = xi + lugT, xb = xo + flare, yb = Math.sqrt(R * R - xb * xb), yi = Math.sqrt(R * R - xi * xi) - 1.5, r = 0.8;
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+    const s = new THREE.Shape(), p = (x, y) => [sx * x, sy * y];
+    s.moveTo(...p(xi, yi)); s.lineTo(...p(xi, half - r)); s.quadraticCurveTo(...p(xi, half), ...p(xi + r, half)); s.lineTo(...p(xo - r, half)); s.quadraticCurveTo(...p(xo, half), ...p(xo, half - r));
+    s.bezierCurveTo(...p(xo, half - (half - yb) * 0.5), ...p(xb - 0.6, yb + 1.2), ...p(xb, yb)); s.closePath();
+    const depth = LUG.zTop - LUG.zBottom, geo = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 3 });
+    // the slope: the top face sinks toward the tip (the extrusion runs along local z; the tip is at |y| = half)
+    const pos = geo.attributes.position; for (let i = 0; i < pos.count; i++) { const y = Math.abs(pos.getY(i)), t = Math.max(0, Math.min(1, (y - yb) / (half - yb))); pos.setZ(i, pos.getZ(i) * (1 - t * (LUG.zTop - LUG.zTip) / depth)); } geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, MATERIALS.brushed()); m.rotation.x = -Math.PI / 2; m.position.y = LUG.zBottom - DIAL_Z; m.castShadow = m.receiveShadow = true; watch.add(m); } }
+// the crown: a cylinder lying along x, out of the case's right side
+{ const geo = new THREE.CylinderGeometry(CROWN.w / 2, CROWN.w / 2, CROWN.h + 1.2, 48); const m = new THREE.Mesh(geo, MATERIALS.polished()); m.rotation.z = Math.PI / 2; m.position.set(40.5 / 2 + CROWN.h / 2 + 0.3, CROWN.z - DIAL_Z, 0); m.castShadow = m.receiveShadow = true; watch.add(m); }
+// the strap: a flat bar under the lugs, both ways
+for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.thick, 60); const m = new THREE.Mesh(geo, MATERIALS.leather()); m.position.set(0, STRAP.z + STRAP.thick / 2 - DIAL_Z, sy * (40.5 / 2 - 3 + 30)); m.castShadow = m.receiveShadow = true; watch.add(m); }
+// the ground, far below the case (the wrist is not here yet)
+{ const m = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), MATERIALS.floor()); m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z; m.receiveShadow = true; watch.add(m); }
+
+// ── 4 · the dial: Dial Tool's drawing as the plate's picture, the inks' heights as its bumps; the hands pulled up ──
+const D = scene3.d, PX = 64;      // pixels a millimetre on the plate's picture
+{ const n = Math.ceil(D * PX), c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d");
+  const b = document.createElement("canvas"); b.width = b.height = n; const bx = b.getContext("2d"); bx.fillStyle = "#000"; bx.fillRect(0, 0, n, n);
+  for (const cx of [x, bx]) cx.setTransform(PX, 0, 0, -PX, n / 2, n / 2);
+  for (const it of scene3.items) { if (it.hand || it.role === "boss" || it.role === "cap") continue;
+    const p = new Path2D(it.p); x.fillStyle = it.f; x.globalAlpha = it.a; x.fill(p);
+    bx.fillStyle = it.ink ? "#fff" : it.role === "date disc" || it.role === "date number" ? "#333" : "#000"; bx.fill(p); }      // the bump: inks white (proud), the plate black, the disc a step down
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const bump = new THREE.CanvasTexture(b);
+  const plate = new THREE.Mesh(new THREE.CircleGeometry(D / 2, 128), new THREE.MeshPhysicalMaterial({ map: tex, bumpMap: bump, bumpScale: 0.12, roughness: 0.35, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.25 }));
+  plate.rotation.x = -Math.PI / 2; plate.position.y = 0.001; plate.receiveShadow = true; watch.add(plate); }
+// the hands: each path pulled up 0.3 mm with a small bevel, at its own height over the plate, turned to its time
+const loader = new SVGLoader();
+const shapesOf = (d) => loader.parse(`<svg xmlns="http://www.w3.org/2000/svg"><path d="${d}"/></svg>`).paths.flatMap((p) => SVGLoader.createShapes(p));
+const H = scene3.heights;
+for (const it of scene3.items) {
+  if (!(it.hand || it.role === "boss" || it.role === "cap")) continue;
+  const z = it.role === "cap" ? H.cap : it.hand ? H[it.hand] : H[scene3.items[scene3.items.indexOf(it) - 1].hand] + 0.3;      // a boss sits on its hand
+  const thick = it.role === "hand" ? 0.3 : 0.35, bev = it.role === "hand" && it.bevel ? 0.12 : 0.05;
+  const g = new THREE.Group();
+  for (const s of shapesOf(it.p)) { const geo = new THREE.ExtrudeGeometry(s, { depth: thick, bevelEnabled: true, bevelThickness: bev, bevelSize: Math.min(bev, 0.06), bevelSegments: 2 });
+    const m = new THREE.Mesh(geo, MATERIALS.hand(it.f)); m.castShadow = true; g.add(m); }
+  const a = it.hand ? scene3.A[it.hand] : 0;
+  g.rotation.set(-Math.PI / 2, 0, -a * Math.PI / 180);      // first turned to its time in the path's own plane (clockwise), then laid flat: y (12 o'clock) to −z, the pull-up to +y
+  g.position.y = z; g.name = it.hand || it.role; watch.add(g);
+}
+
+// ── 5 · the light and the controls ──
+const sun = new THREE.DirectionalLight(0xffffff, 1); sun.castShadow = true; scene.add(sun); scene.add(sun.target);
+sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = sun.shadow.camera.bottom = -45; sun.shadow.camera.right = sun.shadow.camera.top = 45; sun.shadow.camera.near = 50; sun.shadow.camera.far = 400; sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.05; sun.shadow.radius = 4;
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, polish: 0.75 };
+const $ = (id) => document.getElementById(id);
+function render() {
+  const t0 = performance.now();
+  const side = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
+  if (canvas.clientWidth !== side) { renderer.setSize(side, side, true); camera.aspect = 1; camera.updateProjectionMatrix(); }
+  const a = (90 - S.from) * Math.PI / 180, r = S.rise * Math.PI / 180;      // the sun's clock angle (0 at 12, clockwise) and its height
+  sun.position.set(Math.cos(a) * Math.cos(r) * 200, Math.sin(r) * 200, -Math.sin(a) * Math.cos(r) * 200);      // dial y (12 o'clock) is −z
+  sun.intensity = S.sun * 4; scene.environmentIntensity = S.room * 1.6;
+  for (const m of watch.children) if (m.isMesh && (m.name === "band" || m.name === "rehaut")) m.material.roughness = 0.35 - 0.3 * S.polish;
+  renderer.render(scene, camera);
+  status.textContent = `${canvas.width} × ${canvas.height} px · frame ${(performance.now() - t0).toFixed(1)} ms · ${renderer.info.render.triangles} triangles`;
+}
+const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-sun").textContent = Math.round(S.sun * 100) + " %"; $("v-room").textContent = Math.round(S.room * 100) + " %"; $("v-polish").textContent = Math.round(S.polish * 100) + " %"; };
+for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01], ["polish", "polish", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
+let dragging = false;
+const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
+  S.from = ((90 - Math.atan2(y, x) * 180 / Math.PI) % 360 + 360) % 360 | 0; S.rise = Math.round(85 - 73 * d); $("from").value = S.from; $("rise").value = S.rise; show(); render(); };
+canvas.onpointerdown = (e) => { dragging = true; canvas.setPointerCapture(e.pointerId); sunAt(e); };
+canvas.onpointermove = (e) => { if (dragging) sunAt(e); };
+canvas.onpointerup = canvas.onpointercancel = () => { dragging = false; };
+window.onresize = render;
+show(); render();
+window.watch3d = { S, render, scene, camera, renderer };
+</script>
