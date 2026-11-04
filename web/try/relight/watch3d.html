@@ -174,10 +174,12 @@ for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.th
 // brushed and flat; the bracelet's outer edge wears a polished bevel; the seams read as thin dark lines with a hair of
 // light on the rounded end above each. It tapers from the lug width toward the clasp. The end link is one solid piece,
 // the lugs' width, its inner edge the case's circle, and it carries the first half centre link.
-{ const W0 = LUG.lugw, W1 = 18, P = 7.4, GAP = 0.35, GAPX = 0.3, H = 3.4, LEN = 70, CENTRE = 0.40, END = 5.6;
+{ const W0 = LUG.lugw, W1 = 18, P = 7.8, GAP = 0.4, GAPX = 0.3, H = 3.1, LEN = 70, CENTRE = 0.40, END = 5.6;
   const yStart = Math.sqrt((40.5 / 2) ** 2 - (W0 / 2) ** 2) + 0.2;      // the end link meets the case between the lugs
   // one link: a bar `l` long, `h` thick with round ends, `w` wide; the two side faces (its ends across the bracelet) polished, the rest brushed
-  const link = (w, l, h, outer) => { const r = h / 2, sh = new THREE.Shape(); sh.moveTo(-l / 2 + r, -r); sh.lineTo(l / 2 - r, -r); sh.absarc(l / 2 - r, 0, r, -Math.PI / 2, Math.PI / 2, false); sh.lineTo(-l / 2 + r, r); sh.absarc(-l / 2 + r, 0, r, Math.PI / 2, 3 * Math.PI / 2, false);
+  const link = (w, l, h, outer) => { const r = 0.9, hh = h / 2, sh = new THREE.Shape();      // the side view: a bar with its end edges rounded (r 0.9), the top flat between them — a half-cylinder end would read as a roller
+    sh.moveTo(-l / 2 + r, -hh); sh.lineTo(l / 2 - r, -hh); sh.absarc(l / 2 - r, -hh + r, r, -Math.PI / 2, 0, false); sh.lineTo(l / 2, hh - r); sh.absarc(l / 2 - r, hh - r, r, 0, Math.PI / 2, false);
+    sh.lineTo(-l / 2 + r, hh); sh.absarc(-l / 2 + r, hh - r, r, Math.PI / 2, Math.PI, false); sh.lineTo(-l / 2, -hh + r); sh.absarc(-l / 2 + r, -hh + r, r, Math.PI, 3 * Math.PI / 2, false);
     const geo = new THREE.ExtrudeGeometry(sh, { depth: w - 0.5, bevelEnabled: true, bevelThickness: 0.25, bevelSize: 0.25, bevelSegments: 3, curveSegments: 12 });      // the bevel: the side edges rounded — the polished bevel along the bracelet's outer edge
     geo.translate(0, 0, -(w - 0.5) / 2);
     const m = new THREE.Mesh(geo, [MATERIALS.polished(), MATERIALS.brushed()]); m.rotation.y = Math.PI / 2;      // the bar runs along z (the bracelet), its width along x
