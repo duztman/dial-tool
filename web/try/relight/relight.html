@@ -1,0 +1,274 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relight trial</title>
+<!--
+  relight.html — the relight trial (branch try/relight, 4 Nov 2026; Okay: "Both, switchable", "C: height-field relighting",
+  "A trial page first").
+
+  The idea: everything show mode draws is a height over the ground — the strap, the case, the bezel, the dial's plate, the
+  printed inks (0.21 mm proud), the hands at their own heights, the hub as a dome. So instead of drawing light and shadow
+  shape by shape (the sweep, the crescents, the relief cuts, the bevel rects), the trial writes the scene ONCE as three
+  pictures — a HEIGHT map (mm), an ALBEDO map (the colour of what is there) and a MATERIAL map (metal or not, gloss) —
+  and one small program on the graphics card (a "fragment shader") lights every pixel from them: the slope of the height
+  gives the normal, the sun gives the light, a short march through the height map toward the sun gives the shadow. The
+  three looks are three ways of turning that same light into colour: Photo smooth, Miyazaki in two steps, Engineer in
+  three steps with ink lines where the height jumps.
+
+  The dial's parts are the app's own (try/relight/scene.json, from dump.mjs). The case is written here by hand from the
+  diver's numbers (watch.js CASES.diver, scaled) — the trial stops at the diver.
+-->
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; background: #1c1c1f; color: #ddd; font: 13px/1.4 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; display: grid; grid-template-columns: 1fr 240px; height: 100vh; }
+  #stage { position: relative; display: grid; place-items: center; overflow: hidden; }
+  canvas#gl { display: block; max-width: 100%; max-height: 100%; aspect-ratio: 1; touch-action: none; cursor: crosshair; }
+  #side { padding: 16px 18px; background: #2a2622; border-left: 1px solid #000; overflow: auto; }
+  h1 { font-size: 13px; font-weight: 600; margin: 0 0 14px; letter-spacing: .02em; }
+  .pills { display: flex; gap: 4px; margin-bottom: 18px; }
+  .pills button { flex: 1; border: 1px solid #666; background: none; color: #ddd; border-radius: 99px; padding: 5px 0; font: inherit; cursor: pointer; }
+  .pills button.on { background: #ddd; color: #111; border-color: #ddd; }
+  label { display: grid; grid-template-columns: 1fr 44px; align-items: center; gap: 8px; margin: 10px 0 2px; }
+  input[type=range] { width: 100%; margin: 0 0 6px; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; color: #aaa; }
+  p.note { color: #998; margin: 16px 0 0; }
+  #status { position: absolute; left: 12px; bottom: 10px; color: #998; }
+</style>
+<div id="stage"><canvas id="gl"></canvas><div id="status"></div></div>
+<div id="side">
+  <h1>Relight trial</h1>
+  <div class="pills" id="styles"><button data-s="0" class="on">Photo</button><button data-s="2">Miyazaki</button><button data-s="1">Engineer</button></div>
+  <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
+  <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
+  <label>Shadows <span class="num" id="v-dark"></span></label><input type="range" id="dark" min="0" max="100" value="60">
+  <label>Soft shadow <span class="num" id="v-soft"></span></label><input type="range" id="soft" min="0" max="100" value="35">
+  <label>Ink height, mm <span class="num" id="v-ink"></span></label><input type="range" id="ink" min="0" max="80" value="21">
+  <label>Bevels <span class="num" id="v-bevel"></span></label><input type="range" id="bevel" min="0" max="100" value="60">
+  <p class="note">Drag on the watch to move the sun: the direction is the angle, the middle is high, the edge low. Inks, bevels and the dial are the opener's; the case is the diver.</p>
+</div>
+<script src="scene.js"></script><!-- dump.mjs writes it: window.SCENE; a plain script, so the page opens from a file too -->
+<script type="module">
+const scene = window.SCENE;
+
+// ── 1 · the scene as a height field ────────────────────────────────────────────────────────────────────────────────
+// Dial space: millimetres, x right, y up, the dial's centre at 0,0. The picture is BOX mm square (watch.js DETAIL 31).
+const BOX = 62, PPM = 32;                          // pixels per millimetre of the maps: 0.031 mm a texel (inks are 0.21 mm high)
+const N = Math.round(BOX * PPM);                   // the maps are N × N
+const Z = { ground: 0 };                           // heights in mm over the ground
+
+// the diver, as watch.js scales it to this dial (CASES.diver × size)
+const k = scene.size, C = { od: 40.5 * k, l2l: 47.6 * k, lugw: 20 * k, lugT: 2.9 * k, flare: 3.6 * k, insert: { od: 40 * k, id: 32.2 * k, coin: 60 }, opening: 15.4 * k, crown: { w: 6.4 * k, h: 3.0 * k, knurl: 9 } };
+const R = C.od / 2, HC = 0.32 * C.od;              // the case's height: a share of its width (watch.js CASE_H.diver)
+Z.caseTop = HC; Z.dial = HC - 1.6;                 // the plate sits 1.6 mm under the case's top (the rehaut's wall)
+const REHAUT = 0.8 * k;
+
+// the height, colour and material of every pixel are written on the CPU into three arrays, layer by layer, bottom first
+const H = new Float32Array(N * N).fill(Z.ground);
+const ALB = new Uint8ClampedArray(N * N * 4), MAT = new Uint8ClampedArray(N * N * 4);
+const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+const put = (i, z, col, a = 1, metal = 0, gloss = 0.2) => {
+  if (a >= 0.999) { H[i] = z; ALB.set(col, i * 4); ALB[i * 4 + 3] = 255; }
+  else { H[i] = Math.max(H[i], z); for (let c = 0; c < 3; c++) ALB[i * 4 + c] = ALB[i * 4 + c] * (1 - a) + col[c] * a; }      // a see-through hand tints what is under it
+  MAT[i * 4] = metal * 255; MAT[i * 4 + 1] = gloss * 255; MAT[i * 4 + 3] = 255;
+};
+// a mask canvas: a Path2D filled white, read back as alpha. One canvas, reused
+const mc = document.createElement("canvas"); mc.width = mc.height = N; const mx = mc.getContext("2d", { willReadFrequently: true });
+const toPx = () => { mx.setTransform(PPM, 0, 0, -PPM, N / 2, N / 2); };       // mm → px, y flipped
+function mask(draw) { mx.setTransform(1, 0, 0, 1, 0, 0); mx.clearRect(0, 0, N, N); toPx(); mx.fillStyle = "#fff"; mx.beginPath(); draw(mx); mx.fill(); return mx.getImageData(0, 0, N, N).data; }
+const xy = (i) => [((i % N) + 0.5) / PPM - BOX / 2, BOX / 2 - ((i / N | 0) + 0.5) / PPM];      // a pixel's centre in mm
+/** paint a layer: where the mask is, the height from f(x, y) (mm) and the colour */
+function layer(draw, f, col, a = 1, metal = 0, gloss = 0.2) {
+  const m = mask(draw);
+  for (let i = 0; i < N * N; i++) if (m[i * 4 + 3] > 127) { const [x, y] = xy(i); put(i, f(x, y), col, a, metal, gloss); }
+}
+const circle = (r) => { const p = new Path2D(); p.arc(0, 0, r, 0, 2 * Math.PI); return p; };
+const ring = (r0, r1) => { const p = new Path2D(); p.arc(0, 0, r1, 0, 2 * Math.PI); p.arc(0, 0, r0, 0, 2 * Math.PI, true); return p; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const metalCol = rgb(scene.metal), leather = rgb(scene.leather), floor = rgb(scene.floor);
+const lighten = (c, t) => c.map((v) => v + (255 - v) * t), darken = (c, t) => c.map((v) => v * (1 - t));
+
+// the ground
+for (let i = 0; i < N * N; i++) put(i, Z.ground, floor, 1, 0, 0.05);
+// the strap: leather, lug-wide, a shallow vault across its width, 3 mm thick
+{ const w = C.lugw / 2, yb = Math.sqrt(R * R - w * w) - 2;
+  layer((c) => { c.rect(-w, yb, 2 * w, BOX); c.rect(-w, -yb - BOX, 2 * w, BOX); }, (x) => 3 + 0.8 * Math.sqrt(Math.max(0, 1 - (x / w) ** 2)), leather, 1, 0, 0.1); }
+// the lugs: they leave the case at mid-height and slope down to their tips (watch.js silhouette: 0.55 of the case)
+{ const half = C.l2l / 2, xi = C.lugw / 2, xo = xi + C.lugT, xb = xo + C.flare, yb = Math.sqrt(R * R - xb * xb), yi = Math.sqrt(R * R - xi * xi) - 1.5, r = 0.8;
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) layer((c) => { const p = (x, y) => [sx * x, sy * y];
+      c.moveTo(...p(xi, yi)); c.lineTo(...p(xi, half - r)); c.quadraticCurveTo(...p(xi, half), ...p(xi + r, half)); c.lineTo(...p(xo - r, half)); c.quadraticCurveTo(...p(xo, half), ...p(xo, half - r));
+      c.bezierCurveTo(...p(xo, half - (half - yb) * 0.5), ...p(xb - 0.6, yb + 1.2), ...p(xb, yb)); c.closePath(); },
+    (x, y) => { const s = clamp((Math.abs(y) - yb) / (half - yb), 0, 1), edge = clamp((xo - Math.abs(x)) / 0.9, 0, 1);      // s: 0 at the case, 1 at the tip; edge: a rounded outer edge
+      return HC * (0.72 - 0.4 * s) * (0.75 + 0.25 * Math.sqrt(edge)); }, metalCol, 1, 1, 0.8); }
+// the crown: a cylinder lying along x, knurled
+{ const cw = C.crown.w, ch = C.crown.h;
+  layer((c) => c.rect(R - 1.2, -cw / 2, ch + 1.2, cw), (x, y) => { const t = y / (cw / 2), kn = 1 + 0.06 * Math.cos(y / cw * 2 * Math.PI * C.crown.knurl);
+    return HC * 0.5 + 0.45 * cw * Math.sqrt(Math.max(0, 1 - t * t)) * kn * (x > R + ch - 0.45 ? 0.85 : 1); }, metalCol, 1, 1, 0.8); }
+// the case body: a flat top with a rounded outer edge, and the coin edge as 60 teeth
+layer((c) => c.fill(circle(R)), (x, y) => { const e = clamp((R - Math.hypot(x, y)) / 1.1, 0, 1); return HC * (0.9 + 0.1 * Math.sqrt(e)); }, metalCol, 1, 1, 0.85);
+{ const ro = C.insert.od / 2 - 0.9;      // the bezel's teeth: the ring between the insert and the case edge, its height rippling 60 times round
+  layer((c) => c.fill(ring(ro, R)), (x, y) => { const r = Math.hypot(x, y), a = Math.atan2(y, x), tooth = 0.5 + 0.5 * Math.cos(a * C.insert.coin), e = clamp((R - r) / 0.8, 0, 1); return HC + 0.3 * tooth * (0.4 + 0.6 * e) - 0.25 * (1 - e); }, metalCol, 1, 1, 0.75); }
+// the insert: a dark ring, flat, its top half one colour, the bottom half the other; its five-minute ticks and triangle printed on it
+{ const ro = C.insert.od / 2 - 0.9, ri = C.insert.id / 2, top = rgb(scene.insert.top), bot = rgb(scene.insert.bottom);
+  { const m = mask((c) => c.fill(ring(ri, ro))); for (let i = 0; i < N * N; i++) if (m[i * 4 + 3] > 127) { const [x, y] = xy(i); put(i, HC + 0.9 - 0.15 * clamp((Math.hypot(x, y) - ri) / (ro - ri), 0, 1), y >= 0 ? top : bot, 1, 0, 0.6); } }
+  for (let m = 5; m < 60; m += 5) { const t = (90 - m * 6) * Math.PI / 180, r0 = ri + 0.6, r1 = ri + 2.5;
+    layer((c) => { c.lineCap = "round"; c.lineWidth = 0.7; c.strokeStyle = "#fff"; c.beginPath(); c.moveTo(Math.cos(t) * r0, Math.sin(t) * r0); c.lineTo(Math.cos(t) * r1, Math.sin(t) * r1); c.stroke(); }, (x, y) => HC + 0.9 + 0.08 - 0.15 * clamp((Math.hypot(x, y) - ri) / (ro - ri), 0, 1), [191, 188, 180], 1, 0, 0.3); }
+  layer((c) => { c.moveTo(0, ro - 0.5); c.lineTo(-1.4, ri + 0.5); c.lineTo(1.4, ri + 0.5); c.closePath(); }, () => HC + 0.9, [208, 205, 197], 1, 0, 0.3); }
+// the thin metal ring inside the insert, then the rehaut's wall sloping down to the dial
+layer((c) => c.fill(ring(C.opening, C.insert.id / 2)), () => HC + 0.4, metalCol, 1, 1, 0.9);
+layer((c) => c.fill(ring(C.opening - REHAUT, C.opening)), (x, y) => { const t = clamp((Math.hypot(x, y) - (C.opening - REHAUT)) / REHAUT, 0, 1); return Z.dial + 0.3 + (HC + 0.4 - Z.dial - 0.3) * t * t; }, metalCol, 1, 1, 0.9);
+
+// the dial: the app's own parts, in the order the app draws them (scene.json: role, path, colour, ink height, hand)
+const px = (hex) => rgb(hex);
+const H_HAND = 0.3;      // a hand's blade is this thick
+const rotHand = (c, a) => c.rotate(-a * Math.PI / 180);      // watch.js: rotate(-A) in the y-down group; here the group is flipped the same way
+const INK_STEP = scene.ink_step;
+let inkMM = 0.21, bevelK = 0.6;      // the sliders; the dial is written again when they move
+function writeDial() {
+  for (const x of scene.items) {
+    const p = new Path2D(x.p), col = px(x.f);
+    if (x.role === "plate") layer((c) => c.fill(p, "nonzero"), () => Z.dial, col, 1, 0, 0.15);
+    else if (x.role === "date disc") layer((c) => c.fill(p), () => Z.dial - 0.5, col, 1, 0, 0.15);
+    else if (x.role === "cap") layer((c) => c.fill(p), (X, Y) => Z.dial + scene.heights.cap + H_HAND + 0.2 * Math.sqrt(Math.max(0, 1 - (Math.hypot(X, Y) / 1.4) ** 2)), col, x.a, 1, 0.9);
+    else if (x.role === "boss") { const hz = Z.dial + scene.heights[x.hand_of] + H_HAND;      // a dome of its own over the hand (#404)
+      layer((c) => c.fill(p, "evenodd"), (X, Y) => hz + 0.25 * Math.sqrt(Math.max(0, 1 - (Math.hypot(X, Y) / x.r) ** 2)), col, x.a, 1, 0.9); }
+    else if (x.role === "hand") { const a = scene.A[x.hand], z0 = Z.dial + scene.heights[x.hand] + H_HAND, hw = x.hw, ca = Math.cos(-a * Math.PI / 180), sa = Math.sin(-a * Math.PI / 180);
+      // Ridge: two halves meeting on the spine, a tent across the blade; Domed: round across. Bevels % sets the rise
+      const rise = x.bevel ? 0.35 * bevelK : 0;
+      layer((c) => { rotHand(c, a); c.fill(p); }, (X, Y) => { const u = (X * ca + Y * sa) / hw, d = clamp(Math.abs(u), 0, 1);      // u: across the blade, −1…1 (the hand lies along its own y)
+        return z0 + rise * (x.dome ? Math.sqrt(1 - d * d) : 1 - d); }, col, x.a, 1, 0.85); }
+    else if (x.role === "date number") layer((c) => c.fill(p, "nonzero"), () => Z.dial - 0.5 + inkMM, col, 1, 0, 0.3);
+    else layer((c) => c.fill(p, "nonzero"), () => Z.dial + (x.ink ? inkMM : 0), col, 1, 0, 0.3);      // a printed part: its ink proud of the plate
+  }
+}
+// which hand a boss belongs to: the one drawn just before it
+for (let i = 0; i < scene.items.length; i++) if (scene.items[i].role === "boss") scene.items[i].hand_of = scene.items[i - 1].hand;
+const DIAL_SNAPSHOT = { H: null, ALB: null, MAT: null };
+const snapshot = () => { DIAL_SNAPSHOT.H = H.slice(); DIAL_SNAPSHOT.ALB = ALB.slice(); DIAL_SNAPSHOT.MAT = MAT.slice(); };
+snapshot();      // the watch without its dial: the dial is laid over this again when an ink or bevel slider moves
+writeDial();
+// the glass's rim: nothing in the height field — the glass is flat on the case (the Photo look adds a reflection in the shader)
+
+// ── 2 · the light: one fragment shader ───────────────────────────────────────────────────────────────────────────────
+const canvas = document.getElementById("gl"), gl = canvas.getContext("webgl2", { antialias: false, premultipliedAlpha: false });
+if (!gl) document.getElementById("status").textContent = "WebGL2 is not available here";
+const hf = gl.getExtension("OES_texture_half_float_linear"), ff = gl.getExtension("OES_texture_float_linear");
+const VS = `#version 300 es
+in vec2 p; out vec2 uv; void main() { uv = p * 0.5 + 0.5; uv.y = 1.0 - uv.y; gl_Position = vec4(p, 0, 1); }`;
+const FS = `#version 300 es
+precision highp float;
+in vec2 uv; out vec4 o;
+uniform sampler2D H, ALB, MAT;
+uniform float texel;          // mm a texel
+uniform vec3 L;               // toward the sun, unit (x right, y up, z out of the dial)
+uniform float dark, soft, style, box;
+uniform vec3 floorc;
+float h(vec2 q) { return texture(H, q).r; }
+vec3 normalAt(vec2 q) {
+  vec2 e = vec2(1.0 / float(textureSize(H, 0).x), 0.0);
+  float dx = h(q + e.xy) - h(q - e.xy), dy = h(q - e.yx) - h(q + e.yx);      // y of the picture runs down; the dial's y runs up
+  return normalize(vec3(-dx, -dy, 2.0 * texel));
+}
+// shadow: march from this point toward the sun through the height map; where the ground stands over the ray the point is in shadow,
+// softer the farther the occluder is (a penumbra, as a wide sun throws)
+float shadow(vec2 q, float z) {
+  float tanr = L.z / length(L.xy);
+  vec2 d = normalize(vec2(L.x, -L.y));            // in texture space (y down)
+  float maxLen = min(22.0, (16.0 - z) / max(tanr, 0.2));      // mm: never farther than the tallest thing could cast
+  float occ = 0.0;
+  for (int i = 1; i <= 64; i++) {
+    float t = maxLen * float(i) / 64.0;
+    vec2 s = q + d * t / box;
+    if (s.x < 0.0 || s.y < 0.0 || s.x > 1.0 || s.y > 1.0) break;
+    float over = h(s) - (z + t * tanr) - 0.02;    // how far over the ray the height stands there
+    if (over > 0.0) occ = max(occ, over / t);     // as an angle: a near, tall occluder shades fully; a far one only half (the penumbra)
+  }
+  float k = clamp(occ / (0.03 + soft * 0.9), 0.0, 1.0);
+  return 1.0 - k * dark;
+}
+vec3 steps3(float v) { return vec3(v > 0.55 ? 1.0 : v > 0.2 ? 0.78 : 0.58); }
+void main() {
+  float z = h(uv); vec3 n = normalAt(uv); vec3 a = texture(ALB, uv).rgb; vec4 m = texture(MAT, uv);
+  float metal = m.r, gloss = m.g;
+  vec3 V = vec3(0, 0, 1);
+  float diff = max(dot(n, L), 0.0);
+  float sh = shadow(uv, z);
+  vec3 Hv = normalize(L + V); float spec = pow(max(dot(n, Hv), 0.0), mix(24.0, 120.0, gloss)) * mix(0.15, 1.0, gloss);
+  vec3 r = reflect(-V, n);                        // a plain room over the watch: bright above, dark below (the metals' look)
+  float env = smoothstep(-0.6, 0.9, r.y) * 0.75 + 0.1 + 0.15 * smoothstep(0.8, 1.0, r.z);
+  vec3 c;
+  if (style < 0.5) {                              // Photo
+    vec3 base = a * (0.38 + 0.72 * diff * sh);
+    vec3 metalc = a * (0.45 + 0.75 * env) * (0.45 + 0.55 * sh) + a * spec * sh * 1.2;
+    c = mix(base + spec * sh * 0.5 * gloss, metalc, metal);
+    float vig = 1.0 - 0.45 * smoothstep(0.45, 1.0, length(uv - 0.5) * 2.0);
+    c *= mix(1.0, vig, 1.0 - step(0.5, z));       // the ground falls off from the middle (watch.js pool); the watch does not
+  } else if (style < 1.5) {                       // Engineer: three tones, ink where the height jumps
+    float v = (0.3 + 0.7 * diff) * sh;
+    c = a * steps3(v);
+    vec2 e = vec2(0.11 / box, 0.0);               // 0.22 mm lines: a jump of more than 0.12 mm within that reach
+    float jump = max(max(abs(h(uv + e.xy) - h(uv - e.xy)), abs(h(uv + e.yx) - h(uv - e.yx))), max(abs(h(uv + e.xy) - z), abs(h(uv + e.yx) - z)));
+    if (jump > 0.18) c = vec3(0.30);
+  } else {                                        // Miyazaki: deeper colours, lit or in shade, hard shadows, no lines
+    vec3 deep = a * 0.86; deep = mix(vec3(dot(deep, vec3(0.299, 0.587, 0.114))), deep, 1.25);
+    float lit = diff > 0.62 ? 1.0 : diff > 0.25 ? 0.0 : -1.0;
+    vec3 base = lit > 0.5 ? mix(deep, vec3(1.0), 0.18 + 0.15 * metal) : lit < -0.5 ? deep * 0.62 : deep;
+    c = base * (sh > 0.55 ? 1.0 : 0.6);
+  }
+  o = vec4(c, 1.0);
+}`;
+function prog(vs, fs) { const P = gl.createProgram(); for (const [t, s] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); gl.attachShader(P, sh); } gl.linkProgram(P); if (!gl.getProgramParameter(P, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(P)); return P; }
+const P = prog(VS, FS); gl.useProgram(P);
+const quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(P, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+const U = (n) => gl.getUniformLocation(P, n);
+function tex(unit, data, float) { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+  const filt = float && !ff ? gl.NEAREST : gl.LINEAR;
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filt); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filt);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  if (float) gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, N, N, 0, gl.RED, gl.FLOAT, data); else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, N, N, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+  return t; }
+gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+let tH = tex(0, H, true), tA = tex(1, ALB, false), tM = tex(2, MAT, false);
+gl.uniform1i(U("H"), 0); gl.uniform1i(U("ALB"), 1); gl.uniform1i(U("MAT"), 2);
+gl.uniform1f(U("texel"), 1 / PPM); gl.uniform1f(U("box"), BOX);
+function upload() { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tH); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, N, N, gl.RED, gl.FLOAT, H);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tA); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, N, N, gl.RGBA, gl.UNSIGNED_BYTE, ALB);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, tM); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, N, N, gl.RGBA, gl.UNSIGNED_BYTE, MAT); }
+
+// ── 3 · the controls ─────────────────────────────────────────────────────────────────────────────────────────────────
+const S = { from: 135, rise: 40, dark: 0.6, soft: 0.35, style: 0 };
+const $ = (id) => document.getElementById(id);
+const status = $("status");
+function render() {
+  const t0 = performance.now();
+  const side = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight), dpr = Math.min(devicePixelRatio || 1, 2);
+  if (canvas.width !== Math.round(side * dpr)) { canvas.width = canvas.height = Math.round(side * dpr); canvas.style.width = canvas.style.height = side + "px"; }
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  // the sun: "from" is a clock angle (0 at 12, clockwise); the light comes FROM there, so the vector toward the sun points there
+  const a = (90 - S.from) * Math.PI / 180, r = S.rise * Math.PI / 180;
+  gl.uniform3f(U("L"), Math.cos(a) * Math.cos(r), Math.sin(a) * Math.cos(r), Math.sin(r));
+  gl.uniform1f(U("dark"), S.dark); gl.uniform1f(U("soft"), S.soft); gl.uniform1f(U("style"), S.style);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.finish();
+  status.textContent = `${canvas.width} × ${canvas.height} px · frame ${(performance.now() - t0).toFixed(1)} ms · maps ${N} × ${N}`;
+}
+const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-dark").textContent = Math.round(S.dark * 100) + " %"; $("v-soft").textContent = Math.round(S.soft * 100) + " %"; $("v-ink").textContent = inkMM.toFixed(2); $("v-bevel").textContent = Math.round(bevelK * 100) + " %"; };
+for (const b of document.querySelectorAll("#styles button")) b.onclick = () => { document.querySelector("#styles .on").classList.remove("on"); b.classList.add("on"); S.style = +b.dataset.s; render(); };
+$("from").oninput = (e) => { S.from = +e.target.value; show(); render(); };
+$("rise").oninput = (e) => { S.rise = +e.target.value; show(); render(); };
+$("dark").oninput = (e) => { S.dark = e.target.value / 100; show(); render(); };
+$("soft").oninput = (e) => { S.soft = e.target.value / 100; show(); render(); };
+const redial = () => { H.set(DIAL_SNAPSHOT.H); ALB.set(DIAL_SNAPSHOT.ALB); MAT.set(DIAL_SNAPSHOT.MAT); writeDial(); upload(); show(); render(); };
+$("ink").oninput = (e) => { inkMM = e.target.value / 100; }; $("ink").onchange = redial;
+$("bevel").oninput = (e) => { bevelK = e.target.value / 100; }; $("bevel").onchange = redial;
+// drag on the watch: the direction from the middle is the sun's angle; the middle is high (85°), the edge low (12°)
+let dragging = false;
+const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
+  S.from = ((90 - Math.atan2(y, x) * 180 / Math.PI) % 360 + 360) % 360 | 0; S.rise = Math.round(85 - 73 * d); $("from").value = S.from; $("rise").value = S.rise; show(); render(); };
+canvas.onpointerdown = (e) => { dragging = true; canvas.setPointerCapture(e.pointerId); sunAt(e); };
+canvas.onpointermove = (e) => { if (dragging) sunAt(e); };
+canvas.onpointerup = canvas.onpointercancel = () => { dragging = false; };
+window.onresize = render;
+show(); render();
+window.relight = { S, render, setStyle: (s) => { document.querySelector(`#styles [data-s="${s}"]`).click(); } };      // for the shots
+</script>
