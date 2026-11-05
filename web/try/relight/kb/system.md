@@ -32,7 +32,7 @@ A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. Th
 | `buildCase(C)` | a case spec | the group, and `info`: `xi, xo, half, yEdge, lugTop(y), lugBot(y), xOut(y), holeZ, tipH, yAt` — what the bracelet needs |
 | `link(sec, w, l, h, out, finish)` | bean · barn · slab · barrel; width, length, thickness; which side faces out; a finish for the whole link | a link whose ends round to the stadium of its thickness; the outer flank bowed 0.2 mm and screw heads on it if `out` |
 | `buildBracelet(key, info)` | a bracelet key and the case's `info` | end links, the offset columns' first half-links, then rows pin to pin along the curve |
-| `buildLeather(info)` | | a rounded strap on the same curve, with a keeper |
+| `buildLeather(info)` | `STRAP` (T, W1, pillow, edgeR, LEN) | a flat pillowed band with burnished edges on the same curve, flush in the lug gap; a keeper (still a torus) |
 | `insertRing()` | | the insert's picture on a flat ring |
 | `mergeGeometries(geos)` | | one geometry (the teeth) |
 

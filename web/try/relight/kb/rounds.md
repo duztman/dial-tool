@@ -27,6 +27,7 @@ One line a round: what was tried, what Okay said, what failed and why. The commi
 | 20 | **Convex outer flanks**: an outermost link's wall at ±w/2 becomes a bow of `BULGE` 0.2 mm in four strips (slab, barn, bean; screws moved out onto it); a column may name a `finish` ("polished") in `BRACELETS` — none does, the goal's SPB143 is all brushed | "Go" | — |
 | 21 | **Crown**: a shoulder (collar r 2.1, 0.5 long) where the tube (r 1.5) leaves the case; the dome 0.55 → 0.95 high in three arcs | "Accepted. Advance" | The shoulder hides under the bezel's overhang in the top and photo views — true to the geometry |
 | 22 | A **Ground grain / Plain** pill: Plain drops the ground's bump map from the shader (not just its strength) | "The background texture was never visible, maybe for performance. Have an on off for that" | Whether the grain shows on the iPad with it on is his to report |
+| 23 | **The strap's band** after ref-29: a flat section (T 2.8, pillow 0.25, edge radius 0.3) swept from the case body (flush in the lug gap, centred on the spring bar) level to 2 mm past the tips then an S down over 18; taper 20 → 16; finishes: leather top (roughness 0.62, clearcoat 0.15), burnished edge (0.55× the colour), lining underneath; both cut ends the edge | "Ref 29" | Keepers still the old torus (next round). The colour is the app's `scene.leather` (dark brown), not ref-29's tan |
 
 ## Things learnt about the work itself
 

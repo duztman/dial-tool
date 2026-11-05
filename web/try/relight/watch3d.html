@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 22 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch.
+  watch3d.html — the 3D exercise, round 23 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,7 +37,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 22</h1>
+  <h1>Watch 3D · round 23</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
@@ -136,7 +136,9 @@ const MATERIALS = {
   paint: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 0, roughness: 0.45, clearcoat: 0.9, clearcoatRoughness: 0.15 }),
   insert: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 0.6, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
   sapphire: () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.0, transmission: 1, thickness: 0.05, ior: 1.76, transparent: true, side: THREE.DoubleSide }),
-  leather: () => new THREE.MeshPhysicalMaterial({ color: leatherHex, metalness: 0, roughness: 0.75 }),
+  leather: () => new THREE.MeshPhysicalMaterial({ color: leatherHex, metalness: 0, roughness: 0.62, clearcoat: 0.15, clearcoatRoughness: 0.6 }),      // smooth calf: matte-satin, a soft broad highlight (ref-29)
+  edge: () => new THREE.MeshPhysicalMaterial({ color: new THREE.Color(leatherHex).multiplyScalar(0.55), metalness: 0, roughness: 0.5, clearcoat: 0.3, clearcoatRoughness: 0.4 }),      // the burnished cut edge: darker, a little glossier (ref-34)
+  lining: () => new THREE.MeshPhysicalMaterial({ color: new THREE.Color(leatherHex).multiplyScalar(0.85), metalness: 0, roughness: 0.9 }),
   dark: () => new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.95, metalness: 0 }),
   hand: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 0.9, roughness: 0.42 }),
 };
@@ -308,14 +310,24 @@ function buildBracelet(Bk, info) {
       s0 += P; } }
   return g;
 }
-/** a leather strap: a rounded bar on the same curve, tapering, with a keeper */
+/** a leather strap after ref-29: a FLAT BAND with a slight pillow on top, square burnished edges, the lug end cut square and
+ *  filling the gap flush (its top a hair under the lug tops at the bar, ref-33), level to the lug tips then falling onto the
+ *  table on the bracelet's curve; tapering 20 → 16. Section × path × finish: top leather · edges burnished · underside lining */
+const STRAP = { T: 2.8, W1: 16, pillow: 0.25, edgeR: 0.3, LEN: 68 };
 function buildLeather(info) {
-  const g = new THREE.Group(), W0 = 2 * info.xi - 0.4, W1 = 18, T = 3.0, yStart = info.yEdge + 0.2, LEN = 68, zAt = (s) => { const t = clamp((s - 4) / 18, 0, 1), e = t * t * (3 - 2 * t); return info.holeZ * (1 - e) + T / 2 * e; };
-  for (const sy of [-1, 1]) { const N = 40, stations = [];
-    for (let k = 0; k <= N; k++) { const s = LEN * k / N, w = W0 + (W1 - W0) * s / LEN, z = zAt(s), pts = [];
-      for (let j = 0; j < 16; j++) { const a = j / 16 * 2 * Math.PI, x = w / 2 * Math.cos(a) * (1 + 0.1 * Math.abs(Math.cos(a))), y = T / 2 * Math.sin(a); pts.push(W(Math.max(-w / 2, Math.min(w / 2, x)), sy * (yStart + s), z + y)); }
-      stations.push(pts); }
-    g.add(mesh(sweep(stations, Array(17).fill(0), { caps: true }), MATERIALS.leather()));
+  const g = new THREE.Group(), W0 = 2 * info.xi - 0.3, { T, W1, pillow, edgeR: r, LEN } = STRAP, yStart = info.yEdge + 0.1, END = info.half - yStart;
+  const zAt = (s) => { const t = clamp((s - END - 2) / 18, 0, 1), e = t * t * (3 - 2 * t); return info.holeZ * (1 - e) + T / 2 * e; };      // the band's middle: on the spring bar past the tips, then an S down to the table
+  // the section at width w, walked from the bottom-left: underside · right edge · corner · top (right to left, pillowed) · corner · left edge
+  const section = (w) => { const pts = [], mats = [], put = (x, dz, m) => { pts.push([x, dz]); mats.push(m); };      // m = the finish of the edge that STARTS at this point: 0 leather · 1 edge · 2 lining
+    put(-w / 2, -T / 2, 2); put(w / 2, -T / 2, 1); put(w / 2, T / 2 - r, 1);
+    for (let j = 1; j <= 2; j++) { const a = j / 3 * Math.PI / 2; put(w / 2 - r + r * Math.cos(a), T / 2 - r + r * Math.sin(a), 1); }
+    for (let j = 0; j <= 6; j++) { const x = (w / 2 - r) * (1 - 2 * j / 6); put(x, T / 2 + pillow * (1 - (2 * x / w) ** 2), j < 6 ? 0 : 1); }
+    for (let j = 1; j <= 2; j++) { const a = Math.PI / 2 + j / 3 * Math.PI / 2; put(-w / 2 + r + r * Math.cos(a), T / 2 - r + r * Math.sin(a), 1); }
+    put(-w / 2, T / 2 - r, 1); return { pts, mats }; };
+  for (const sy of [-1, 1]) { const N = 48, stations = []; let mats;
+    for (let k = 0; k <= N; k++) { const s = LEN * k / N, w = W0 + (W1 - W0) * s / LEN, z = zAt(s), sec = section(w); mats = sec.mats;
+      stations.push(sec.pts.map(([x, dz]) => W(x, sy * (yStart + s), z + dz))); }
+    g.add(mesh(sweep(stations, [...mats, 1], { caps: true }), [MATERIALS.leather(), MATERIALS.edge(), MATERIALS.lining()]));      // both cut ends show the burnished edge
     const keeper = mesh(new THREE.TorusGeometry((W0 + 1.6) / 2, 0.9, 10, 24), MATERIALS.leather()); keeper.scale.z = 0.4; keeper.position.set(...W(0, sy * (yStart + 22), zAt(22))); g.add(keeper); }
   return g;
 }
