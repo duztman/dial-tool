@@ -26,6 +26,7 @@ One line a round: what was tried, what Okay said, what failed and why. The commi
 | 19 | The **cushion case dropped**: its `CASES` row and pill removed; the builders still take a cushion plan. Open #3 (end link) closed on his word | "End link ok. Abandon pillow case it's sub par" | — |
 | 20 | **Convex outer flanks**: an outermost link's wall at ±w/2 becomes a bow of `BULGE` 0.2 mm in four strips (slab, barn, bean; screws moved out onto it); a column may name a `finish` ("polished") in `BRACELETS` — none does, the goal's SPB143 is all brushed | "Go" | — |
 | 21 | **Crown**: a shoulder (collar r 2.1, 0.5 long) where the tube (r 1.5) leaves the case; the dome 0.55 → 0.95 high in three arcs | "Accepted. Advance" | The shoulder hides under the bezel's overhang in the top and photo views — true to the geometry |
+| 22 | A **Ground grain / Plain** pill: Plain drops the ground's bump map from the shader (not just its strength) | "The background texture was never visible, maybe for performance. Have an on off for that" | Whether the grain shows on the iPad with it on is his to report |
 
 ## Things learnt about the work itself
 

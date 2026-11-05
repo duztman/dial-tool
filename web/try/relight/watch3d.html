@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 21 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder.
+  watch3d.html — the 3D exercise, round 22 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,12 +37,13 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 21</h1>
+  <h1>Watch 3D · round 22</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
   <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
   <div class="pills" data-key="metal"><button data-v="steel" class="on">Steel</button><button data-v="gold">Gold</button></div>
+  <div class="pills" data-key="ground"><button data-v="grain" class="on">Ground grain</button><button data-v="plain">Plain</button></div>
   <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
   <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
@@ -340,16 +341,17 @@ const loader = new SVGLoader(), shapesOf = (d) => loader.parse(`<svg xmlns="http
     for (const s of shapesOf(it.p)) { const geo = new THREE.ExtrudeGeometry(s, { depth: thick, bevelEnabled: true, bevelThickness: bev, bevelSize: Math.min(bev, 0.06), bevelSegments: 2 }); const m = new THREE.Mesh(geo, MATERIALS.hand(it.f)); m.castShadow = true; g.add(m); }
     const a = it.hand ? scene3.A[it.hand] : 0; g.rotation.set(-Math.PI / 2, 0, -a * Math.PI / 180); g.position.y = z; watch.add(g); } }
 // the ground: tan leather with a drawn grain; a contact shadow under the watch where no light gets in
+let groundMat, groundBump;
 { const n = 1024, c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d"); x.fillStyle = "#808080"; x.fillRect(0, 0, n, n); let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   for (let i = 0; i < 2600; i++) { x.beginPath(); const px = rnd() * n, py = rnd() * n, rr = 10 + rnd() * 26; x.ellipse(px, py, rr, rr * (0.5 + rnd() * 0.6), rnd() * Math.PI, 0, 2 * Math.PI); x.fillStyle = `rgb(${120 + rnd() * 30 | 0},${120 + rnd() * 30 | 0},${120 + rnd() * 30 | 0})`; x.fill(); }
   x.strokeStyle = "#3a3a3a"; x.lineWidth = 1.6; for (let i = 0; i < 1400; i++) { x.beginPath(); const px = rnd() * n, py = rnd() * n, a = rnd() * Math.PI, l = 6 + rnd() * 22; x.moveTo(px, py); x.lineTo(px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
   const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(6, 6); bump.anisotropy = 8;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, bumpMap: bump, bumpScale: 0.35, clearcoat: 0.25, clearcoatRoughness: 0.5 })); m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z; m.receiveShadow = true; watch.add(m);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, bumpMap: bump, bumpScale: 0.35, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z; m.receiveShadow = true; watch.add(m);
   const s = 512, cc = document.createElement("canvas"); cc.width = cc.height = s; const cx = cc.getContext("2d"), gr = cx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = gr; cx.fillRect(0, 0, s, s);
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(54, 54), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = -DIAL_Z + 0.02; watch.add(sh); }
 
 // ── 8 · building, the light and the controls ──
-const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel" };
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain" };
 let info = null;
 function rebuild() {
   for (const grp of [caseGroup, strapGroup]) { grp.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); for (const m of [].concat(o.material)) m.dispose(); } }); grp.clear(); }
@@ -370,6 +372,7 @@ function render() {
   if (canvas.clientWidth !== side) { renderer.setSize(side, side, true); composer.setSize(side, side); camera.aspect = 1; camera.updateProjectionMatrix(); }
   const a = (90 - S.from) * Math.PI / 180, r = S.rise * Math.PI / 180; sun.position.set(Math.cos(a) * Math.cos(r) * 200, Math.sin(r) * 200, -Math.sin(a) * Math.cos(r) * 200);
   if (S.mode === "studio") { sun.intensity = S.sun * 1.6; sun.shadow.radius = 10; scene.environmentIntensity = S.room * 2.0; } else { sun.intensity = S.sun * 5; sun.shadow.radius = 2; scene.environmentIntensity = S.room * 0.9; }
+  { const want = S.ground === "grain" ? groundBump : null; if (groundMat.bumpMap !== want) { groundMat.bumpMap = want; groundMat.needsUpdate = true; } }      // Plain drops the texture from the shader, not just its strength
   composer.render();
   status.textContent = `${canvas.width} × ${canvas.height} px · frame ${(performance.now() - t0).toFixed(1)} ms`;
 }
