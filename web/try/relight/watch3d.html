@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 28 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall).
+  watch3d.html — the 3D exercise, round 29 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,10 +37,10 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 28</h1>
+  <h1>Watch 3D · round 29</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
-  <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
+  <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button></div>
   <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
   <div class="pills" data-key="metal"><button data-v="steel" class="on">Steel</button><button data-v="gold">Gold</button></div>
   <div class="pills" data-key="ground"><button data-v="grain" class="on">Ground grain</button><button data-v="plain">Plain</button></div>
@@ -393,10 +393,16 @@ function rebuild() {
 }
 const sun = new THREE.DirectionalLight(0xffffff, 1); sun.castShadow = true; scene.add(sun); scene.add(sun.target);
 sun.shadow.mapSize.set(4096, 4096); sun.shadow.camera.left = sun.shadow.camera.bottom = -45; sun.shadow.camera.right = sun.shadow.camera.top = 45; sun.shadow.camera.near = 50; sun.shadow.camera.far = 400; sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.05;
-function placeCamera(view) { watch.rotation.y = view === "photo" ? -10 * Math.PI / 180 : 0;
+// the views: Top (the app's), Photo (the goal's three-quarter), Wide (the same angle pulled back: the whole watch with both
+// strap ends — keepers, buckle), Low (a low three-quarter from the 5 o'clock side: the crystal's dome, the flank, the lugs' fall),
+// Side (from the crown: heights)
+const orbit = (elDeg, azDeg, d, fov, look) => { camera.fov = fov; const el = rad(elDeg), az = rad(azDeg); camera.position.set(Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d); camera.up.set(0, 1, 0); camera.lookAt(...look); };
+function placeCamera(view) { watch.rotation.y = ["photo", "wide", "low"].includes(view) ? -10 * Math.PI / 180 : 0;
   if (view === "top") { camera.fov = 13; camera.position.set(0, 325, 0); camera.up.set(0, 0, -1); camera.lookAt(0, 0, 0); }
   else if (view === "side") { camera.fov = 9; camera.position.set(520, 18, 0); camera.up.set(0, 1, 0); camera.lookAt(0, -3, 0); }
-  else { camera.fov = 22; const el = 36 * Math.PI / 180, az = -38 * Math.PI / 180, d = 190; camera.position.set(Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d); camera.up.set(0, 1, 0); camera.lookAt(0, -2, 0); }
+  else if (view === "wide") orbit(40, -38, 330, 24, [0, -8, 6]);
+  else if (view === "low") orbit(14, -58, 185, 20, [0, -4, 0]);
+  else orbit(36, -38, 190, 22, [0, -2, 0]);
   camera.updateProjectionMatrix(); }
 const $ = (id) => document.getElementById(id);
 function render() {

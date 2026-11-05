@@ -47,7 +47,7 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 - **Studio**: a light tent (grey sphere) with a key softbox high at the upper left, fills right/front/back, a **black flag** straight over the lens, a darker table; one soft directional sun from the app's `sh_from`/`sh_rise` with a 4 K PCF shadow; **GTAO** ambient occlusion (radius 2.2 mm); ACES tone mapping at 1.05.
 - **Sun**: the same with the sun hard and strong, the room dimmed.
 - The ground's drawn grain is a bump map; the **Ground** pill (grain / plain) removes it from the shader for a cheaper frame.
-- Views: **Top** (fov 13, straight down, 12 up), **Photo** (36° up from the lower right, watch turned −10°), **Side** (from the crown's side, a little above the table — the one that finds height bugs).
+- Views: **Top** (fov 13, straight down, 12 up), **Photo** (36° up from the lower right, watch turned −10°), **Wide** (the same angle pulled back: the whole watch, both strap ends), **Low** (14° up from the 5 o'clock side: the crystal's dome, the flank, the lugs' fall), **Side** (from the crown's side, a little above the table — the one that finds height bugs). `shot3d.mjs` takes any of them.
 
 ## Shooting and publishing
 
