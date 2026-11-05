@@ -1,0 +1,62 @@
+# The system — how the model is built
+
+## The one rule
+
+**A part is a section swept along a path, with a finish per face.** The section carries the shape (a lug's slab, a link's bean, a band's flank), the path carries the taper and the bend (a lug's laws, a bracelet's curve, a case's outline), and the face list says which strips are brushed and which polished. Everything that isn't a sweep is a **lathe** (a profile spun round an axis: caseback, bezel ring, rehaut, crystal, crown) or a **plate** (a flat shape: the case top, the insert, the dial).
+
+So the watch is data. Two tables in `watch3d.html`:
+
+```
+CASES.<key>      plan (round | cushion) and its numbers · zBand, zTop, belly, chamfer, flank finish
+                 lug: { tipTop, tipBot, rootBot, chamferTip, holeIn, corner }
+                 bezel: { r0, r1, z0, z1, teeth: { n, depth, fill, chamfer } }
+                 crown: { at (degrees from 3 o'clock), w, h, z, flutes }
+BRACELETS.<key>  W1, P0, P1, H1, gapx, gap · columns: [[share, section, out, offset], …]
+```
+
+A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. The Illustrator sheet Okay will draw is the **profiles' half** of a `CASES` row: the band section, the lug section and its laws, the bezel profile and tooth, the crown profile — one path per part, named, in mm.
+
+## Coordinates
+
+- **Case space**: millimetres at the published size; x right, y up the dial (12 o'clock is +y), z up from the caseback. The dial's face is at `DIAL_Z` = 10.
+- **World**: `W(x, y, z) = [x, z − DIAL_Z, −y]` — three.js y is up, the dial's 12 o'clock is −z. The whole `watch` group is scaled by `scene.size` (the dial's Ø over the case's opening) so a 34 mm dial gets a 47 mm case.
+- The dial's own parts come from Dial Tool: `dump.mjs` writes `scene.js` with every part's SVG path, colour, ink height, hand angle. Nothing of the dial is modelled here.
+
+## The builders (`watch3d.html` § 2, 5, 6)
+
+| Builder | Takes | Gives |
+|---|---|---|
+| `sweep(stations, mats, {closeSection, caps})` | a list of sections (same point count), a material index per edge | one `BufferGeometry` with a group per edge, UVs u along the path · v round the section (the brushed grain needs them) |
+| `lathe(pts)` | `[r, z]` pairs in case space | a `LatheGeometry` round the dial's axis |
+| `outline(C)` | a case spec | `at(θ)` → point and outward normal on the plan outline; `yAt(x)` → the outline's y at x (where a lug or end link starts) |
+| `buildCase(C)` | a case spec | the group, and `info`: `xi, xo, half, yEdge, lugTop(y), lugBot(y), xOut(y), holeZ, tipH, yAt` — what the bracelet needs |
+| `link(sec, w, l, h, out)` | bean · barn · slab · barrel; width, length, thickness; which side faces out | a link whose ends round to the stadium of its thickness; screw heads if `out` |
+| `buildBracelet(key, info)` | a bracelet key and the case's `info` | end links, the offset columns' first half-links, then rows pin to pin along the curve |
+| `buildLeather(info)` | | a rounded strap on the same curve, with a keeper |
+| `insertRing()` | | the insert's picture on a flat ring |
+| `mergeGeometries(geos)` | | one geometry (the teeth) |
+
+**Laws** (functions of position, all in `buildCase` / `buildBracelet`): `lugTop(y)`, `lugBot(y)` smooth steps from the case to the tip; `xOut(y)` the lug's plan edge (a cubic for the flare); `widthAt(s)`, `thickAt(s)`, `pitchAt(s)` linear from the case to the clasp; `zAt(s)` the pins' curve — level 6 mm past the lugs, then an S down over 18 mm onto the table.
+
+## Materials
+
+Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.16) and **brushed** (0.36, anisotropy 0.85 — the highlight stretched along the grain; needs UVs). Plus paint (markers), insert, sapphire (transmission), leather, dark (holes, screw rims), hand. `metalHex` is swapped for Steel / Gold and the parts rebuilt.
+
+## Light
+
+- **Studio**: a light tent (grey sphere) with a key softbox high at the upper left, fills right/front/back, a **black flag** straight over the lens, a darker table; one soft directional sun from the app's `sh_from`/`sh_rise` with a 4 K PCF shadow; **GTAO** ambient occlusion (radius 2.2 mm); ACES tone mapping at 1.05.
+- **Sun**: the same with the sun hard and strong, the room dimmed.
+- Views: **Top** (fov 13, straight down, 12 up), **Photo** (36° up from the lower right, watch turned −10°), **Side** (from the crown's side, a little above the table — the one that finds height bugs).
+
+## Shooting and publishing
+
+- `node try/relight/shot3d.mjs out.png <from°> <rise°> [studio|sun] [top|photo|side] [diver|cushion] [oyster|barn|jubilee|leather]` — Chromium with SwiftShader; needs `three@0.170.0` in `node_modules` (`npm install --no-save three@0.170.0`). Slow (≈ 50 s a shot), grainy AO; the look is true, the frame times are not.
+- `node try/relight/build.mjs` → `relight-built.html`… for the 3D page the one-file build is made by inlining `scene.js` into `watch3d.html` (see `rounds.md` round 1's recipe) and published to the artifact *Watch 3D trial* by the same path.
+- R21: judge a height from the **Side** view, a seam from a **crop at 2×**, never from the top view alone.
+
+## Known limits of the approach
+
+- No solid modelling: a hole is a disc on the wall, a lug meets the band by overlapping it (the band's top plate hides the join). Real cuts (a drilled lug, an engraved number) would need a CSG pass (three-bvh-csg) — not needed for the photo look so far.
+- `sweep` sections must keep their point count along the path; a shape that changes topology (a slot opening) is two sweeps.
+- The crystal has no refraction worth the name (transmission with a 0.05 thickness); a thicker setting blurred the dial.
+- Software GL in a session can't show anisotropy or AO as the iPad will; check there.
