@@ -89,26 +89,34 @@ const BRACELETS = {
 /** a SWEEP: `stations` is a list of sections (each the same count of [x, y, z] points); between two stations every edge of
  *  the section becomes a strip of quads, and `mats[e]` names the material of edge e — so one mesh can wear a brushed top
  *  and a polished chamfer. A closed section joins its last point to its first; closed ends get a fan cap (mats[n]) */
-function sweep(stations, mats, { closeSection = true, caps = false } = {}) {
-  const n = stations[0].length, g = new THREE.BufferGeometry(), v = [], uv = [], idx = [], groups = [];
-  stations.forEach((st, k) => st.forEach((p, i) => { v.push(...p); uv.push(k / (stations.length - 1) * 4, i / n); }));      // UVs: u along the path, v round the section — the brushed grain's direction needs them
-  const E = closeSection ? n : n - 1;
-  for (let e = 0; e < E; e++) { const e2 = (e + 1) % n, s0 = idx.length;
-    for (let k = 0; k + 1 < stations.length; k++) { const a = k * n + e, b = k * n + e2, c = (k + 1) * n + e, d = (k + 1) * n + e2; idx.push(a, c, b, b, c, d); }
-    groups.push([s0, idx.length - s0, mats[e] ?? 0]); }
-  if (caps) for (const [k, which] of [[0, 0], [stations.length - 1, 1]]) { const s0 = idx.length, base = k * n;
-    for (let i = 1; i + 1 < n; i++) idx.push(base, base + (which ? i + 1 : i), base + (which ? i : i + 1));
-    groups.push([s0, idx.length - s0, mats[n] ?? 0]); }
-  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); for (const [a, b, m] of groups) g.addGroup(a, b, m); g.computeVertexNormals();
+function sweep(stations, mats, { closeSection = true, caps = false, crease = 40 } = {}) {
+  const n = stations[0].length, S = stations.length, E = closeSection ? n : n - 1, g = new THREE.BufferGeometry(), v = [], uv = [], tan = [], idx = [], groups = [];
   // TANGENTS: the brushed grain runs along the path, so every vertex gets the path's direction there (the station before to
   // the station after; w = 1 is the handedness). Without this attribute three.js builds the frame per pixel from screen-space
   // UV derivatives, which jumps per facet on a sweep — and the anisotropic reflection follows that frame, not the surface, so
   // whole faces mirrored the key light and went white (round 14). Lathes and plates never needed it: their derivatives are smooth
-  const tan = [], S = stations.length, T = new THREE.Vector3(), last = new THREE.Vector3(1, 0, 0);
-  for (let k = 0; k < S; k++) for (let i = 0; i < n; i++) { const a = stations[Math.max(0, k - 1)][i], b = stations[Math.min(S - 1, k + 1)][i];
-    T.set(b[0] - a[0], b[1] - a[1], b[2] - a[2]); if (T.lengthSq() > 1e-10) last.copy(T.normalize());      // a pinched station (a link's end) keeps the last direction
-    tan.push(last.x, last.y, last.z, 1); }
-  g.setAttribute("tangent", new THREE.Float32BufferAttribute(tan, 4)); return g;
+  const T = new THREE.Vector3(), last = new THREE.Vector3(1, 0, 0), tangentAt = (k, i) => { const a = stations[Math.max(0, k - 1)][i], b = stations[Math.min(S - 1, k + 1)][i];
+    T.set(b[0] - a[0], b[1] - a[1], b[2] - a[2]); if (T.lengthSq() > 1e-10) last.copy(T.normalize()); return last; };      // a pinched station (a link's end) keeps the last direction
+  // EVERY STRIP OWNS ITS VERTICES: two faces meeting at a section point do not share it, so a corner stays a corner — shared
+  // points averaged the normals across the edge and a slab shaded like the inside of a tube (round 16, "I can see inside the lug").
+  // Along the path the normals stay smooth; across the section they are smoothed only where the bend is gentler than `crease`°
+  const push = (k, i) => { const p = stations[k][i], t = tangentAt(k, i); v.push(...p); uv.push(k / (S - 1) * 4, i / n); tan.push(t.x, t.y, t.z, 1); return v.length / 3 - 1; };
+  const at = [];      // at[e][k] = [vertex of point e, vertex of point e+1] in strip e at station k
+  for (let e = 0; e < E; e++) { const e2 = (e + 1) % n, s0 = idx.length; at[e] = [];
+    for (let k = 0; k < S; k++) at[e][k] = [push(k, e), push(k, e2)];
+    for (let k = 0; k + 1 < S; k++) { const [a, b] = at[e][k], [c, d] = at[e][k + 1]; idx.push(a, c, b, b, c, d); }
+    groups.push([s0, idx.length - s0, mats[e] ?? 0]); }
+  if (caps) for (const [k, which] of [[0, 0], [S - 1, 1]]) { const s0 = idx.length, base = v.length / 3; for (let i = 0; i < n; i++) push(k, i);
+    for (let i = 1; i + 1 < n; i++) idx.push(base, base + (which ? i + 1 : i), base + (which ? i : i + 1));
+    groups.push([s0, idx.length - s0, mats[n] ?? 0]); }
+  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute("tangent", new THREE.Float32BufferAttribute(tan, 4));
+  g.setIndex(idx); for (const [a, b, m] of groups) g.addGroup(a, b, m); g.computeVertexNormals();
+  // the crease pass: where two strips meet at a gentle angle (a bean's arc, the band's belly) blend their normals back together
+  const N = g.attributes.normal, A = new THREE.Vector3(), B = new THREE.Vector3(), cosC = Math.cos(crease * Math.PI / 180);
+  for (let e = 0; e < E; e++) { const f = (e + 1) % n; if (!closeSection && f === E) break; if (!at[f]) continue;
+    for (let k = 0; k < S; k++) { const a = at[e][k][1], b = at[f][k][0]; A.fromBufferAttribute(N, a); B.fromBufferAttribute(N, b);
+      if (A.dot(B) > cosC) { A.add(B).normalize(); N.setXYZ(a, A.x, A.y, A.z); N.setXYZ(b, A.x, A.y, A.z); } } }
+  N.needsUpdate = true; return g;
 }
 /** a part spun round the dial's axis: `pts` [r, z] in case space */
 const lathe = (pts, seg = 256) => new THREE.LatheGeometry(pts.map(([r, z]) => new THREE.Vector2(r, z - DIAL_Z)), seg);

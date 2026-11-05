@@ -26,7 +26,7 @@ A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. Th
 
 | Builder | Takes | Gives |
 |---|---|---|
-| `sweep(stations, mats, {closeSection, caps})` | a list of sections (same point count), a material index per edge | one `BufferGeometry` with a group per edge, UVs u along the path · v round the section (the brushed grain needs them) |
+| `sweep(stations, mats, {closeSection, caps, crease})` | a list of sections (same point count), a material index per edge | one `BufferGeometry` with a group per edge; UVs u along the path · v round the section; a **tangent** per vertex along the path (the brushed anisotropy needs it — without it three builds a per-pixel frame from UV derivatives and the sweep blows white); **every strip owns its vertices**, so a section corner is a hard edge unless the bend is under `crease` (40°) — a bean's arc and the band's belly stay smooth, a chamfer stays a line |
 | `lathe(pts)` | `[r, z]` pairs in case space | a `LatheGeometry` round the dial's axis |
 | `outline(C)` | a case spec | `at(θ)` → point and outward normal on the plan outline; `yAt(x)` → the outline's y at x (where a lug or end link starts) |
 | `buildCase(C)` | a case spec | the group, and `info`: `xi, xo, half, yEdge, lugTop(y), lugBot(y), xOut(y), holeZ, tipH, yAt` — what the bracelet needs |
