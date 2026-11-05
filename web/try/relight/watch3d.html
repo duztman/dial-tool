@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 23 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29.
+  watch3d.html — the 3D exercise, round 24 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,7 +37,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 23</h1>
+  <h1>Watch 3D · round 24</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
@@ -313,19 +313,20 @@ function buildBracelet(Bk, info) {
 /** a leather strap after ref-29: a FLAT BAND with a slight pillow on top, square burnished edges, the lug end cut square and
  *  filling the gap flush (its top a hair under the lug tops at the bar, ref-33), level to the lug tips then falling onto the
  *  table on the bracelet's curve; tapering 20 → 16. Section × path × finish: top leather · edges burnished · underside lining */
-const STRAP = { T: 2.8, W1: 16, pillow: 0.25, edgeR: 0.3, LEN: 68 };
+const STRAP = { T: 2.8, W1: 16, pillow: 0.25, edgeR: 0.3, LEN: 68, gap: 1.5, fold: 0.9, foldW: 2.2 };      // gap: the end stops short of the body; fold: the swell round the spring bar (mm) and its half-width
 function buildLeather(info) {
-  const g = new THREE.Group(), W0 = 2 * info.xi - 0.3, { T, W1, pillow, edgeR: r, LEN } = STRAP, yStart = info.yEdge + 0.1, END = info.half - yStart;
+  const g = new THREE.Group(), W0 = 2 * info.xi - 0.3, { T, W1, pillow, edgeR: r, LEN, gap, fold, foldW } = STRAP, yStart = info.yEdge + 0.1, END = info.half - yStart, sBar = END - info.lug.holeIn;
+  const thickAt = (s) => T + fold * Math.exp(-(((s - sBar) / foldW) ** 2));      // the FOLD: the strap wraps the spring bar, so it swells round it (ref-32, ref-33) and thins to the band
   const zAt = (s) => { const t = clamp((s - END - 2) / 18, 0, 1), e = t * t * (3 - 2 * t); return info.holeZ * (1 - e) + T / 2 * e; };      // the band's middle: on the spring bar past the tips, then an S down to the table
   // the section at width w, walked from the bottom-left: underside · right edge · corner · top (right to left, pillowed) · corner · left edge
-  const section = (w) => { const pts = [], mats = [], put = (x, dz, m) => { pts.push([x, dz]); mats.push(m); };      // m = the finish of the edge that STARTS at this point: 0 leather · 1 edge · 2 lining
+  const section = (w, T) => { const pts = [], mats = [], put = (x, dz, m) => { pts.push([x, dz]); mats.push(m); };      // m = the finish of the edge that STARTS at this point: 0 leather · 1 edge · 2 lining
     put(-w / 2, -T / 2, 2); put(w / 2, -T / 2, 1); put(w / 2, T / 2 - r, 1);
     for (let j = 1; j <= 2; j++) { const a = j / 3 * Math.PI / 2; put(w / 2 - r + r * Math.cos(a), T / 2 - r + r * Math.sin(a), 1); }
     for (let j = 0; j <= 6; j++) { const x = (w / 2 - r) * (1 - 2 * j / 6); put(x, T / 2 + pillow * (1 - (2 * x / w) ** 2), j < 6 ? 0 : 1); }
     for (let j = 1; j <= 2; j++) { const a = Math.PI / 2 + j / 3 * Math.PI / 2; put(-w / 2 + r + r * Math.cos(a), T / 2 - r + r * Math.sin(a), 1); }
     put(-w / 2, T / 2 - r, 1); return { pts, mats }; };
   for (const sy of [-1, 1]) { const N = 48, stations = []; let mats;
-    for (let k = 0; k <= N; k++) { const s = LEN * k / N, w = W0 + (W1 - W0) * s / LEN, z = zAt(s), sec = section(w); mats = sec.mats;
+    for (let k = 0; k <= N; k++) { const s = gap + (LEN - gap) * k / N, w = W0 + (W1 - W0) * s / LEN, z = zAt(s), sec = section(w, thickAt(s)); mats = sec.mats;
       stations.push(sec.pts.map(([x, dz]) => W(x, sy * (yStart + s), z + dz))); }
     g.add(mesh(sweep(stations, [...mats, 1], { caps: true }), [MATERIALS.leather(), MATERIALS.edge(), MATERIALS.lining()]));      // both cut ends show the burnished edge
     const keeper = mesh(new THREE.TorusGeometry((W0 + 1.6) / 2, 0.9, 10, 24), MATERIALS.leather()); keeper.scale.z = 0.4; keeper.position.set(...W(0, sy * (yStart + 22), zAt(22))); g.add(keeper); }
@@ -355,8 +356,11 @@ const loader = new SVGLoader(), shapesOf = (d) => loader.parse(`<svg xmlns="http
 // the ground: tan leather with a drawn grain; a contact shadow under the watch where no light gets in
 let groundMat, groundBump;
 { const n = 1024, c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d"); x.fillStyle = "#808080"; x.fillRect(0, 0, n, n); let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  for (let i = 0; i < 2600; i++) { x.beginPath(); const px = rnd() * n, py = rnd() * n, rr = 10 + rnd() * 26; x.ellipse(px, py, rr, rr * (0.5 + rnd() * 0.6), rnd() * Math.PI, 0, 2 * Math.PI); x.fillStyle = `rgb(${120 + rnd() * 30 | 0},${120 + rnd() * 30 | 0},${120 + rnd() * 30 | 0})`; x.fill(); }
-  x.strokeStyle = "#3a3a3a"; x.lineWidth = 1.6; for (let i = 0; i < 1400; i++) { x.beginPath(); const px = rnd() * n, py = rnd() * n, a = rnd() * Math.PI, l = 6 + rnd() * 22; x.moveTo(px, py); x.lineTo(px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
+  // each pebble a DOME (a radial gradient, bright centre to a dark rim) so the height changes across the whole cell — a flat
+  // fill gives a bump map only a one-pixel ridge at its outline, which the mipmaps averaged away (rounds 1–23: never visible)
+  for (let i = 0; i < 2600; i++) { const px = rnd() * n, py = rnd() * n, rr = 10 + rnd() * 26, sq = 0.5 + rnd() * 0.6, rot = rnd() * Math.PI, lum = 150 + rnd() * 60 | 0;
+    const gr = x.createRadialGradient(0, 0, 0, 0, 0, rr); gr.addColorStop(0, `rgb(${lum},${lum},${lum})`); gr.addColorStop(0.75, `rgb(${lum - 50},${lum - 50},${lum - 50})`); gr.addColorStop(1, "rgb(60,60,60)");
+    x.save(); x.translate(px, py); x.rotate(rot); x.scale(1, sq); x.fillStyle = gr; x.beginPath(); x.arc(0, 0, rr, 0, 2 * Math.PI); x.fill(); x.restore(); }
   const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(6, 6); bump.anisotropy = 8;
   const m = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, bumpMap: bump, bumpScale: 0.35, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z; m.receiveShadow = true; watch.add(m);
   const s = 512, cc = document.createElement("canvas"); cc.width = cc.height = s; const cx = cc.getContext("2d"), gr = cx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = gr; cx.fillRect(0, 0, s, s);
