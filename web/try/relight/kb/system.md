@@ -7,7 +7,7 @@
 So the watch is data. Two tables in `watch3d.html`:
 
 ```
-CASES.<key>      plan (round | cushion) and its numbers · zBand, zTop, belly, chamfer, flank finish
+CASES.<key>      plan (round | cushion — the builders keep both; only the diver is in the table) and its numbers · zBand, zTop, belly, chamfer, flank finish
                  lug: { tipTop, tipBot, rootBot, chamferTip, holeIn, corner }
                  bezel: { r0, r1, z0, z1, teeth: { n, depth, fill, chamfer } }
                  crown: { at (degrees from 3 o'clock), w, h, z, flutes }
@@ -50,7 +50,7 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 
 ## Shooting and publishing
 
-- `node try/relight/shot3d.mjs out.png <from°> <rise°> [studio|sun] [top|photo|side] [diver|cushion] [oyster|barn|jubilee|leather]` — Chromium with SwiftShader; needs `three@0.170.0` in `node_modules` (`npm install --no-save three@0.170.0`). Slow (≈ 50 s a shot), grainy AO; the look is true, the frame times are not.
+- `node try/relight/shot3d.mjs out.png <from°> <rise°> [studio|sun] [top|photo|side] [diver] [oyster|barn|jubilee|leather]` — Chromium with SwiftShader; needs `three@0.170.0` in `node_modules` (`npm install --no-save three@0.170.0`). Slow (≈ 50 s a shot), grainy AO; the look is true, the frame times are not.
 - `node try/relight/build.mjs` → `relight-built.html`… for the 3D page the one-file build is made by inlining `scene.js` into `watch3d.html` (see `rounds.md` round 1's recipe) and published to the artifact *Watch 3D trial* by the same path.
 - R21: judge a height from the **Side** view, a seam from a **crop at 2×**, never from the top view alone.
 

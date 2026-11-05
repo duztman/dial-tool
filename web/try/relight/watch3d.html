@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 18 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower.
+  watch3d.html — the 3D exercise, round 19 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,8 +37,8 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 18</h1>
-  <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button><button data-v="cushion">Cushion</button></div>
+  <h1>Watch 3D · round 19</h1>
+  <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
   <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
@@ -63,19 +63,13 @@ const DIAL_Z = 10.0;              // the dial's face, mm over the caseback; worl
 const W = (x, y, z) => [x, z - DIAL_Z, -y];      // case space (x, y of the dial plane, z up from the caseback) → world (dial y, 12 o'clock, is −z)
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), ss = (u) => { u = clamp(u, 0, 1); return u * u * (3 - 2 * u); }, rad = (d) => d * Math.PI / 180;
 
-// ── 1 · the specs: two cases, three bracelets ──────────────────────────────────────────────────────────────────────────
+// ── 1 · the specs: one case (the cushion was dropped in round 19 — Okay: "sub par"; its row is in the history), three bracelets ──────────────────────────────────────────────────────────────────────────
 const CASES = {
   // after the SPB143 / Submariner photographs: a round band with a belly and a polished chamfer, slab lugs with a flare in plan
   diver: { name: "Diver", plan: "round", R: 20.25, l2l: 47.6, lugw: 20, lugT: 2.9, flare: 3.6, zBand: 2.4, zTop: 9.3, belly: 0.3, chamfer: 0.9, flank: "polished",
     lug: { tipTop: 7.3, tipBot: 4.1, rootBot: 2.4, chamferTip: 0.75, holeIn: 1.6, corner: 0.8 },
     bezel: { r0: 16.3, r1: 19.6, z0: 9.6, z1: 11.9, teeth: { n: 60, depth: 0.5, fill: 0.62, chamfer: 0.45 } },
     crown: { at: 0, w: 6.4, h: 3.0, z: 6.0, flutes: 18 } },
-  // a cushion after Seiko's (the 6309 / Turtle kind): the body one superellipse, lugs short and straight tucked into it, the
-  // crown at 4 o'clock, the same bezel stack on top
-  cushion: { name: "Cushion", plan: "cushion", a: 21.8, b: 22.4, n: 3.2, l2l: 47.6, lugw: 20, lugT: 2.9, flare: 0, zBand: 2.4, zTop: 9.3, belly: 0.5, chamfer: 1.0, flank: "brushed",
-    lug: { tipTop: 8.2, tipBot: 3.9, rootBot: 2.4, chamferTip: 0.9, holeIn: 1.3, corner: 0.6 },
-    bezel: { r0: 16.3, r1: 19.6, z0: 9.6, z1: 11.9, teeth: { n: 72, depth: 0.55, fill: 0.6, chamfer: 0.25 } },
-    crown: { at: -32, w: 6.0, h: 2.6, z: 6.0, flutes: 20 } },
 };
 // a bracelet: columns across (a share of the width, a section, which side faces out, half a pitch off or not), and the
 // taper laws from the case (W0, H0, P0) to the clasp (W1, H1, P1)

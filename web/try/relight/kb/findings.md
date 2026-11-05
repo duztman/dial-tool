@@ -14,14 +14,14 @@ Each line: the fact · the photographs it comes from (`refs.md` numbers) · whet
 - The **tip is a flat end face**, cut square and chamfered — not a half-round round the hole. (ref-11, ref-21, ref-22; round 13's half-round was wrong) — flat face yes; its chamfer not yet.
 - The lug **falls and thins** toward the tip in the side view: top down from the case top, underside rising a little; tip about 3.2 thick at the Seiko's. (ref-12, ref-21; Okay's side drawing ref-26: "one solid, not clipped walls") — yes: laws `lugTop(u)`, `lugBot(u)`.
 - The spring-bar **hole is a small drilled dot** in the flank, a bit above mid-height, about 1.6 in from the tip. Nothing more is visible. (ref-11, ref-20, ref-22) — yes (a dot with a bright rim; not a true bore).
-- In plan the outer edge **flares** into the case on the diver (lugPath's curve); the cushion's lugs are straight and short. (ref-09, ref-19) — yes.
+- In plan the outer edge **flares** into the case on the diver (lugPath's curve). (ref-09) — yes.
 - The lug's chamfer **continues as the band's chamfer**: one line round the whole case. (ref-12, ref-22) — yes.
 
 ## The case band and back
 
 - The band is a tall wall (brushed on the Sub with numbers engraved; polished on the Seiko), with a slight **belly** (fullest at mid-height) and a polished chamfer at the top. The **caseback is a separate polished step** below it. (ref-12, ref-20, ref-21) — yes.
 - The bezel is a **separate ring** sitting on a seat at the top of the band; under it the case top is a flat brushed plate. (ref-19, ref-23) — yes.
-- A Seiko-style cushion: the body **one superellipse**, lugs tucked in (about 2 mm showing), crown at 4 o'clock, the same round bezel on top. (ref-19; Okay: "not Panerai, more like a Seiko's") — yes, as `CASES.cushion`.
+- A Seiko-style cushion was built (ref-19) and dropped in round 19 (Okay: "sub par"); the model is the diver only.
 
 ## The end link
 

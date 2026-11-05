@@ -4,11 +4,11 @@ Numbered now → later, easier → harder. Each: what, why, where in the code.
 
 1. ~~Brushed sweeps blow out white~~ — done, round 15: `sweep()` writes a tangent attribute (`rounds.md` 15). Still to check on the iPad: the grain itself (software GL can't show it, `system.md`).
 2. ~~Teeth too tall~~ — done, round 18: depth 0.5, fill 0.62, chamfer 0.45 (`rounds.md` 18).
-3. **End link too bright / too high at the body**: its top is `lugTop − 0.35`; the Seiko (ref-10) shows it lower near the body and brushed across. Set the top from a law of its own (−0.6 at the body, −0.35 at the tip) and give its brushing the bracelet's direction.
+3. ~~End link~~ — closed, round 19 (Okay: "end link ok").
 4. ~~Lug tip chamfer~~ — done, round 16, with the lug's outer wall taking the band's belly (`rounds.md` 16).
 5. **Convex outer faces** of the outermost links (dropped in the rewrite); and the Oyster centre link's polished option (the Sub's centres are polished).
-6. **Crown**: a bigger dome and a shoulder on the tube; the cushion's crown sits in a guard on real Seikos — a guard is another sweep (two humps on the outline).
-7. **Cushion case**: check against a real 6309/SRP photo straight from above (none in the refs yet); the lug length and the chamfer width are guesses.
+6. **Crown**: a bigger dome and a shoulder on the tube;
+7. ~~Cushion case~~ — dropped, round 19 (Okay: "sub par"); its `CASES` row is in the history (commit 14fa29d) if a cushion is ever wanted again.
 8. **Lume**: milky surface by day (a slight sub-surface look: clearcoat + sheen), the glow at night — tie to Dial Tool's Night (`night.js`).
 9. **Clasp** (refs 5, 6, 8): a folded sheet with a brushed cover, at `LEN`; the bracelet's far end today just stops.
 10. **Crystal**: edge refraction of the rehaut and a soft window reflection; three's transmission with thickness blurs the dial — try a thin `transmission` plus a separate reflective shell.
