@@ -5,7 +5,7 @@ Numbered now → later, easier → harder. Each: what, why, where in the code.
 1. ~~Brushed sweeps blow out white~~ — done, round 15: `sweep()` writes a tangent attribute (`rounds.md` 15). Still to check on the iPad: the grain itself (software GL can't show it, `system.md`). Publish as v15.
 2. **Teeth too tall** — in the photo view they read as a crenellation. `teeth.depth` 0.7 → 0.5, `fill` 0.74 → 0.62, and the top chamfer larger; the Sub's are 120 and fine, the Baltic's ~60 and wide (`refs.md` 24).
 3. **End link too bright / too high at the body**: its top is `lugTop − 0.35`; the Seiko (ref-10) shows it lower near the body and brushed across. Set the top from a law of its own (−0.6 at the body, −0.35 at the tip) and give its brushing the bracelet's direction.
-4. **Lug tip chamfer**: the end face is flat and polished; the photographs show the top chamfer turning down the end face (ref-11, ref-21). Add one station at the tip with the top lowered by `chamferTip`.
+4. ~~Lug tip chamfer~~ — done, round 16, with the lug's outer wall taking the band's belly (`rounds.md` 16).
 5. **Convex outer faces** of the outermost links (dropped in the rewrite); and the Oyster centre link's polished option (the Sub's centres are polished).
 6. **Crown**: a bigger dome and a shoulder on the tube; the cushion's crown sits in a guard on real Seikos — a guard is another sweep (two humps on the outline).
 7. **Cushion case**: check against a real 6309/SRP photo straight from above (none in the refs yet); the lug length and the chamfer width are guesses.
