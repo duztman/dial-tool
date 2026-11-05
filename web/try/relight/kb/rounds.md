@@ -25,6 +25,7 @@ One line a round: what was tried, what Okay said, what failed and why. The commi
 | 18 | **Teeth lower**: diver `teeth.depth` 0.7 → 0.5, `fill` 0.74 → 0.62, `chamfer` 0.3 → 0.45 (open #2's own numbers) | "Go on" | They read as a crenellation in the photo view; now a coin edge. Published |
 | 19 | The **cushion case dropped**: its `CASES` row and pill removed; the builders still take a cushion plan. Open #3 (end link) closed on his word | "End link ok. Abandon pillow case it's sub par" | — |
 | 20 | **Convex outer flanks**: an outermost link's wall at ±w/2 becomes a bow of `BULGE` 0.2 mm in four strips (slab, barn, bean; screws moved out onto it); a column may name a `finish` ("polished") in `BRACELETS` — none does, the goal's SPB143 is all brushed | "Go" | — |
+| 21 | **Crown**: a shoulder (collar r 2.1, 0.5 long) where the tube (r 1.5) leaves the case; the dome 0.55 → 0.95 high in three arcs | "Accepted. Advance" | The shoulder hides under the bezel's overhang in the top and photo views — true to the geometry |
 
 ## Things learnt about the work itself
 

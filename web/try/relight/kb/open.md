@@ -7,7 +7,7 @@ Numbered now → later, easier → harder. Each: what, why, where in the code.
 3. ~~End link~~ — closed, round 19 (Okay: "end link ok").
 4. ~~Lug tip chamfer~~ — done, round 16, with the lug's outer wall taking the band's belly (`rounds.md` 16).
 5. ~~Convex outer faces~~ — done, round 20 (bulge 0.2); the polished-centre option is a column's fifth field `"polished"`, off by default.
-6. **Crown**: a bigger dome and a shoulder on the tube;
+6. ~~Crown~~ — done, round 21: dome 0.95, shoulder r 2.1 × 0.5.
 7. ~~Cushion case~~ — dropped, round 19 (Okay: "sub par"); its `CASES` row is in the history (commit 14fa29d) if a cushion is ever wanted again.
 8. **Lume**: milky surface by day (a slight sub-surface look: clearcoat + sheen), the glow at night — tie to Dial Tool's Night (`night.js`).
 9. **Clasp** (refs 5, 6, 8): a folded sheet with a brushed cover, at `LEN`; the bracelet's far end today just stops.
