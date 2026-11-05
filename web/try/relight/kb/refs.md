@@ -1,6 +1,6 @@
 # The reference photographs
 
-Not in the repo (R36). Files `ref-01 … ref-28` in `~/Desktop/dial-maker/screenshots/2026-11-05-3d-refs/` on Okay's Mac (delivered as `3d-refs.zip` on 5 Nov 2026). Okay found them through image search and attached them; the sources are the sites named. Use them only to read shapes from; none is ours.
+Not in the repo (R36). Files `ref-01 … ref-34` in `~/Desktop/dial-maker/screenshots/2026-11-05-3d-refs/` on Okay's Mac (ref-01…28 delivered as `3d-refs.zip` on 5 Nov 2026; ref-29…34, the strap, sent in the chat the same day — Okay saves them under these names). Okay found them through image search and attached them; the sources are the sites named. Use them only to read shapes from; none is ours.
 
 | # | File | What it shows | Backs |
 |---|---|---|---|
@@ -32,3 +32,9 @@ Not in the repo (R36). Files `ref-01 … ref-28` in `~/Desktop/dial-maker/screen
 | 26 | okay-markup-side-one-solid | Okay's marks on round 12's side view: lug and band one solid down to the caseback, the tip round the bar | lug laws (half corrected by ref-11) |
 | 27 | okay-markup-top-lugs-holes | Okay's marks on round 12's top view: solid blocks, real holes, the end link flush | end link, holes |
 | 28 | r11-top-glitch-okay-sent | Round 11's top view with the folded lug top (the extrusion's cap) | why sweeps |
+| 29 | seamaster-tan-strap-on-pillow | Omega Seamaster on a thin tan calf strap, on a pillow: stitch lines both edges, square lug end, the strap leaving the lugs level then falling | strap section (thin, flat), stitching, the lie |
+| 30 | submariner-racing-strap-perforated | A Sub on a pebbled "racing" strap with perforations, flat lay; a black one loose beside it | grain scale, holes, how a strap bends |
+| 31 | 62mas-vintage-strap-keepers | Seiko 62MAS on a thick tan "vintage" strap crossed over an olive one: two heavy stitches at the lug end only, a fixed and a floating keeper, the strap filling the lug gap flush | thick section, keepers, lug end |
+| 32 | strap-end-spring-bar-macro | A strap's end at macro beside its spring bar: square cut, the bar through a tunnel in the folded end, the edge showing the layers | the lug end's tunnel, edge, thickness |
+| 33 | lug-strap-junction-macro | The spring bar's tip in the lug hole with the strap's end beside it: the strap top a little under the lug top, its end a hair inside the tips, the raw edge | the fit between the lugs |
+| 34 | vintage-strap-alone-buckle | A tan vintage strap laid out alone: the long end with six holes and a rounded-pointed tip, the short end with a thin wire tang buckle, a fixed keeper stitched and a floating one, burnished dark edges | buckle, keepers, holes, tip, edge, sheen |

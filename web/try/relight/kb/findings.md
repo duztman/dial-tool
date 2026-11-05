@@ -45,6 +45,17 @@ Each line: the fact · the photographs it comes from (`refs.md` numbers) · whet
 - The bezel ring is a plain lathe under the teeth; the insert a thin flat ring on top with printed numerals (feet to the centre, none upside down), long marks at the fives, dots at the minutes, a lume dot in the triangle. (ref-23, ref-09) — yes.
 - The **crown is fluted** (half-round grooves, flat lands), its rim chamfered, its cap domed; it stands off the case on a tube. (ref-24) — yes.
 
+## The leather strap (ref-29…34) — nothing of this is in the model yet; the leather today is a rounded bar with a torus keeper
+
+- A strap is a **flat band with a slight pillow**, 2.5–4 mm thick (thin calf ref-29; thick "vintage" ref-31/34), its **edges cut square and burnished dark**, the layers showing on the edge (ref-32, ref-34). Not a rounded bar.
+- The **lug end is cut square** and **fills the lug gap flush**, a hair inside the tips, its top a little under the lug tops; the spring bar runs through a **tunnel in the folded end** (ref-31, ref-32, ref-33). It leaves the lugs level, then falls (ref-29).
+- **Stitching**: either a line along both edges about 1 mm in (ref-29), or the vintage way — two heavy stitches across the lug end only and a stitched fold at the tip (ref-31, ref-34). Thread lighter than the leather.
+- **Keepers**: flat strips ~6 mm wide of the same leather, one fixed (stitched) near the buckle and one floating; they sit flat on the strap, not rings (ref-31, ref-34).
+- **Buckle**: a thin wire tang buckle — a frame, a tongue, the bar — polished or brushed, on the short end (ref-34, ref-31).
+- **The long end**: six holes in a line, a rounded-pointed tip (ref-34); the short end square with the buckle.
+- **Surface**: smooth calf is matte-satin with a soft broad highlight (ref-29, ref-34); pebbled leather has a grain of ~1 mm cells (ref-30); the colour deepens where the strap bends and at the burnished edge; a low clearcoat, not a metal sheen.
+- **The lie in a product shot**: ends open on the table, the short end with the buckle up, the long end straight or curling (ref-30, ref-34); or crossed as a display (ref-31).
+
 ## Light and material
 
 - Steel in these photographs reflects a **bright, even room** with a few brighter panels; polished faces mirror it, brushed faces smear it along the grain. A **black card over the lens** keeps the crystal and the polished tops from throwing the ceiling back at a camera above. (ref-01, ref-15) — yes: the studio and the flag.
