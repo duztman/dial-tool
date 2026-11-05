@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 29 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views.
+  watch3d.html — the 3D exercise, round 30 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,7 +37,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 29</h1>
+  <h1>Watch 3D · round 30</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button></div>
@@ -135,7 +135,7 @@ const MATERIALS = {
   polished: () => metalMat(0.16, 0), brushed: () => metalMat(0.36, 0.85),
   paint: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 0, roughness: 0.45, clearcoat: 0.9, clearcoatRoughness: 0.15 }),
   insert: (hex) => new THREE.MeshPhysicalMaterial({ color: hex, metalness: 0.6, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
-  sapphire: () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.0, transmission: 1, thickness: 0.05, ior: 1.76, transparent: true, side: THREE.DoubleSide }),
+  sapphire: () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.0, transmission: 1, thickness: 1.2, ior: 1.76, transparent: true, side: THREE.DoubleSide }),      // thickness: the real 1.2 mm — the refraction that shifts the rehaut at the edge; the blur comes from roughness, not thickness, so none at 0
   leather: () => new THREE.MeshPhysicalMaterial({ color: leatherHex, metalness: 0, roughness: 0.62, clearcoat: 0.15, clearcoatRoughness: 0.6 }),      // smooth calf: matte-satin, a soft broad highlight (ref-29)
   edge: () => new THREE.MeshPhysicalMaterial({ color: new THREE.Color(leatherHex).multiplyScalar(0.55), metalness: 0, roughness: 0.5, clearcoat: 0.3, clearcoatRoughness: 0.4 }),      // the burnished cut edge: darker, a little glossier (ref-34)
   lining: () => new THREE.MeshPhysicalMaterial({ color: new THREE.Color(leatherHex).multiplyScalar(0.85), metalness: 0, roughness: 0.9 }),
@@ -229,7 +229,7 @@ function buildCase(C) {
     for (let k = 0; k <= N; k++) { const th = k / N * 2 * Math.PI, r = rAt(th), c = Math.cos(th), sn = Math.sin(th), P = (rr, z) => W(rr * c, rr * sn, z);
       stations.push([P(B.r1 - 0.05, B.z0), P(r, B.z0), P(r, B.z1 - ch), P(r - ch, B.z1), P(B.r1 - 0.05, B.z1)]); }      // the wall's section: seat · outer wall · top chamfer · top, closed back to the ring
     g.add(mesh(sweep(stations, [0, 0, 0, 0, 0]), MATERIALS.polished())); }
-  g.add(insertRing()); g.add(mesh(lathe([[0, 11.55], [15.9, 11.55], [15.9, 12.55], [15.8, 12.9], [15.5, 13.15], [15.0, 13.3], [14.4, 13.35], [0, 13.4]]), MATERIALS.sapphire(), false));
+  g.add(insertRing()); g.add(mesh(lathe([[0, 11.55], [15.9, 11.55], [15.9, 12.55], [15.8, 12.9], [15.5, 13.15], [15.0, 13.3], [14.4, 13.35], [11, 13.55], [7, 13.75], [3.5, 13.87], [0, 13.9]]), MATERIALS.sapphire(), false));      // the crystal: a gentle DOME, 0.5 mm higher at the centre than at the rim (the SPB143's curved sapphire)
   // the crown: a profile spun round its stem, fluted, chamfered, domed; on its tube out of the body at `at` degrees
   // the profile, r against length along the stem: a SHOULDER (a collar r 2.1, 0.5 long) where the tube leaves the case, the
   // tube r 1.5 to the body, the body with its chamfered rim, then a DOME 0.95 high in three arcs (ref-24: fuller than a cap)

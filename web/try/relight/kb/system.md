@@ -60,6 +60,6 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 
 - No solid modelling: a hole is a disc on the wall, a lug meets the band by overlapping it (the band's top plate hides the join). Real cuts (a drilled lug, an engraved number) would need a CSG pass (three-bvh-csg) — not needed for the photo look so far.
 - `sweep` sections must keep their point count along the path; a shape that changes topology (a slot opening) is two sweeps.
-- The crystal has no refraction worth the name (transmission with a 0.05 thickness); a thicker setting blurred the dial.
+- The crystal refracts at its true thickness (1.2, ior 1.76, roughness 0 — three's transmission blur is roughness, not thickness); its dome is too flat (0.5 over 30 mm) to show a window streak, so the studio has no window panel: the tent's veil is its reflection.
 - Software GL in a session can't show anisotropy or AO as the iPad will; check there.
 - **GTAO sees front faces only** (its normal/depth pass is a FrontSide `MeshNormalMaterial`): every mesh must wind outward or the AO of its inside is painted on its outside. `sweep()` guarantees this for sweeps; a new builder must too (a mirrored copy of a geometry flips its winding).
