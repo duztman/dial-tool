@@ -48,7 +48,7 @@ Each line: the fact · the photographs it comes from (`refs.md` numbers) · whet
 ## The leather strap (ref-29…34) — nothing of this is in the model yet; the leather today is a rounded bar with a torus keeper
 
 - A strap is a **flat band with a slight pillow**, 2.5–4 mm thick (thin calf ref-29; thick "vintage" ref-31/34), its **edges cut square and burnished dark**, the layers showing on the edge (ref-32, ref-34). Not a rounded bar.
-- The **lug end is cut square** and **fills the lug gap flush**, a hair inside the tips, its top a little under the lug tops; the spring bar runs through a **tunnel in the folded end** (ref-31, ref-32, ref-33). It leaves the lugs level, then falls (ref-29).
+- The **lug end is cut square**, sits just past the body's curve (a gap of about a millimetre at the middle; the body is round, the end straight), a hair inside the tips, its top a little under the lug tops; the spring bar runs through a **tunnel in the folded end** (ref-31, ref-32, ref-33). It leaves the lugs level, then falls (ref-29).
 - **Stitching**: either a line along both edges about 1 mm in (ref-29), or the vintage way — two heavy stitches across the lug end only and a stitched fold at the tip (ref-31, ref-34). Thread lighter than the leather.
 - **Keepers**: flat strips ~6 mm wide of the same leather, one fixed (stitched) near the buckle and one floating; they sit flat on the strap, not rings (ref-31, ref-34).
 - **Buckle**: a thin wire tang buckle — a frame, a tongue, the bar — polished or brushed, on the short end (ref-34, ref-31).

@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 24 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar.
+  watch3d.html — the 3D exercise, round 25 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,7 +37,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 24</h1>
+  <h1>Watch 3D · round 25</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
@@ -313,7 +313,7 @@ function buildBracelet(Bk, info) {
 /** a leather strap after ref-29: a FLAT BAND with a slight pillow on top, square burnished edges, the lug end cut square and
  *  filling the gap flush (its top a hair under the lug tops at the bar, ref-33), level to the lug tips then falling onto the
  *  table on the bracelet's curve; tapering 20 → 16. Section × path × finish: top leather · edges burnished · underside lining */
-const STRAP = { T: 2.8, W1: 16, pillow: 0.25, edgeR: 0.3, LEN: 68, gap: 1.5, fold: 0.9, foldW: 2.2 };      // gap: the end stops short of the body; fold: the swell round the spring bar (mm) and its half-width
+const STRAP = { T: 2.8, W1: 16, pillow: 0.25, edgeR: 0.3, LEN: 68, gap: 0.8, fold: 0.9, foldW: 2.2 };      // gap: the end stops short of the body's furthest point (the circle reaches 2.5 mm further at the strap's middle than at the lug root); fold: the swell round the spring bar (mm) and its half-width
 function buildLeather(info) {
   const g = new THREE.Group(), W0 = 2 * info.xi - 0.3, { T, W1, pillow, edgeR: r, LEN, gap, fold, foldW } = STRAP, yStart = info.yEdge + 0.1, END = info.half - yStart, sBar = END - info.lug.holeIn;
   const thickAt = (s) => T + fold * Math.exp(-(((s - sBar) / foldW) ** 2));      // the FOLD: the strap wraps the spring bar, so it swells round it (ref-32, ref-33) and thins to the band
@@ -326,7 +326,8 @@ function buildLeather(info) {
     for (let j = 1; j <= 2; j++) { const a = Math.PI / 2 + j / 3 * Math.PI / 2; put(-w / 2 + r + r * Math.cos(a), T / 2 - r + r * Math.sin(a), 1); }
     put(-w / 2, T / 2 - r, 1); return { pts, mats }; };
   for (const sy of [-1, 1]) { const N = 48, stations = []; let mats;
-    for (let k = 0; k <= N; k++) { const s = gap + (LEN - gap) * k / N, w = W0 + (W1 - W0) * s / LEN, z = zAt(s), sec = section(w, thickAt(s)); mats = sec.mats;
+    const s0 = info.yAt(0) + gap - yStart;      // the end: past the body's curve at x = 0 — two objects, never one inside the other
+    for (let k = 0; k <= N; k++) { const s = s0 + (LEN - s0) * k / N, w = W0 + (W1 - W0) * s / LEN, z = zAt(s), sec = section(w, thickAt(s)); mats = sec.mats;
       stations.push(sec.pts.map(([x, dz]) => W(x, sy * (yStart + s), z + dz))); }
     g.add(mesh(sweep(stations, [...mats, 1], { caps: true }), [MATERIALS.leather(), MATERIALS.edge(), MATERIALS.lining()]));      // both cut ends show the burnished edge
     const keeper = mesh(new THREE.TorusGeometry((W0 + 1.6) / 2, 0.9, 10, 24), MATERIALS.leather()); keeper.scale.z = 0.4; keeper.position.set(...W(0, sy * (yStart + 22), zAt(22))); g.add(keeper); }
