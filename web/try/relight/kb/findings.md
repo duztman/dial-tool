@@ -41,7 +41,7 @@ Each line: the fact · the photographs it comes from (`refs.md` numbers) · whet
 
 ## The bezel and crown
 
-- Coin-edge **teeth are prismatic blocks** with flat faces and gaps between, chamfered on top — not a ripple. Counts seen: ~60 wide (Baltic), 120 fine (Sub). (ref-24, ref-20, ref-19) — yes: one block carried round, `teeth: { n, depth, fill, chamfer }`.
+- The coin edge is **cut into the ring**, not added to it: lands at the full radius, round scallops between, chamfered on top; counts seen ~60 wide (Baltic), 120 fine (Sub). (ref-24, ref-20, ref-19; Okay, 5 Nov 2026: "machined out of metal, round divots") — yes: the wall's radius a law of the angle, `teeth: { n, depth, fill, chamfer }`.
 - The bezel ring is a plain lathe under the teeth; the insert a thin flat ring on top with printed numerals (feet to the centre, none upside down), long marks at the fives, dots at the minutes, a lume dot in the triangle. (ref-23, ref-09) — yes.
 - The **crown is fluted** (half-round grooves, flat lands), its rim chamfered, its cap domed; it stands off the case on a tube. (ref-24) — yes.
 

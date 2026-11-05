@@ -9,7 +9,7 @@ So the watch is data. Two tables in `watch3d.html`:
 ```
 CASES.<key>      plan (round | cushion — the builders keep both; only the diver is in the table) and its numbers · zBand, zTop, belly, chamfer, flank finish
                  lug: { tipTop, tipBot, rootBot, chamferTip, holeIn, corner }
-                 bezel: { r0, r1, z0, z1, teeth: { n, depth, fill, chamfer } }
+                 bezel: { r0, r1, z0, z1, teeth: { n, depth, fill, chamfer } }   (teeth = scallops cut into the wall: n a turn, depth deep, fill of the pitch wide)
                  crown: { at (degrees from 3 o'clock), w, h, z, flutes }
 BRACELETS.<key>  W1, P0, P1, H1, gapx, gap · columns: [[share, section, out, offset, finish?], …]  (finish "polished" for a column; default brushed)
 ```

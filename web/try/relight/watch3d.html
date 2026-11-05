@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 27 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening).
+  watch3d.html — the 3D exercise, round 28 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall).
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,7 +37,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 27</h1>
+  <h1>Watch 3D · round 28</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
@@ -223,12 +223,12 @@ function buildCase(C) {
   const B = C.bezel;
   g.add(mesh(lathe([[14.6, DIAL_Z], [15.2, 11.35], [16.1, 11.5], [B.r0, 11.5], [B.r0, B.z0], [14.6, B.z0]]), MATERIALS.polished()));
   g.add(mesh(lathe([[B.r0, B.z0], [B.r1, B.z0], [B.r1, B.z1], [B.r1 - 0.45, B.z1 + 0.55], [19.0, 12.45], [19.0, 11.9], [16.7, 11.9], [16.7, 12.4], [16.5, 12.45], [16.4, 11.6], [B.r0, 11.6]]), MATERIALS.brushed()));
-  { const T = B.teeth, geos = [], pitch = 2 * Math.PI / T.n;      // the teeth: one prismatic block (a trapezoid in plan, chamfered on top) carried round the ring
-    const wIn = B.r1 * pitch * T.fill, wOut = wIn * 0.72, sh = new THREE.Shape(); sh.moveTo(B.r1 - 0.15, -wIn / 2); sh.lineTo(B.r1 + T.depth, -wOut / 2); sh.lineTo(B.r1 + T.depth, wOut / 2); sh.lineTo(B.r1 - 0.15, wIn / 2); sh.closePath();
-    const one = new THREE.ExtrudeGeometry(sh, { depth: B.z1 - B.z0 - 2 * T.chamfer, bevelEnabled: true, bevelThickness: T.chamfer, bevelSize: T.chamfer * 0.9, bevelSegments: 1 });
-    one.rotateX(-Math.PI / 2); one.translate(0, B.z0 + T.chamfer - DIAL_Z, 0);      // the extrusion stands up: its z becomes the height
-    for (let i = 0; i < T.n; i++) { const t = one.clone(); t.rotateY(i * pitch); geos.push(t); }
-    g.add(mesh(mergeGeometries(geos), MATERIALS.polished())); }
+  { const T = B.teeth, R = B.r1 + T.depth, ch = T.chamfer, pitch = 2 * Math.PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth);      // the COIN EDGE, machined: the ring's outer wall is one surface whose radius is a law of the angle — full on the lands, a round scallop (a circle of radius rd, `depth` deep, `fill` of the pitch wide) cut into each pitch (Okay: "machined out of metal, round divots")
+    const rAt = (th) => { const x = R * ((th % pitch + pitch) % pitch - pitch / 2); return Math.abs(x) < a ? R - (Math.sqrt(rd * rd - x * x) - (rd - T.depth)) : R; };
+    const per = 28, N = T.n * per, stations = [];      // 28 stations a pitch: the scallop's rim lands on a station, so it stays a crisp edge
+    for (let k = 0; k <= N; k++) { const th = k / N * 2 * Math.PI, r = rAt(th), c = Math.cos(th), sn = Math.sin(th), P = (rr, z) => W(rr * c, rr * sn, z);
+      stations.push([P(B.r1 - 0.05, B.z0), P(r, B.z0), P(r, B.z1 - ch), P(r - ch, B.z1), P(B.r1 - 0.05, B.z1)]); }      // the wall's section: seat · outer wall · top chamfer · top, closed back to the ring
+    g.add(mesh(sweep(stations, [0, 0, 0, 0, 0]), MATERIALS.polished())); }
   g.add(insertRing()); g.add(mesh(lathe([[0, 11.55], [15.9, 11.55], [15.9, 12.55], [15.8, 12.9], [15.5, 13.15], [15.0, 13.3], [14.4, 13.35], [0, 13.4]]), MATERIALS.sapphire(), false));
   // the crown: a profile spun round its stem, fluted, chamfered, domed; on its tube out of the body at `at` degrees
   // the profile, r against length along the stem: a SHOULDER (a collar r 2.1, 0.5 long) where the tube leaves the case, the
