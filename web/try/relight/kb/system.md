@@ -32,7 +32,7 @@ A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. Th
 | `buildCase(C)` | a case spec | the group, and `info`: `xi, xo, half, yEdge, lugTop(y), lugBot(y), xOut(y), holeZ, tipH, yAt` — what the bracelet needs |
 | `link(sec, w, l, h, out, finish)` | bean · barn · slab · barrel; width, length, thickness; which side faces out; a finish for the whole link | a link whose ends round to the stadium of its thickness; the outer flank bowed 0.2 mm and screw heads on it if `out` |
 | `buildBracelet(key, info)` | a bracelet key and the case's `info` | end links, the offset columns' first half-links, then rows pin to pin along the curve |
-| `buildLeather(info)` | `STRAP` (T, W1, pillow, edgeR, LEN) | a flat pillowed band with burnished edges on the same curve, flush in the lug gap; a keeper (still a torus) |
+| `buildLeather(info)` | `STRAP` (T, W1, pillow, edgeR, LEN, gap, fold, foldW, keeper) | a flat pillowed band with burnished edges, its end clear of the body, a fold round the bar; two keepers as stadium loops on the buckle end |
 | `insertRing()` | | the insert's picture on a flat ring |
 | `mergeGeometries(geos)` | | one geometry (the teeth) |
 
@@ -53,6 +53,7 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 
 - `node try/relight/shot3d.mjs out.png <from°> <rise°> [studio|sun] [top|photo|side] [diver] [oyster|barn|jubilee|leather]` — Chromium with SwiftShader; needs `three@0.170.0` in `node_modules` (`npm install --no-save three@0.170.0`). Slow (≈ 50 s a shot), grainy AO; the look is true, the frame times are not.
 - `node try/relight/build.mjs` → `relight-built.html`… for the 3D page the one-file build is made by inlining `scene.js` into `watch3d.html` (see `rounds.md` round 1's recipe) and published to the artifact *Watch 3D trial* by the same path.
+- A part outside the fixed views (the keepers, the buckle): a one-off script on `shot3d.mjs`'s pattern that moves `window.watch3d.camera` (`position`, `lookAt`, `fov`, `updateProjectionMatrix`) before `render()` — run it from `web/` so playwright resolves.
 - R21: judge a height from the **Side** view, a seam from a **crop at 2×**, never from the top view alone.
 
 ## Known limits of the approach
