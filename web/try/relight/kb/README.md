@@ -13,15 +13,15 @@ What the 3D exercise of 4–5 Nov 2026 learnt about drawing a watch photographic
 ## Where things are
 
 - **The model**: `web/try/relight/watch3d.html` (the page; three.js from jsdelivr), `scene.js` (the opener dial's parts, written by `dump.mjs`), `build.mjs` (one-file page for the private preview), `shot3d.mjs` (a crop from Chromium).
-- **The preview**: the private artifact *Watch 3D trial*, https://claude.ai/artifact/81kwePNdWKxqEPTMoCBCi9 (round 16 published 5 Nov 2026: tangents, hard edges, the lug one block; every round is republished here).
-- **The photographs**: not in the repo (R36). `ref-01…28` in `~/Desktop/dial-maker/screenshots/2026-11-05-3d-refs/` on Okay's Mac (sent as `3d-refs.zip`); `refs.md` is their index.
+- **The preview**: the private artifact *Watch 3D trial*, https://claude.ai/artifact/81kwePNdWKxqEPTMoCBCi9 — republished every round (round 30 on 5 Nov 2026). Views: Top · Photo · Wide · Low · Side; Studio · Sun; Steel · Gold; Ground grain · Plain.
+- **The photographs**: not in the repo (R36). `ref-01…34` in `~/Desktop/dial-maker/screenshots/2026-11-05-3d-refs/` on Okay's Mac (01–28 sent as `3d-refs.zip`, 29–34 the strap, sent in the chat); `refs.md` is their index. Round screenshots: `screenshots/2026-11-05-3d-rounds/` (the round-30 set sent as a zip).
 - **The earlier trial**: `relight.html` — the height-field relighting of round 1, kept as a record; superseded by the 3D build.
 
 ## How to pick it up
 
 1. Read `findings.md` and `open.md`.
 2. `cd web && npm install --no-save three@0.170.0`, then `node try/relight/shot3d.mjs out.png 300 35 studio photo diver oyster` for a crop (software GL in a session: slow, grainy AO, the numbers meaningless; the look is right).
-3. Change the spec tables first, the builders second, the materials last. Every change: a crop in the chat, a line in `rounds.md`.
-4. `node try/relight/build.mjs` makes the one-file page; publish it to the same artifact.
+3. Change the spec tables first, the builders second, the materials last. Every change: a crop in the chat beside the matching reference, a line in `rounds.md`, a commit and push of `try/relight`.
+4. The one-file page: `watch3d.html` with `scene.js` inlined in place of its `<script src="scene.js">` tag (a three-line node script; `build.mjs` does the same for the old `relight.html`); publish it to the same artifact **every round** — Okay judges in the artifact, not in the chat (round 16's lesson).
 
 Rules that apply here as everywhere: R18 (nothing unprompted), R20 (third attempt → stop and ask), R21 (measure: shoot a side view before judging a height), R36 (pictures on the Mac). The Show Case's SVG paints (Engineer, Miyazaki) are untouched by all this: this is the Photo look only (Okay, 4 Nov 2026: "Miyazaki and engineer out of this exercise, they are svg only").
