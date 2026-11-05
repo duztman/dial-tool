@@ -60,3 +60,4 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 - `sweep` sections must keep their point count along the path; a shape that changes topology (a slot opening) is two sweeps.
 - The crystal has no refraction worth the name (transmission with a 0.05 thickness); a thicker setting blurred the dial.
 - Software GL in a session can't show anisotropy or AO as the iPad will; check there.
+- **GTAO sees front faces only** (its normal/depth pass is a FrontSide `MeshNormalMaterial`): every mesh must wind outward or the AO of its inside is painted on its outside. `sweep()` guarantees this for sweeps; a new builder must too (a mirrored copy of a geometry flips its winding).
