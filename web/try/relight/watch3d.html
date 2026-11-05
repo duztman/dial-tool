@@ -33,9 +33,9 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 10</h1>
+  <h1>Watch 3D · round 11</h1>
   <div class="pills" id="light"><button data-m="studio" class="on">Studio</button><button data-m="sun">Sun</button></div>
-  <div class="pills" id="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button></div>
+  <div class="pills" id="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
   <div class="pills" id="metal"><button data-m="steel" class="on">Steel</button><button data-m="gold">Gold</button></div>
   <div class="pills" id="strap"><button data-s="leather">Leather</button><button data-s="bracelet" class="on">Bracelet</button></div>
   <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
@@ -69,7 +69,12 @@ const SHEET = {
   insert: { material: "insert", pts: [[16.7, 11.9], [19.0, 11.9], [19.0, 12.3], [16.7, 12.4]] },      // the black insert, a hair sloped outward
   crystal: { material: "sapphire", pts: [[0, 11.55], [15.9, 11.55], [15.9, 12.55], [15.8, 12.9], [15.5, 13.15], [15.0, 13.3], [14.4, 13.35], [0, 13.4]] },      // the reference's sapphire: flat, a steep rounded edge
 };
-const LUG = { l2l: 47.6, lugw: 20, lugT: 2.9, flare: 3.6, zTop: 9.3, zTip: 6.2, zBottom: 3.0 };
+const LUG = { l2l: 47.6, lugw: 20, lugT: 2.9, flare: 3.6, zTop: 9.3, zBottom: 3.0, thin: 0.35, lift: 0.3 };
+// the lugs taper in the side view (the reference): from where they leave the case to the tip the top falls on a curve and
+// the lug thins to (1 − thin) of its height, the underside lifting a little. t: 0 at the case's edge, 1 at the tip
+LUG.heightAt = (t) => (LUG.zTop - LUG.zBottom) * (1 - LUG.thin * Math.pow(t, 1.5));
+LUG.bottomAt = (t) => LUG.zBottom + LUG.lift * t * t;
+LUG.topAt = (t) => LUG.bottomAt(t) + LUG.heightAt(t);
 const CROWN = { w: 6.4, h: 3.0, z: 6.0 };
 const STRAP = { thick: 3.0, z: 3.2 };
 
@@ -124,7 +129,8 @@ gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 4, radiu
 composer.addPass(gtao); composer.addPass(new OutputPass());
 // two views: Top — straight down the axis, the app's; Photo — the reference's three-quarter view, from the lower right,
 // 36° up, the watch turned so that 12 points to the upper left, a 50 mm lens's perspective
-function placeCamera(view) { watch.rotation.y = view === "top" ? 0 : -10 * Math.PI / 180;      // in the photo view the watch is turned a little, so 12 sits at the upper left
+function placeCamera(view) { watch.rotation.y = view === "photo" ? -10 * Math.PI / 180 : 0;
+  if (view === "side") { camera.fov = 9; camera.position.set(520, 18, 0); camera.up.set(0, 1, 0); camera.lookAt(0, -3, 0); camera.updateProjectionMatrix(); return; }      // from the crown's side, a little above the table: the lugs' fall and the bracelet's drop      // in the photo view the watch is turned a little, so 12 sits at the upper left
   if (view === "top") { camera.fov = 13; camera.position.set(0, 325, 0); camera.up.set(0, 0, -1); camera.lookAt(0, 0, 0); }
   else { camera.fov = 22; const el = 36 * Math.PI / 180, az = -38 * Math.PI / 180, d = 190; camera.position.set(Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d); camera.up.set(0, 1, 0); camera.lookAt(0, -2, 0); }
   camera.updateProjectionMatrix(); }
@@ -134,9 +140,9 @@ const Z0 = -DIAL_Z * K;     // the dial's face at y = 0 of the world, the caseba
 
 // the lathe parts from the sheet
 for (const [name, p] of Object.entries(SHEET)) {
-  const geo = new THREE.LatheGeometry(p.pts.map(([r, z]) => new THREE.Vector2(r, z - DIAL_Z)), name === "bezel" ? 720 : 256);
+  const geo = new THREE.LatheGeometry(p.pts.map(([r, z]) => new THREE.Vector2(r, z - DIAL_Z)), name === "bezel" ? 1536 : 256);
   if (name === "bezel") { const pos = geo.attributes.position;      // the coin edge: the outer wall's radius rippling 60 times round (the reference's teeth)
-    for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), zz = pos.getZ(i), r = Math.hypot(x, zz); if (r < 19.95) continue; const th = Math.atan2(zz, x), k = 1 + 0.022 * Math.cos(60 * th) - 0.022; pos.setX(i, x * k); pos.setZ(i, zz * k); } geo.computeVertexNormals(); }
+    for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), zz = pos.getZ(i), r = Math.hypot(x, zz); if (r < 19.95) continue; const th = Math.atan2(zz, x), tri = Math.abs(((th * 96 / (2 * Math.PI)) % 1 + 1) % 1 - 0.5) * 2, k = 1 - 0.016 * (1 - tri); pos.setX(i, x * k); pos.setZ(i, zz * k); } geo.computeVertexNormals(); }
   const m = new THREE.Mesh(geo, MATERIALS[p.material]()); m.castShadow = name !== "crystal"; m.receiveShadow = true; m.name = name; watch.add(m);
 }
 // the case body, lugs and all, after the reference photo: ONE outline — the circle with the four lugs grown out of it —
@@ -157,6 +163,12 @@ for (const [name, p] of Object.entries(SHEET)) {
   // out along its wall's normal by 0.45 mm × a bell over the height (the walls' normals are the outline's; the bevel's and the top's are not touched)
   { geo.computeVertexNormals(); const pos = geo.attributes.position, nor = geo.attributes.normal;
     for (let i = 0; i < pos.count; i++) { const nz = nor.getZ(i); if (Math.abs(nz) > 0.3) continue; const t = pos.getZ(i) / depth; if (t < 0.02 || t > 0.98) continue; const k = 0.45 * Math.sin(Math.PI * t); pos.setX(i, pos.getX(i) + nor.getX(i) * k); pos.setY(i, pos.getY(i) + nor.getY(i) * k); }
+    geo.computeVertexNormals(); }
+  // the lugs' taper: every vertex past the case's circle has its height rescaled by where it is along the lug (local z is
+  // the height over zBottom, from −0.9 (the lower bevel… none here: the bevel is on top) to depth + 0.9 = the top)
+  { const pos = geo.attributes.position, H0 = LUG.zTop - LUG.zBottom, yEdge = Math.sqrt(R * R - xi * xi);
+    for (let i = 0; i < pos.count; i++) { const ay = Math.abs(pos.getY(i)); if (ay <= yEdge) continue; const t = Math.min(1, (ay - yEdge) / (half - yEdge));
+      const z = pos.getZ(i); pos.setZ(i, (LUG.bottomAt(t) - LUG.zBottom) + z * LUG.heightAt(t) / H0); }
     geo.computeVertexNormals(); }
   const m = new THREE.Mesh(geo, [MATERIALS.brushed(), MATERIALS.polished()]); m.rotation.x = -Math.PI / 2; m.position.y = LUG.zBottom - DIAL_Z; m.castShadow = m.receiveShadow = true; m.name = "body"; watch.add(m); }      // the top bevel adds 0.9: the top lands on the bezel seat, under the dial
 // the insert's markings, as the reference's: numerals 10 … 50, a long mark at every five minutes, a dot at every minute,
@@ -181,7 +193,7 @@ for (const [name, p] of Object.entries(SHEET)) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(54, 54), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z + 0.02; watch.add(m); }
 // the lug holes: the lugs are drilled for the spring bar (the reference's); a dark hole on each outer face, at the bar
 { const R = 40.5 / 2, { lugw, lugT, flare } = LUG, xo = lugw / 2 + lugT, dark = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9, metalness: 0 });
-  const HALF = LUG.l2l / 2, BAR_Y = HALF - 1.6, BAR_Z = (LUG.zTop + LUG.zBottom) / 2;
+  const HALF = LUG.l2l / 2, BAR_Y = HALF - 1.6, tBar = (BAR_Y - Math.sqrt(R * R - (lugw / 2) ** 2)) / (HALF - Math.sqrt(R * R - (lugw / 2) ** 2)), BAR_Z = LUG.bottomAt(tBar) + LUG.heightAt(tBar) / 2;      // the bar at the lug's mid-height where it passes
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) { const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.5, 24), dark); hole.rotation.z = Math.PI / 2; hole.position.set(sx * (xo + 0.45 * 0.5), BAR_Z - DIAL_Z, -sy * BAR_Y); watch.add(hole); } }      // 0.45: the flank's bulge at mid-height
 // the crown: a cylinder lying along x, out of the case's right side
 { const geo = new THREE.CylinderGeometry(CROWN.w / 2, CROWN.w / 2, CROWN.h + 1.2, 144, 1, false);      // knurled: 18 ridges round its grip
@@ -198,11 +210,12 @@ for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.th
 // brushed and flat; the bracelet's outer edge wears a polished bevel; the seams read as thin dark lines with a hair of
 // light on the rounded end above each. It tapers from the lug width toward the clasp. The end link is one solid piece,
 // the lugs' width, its inner edge the case's circle, and it carries the first half centre link.
-{ const W0 = LUG.lugw, W1 = 18, P = 7.8, GAP = 0.1, GAPX = 0.12, H0 = 3.9, H1 = 3.0, LEN = 70, CENTRE = 0.38;
+{ const W0 = LUG.lugw, W1 = 18, P0 = 8.4, P1 = 7.0, GAP = 0.1, GAPX = 0.12, H0 = 3.9, H1 = 3.0, LEN = 70, CENTRE = 0.38;      // the bricks too: fat at the case, smaller toward the clasp
+  const pitchAt = (sA) => P0 - (P0 - P1) * Math.min(1, sA / LEN);
   // the joint (the reference): the SPRING BAR runs between the lugs through their drilled holes, 1.6 mm in from the tips at
   // the lugs' mid-height; the end link rides on it, follows the case on its inner edge, runs 0.4 mm past the lug tips, and
   // the first row hinges on its far end. The bracelet lies at the spring bar's height, its top a little under the lug tops
-  const HALF = LUG.l2l / 2, BAR_Y = HALF - 1.6, BAR_Z = (LUG.zTop + LUG.zBottom) / 2, LUG_CLEAR = 0.15;      // the thickness thins from the case to the clasp, as the width does
+  const HALF = LUG.l2l / 2, BAR_Y = HALF - 1.6, R0 = 40.5 / 2, yE = Math.sqrt(R0 * R0 - (W0 / 2) ** 2), tBar = (BAR_Y - yE) / (HALF - yE), BAR_Z = LUG.bottomAt(tBar) + LUG.heightAt(tBar) / 2, LUG_CLEAR = 0.15;      // the thickness thins from the case to the clasp, as the width does
   const thickAt = (sA) => H0 - (H0 - H1) * Math.min(1, sA / LEN), H = H0;
   const yStart = Math.sqrt((40.5 / 2) ** 2 - (W0 / 2) ** 2) + 0.2, END = HALF + 0.4 - yStart;      // the end link meets the case between the lugs and ends just past the lug tips
   // one link, as the photographs have it: a BARREL — along the bracelet its section is a stadium, the two ends full
@@ -249,12 +262,13 @@ for (const sy of [-1, 1]) { const geo = new THREE.BoxGeometry(LUG.lugw, STRAP.th
       const geo = new THREE.ExtrudeGeometry(sh, { depth: H - 0.6, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.55, bevelSegments: 3 });      // its chamfer the lugs' own, continued
       const m = new THREE.Mesh(geo, [MATERIALS.brushed(), MATERIALS.polished()]); m.rotation.x = Math.PI / 2; m.scale.y = sy; m.position.y = H / 2 - 0.6; m.castShadow = m.receiveShadow = true;      // laid flat; its top with the rows' tops
       const g = new THREE.Group(); g.add(m); g.position.set(0, zAt(0) + H / 2 - DIAL_Z, -sy * yStart); straps.bracelet.add(g);      // at the pins' height: the end link spans −H/2…H/2 about it, as a link does
-      span(sy, END - P / 2, END + P / 2, widthAt(END) * CENTRE); }      // its centre tongue: from inside the end link to the first centre pin
+      span(sy, END - pitchAt(END) / 2, END + pitchAt(END) / 2, widthAt(END) * CENTRE); }      // its centre tongue: from inside the end link to the first centre pin
     // the rows: outer pins at END + i·P, centre pins half a pitch on; every link spans two pins
-    for (let i = 0; i * P + END < LEN; i++) {
-      const s0 = END + i * P, w = widthAt(s0 + P / 2), cw = w * CENTRE, ow = (w - cw - 2 * GAPX) / 2;
+    for (let s0 = END; s0 < LEN; ) {      // the pins laid one after another, each row its own pitch
+      const P = pitchAt(s0), Pn = pitchAt(s0 + P), w = widthAt(s0 + P / 2), cw = w * CENTRE, ow = (w - cw - 2 * GAPX) / 2;
       for (const sx of [-1, 1]) span(sy, s0, s0 + P, ow, sx * (cw / 2 + GAPX + ow / 2), sx);
-      span(sy, s0 + P / 2, s0 + 1.5 * P, cw);
+      span(sy, s0 + P / 2, s0 + P + Pn / 2, cw);      // the centre link: from this row's middle pin to the next row's
+      s0 += P;
     } } }
 const setStrap = (which) => { for (const k in straps) straps[k].visible = k === which; };
 setStrap("bracelet");
