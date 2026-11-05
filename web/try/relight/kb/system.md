@@ -19,7 +19,7 @@ A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. Th
 ## Coordinates
 
 - **Case space**: millimetres at the published size; x right, y up the dial (12 o'clock is +y), z up from the caseback. The dial's face is at `DIAL_Z` = 10.
-- **World**: `W(x, y, z) = [x, z − DIAL_Z, −y]` — three.js y is up, the dial's 12 o'clock is −z. The whole `watch` group is scaled by `scene.size` (the dial's Ø over the case's opening) so a 34 mm dial gets a 47 mm case.
+- **World**: `W(x, y, z) = [x, z − DIAL_Z, −y]` — three.js y is up, the dial's 12 o'clock is −z. The **case and strap groups** are scaled by K = `scene.size` (the dial's Ø over the case's opening, r 14.6 in case mm); the dial's parts stay at their millimetres, so a 34 mm dial sits whole inside the opening of a 47 mm case. The dial's size does not include the rehaut (Okay, 5 Nov 2026): the rehaut starts at the dial's edge and sits outside it.
 - The dial's own parts come from Dial Tool: `dump.mjs` writes `scene.js` with every part's SVG path, colour, ink height, hand angle. Nothing of the dial is modelled here.
 
 ## The builders (`watch3d.html` § 2, 5, 6)

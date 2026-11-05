@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 26 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops.
+  watch3d.html — the 3D exercise, round 27 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening).
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,7 +37,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 26</h1>
+  <h1>Watch 3D · round 27</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
@@ -166,9 +166,10 @@ const gtao = new GTAOPass(scene, camera, 100, 100); gtao.output = GTAOPass.OUTPU
 gtao.updateGtaoMaterial({ radius: 2.2, distanceExponent: 1, thickness: 1, scale: 2.2, samples: 16, distanceFallOff: 1, screenSpaceRadius: false });
 gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 4, radiusExponent: 1, rings: 2, samples: 16 });
 composer.addPass(gtao); composer.addPass(new OutputPass());
-const K = scene3.size;      // the case scaled to the dial, as watch.js does
-const watch = new THREE.Group(); watch.scale.setScalar(K); scene.add(watch);
-const caseGroup = new THREE.Group(), strapGroup = new THREE.Group(); watch.add(caseGroup, strapGroup);
+const K = scene3.size;      // the case scaled to the dial, as watch.js does: the dial stays its 34 mm, the CASE and STRAP grow by K so the
+                            // opening (r 14.6 in case mm) lands on the dial's edge (r 17) — the dial's size does not include the rehaut (Okay, 5 Nov 2026)
+const watch = new THREE.Group(); scene.add(watch);
+const caseGroup = new THREE.Group(), strapGroup = new THREE.Group(); caseGroup.scale.setScalar(K); strapGroup.scale.setScalar(K); watch.add(caseGroup, strapGroup);
 
 // ── 5 · the case ───────────────────────────────────────────────────────────────────────────────────────────────────────
 /** the body's plan outline: a point and its outward normal at angle θ, and the outline's y at a given x (for the lugs) */
@@ -377,9 +378,9 @@ let groundMat, groundBump;
     const gr = x.createRadialGradient(0, 0, 0, 0, 0, rr); gr.addColorStop(0, `rgb(${lum},${lum},${lum})`); gr.addColorStop(0.75, `rgb(${lum - 50},${lum - 50},${lum - 50})`); gr.addColorStop(1, "rgb(60,60,60)");
     x.save(); x.translate(px, py); x.rotate(rot); x.scale(1, sq); x.fillStyle = gr; x.beginPath(); x.arc(0, 0, rr, 0, 2 * Math.PI); x.fill(); x.restore(); }
   const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(6, 6); bump.anisotropy = 8;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, bumpMap: bump, bumpScale: 0.35, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z; m.receiveShadow = true; watch.add(m);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, bumpMap: bump, bumpScale: 0.35, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z * K; m.receiveShadow = true; watch.add(m);      // the table at the caseback, in the case's scale
   const s = 512, cc = document.createElement("canvas"); cc.width = cc.height = s; const cx = cc.getContext("2d"), gr = cx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = gr; cx.fillRect(0, 0, s, s);
-  const sh = new THREE.Mesh(new THREE.PlaneGeometry(54, 54), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = -DIAL_Z + 0.02; watch.add(sh); }
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(54 * K, 54 * K), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = -DIAL_Z * K + 0.02; watch.add(sh); }
 
 // ── 8 · building, the light and the controls ──
 const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain" };
