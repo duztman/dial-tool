@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 19 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped.
+  watch3d.html — the 3D exercise, round 20 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,7 +37,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 19</h1>
+  <h1>Watch 3D · round 20</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="side">Side</button></div>
@@ -71,7 +71,8 @@ const CASES = {
     bezel: { r0: 16.3, r1: 19.6, z0: 9.6, z1: 11.9, teeth: { n: 60, depth: 0.5, fill: 0.62, chamfer: 0.45 } },
     crown: { at: 0, w: 6.4, h: 3.0, z: 6.0, flutes: 18 } },
 };
-// a bracelet: columns across (a share of the width, a section, which side faces out, half a pitch off or not), and the
+// a bracelet: columns across (a share of the width, a section, which side faces out, half a pitch off or not, an optional
+// finish "polished" for a column — the Sub's centre links; the goal's SPB143 is all brushed, so none here), and the
 // taper laws from the case (W0, H0, P0) to the clasp (W1, H1, P1)
 const BRACELETS = {
   oyster: { W1: 18, P0: 8.4, P1: 7.0, H1: 2.6, gapx: 0.14, gap: 0.12, columns: [[0.31, "slab", -1, 0], [0.38, "slab", 0, 0.5], [0.31, "slab", 1, 0]] },
@@ -256,7 +257,7 @@ function mergeGeometries(geos) { const v = [], idx = []; let off = 0; for (const
 // ── 6 · the bracelet ───────────────────────────────────────────────────────────────────────────────────────────────────
 /** one link: a section (across x, up y) carried along the link (z), its ends rounding to a half-round of the link's
  *  thickness so it can hinge; `out` says which side faces the bracelet's edge (±1) or none (0). Materials per edge */
-function link(sec, w, l, h, out) {
+function link(sec, w, l, h, out, finish) {
   let pts, mats;      // the section walked clockwise from the bottom-left; mats per edge: 0 polished · 1 brushed
   if (sec === "slab") { const c = out ? 0.45 : 0.12, cl = out < 0 ? c : 0.12, cr = out > 0 ? c : 0.12;      // one bright bevel on the outer top edge; a hairline on the rest
     pts = [[-w / 2, -h / 2], [-w / 2, h / 2 - cl], [-w / 2 + cl, h / 2], [w / 2 - cr, h / 2], [w / 2, h / 2 - cr], [w / 2, -h / 2]]; mats = [1, 0, 1, 0, 1, 1]; }
@@ -266,11 +267,17 @@ function link(sec, w, l, h, out) {
     pts = [...arc(-w / 2 + r, -h / 2 + r, Math.PI, Math.PI * 1.5).reverse(), ...arc(-w / 2 + r, h / 2 - r, Math.PI, Math.PI / 2).reverse(), ...arc(w / 2 - r, h / 2 - r, Math.PI / 2, 0).reverse(), ...arc(w / 2 - r, -h / 2 + r, 0, -Math.PI / 2).reverse()];
     pts = [[-w / 2, -h / 2 + r], [-w / 2, h / 2 - r], [-w / 2 + r, h / 2], [w / 2 - r, h / 2], [w / 2, h / 2 - r], [w / 2, -h / 2 + r], [w / 2 - r, -h / 2], [-w / 2 + r, -h / 2]]; mats = [0, 1, 1, 1, 0, 1, 1, 1]; }
   else { pts = Array.from({ length: 20 }, (_, i) => [w / 2 * Math.cos(i / 20 * 2 * Math.PI + Math.PI), h / 2 * Math.sin(i / 20 * 2 * Math.PI + Math.PI)]); mats = Array(20).fill(0); }      // barrel: round, polished
+  if (finish === "polished") mats = mats.map(() => 0);      // a column's finish from the bracelet's table (the Sub's centre links are polished; the goal's are not)
+  // the outermost links' outer flank is CONVEX (ref-15, ref-18): the flat wall at x = ±w/2 becomes a bow of BULGE mm, in four strips
+  const BULGE = 0.2;
+  if (out && sec !== "barrel") { const M = 3, X = out * w / 2, i = pts.findIndex((p, j) => p[0] === X && pts[(j + 1) % pts.length][0] === X), j = (i + 1) % pts.length;
+    const [y0, y1] = [pts[i][1], pts[j][1]], bow = Array.from({ length: M }, (_, k) => { const t = (k + 1) / (M + 1); return [X + out * BULGE * Math.sin(Math.PI * t), y0 + (y1 - y0) * t]; });
+    pts.splice(i + 1, 0, ...bow); mats.splice(i + 1, 0, ...Array(M).fill(mats[i])); }
   const r = h / 2, N = 28, stations = [];
   for (let k = 0; k <= N; k++) { const t = k / N, z = -l / 2 + l * t, e = Math.abs(z) - (l / 2 - r), kz = e > 0 ? Math.max(0.03, Math.sqrt(Math.max(0, r * r - e * e)) / r) : 1;      // the end rounding: the section shrinks to the stadium's circle
     stations.push(pts.map(([x, y]) => [x, y * kz + (y > 0 ? 0.06 * (1 - (2 * x / w) ** 2) : 0), z])); }      // a hair of pillow on the top
   const m = mesh(sweep(stations, mats), PB());
-  if (out && sec !== "barrel") for (const z of [-(l / 2 - r), l / 2 - r]) { const s = new THREE.Group(); s.add(mesh(new THREE.CircleGeometry(0.48, 20), MATERIALS.polished(), false), mesh(new THREE.RingGeometry(0.48, 0.56, 20), MATERIALS.dark(), false)); s.position.set(out * (w / 2 + 0.005), 0, z); s.rotation.y = out * Math.PI / 2; m.add(s); }      // the screw heads on the outer flank
+  if (out && sec !== "barrel") for (const z of [-(l / 2 - r), l / 2 - r]) { const s = new THREE.Group(); s.add(mesh(new THREE.CircleGeometry(0.48, 20), MATERIALS.polished(), false), mesh(new THREE.RingGeometry(0.48, 0.56, 20), MATERIALS.dark(), false)); s.position.set(out * (w / 2 + BULGE + 0.005), 0, z); s.rotation.y = out * Math.PI / 2; m.add(s); }      // the screw heads on the outer flank
   return m;
 }
 /** the chain: pins on the bracelet's curve from the spring bar down to the table; every link spans two pins and tilts by
@@ -280,8 +287,8 @@ function buildBracelet(Bk, info) {
   const lerp = (a, b, s) => a + (b - a) * clamp(s / LEN, 0, 1), widthAt = (s) => lerp(W0, B.W1, s), thickAt = (s) => lerp(H0, B.H1, s), pitchAt = (s) => lerp(B.P0, B.P1, s);
   const BEND = 18, zAt = (s) => { const t = clamp((s - 6) / BEND, 0, 1), e = t * t * (3 - 2 * t); return info.holeZ * (1 - e) + thickAt(s) / 2 * e; };      // the pins: level past the lugs, then down over the bend onto the table
   const pinAt = (s) => new THREE.Vector3(0, zAt(s) - DIAL_Z, -(yStart + s));
-  const span = (sy, s0, s1, w, x, sec, out) => { const a = pinAt(s0), b = pinAt(s1), mid = a.clone().add(b).multiplyScalar(0.5), d = b.clone().sub(a), h = thickAt((s0 + s1) / 2);
-    const m = link(sec, w, d.length() - B.gap, h, out), gg = new THREE.Group(); gg.add(m); m.position.set(x, (h - H0) / 2, 0);      // tops level, undersides rising as the bracelet thins
+  const span = (sy, s0, s1, w, x, sec, out, finish) => { const a = pinAt(s0), b = pinAt(s1), mid = a.clone().add(b).multiplyScalar(0.5), d = b.clone().sub(a), h = thickAt((s0 + s1) / 2);
+    const m = link(sec, w, d.length() - B.gap, h, out, finish), gg = new THREE.Group(); gg.add(m); m.position.set(x, (h - H0) / 2, 0);      // tops level, undersides rising as the bracelet thins
     gg.position.set(0, mid.y, sy * mid.z); gg.rotation.x = sy * Math.atan2(d.y, -d.z); g.add(gg); };
   const xs = (w) => { const total = B.columns.reduce((a, c) => a + c[0], 0), gaps = B.gapx * (B.columns.length - 1), out = []; let x = -w / 2; for (const c of B.columns) { const cw = (w - gaps) * c[0] / total; out.push([x + cw / 2, cw]); x += cw + B.gapx; } return out; };
   for (const sy of [-1, 1]) {
@@ -292,9 +299,9 @@ function buildBracelet(Bk, info) {
         for (let j = 1; j < 8; j++) { const a = -Math.PI / 2 + Math.PI * j / 8; pts.push(P(yOut - r + r * Math.cos(a), zc + r * Math.sin(a))); }
         pts.push(P(yOut - r, tOut)); for (let j = 1; j <= 6; j++) { const y = yOut - r - (yOut - r - yIn) * j / 6; pts.push(P(y, topAt(y))); } stations.push(pts); }
       g.add(mesh(sweep(stations, [1, ...Array(8).fill(0), ...Array(6).fill(1), 0], { closeSection: true, caps: true }), PB())); }
-    const cols = xs(widthAt(END)); for (const [i, c] of B.columns.entries()) if (c[3]) span(sy, END - pitchAt(END) / 2, END + pitchAt(END) / 2, cols[i][1], cols[i][0], c[1], c[2]);      // the offset columns' first half-links, from inside the end link
+    const cols = xs(widthAt(END)); for (const [i, c] of B.columns.entries()) if (c[3]) span(sy, END - pitchAt(END) / 2, END + pitchAt(END) / 2, cols[i][1], cols[i][0], c[1], c[2], c[4]);      // the offset columns' first half-links, from inside the end link
     for (let s0 = END; s0 < LEN; ) { const P = pitchAt(s0), Pn = pitchAt(s0 + P), cs = xs(widthAt(s0 + P / 2));
-      for (const [i, c] of B.columns.entries()) { if (c[3]) span(sy, s0 + P / 2, s0 + P + Pn / 2, cs[i][1], cs[i][0], c[1], c[2]); else span(sy, s0, s0 + P, cs[i][1], cs[i][0], c[1], c[2]); }
+      for (const [i, c] of B.columns.entries()) { if (c[3]) span(sy, s0 + P / 2, s0 + P + Pn / 2, cs[i][1], cs[i][0], c[1], c[2], c[4]); else span(sy, s0, s0 + P, cs[i][1], cs[i][0], c[1], c[2], c[4]); }
       s0 += P; } }
   return g;
 }

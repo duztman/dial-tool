@@ -6,7 +6,7 @@ Numbered now → later, easier → harder. Each: what, why, where in the code.
 2. ~~Teeth too tall~~ — done, round 18: depth 0.5, fill 0.62, chamfer 0.45 (`rounds.md` 18).
 3. ~~End link~~ — closed, round 19 (Okay: "end link ok").
 4. ~~Lug tip chamfer~~ — done, round 16, with the lug's outer wall taking the band's belly (`rounds.md` 16).
-5. **Convex outer faces** of the outermost links (dropped in the rewrite); and the Oyster centre link's polished option (the Sub's centres are polished).
+5. ~~Convex outer faces~~ — done, round 20 (bulge 0.2); the polished-centre option is a column's fifth field `"polished"`, off by default.
 6. **Crown**: a bigger dome and a shoulder on the tube;
 7. ~~Cushion case~~ — dropped, round 19 (Okay: "sub par"); its `CASES` row is in the history (commit 14fa29d) if a cushion is ever wanted again.
 8. **Lume**: milky surface by day (a slight sub-surface look: clearcoat + sheen), the glow at night — tie to Dial Tool's Night (`night.js`).

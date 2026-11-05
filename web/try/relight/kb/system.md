@@ -11,7 +11,7 @@ CASES.<key>      plan (round | cushion — the builders keep both; only the dive
                  lug: { tipTop, tipBot, rootBot, chamferTip, holeIn, corner }
                  bezel: { r0, r1, z0, z1, teeth: { n, depth, fill, chamfer } }
                  crown: { at (degrees from 3 o'clock), w, h, z, flutes }
-BRACELETS.<key>  W1, P0, P1, H1, gapx, gap · columns: [[share, section, out, offset], …]
+BRACELETS.<key>  W1, P0, P1, H1, gapx, gap · columns: [[share, section, out, offset, finish?], …]  (finish "polished" for a column; default brushed)
 ```
 
 A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. The Illustrator sheet Okay will draw is the **profiles' half** of a `CASES` row: the band section, the lug section and its laws, the bezel profile and tooth, the crown profile — one path per part, named, in mm.
@@ -30,7 +30,7 @@ A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. Th
 | `lathe(pts)` | `[r, z]` pairs in case space | a `LatheGeometry` round the dial's axis |
 | `outline(C)` | a case spec | `at(θ)` → point and outward normal on the plan outline; `yAt(x)` → the outline's y at x (where a lug or end link starts) |
 | `buildCase(C)` | a case spec | the group, and `info`: `xi, xo, half, yEdge, lugTop(y), lugBot(y), xOut(y), holeZ, tipH, yAt` — what the bracelet needs |
-| `link(sec, w, l, h, out)` | bean · barn · slab · barrel; width, length, thickness; which side faces out | a link whose ends round to the stadium of its thickness; screw heads if `out` |
+| `link(sec, w, l, h, out, finish)` | bean · barn · slab · barrel; width, length, thickness; which side faces out; a finish for the whole link | a link whose ends round to the stadium of its thickness; the outer flank bowed 0.2 mm and screw heads on it if `out` |
 | `buildBracelet(key, info)` | a bracelet key and the case's `info` | end links, the offset columns' first half-links, then rows pin to pin along the curve |
 | `buildLeather(info)` | | a rounded strap on the same curve, with a keeper |
 | `insertRing()` | | the insert's picture on a flat ring |

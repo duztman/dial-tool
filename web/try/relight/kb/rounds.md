@@ -24,6 +24,7 @@ One line a round: what was tried, what Okay said, what failed and why. The commi
 | 17 | **Every sweep wound outward**: `sweep()` measures its winding (Σ area·normal·(centroid − centre)) and flips the triangle order when it points in | "Shape and light gorgeous. Lock them. Focus on what makes this see through and only fix the rendering" | The see-through was the **AO pass**, found in three's source: `GTAOPass` re-renders the scene with a FrontSide `MeshNormalMaterial` and takes depth and normals from it; a mirrored sweep (the lugs with `sx·sy = −1`, the 6 o'clock end link) winds inward, so its near wall was culled there and the AO of the far wall *inside* the solid was painted onto the outside. The colour pass is DoubleSide, which is why shape and light were right all along. Published |
 | 18 | **Teeth lower**: diver `teeth.depth` 0.7 → 0.5, `fill` 0.74 → 0.62, `chamfer` 0.3 → 0.45 (open #2's own numbers) | "Go on" | They read as a crenellation in the photo view; now a coin edge. Published |
 | 19 | The **cushion case dropped**: its `CASES` row and pill removed; the builders still take a cushion plan. Open #3 (end link) closed on his word | "End link ok. Abandon pillow case it's sub par" | — |
+| 20 | **Convex outer flanks**: an outermost link's wall at ±w/2 becomes a bow of `BULGE` 0.2 mm in four strips (slab, barn, bean; screws moved out onto it); a column may name a `finish` ("polished") in `BRACELETS` — none does, the goal's SPB143 is all brushed | "Go" | — |
 
 ## Things learnt about the work itself
 
