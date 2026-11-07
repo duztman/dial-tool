@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 33 (8 Nov 2026): the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 34 (8 Nov 2026): the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -39,7 +39,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 33</h1>
+  <h1>Watch 3D · round 34</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
@@ -51,7 +51,7 @@
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
   <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
   <label>Room light <span class="num" id="v-room"></span></label><input type="range" id="room" min="0" max="100" value="60">
-  <details id="case"><summary>Case — the numbers <span class="num" id="v-build"></span></summary><div id="case-rows"></div><p class="note">The bezel, rehaut, insert and crystal still sit at the diver's fixed heights — stage 2 puts them on the band top.</p><div class="pills"><button id="case-reset">Reset to the diver's</button></div></details>
+  <details id="case"><summary>Case — the numbers <span class="num" id="v-build"></span></summary><div id="case-rows"></div><div class="pills" data-key="bezelKind"><button data-v="insert" class="on">Insert bezel</button><button data-v="plain">Plain bezel</button></div><div class="pills"><button id="case-reset">Reset to the diver's</button></div></details>
   <p class="note">Drag: orbit — one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view pill puts the camera back. Drag: sun — the direction is the sun's angle, the middle high, the edge low.</p>
 </div>
 <script src="scene.js"></script>
@@ -65,7 +65,7 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 const scene3 = window.SCENE;      // the dial's parts (dump.mjs)
-const DIAL_Z = 10.0;              // the dial's face, mm over the caseback; world y = 0 there
+let DIAL_Z = 10.0;                // the dial's face, mm over the caseback; world y = 0 there. Set per case at rebuild: zTop + bezel.dialUp (round 34)
 const W = (x, y, z) => [x, z - DIAL_Z, -y];      // case space (x, y of the dial plane, z up from the caseback) → world (dial y, 12 o'clock, is −z)
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), ss = (u) => { u = clamp(u, 0, 1); return u * u * (3 - 2 * u); }, rad = (d) => d * Math.PI / 180;
 
@@ -74,7 +74,11 @@ const CASES = {
   // after the SPB143 / Submariner photographs: a round band with a belly and a polished chamfer, slab lugs with a flare in plan
   diver: { name: "Diver", plan: "round", R: 20.25, l2l: 47.6, lugw: 20, lugT: 2.9, flare: 3.6, zBand: 2.4, zTop: 9.3, belly: 0.3, chamfer: 0.9, flank: "polished",
     lug: { tipTop: 7.3, tipBot: 4.1, rootBot: 2.4, chamferTip: 0.75, holeIn: 1.6, corner: 0.8, fillet: 1.2, chamferIn: 0.25 },      // fillet: the soft blend where the lug leaves the body (Okay: soft is the default); chamferIn: the small break on the inner wall's top edge
-    bezel: { r0: 16.3, r1: 19.6, z0: 9.6, z1: 11.9, teeth: { n: 60, depth: 0.5, fill: 0.62, chamfer: 0.45 } },
+    // the BEZEL STACK by named numbers, all relative (round 34): the ring's outer radius sits `inset` inside the body's, its inner `width` in from that;
+    // the dial's face `dialUp` over the band top; the ring on a seat `seat` over the band top, `h` tall; its top chamfer `chamfer`; the insert in a
+    // recess `lip` deep from the top (kind "insert"), `inIn` / `inOut` in from the ring's inner / outer radius; the crystal's rim `rim` in from the
+    // ring's inner radius, up `up` over the ring's top, its dome `dome` high; the rehaut's wall from the dial's face to `lip` under the ring's top
+    bezel: { kind: "insert", inset: 0.65, width: 3.3, dialUp: 0.7, seat: 0.3, h: 2.3, chamfer: 0.45, lip: 0.55, inIn: 0.4, inOut: 0.6, rim: 0.4, up: 0.65, dome: 1.35, teeth: { n: 60, depth: 0.5, fill: 0.62, chamfer: 0.45 } },
     crown: { at: 0, w: 6.4, h: 3.0, z: 6.0, flutes: 18 } },
 };
 // a bracelet: columns across (a share of the width, a section, which side faces out, half a pitch off or not, an optional
@@ -270,7 +274,7 @@ function buildCase(C) {
   // the TOP: brushed, in pieces that share their edges — a flat sector of the body between each pair of lugs (less the bezel's
   // seat), and over each lug a Coons patch from the bezel's seat out to the lug's tip, its sides the lug's edges inset by the
   // chamfer, its height the lug's law (flat on the body, falling along the lug)
-  const inset = (pts) => pts.map((st) => [st.x - st.nx * st.c, st.y - st.ny * st.c]), ri = C.bezel.r0, rt = R - C.chamfer;
+  const inset = (pts) => pts.map((st) => [st.x - st.nx * st.c, st.y - st.ny * st.c]), ri = R - C.bezel.inset - C.bezel.width, rt = R - C.chamfer;      // the top plates reach in to the ring's inner radius (the seat)
   const nrm = (st) => { const k = P.loop.indexOf(P.loop.find((q) => q.x === st.x && q.y === st.y)); return P.loop[k]; };
   for (const lug of P.lugs) { const inner = inset(lug.inner.map(nrm)), outer = inset(lug.outer.map(nrm)), { sx, sy, a0, a1 } = lug;
     const radial = (a, r0, r1, n) => Array.from({ length: n + 1 }, (_, k) => { const r = r0 + (r1 - r0) * k / n; return [sx * r * Math.cos(a), sy * r * Math.sin(a)]; });
@@ -293,17 +297,7 @@ function buildCase(C) {
     const hole = new THREE.Group(); hole.add(mesh(new THREE.CircleGeometry(0.42, 24), MATERIALS.dark(), false), mesh(new THREE.RingGeometry(0.42, 0.52, 24), MATERIALS.polished(), false));
     hole.position.set(...W(sx * (P.xOut(yHole) + dd + 0.015), sy * yHole, holeZ)); hole.rotation.y = sx * Math.PI / 2; g.add(hole); }
   const lugTop = P.lugTop, lugBot = P.lugBot, xOut = P.xOut, yEdge = P.yEdge, O = { yAt: P.yAt, at: outline(C).at };
-  // the bezel stack: the rehaut's wall, the bezel ring, its teeth round the outside, the insert with its markings, the crystal
-  const B = C.bezel;
-  g.add(mesh(lathe([[14.6, DIAL_Z], [15.2, 11.35], [16.1, 11.5], [B.r0, 11.5], [B.r0, B.z0], [14.6, B.z0]]), MATERIALS.polished()));
-  g.add(mesh(lathe([[B.r0, B.z0], [B.r1, B.z0], [B.r1, B.z1], [B.r1 - 0.45, B.z1 + 0.55], [19.0, 12.45], [19.0, 11.9], [16.7, 11.9], [16.7, 12.4], [16.5, 12.45], [16.4, 11.6], [B.r0, 11.6]]), MATERIALS.brushed()));
-  { const T = B.teeth, R = B.r1 + T.depth, ch = T.chamfer, pitch = 2 * Math.PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth);      // the COIN EDGE, machined: the ring's outer wall is one surface whose radius is a law of the angle — full on the lands, a round scallop (a circle of radius rd, `depth` deep, `fill` of the pitch wide) cut into each pitch (Okay: "machined out of metal, round divots")
-    const rAt = T.depth <= 0 ? () => R : (th) => { const x = R * ((th % pitch + pitch) % pitch - pitch / 2); return Math.abs(x) < a ? R - (Math.sqrt(rd * rd - x * x) - (rd - T.depth)) : R; };      // depth 0: a plain wall, no scallops
-    const per = 28, N = T.n * per, stations = [];      // 28 stations a pitch: the scallop's rim lands on a station, so it stays a crisp edge
-    for (let k = 0; k <= N; k++) { const th = k / N * 2 * Math.PI, r = rAt(th), c = Math.cos(th), sn = Math.sin(th), P = (rr, z) => W(rr * c, rr * sn, z);
-      stations.push([P(B.r1 - 0.05, B.z0), P(r, B.z0), P(r, B.z1 - ch), P(r - ch, B.z1), P(B.r1 - 0.05, B.z1)]); }      // the wall's section: seat · outer wall · top chamfer · top, closed back to the ring
-    g.add(mesh(sweep(stations, [0, 0, 0, 0, 0]), MATERIALS.polished())); }
-  g.add(insertRing()); g.add(mesh(lathe([[0, 11.55], [15.9, 11.55], [15.9, 12.55], [15.8, 12.9], [15.5, 13.15], [15.0, 13.3], [14.4, 13.35], [11, 13.55], [7, 13.75], [3.5, 13.87], [0, 13.9]]), MATERIALS.sapphire(), false));      // the crystal: a gentle DOME, 0.5 mm higher at the centre than at the rim (the SPB143's curved sapphire)
+  buildBezel(C, g);
   // the crown: a profile spun round its stem, fluted, chamfered, domed; on its tube out of the body at `at` degrees
   // the profile, r against length along the stem: a SHOULDER (a collar r 2.1, 0.5 long) where the tube leaves the case, the
   // tube r 1.5 to the body, the body with its chamfered rim, then a DOME 0.95 high in three arcs (ref-24: fuller than a cap)
@@ -316,8 +310,35 @@ function buildCase(C) {
   return { group: g, xi, xo, half, yEdge, lugTop, lugBot, xOut, holeZ, tipH: lugTop(half) - lugBot(half), yAt: O.yAt, lug: C.lug };
 }
 /** the insert's markings as the reference's: numerals, long marks at the fives, a dot a minute, the triangle with its lume dot — a picture on a ring */
-function insertRing() {
-  const ri = 16.7, ro = 19.0, n = 2048, px = n / (2 * ro), c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d");
+/** the BEZEL STACK from the spec's named numbers (round 34): the rehaut's wall, the ring, the coin edge, the insert (kind "insert") or a
+ *  closed top (kind "plain"), the crystal. Every height hangs off the band top (C.zTop), every radius off the body's (C.R) — so the
+ *  case's sliders move the whole stack with them. The opening is the dial's edge (scene3's 17 mm over K): the rehaut starts there */
+function buildBezel(C, g) {
+  const B = C.bezel, r1 = C.R - B.inset, r0 = r1 - B.width, z0 = C.zTop + B.seat, z1 = z0 + B.h, open = scene3.open ?? 14.6, ch = B.chamfer;
+  // the rehaut: a polished wall up from the dial's face, sloping out to a flange under the ring's top
+  g.add(mesh(lathe([[open, DIAL_Z], [open + 0.6, z1 - B.lip], [r0 - 0.2, z1 - B.lip + 0.15], [r0, z1 - B.lip + 0.15], [r0, z0], [open, z0]]), MATERIALS.polished()));
+  if (B.kind === "insert") {
+    // the ring with a recess for the insert: up the outer wall, the chamfer to the lip, in across the lip, down into the recess, its floor at z1, up its inner wall, the inner lip, down to the rehaut's flange
+    const ri = r0 + B.inIn, ro = r1 - B.inOut, lip = z1 + B.lip;
+    g.add(mesh(lathe([[r0, z0], [r1, z0], [r1, z1], [r1 - ch, lip], [ro, lip], [ro, z1], [ri, z1], [ri, lip - 0.05], [ri - 0.2, lip], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]]), MATERIALS.brushed()));
+    g.add(insertRing(ri, ro, z1 + 0.5));
+  } else {
+    // a plain bezel: the ring closed over the top, its top a gentle slope from the chamfer in to the crystal's rim
+    const rim = r0 - B.rim;
+    g.add(mesh(lathe([[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim + 0.3, z1 + B.lip], [rim, z1 + B.lip - 0.15], [rim, z1 - 0.3], [r0, z1 - 0.3]]), MATERIALS.polished())); }
+  // the COIN EDGE, machined: the ring's outer wall is one surface whose radius is a law of the angle — full on the lands, a round scallop (a circle of radius rd, `depth` deep, `fill` of the pitch wide) cut into each pitch (Okay: "machined out of metal, round divots")
+  { const T = B.teeth, R = r1 + T.depth, tch = T.chamfer, pitch = 2 * Math.PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth);
+    const rAt = T.depth <= 0 ? () => R : (th) => { const x = R * ((th % pitch + pitch) % pitch - pitch / 2); return Math.abs(x) < a ? R - (Math.sqrt(rd * rd - x * x) - (rd - T.depth)) : R; };      // depth 0: a plain wall, no scallops
+    const per = 28, N = T.n * per, stations = [];      // 28 stations a pitch: the scallop's rim lands on a station, so it stays a crisp edge
+    for (let k = 0; k <= N; k++) { const th = k / N * 2 * Math.PI, r = rAt(th), c = Math.cos(th), sn = Math.sin(th), P = (rr, z) => W(rr * c, rr * sn, z);
+      stations.push([P(r1 - 0.05, z0), P(r, z0), P(r, z1 - tch), P(r - tch, z1), P(r1 - 0.05, z1)]); }      // the wall's section: seat · outer wall · top chamfer · top, closed back to the ring
+    g.add(mesh(sweep(stations, [0, 0, 0, 0, 0]), MATERIALS.polished())); }
+  // the CRYSTAL: a disc sitting in the ring's mouth, its rim `rim` in from the ring's inner radius, `up` over the ring's top, a gentle dome `dome` high in four arcs
+  { const rim = r0 - B.rim, zb = z1 - 0.35, zr = z1 + B.up, zt = zr + B.dome, d = zt - zr;
+    g.add(mesh(lathe([[0, zb], [rim, zb], [rim, zr], [rim - 0.1, zr + 0.26 * d], [rim - 0.4, zr + 0.44 * d], [rim - 0.9, zr + 0.56 * d], [rim - 1.5, zr + 0.59 * d], [rim * 0.69, zr + 0.74 * d], [rim * 0.44, zr + 0.89 * d], [rim * 0.22, zr + 0.98 * d], [0, zt]]), MATERIALS.sapphire(), false)); }
+}
+function insertRing(ri, ro, zTop) {
+  const n = 2048, px = n / (2 * ro), c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d");
   x.fillStyle = scene3.insert.top; x.fillRect(0, 0, n, n); x.setTransform(px, 0, 0, -px, n / 2, n / 2);
   const at = (m, r) => [Math.sin(m * 6 * Math.PI / 180) * r, Math.cos(m * 6 * Math.PI / 180) * r];
   x.fillStyle = "#e8e5dc"; x.strokeStyle = "#e8e5dc"; x.lineCap = "round";
@@ -329,11 +350,12 @@ function insertRing() {
   { const [X, Y] = at(0, ro - 0.35); x.beginPath(); x.moveTo(X, Y); x.lineTo(-1.35, ri + 0.5); x.lineTo(1.35, ri + 0.5); x.closePath(); x.fill(); x.fillStyle = "#d8ebc8"; x.beginPath(); x.arc(0, (ri + ro) / 2 + 0.1, 0.42, 0, 2 * Math.PI); x.fill(); }
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   const m = new THREE.Mesh(new THREE.RingGeometry(ri, ro, 256), new THREE.MeshPhysicalMaterial({ map: tex, roughness: 0.45, metalness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.2 }));
-  m.rotation.x = -Math.PI / 2; m.position.y = 12.41 - DIAL_Z; return m;
+  m.rotation.x = -Math.PI / 2; m.position.y = zTop - 0.04 - DIAL_Z; return m;
 }
 function mergeGeometries(geos) { const v = [], idx = []; let off = 0; for (const g of geos) { const p = g.attributes.position; for (let i = 0; i < p.count; i++) v.push(p.getX(i), p.getY(i), p.getZ(i)); const ix = g.index; if (ix) for (let i = 0; i < ix.count; i++) idx.push(ix.getX(i) + off); else for (let i = 0; i < p.count; i++) idx.push(i + off); off += p.count; }
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.setIndex(idx); g.computeVertexNormals(); return g; }
 
+let groundMesh, shadowMesh;      // the table and the contact shadow, placed under the caseback at each rebuild (placeGround)
 // ── 6 · the bracelet ───────────────────────────────────────────────────────────────────────────────────────────────────
 /** one link: a section (across x, up y) carried along the link (z), its ends rounding to a half-round of the link's
  *  thickness so it can hinge; `out` says which side faces the bracelet's edge (±1) or none (0). Materials per edge */
@@ -451,15 +473,18 @@ let groundMat, groundBump;
   for (let i = 0; i < 2600; i++) { const px = rnd() * n, py = rnd() * n, rr = 10 + rnd() * 26, sq = 0.5 + rnd() * 0.6, rot = rnd() * Math.PI, lum = 150 + rnd() * 60 | 0;
     const gr = x.createRadialGradient(0, 0, 0, 0, 0, rr); gr.addColorStop(0, `rgb(${lum},${lum},${lum})`); gr.addColorStop(0.75, `rgb(${lum - 50},${lum - 50},${lum - 50})`); gr.addColorStop(1, "rgb(60,60,60)");
     x.save(); x.translate(px, py); x.rotate(rot); x.scale(1, sq); x.fillStyle = gr; x.beginPath(); x.arc(0, 0, rr, 0, 2 * Math.PI); x.fill(); x.restore(); }
-  const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(6, 6); bump.anisotropy = 8;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, bumpMap: bump, bumpScale: 0.35, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad m.rotation.x = -Math.PI / 2; m.position.y = -DIAL_Z * K; m.receiveShadow = true; watch.add(m);      // the table at the caseback, in the case's scale
+  const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(60, 60); bump.anisotropy = 8;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, bumpMap: bump, bumpScale: 0.35, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad
+  m.rotation.x = -Math.PI / 2; groundMesh = m; m.receiveShadow = true; watch.add(m);      // the table at the caseback, in the case's scale. (Until round 34 this line sat inside the comment above: the table was never in the scene — the reason the ground grain was "invisible", open 8a)
   const s = 512, cc = document.createElement("canvas"); cc.width = cc.height = s; const cx = cc.getContext("2d"), gr = cx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = gr; cx.fillRect(0, 0, s, s);
-  const sh = new THREE.Mesh(new THREE.PlaneGeometry(54 * K, 54 * K), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = -DIAL_Z * K + 0.02; watch.add(sh); }
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(54 * K, 54 * K), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; shadowMesh = sh; watch.add(sh); }
+const placeGround = () => { groundMesh.position.y = -DIAL_Z * K; shadowMesh.position.y = -DIAL_Z * K + 0.02; };      // the table under the caseback, wherever the datum puts it
 
 // ── 8 · building, the light and the controls ──
-const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit" };
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "insert" };
 let info = null;
 function rebuild() {
+  DIAL_Z = CASES[S.caseKey].zTop + CASES[S.caseKey].bezel.dialUp; placeGround();      // the dial's face is the datum (world y = 0): the case moves under it
   for (const grp of [caseGroup, strapGroup]) { grp.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); for (const m of [].concat(o.material)) m.dispose(); } }); grp.clear(); }
   metalHex = METAL[S.metal];
   info = buildCase(CASES[S.caseKey]); info.lug = CASES[S.caseKey].lug; caseGroup.add(info.group);
@@ -493,7 +518,7 @@ function render() {
 }
 const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-sun").textContent = Math.round(S.sun * 100) + " %"; $("v-room").textContent = Math.round(S.room * 100) + " %"; };
 for (const row of document.querySelectorAll(".pills")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
-  if (["caseKey", "strap", "metal"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); render(); };
+  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); render(); };
 for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
 let dragging = false;
 const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
@@ -506,7 +531,7 @@ const dragMode = () => { controls.enabled = S.drag === "orbit"; canvas.style.cur
 const CASE_ROWS = [
   ["Body", "Radius", "R", 15, 23, 0.05], ["Body", "Lug to lug", "l2l", 40, 54, 0.1], ["Body", "Band bottom", "zBand", 1, 5, 0.1], ["Body", "Band top", "zTop", 6, 12, 0.1], ["Body", "Belly", "belly", 0, 0.8, 0.02], ["Body", "Chamfer", "chamfer", 0.2, 1.5, 0.05],
   ["Lugs", "Width between", "lugw", 16, 22, 0.5], ["Lugs", "Thickness", "lugT", 1.5, 4.5, 0.1], ["Lugs", "Flare", "flare", 0, 5, 0.1], ["Lugs", "Root blend", "lug.fillet", 0.3, 3, 0.1], ["Lugs", "Tip top", "lug.tipTop", 4, 11, 0.1], ["Lugs", "Tip bottom", "lug.tipBot", 1.5, 6, 0.1], ["Lugs", "Tip corner", "lug.corner", 0.2, 1.5, 0.05], ["Lugs", "Tip chamfer", "lug.chamferTip", 0.2, 1.2, 0.05], ["Lugs", "Inner break", "lug.chamferIn", 0, 0.6, 0.05], ["Lugs", "Hole from tip", "lug.holeIn", 0.8, 3, 0.1],
-  ["Bezel", "Outer radius", "bezel.r1", 17, 22, 0.05], ["Bezel", "Top", "bezel.z1", 10, 14, 0.05], ["Bezel", "Teeth", "bezel.teeth.n", 24, 120, 1], ["Bezel", "Tooth depth", "bezel.teeth.depth", 0, 1.2, 0.05],
+  ["Bezel", "Inset from body", "bezel.inset", 0, 2.5, 0.05], ["Bezel", "Ring width", "bezel.width", 1.5, 5, 0.05], ["Bezel", "Dial over band", "bezel.dialUp", -1, 2.5, 0.05], ["Bezel", "Seat over band", "bezel.seat", 0, 1.5, 0.05], ["Bezel", "Ring height", "bezel.h", 0.8, 4, 0.05], ["Bezel", "Top chamfer", "bezel.chamfer", 0.1, 1.2, 0.05], ["Bezel", "Lip / recess", "bezel.lip", 0.2, 1.2, 0.05], ["Bezel", "Teeth", "bezel.teeth.n", 24, 120, 1], ["Bezel", "Tooth depth", "bezel.teeth.depth", 0, 1.2, 0.05], ["Crystal", "Rim in", "bezel.rim", 0, 1.5, 0.05], ["Crystal", "Over the ring", "bezel.up", 0, 2, 0.05], ["Crystal", "Dome", "bezel.dome", 0, 3, 0.05],
   ["Crown", "Diameter", "crown.w", 3, 9, 0.1], ["Crown", "Length", "crown.h", 1, 5, 0.1], ["Crown", "Height", "crown.z", 3, 9, 0.1]];
 const CASES_0 = JSON.parse(JSON.stringify(CASES));      // the specs as written, for Reset
 const getAt = (o, path) => path.split(".").reduce((a, k) => a[k], o), setAt = (o, path, v) => { const ks = path.split("."), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };

@@ -9,7 +9,7 @@ So the watch is data. Two tables in `watch3d.html`:
 ```
 CASES.<key>      plan (round | cushion — the builders keep both; only the diver is in the table) and its numbers · zBand, zTop, belly, chamfer, flank finish
                  lug: { tipTop, tipBot, rootBot, chamferTip, holeIn, corner, fillet, chamferIn }   (fillet: the blend's radius where the lug leaves the body; chamferIn: the break on the inner wall's top edge)
-                 bezel: { r0, r1, z0, z1, teeth: { n, depth, fill, chamfer } }   (teeth = scallops cut into the wall: n a turn, depth deep, fill of the pitch wide)
+                 bezel: { kind (insert | plain), inset, width, dialUp, seat, h, chamfer, lip, inIn, inOut, rim, up, dome, teeth: { n, depth, fill, chamfer } }   — all relative: radii off R, heights off zTop (round 34); teeth = scallops cut into the wall: n a turn, depth deep, fill of the pitch wide
                  crown: { at (degrees from 3 o'clock), w, h, z, flutes }
 BRACELETS.<key>  W1, P0, P1, H1, gapx, gap · columns: [[share, section, out, offset, finish?], …]  (finish "polished" for a column; default brushed)
 ```
@@ -31,6 +31,7 @@ A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. Th
 | `outline(C)` | a case spec | `at(θ)` → point and outward normal on the body's plan (the crown's place) |
 | `casePlan(C)` | a case spec | `loop`: the whole plan, body and lugs, as stations `{x, y, nx, ny, kind, part, c}`; `lugs[]`: each lug's inner and outer edge (root → tip) and root arc; the laws `lugTop(y)`, `lugBot(y)`, `u(y)` from the root; `yAt(x)` the slot's edge (body, then fillet) for the end link; `xOut(y)` |
 | `coons(bottom, top, left, right, zOf, mat, rows, cols, flip)` | four boundary curves in the plan, a height law | a patch filling them (a lug's top or underside), with UVs and tangents along its length |
+| `buildBezel(C, g)` | a case spec, the case's group | rehaut, ring, coin edge, insert or plain top, crystal from the bezel's named numbers; `DIAL_Z` (world y = 0, the dial's face) is `zTop + dialUp`, set at rebuild |
 | `buildCase(C)` | a case spec | the group, and `info`: `xi, xo, half, yEdge, lugTop(y), lugBot(y), xOut(y), holeZ, tipH, yAt` — what the bracelet needs |
 | `link(sec, w, l, h, out, finish)` | bean · barn · slab · barrel; width, length, thickness; which side faces out; a finish for the whole link | a link whose ends round to the stadium of its thickness; the outer flank bowed 0.2 mm and screw heads on it if `out` |
 | `buildBracelet(key, info)` | a bracelet key and the case's `info` | end links, the offset columns' first half-links, then rows pin to pin along the curve |
