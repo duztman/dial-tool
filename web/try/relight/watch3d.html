@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 30 (5 Nov 2026): round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 31 (7 Nov 2026): free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,10 +37,11 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 30</h1>
+  <h1>Watch 3D · round 31</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
-  <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button></div>
+  <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
+  <div class="pills" data-key="drag"><button data-v="orbit" class="on">Drag: orbit</button><button data-v="sun">Drag: sun</button></div>
   <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
   <div class="pills" data-key="metal"><button data-v="steel" class="on">Steel</button><button data-v="gold">Gold</button></div>
   <div class="pills" data-key="ground"><button data-v="grain" class="on">Ground grain</button><button data-v="plain">Plain</button></div>
@@ -48,13 +49,14 @@
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
   <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
   <label>Room light <span class="num" id="v-room"></span></label><input type="range" id="room" min="0" max="100" value="60">
-  <p class="note">Drag on the watch: the direction is the sun's angle, the middle high, the edge low.</p>
+  <p class="note">Drag: orbit — one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view pill puts the camera back. Drag: sun — the direction is the sun's angle, the middle high, the edge low.</p>
 </div>
 <script src="scene.js"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
 <script type="module">
 import * as THREE from "three";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
@@ -383,7 +385,7 @@ let groundMat, groundBump;
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(54 * K, 54 * K), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = -DIAL_Z * K + 0.02; watch.add(sh); }
 
 // ── 8 · building, the light and the controls ──
-const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain" };
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit" };
 let info = null;
 function rebuild() {
   for (const grp of [caseGroup, strapGroup]) { grp.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); for (const m of [].concat(o.material)) m.dispose(); } }); grp.clear(); }
@@ -396,14 +398,17 @@ sun.shadow.mapSize.set(4096, 4096); sun.shadow.camera.left = sun.shadow.camera.b
 // the views: Top (the app's), Photo (the goal's three-quarter), Wide (the same angle pulled back: the whole watch with both
 // strap ends — keepers, buckle), Low (a low three-quarter from the 5 o'clock side: the crystal's dome, the flank, the lugs' fall),
 // Side (from the crown: heights)
-const orbit = (elDeg, azDeg, d, fov, look) => { camera.fov = fov; const el = rad(elDeg), az = rad(azDeg); camera.position.set(Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d); camera.up.set(0, 1, 0); camera.lookAt(...look); };
-function placeCamera(view) { watch.rotation.y = ["photo", "wide", "low"].includes(view) ? -10 * Math.PI / 180 : 0;
-  if (view === "top") { camera.fov = 13; camera.position.set(0, 325, 0); camera.up.set(0, 0, -1); camera.lookAt(0, 0, 0); }
-  else if (view === "side") { camera.fov = 9; camera.position.set(520, 18, 0); camera.up.set(0, 1, 0); camera.lookAt(0, -3, 0); }
+const orbit = (elDeg, azDeg, d, fov, look) => { camera.fov = fov; const el = rad(elDeg), az = rad(azDeg); camera.position.set(Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d); camera.lookAt(...look); controls.target.set(...look); };
+let placing = false;      // controls.update() fires "change" too: a preset press must not count as a hand on the orbit
+function placeCamera(view) { placing = true; watch.rotation.y = ["photo", "wide", "low"].includes(view) ? -10 * Math.PI / 180 : 0;
+  if (view === "free") { placing = false; return; }                                                       // the orbit's own place: leave the camera where the hand left it
+  if (view === "top") { camera.fov = 13; camera.position.set(0, 325, 0.5); camera.lookAt(0, 0, 0); controls.target.set(0, 0, 0); }   // 0.5 off the pole: screen-up stays −z (12 up), as before
+  else if (view === "side") { camera.fov = 9; camera.position.set(520, 18, 0); camera.lookAt(0, -3, 0); controls.target.set(0, -3, 0); }
   else if (view === "wide") orbit(40, -38, 330, 24, [0, -8, 6]);
   else if (view === "low") orbit(14, -58, 185, 20, [0, -4, 0]);
   else orbit(36, -38, 190, 22, [0, -2, 0]);
-  camera.updateProjectionMatrix(); }
+  camera.updateProjectionMatrix(); controls.update(); placing = false; }
+const controls = new OrbitControls(camera, canvas); controls.enableDamping = false; controls.minDistance = 60; controls.maxDistance = 900; controls.zoomSpeed = 0.6; controls.rotateSpeed = 0.7;
 const $ = (id) => document.getElementById(id);
 function render() {
   const t0 = performance.now(), side = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
@@ -416,13 +421,16 @@ function render() {
 }
 const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-sun").textContent = Math.round(S.sun * 100) + " %"; $("v-room").textContent = Math.round(S.room * 100) + " %"; };
 for (const row of document.querySelectorAll(".pills")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
-  if (["caseKey", "strap", "metal"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); render(); };
+  if (["caseKey", "strap", "metal"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); render(); };
 for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
 let dragging = false;
 const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
   S.from = ((90 - Math.atan2(y, x) * 180 / Math.PI) % 360 + 360) % 360 | 0; S.rise = Math.round(85 - 73 * d); $("from").value = S.from; $("rise").value = S.rise; show(); render(); };
-canvas.onpointerdown = (e) => { dragging = true; canvas.setPointerCapture(e.pointerId); sunAt(e); }; canvas.onpointermove = (e) => { if (dragging) sunAt(e); }; canvas.onpointerup = canvas.onpointercancel = () => { dragging = false; };
+canvas.onpointerdown = (e) => { if (S.drag !== "sun") return; dragging = true; canvas.setPointerCapture(e.pointerId); sunAt(e); }; canvas.onpointermove = (e) => { if (dragging) sunAt(e); }; canvas.onpointerup = canvas.onpointercancel = () => { dragging = false; };
+// a hand on the orbit leaves the view presets: the Free pill lights (it is hidden; a preset press puts the camera back), the frame is redrawn
+controls.addEventListener("change", () => { if (placing) return; if (S.view !== "free") { S.view = "free"; const row = document.querySelector('.pills[data-key="view"]'); row.querySelector(".on")?.classList.remove("on"); row.querySelector('[data-v="free"]').classList.add("on"); } render(); });
+const dragMode = () => { controls.enabled = S.drag === "orbit"; canvas.style.cursor = controls.enabled ? "grab" : "crosshair"; };
 window.onresize = render;
-rebuild(); placeCamera(S.view); show(); render();
-window.watch3d = { S, render, scene, camera, renderer, set: (key, v) => document.querySelector(`.pills[data-key="${key}"] [data-v="${v}"]`)?.click(), setMode: (m) => document.querySelector(`.pills[data-key="mode"] [data-v="${m}"]`).click() };
+rebuild(); placeCamera(S.view); dragMode(); show(); render();
+window.watch3d = { S, render, scene, camera, renderer, controls, set: (key, v) => document.querySelector(`.pills[data-key="${key}"] [data-v="${v}"]`)?.click(), setMode: (m) => document.querySelector(`.pills[data-key="mode"] [data-v="${m}"]`).click() };
 </script>
