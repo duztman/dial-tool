@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 32 (8 Nov 2026): the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 33 (8 Nov 2026): the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -29,15 +29,17 @@
   .pills { display: flex; gap: 4px; margin-bottom: 8px; }
   .pills button { flex: 1; border: 1px solid #666; background: none; color: #ddd; border-radius: 99px; padding: 5px 0; font: inherit; cursor: pointer; }
   .pills button.on { background: #ddd; color: #111; border-color: #ddd; }
-  label { display: grid; grid-template-columns: 1fr 44px; align-items: center; gap: 8px; margin: 10px 0 2px; }
+  label { display: grid; grid-template-columns: 1fr 64px; align-items: center; gap: 8px; margin: 10px 0 2px; }
   input[type=range] { width: 100%; margin: 0 0 6px; }
   .num { text-align: right; font-variant-numeric: tabular-nums; color: #aaa; }
   p.note { color: #998; margin: 14px 0 0; }
   #status { position: absolute; left: 12px; bottom: 10px; color: #998; }
+  details { margin-top: 14px; border-top: 1px solid #444; padding-top: 8px; } summary { cursor: pointer; font-weight: 600; } summary .num { float: right; font-weight: 400; }
+  #case-rows label { margin: 6px 0 0; } #case-rows h2 { font-size: 11px; font-weight: 600; color: #998; margin: 12px 0 0; text-transform: uppercase; letter-spacing: 0.06em; }
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 32</h1>
+  <h1>Watch 3D · round 33</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
@@ -49,6 +51,7 @@
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
   <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
   <label>Room light <span class="num" id="v-room"></span></label><input type="range" id="room" min="0" max="100" value="60">
+  <details id="case"><summary>Case — the numbers <span class="num" id="v-build"></span></summary><div id="case-rows"></div><p class="note">The bezel, rehaut, insert and crystal still sit at the diver's fixed heights — stage 2 puts them on the band top.</p><div class="pills"><button id="case-reset">Reset to the diver's</button></div></details>
   <p class="note">Drag: orbit — one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view pill puts the camera back. Drag: sun — the direction is the sun's angle, the middle high, the edge low.</p>
 </div>
 <script src="scene.js"></script>
@@ -189,7 +192,7 @@ function outline(C) {
  *  full height); from there to the tip the top falls and the underside rises. Each lug also keeps its two edges (inner, outer)
  *  and its root arc for the top and underside patches */
 function casePlan(C) {
-  const R = C.R, half = C.l2l / 2, xi = C.lugw / 2, xo = xi + C.lugT, L = C.lug, rf = L.fillet, rc = L.corner, xb = xo + (C.flare || 0), yb = Math.sqrt(R * R - xb * xb);
+  const R = C.R, half = C.l2l / 2, xi = C.lugw / 2, xo = xi + C.lugT, L = C.lug, rf = L.fillet, rc = Math.min(L.corner, C.lugT / 2 - 0.01), xb = Math.min(xo + (C.flare || 0), R - 0.5), yb = Math.sqrt(R * R - xb * xb);      // the lug's outer edge must leave the body inside its radius; a tip corner no wider than half the lug
   const arc = (cx, cy, r, a0, a1, n) => Array.from({ length: n + 1 }, (_, k) => { const a = a0 + (a1 - a0) * k / n; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; });
   const seg = (p, q, n) => Array.from({ length: n + 1 }, (_, k) => [p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]);
   const bez = (t, p0, p1, p2, p3) => { const q = 1 - t; return [q * q * q * p0[0] + 3 * q * q * t * p1[0] + 3 * q * t * t * p2[0] + t * t * t * p3[0], q * q * q * p0[1] + 3 * q * q * t * p1[1] + 3 * q * t * t * p2[1] + t * t * t * p3[1]]; };
@@ -198,10 +201,10 @@ function casePlan(C) {
   const edge = C.flare ? Array.from({ length: 61 }, (_, k) => bez(k / 60, [xb, yb], P1, P2, P3)) : seg([xb, yb], P3, 60);
   // the OUTER FILLET: a circle of radius rf outside the body, tangent to the body and to the edge's first stretch (taken as a line)
   const d = C.flare ? [P1[0] - xb, P1[1] - yb] : [0, 1], dl = Math.hypot(...d); d[0] /= dl; d[1] /= dl; const no = [d[1], -d[0]];      // along the edge, and its outer normal
-  const A = [xb + rf * no[0], yb + rf * no[1]], ad = A[0] * d[0] + A[1] * d[1], sFoot = -ad + Math.sqrt(ad * ad - (A[0] * A[0] + A[1] * A[1] - (R + rf) ** 2));
+  const A = [xb + rf * no[0], yb + rf * no[1]], ad = A[0] * d[0] + A[1] * d[1], sFoot = -ad + Math.sqrt(Math.max(0, ad * ad - (A[0] * A[0] + A[1] * A[1] - (R + rf) ** 2)));
   const co = [A[0] + sFoot * d[0], A[1] + sFoot * d[1]], foot = [xb + sFoot * d[0], yb + sFoot * d[1]], col = Math.hypot(...co), tco = [co[0] * R / col, co[1] * R / col];
   // the INNER FILLET: centre (xi − rf, yc) at R + rf from the dial's axis, tangent to the wall x = xi at (xi, yc) and to the body
-  const yc = Math.sqrt((R + rf) ** 2 - (xi - rf) ** 2), ci = [xi - rf, yc], cil = Math.hypot(...ci), tci = [ci[0] * R / cil, ci[1] * R / cil];
+  const yc = Math.sqrt(Math.max(0, (R + rf) ** 2 - (xi - rf) ** 2)), ci = [xi - rf, yc], cil = Math.hypot(...ci), tci = [ci[0] * R / cil, ci[1] * R / cil];
   const yRoot = tci[1];      // the lug's laws start here
   const u = (y) => clamp((y - yRoot) / (half - yRoot), 0, 1);
   const lugTop = (y) => C.zTop - (C.zTop - L.tipTop) * ss(u(y)), lugBot = (y) => L.rootBot + (L.tipBot - L.rootBot) * ss(Math.pow(u(y), 1.3));
@@ -295,7 +298,7 @@ function buildCase(C) {
   g.add(mesh(lathe([[14.6, DIAL_Z], [15.2, 11.35], [16.1, 11.5], [B.r0, 11.5], [B.r0, B.z0], [14.6, B.z0]]), MATERIALS.polished()));
   g.add(mesh(lathe([[B.r0, B.z0], [B.r1, B.z0], [B.r1, B.z1], [B.r1 - 0.45, B.z1 + 0.55], [19.0, 12.45], [19.0, 11.9], [16.7, 11.9], [16.7, 12.4], [16.5, 12.45], [16.4, 11.6], [B.r0, 11.6]]), MATERIALS.brushed()));
   { const T = B.teeth, R = B.r1 + T.depth, ch = T.chamfer, pitch = 2 * Math.PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth);      // the COIN EDGE, machined: the ring's outer wall is one surface whose radius is a law of the angle — full on the lands, a round scallop (a circle of radius rd, `depth` deep, `fill` of the pitch wide) cut into each pitch (Okay: "machined out of metal, round divots")
-    const rAt = (th) => { const x = R * ((th % pitch + pitch) % pitch - pitch / 2); return Math.abs(x) < a ? R - (Math.sqrt(rd * rd - x * x) - (rd - T.depth)) : R; };
+    const rAt = T.depth <= 0 ? () => R : (th) => { const x = R * ((th % pitch + pitch) % pitch - pitch / 2); return Math.abs(x) < a ? R - (Math.sqrt(rd * rd - x * x) - (rd - T.depth)) : R; };      // depth 0: a plain wall, no scallops
     const per = 28, N = T.n * per, stations = [];      // 28 stations a pitch: the scallop's rim lands on a station, so it stays a crisp edge
     for (let k = 0; k <= N; k++) { const th = k / N * 2 * Math.PI, r = rAt(th), c = Math.cos(th), sn = Math.sin(th), P = (rr, z) => W(rr * c, rr * sn, z);
       stations.push([P(B.r1 - 0.05, B.z0), P(r, B.z0), P(r, B.z1 - ch), P(r - ch, B.z1), P(B.r1 - 0.05, B.z1)]); }      // the wall's section: seat · outer wall · top chamfer · top, closed back to the ring
@@ -499,6 +502,22 @@ canvas.onpointerdown = (e) => { if (S.drag !== "sun") return; dragging = true; c
 // a hand on the orbit leaves the view presets: the Free pill lights (it is hidden; a preset press puts the camera back), the frame is redrawn
 controls.addEventListener("change", () => { if (placing) return; if (S.view !== "free") { S.view = "free"; const row = document.querySelector('.pills[data-key="view"]'); row.querySelector(".on")?.classList.remove("on"); row.querySelector('[data-v="free"]').classList.add("on"); } render(); });
 const dragMode = () => { controls.enabled = S.drag === "orbit"; canvas.style.cursor = controls.enabled ? "grab" : "crosshair"; };
+// ── 7 · the case's numbers: sliders over the spec, rebuilt live. Each row: group · label · path in CASES.<key> · min · max · step. Stage 2 adds the bezel's profile here
+const CASE_ROWS = [
+  ["Body", "Radius", "R", 15, 23, 0.05], ["Body", "Lug to lug", "l2l", 40, 54, 0.1], ["Body", "Band bottom", "zBand", 1, 5, 0.1], ["Body", "Band top", "zTop", 6, 12, 0.1], ["Body", "Belly", "belly", 0, 0.8, 0.02], ["Body", "Chamfer", "chamfer", 0.2, 1.5, 0.05],
+  ["Lugs", "Width between", "lugw", 16, 22, 0.5], ["Lugs", "Thickness", "lugT", 1.5, 4.5, 0.1], ["Lugs", "Flare", "flare", 0, 5, 0.1], ["Lugs", "Root blend", "lug.fillet", 0.3, 3, 0.1], ["Lugs", "Tip top", "lug.tipTop", 4, 11, 0.1], ["Lugs", "Tip bottom", "lug.tipBot", 1.5, 6, 0.1], ["Lugs", "Tip corner", "lug.corner", 0.2, 1.5, 0.05], ["Lugs", "Tip chamfer", "lug.chamferTip", 0.2, 1.2, 0.05], ["Lugs", "Inner break", "lug.chamferIn", 0, 0.6, 0.05], ["Lugs", "Hole from tip", "lug.holeIn", 0.8, 3, 0.1],
+  ["Bezel", "Outer radius", "bezel.r1", 17, 22, 0.05], ["Bezel", "Top", "bezel.z1", 10, 14, 0.05], ["Bezel", "Teeth", "bezel.teeth.n", 24, 120, 1], ["Bezel", "Tooth depth", "bezel.teeth.depth", 0, 1.2, 0.05],
+  ["Crown", "Diameter", "crown.w", 3, 9, 0.1], ["Crown", "Length", "crown.h", 1, 5, 0.1], ["Crown", "Height", "crown.z", 3, 9, 0.1]];
+const CASES_0 = JSON.parse(JSON.stringify(CASES));      // the specs as written, for Reset
+const getAt = (o, path) => path.split(".").reduce((a, k) => a[k], o), setAt = (o, path, v) => { const ks = path.split("."), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
+{ const box = $("case-rows"); let grp = "";
+  for (const [g, label, path, min, max, step] of CASE_ROWS) { if (g !== grp) { grp = g; const h = document.createElement("h2"); h.textContent = g; box.appendChild(h); }
+    const lab = document.createElement("label"), val = document.createElement("span"), inp = document.createElement("input"); val.className = "num"; lab.textContent = label + " "; lab.appendChild(val);
+    inp.type = "range"; inp.min = min; inp.max = max; inp.step = step; inp.dataset.path = path; box.appendChild(lab); box.appendChild(inp);
+    const dec = step >= 1 ? 0 : step >= 0.1 ? 1 : 2, show = () => { const v = getAt(CASES[S.caseKey], path); inp.value = v; val.textContent = step >= 1 ? v : v.toFixed(dec) + " mm"; }; show(); inp._show = show;
+    let pending = false; inp.oninput = () => { setAt(CASES[S.caseKey], path, +inp.value); show(); if (pending) return; pending = true;      // one rebuild a frame while the slider moves
+      requestAnimationFrame(() => { pending = false; const t0 = performance.now(); rebuild(); render(); $("v-build").textContent = `built in ${(performance.now() - t0).toFixed(0)} ms`; }); }; }
+  $("case-reset").onclick = () => { Object.assign(CASES[S.caseKey], JSON.parse(JSON.stringify(CASES_0[S.caseKey]))); for (const i of box.querySelectorAll("input")) i._show(); rebuild(); render(); }; }
 window.onresize = render;
 rebuild(); placeCamera(S.view); dragMode(); show(); render();
 window.watch3d = { S, render, scene, camera, renderer, controls, set: (key, v) => document.querySelector(`.pills[data-key="${key}"] [data-v="${v}"]`)?.click(), setMode: (m) => document.querySelector(`.pills[data-key="mode"] [data-v="${m}"]`).click() };
