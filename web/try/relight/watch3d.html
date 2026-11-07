@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 35 (8 Nov 2026): render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 36 (8 Nov 2026): the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -34,26 +34,40 @@
   .num { text-align: right; font-variant-numeric: tabular-nums; color: #aaa; }
   p.note { color: #998; margin: 14px 0 0; }
   #status { position: absolute; left: 12px; bottom: 10px; color: #998; }
-  details { margin-top: 14px; border-top: 1px solid #444; padding-top: 8px; } summary { cursor: pointer; font-weight: 600; } summary .num { float: right; font-weight: 400; }
-  #case-rows label { margin: 6px 0 0; } #case-rows h2 { font-size: 11px; font-weight: 600; color: #998; margin: 12px 0 0; text-transform: uppercase; letter-spacing: 0.06em; }
+  .tabs { margin-bottom: 14px; } .tabs button { border-radius: 6px; } .tabs button.on { background: #444; color: #fff; border-color: #444; }
+  h2 { font-size: 11px; font-weight: 600; color: #998; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.06em; } h2 .num { float: right; text-transform: none; letter-spacing: 0; font-weight: 400; }
+  #case-rows label { margin: 6px 0 0; }
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 35</h1>
-  <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
-  <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
-  <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
-  <div class="pills" data-key="style"><button data-v="photo" class="on">Photo</button><button data-v="toon">Toon</button><button data-v="cel">Cel</button><button data-v="pixel">Pixel</button><button data-v="dither">Dither</button><button data-v="tech">Technical</button></div>
-  <div class="pills" data-key="drag"><button data-v="orbit" class="on">Drag: orbit</button><button data-v="sun">Drag: sun</button></div>
-  <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
-  <div class="pills" data-key="metal"><button data-v="steel" class="on">Steel</button><button data-v="gold">Gold</button></div>
-  <div class="pills" data-key="ground"><button data-v="grain" class="on">Ground grain</button><button data-v="plain">Plain</button></div>
-  <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
-  <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
-  <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
-  <label>Room light <span class="num" id="v-room"></span></label><input type="range" id="room" min="0" max="100" value="60">
-  <details id="case"><summary>Case — the numbers <span class="num" id="v-build"></span></summary><div id="case-rows"></div><div class="pills" data-key="bezelKind"><button data-v="rotating" class="on">Rotating bezel</button><button data-v="fixed">Fixed bezel</button></div><div class="pills"><button id="case-reset">Reset to the diver's</button></div></details>
-  <p class="note">Drag: orbit — one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view pill puts the camera back. Drag: sun — the direction is the sun's angle, the middle high, the edge low.</p>
+  <h1>Watch 3D · round 36</h1>
+  <div class="pills tabs" data-key="tab"><button data-v="scene" class="on">Scene</button><button data-v="watch">Watch</button></div>
+  <div class="tab" data-tab="scene">
+    <h2>Style</h2>
+    <div class="pills" data-key="style"><button data-v="photo" class="on">Photo</button><button data-v="toon">Toon</button><button data-v="cel">Cel</button><button data-v="dither">Dither</button><button data-v="tech">Technical</button></div>
+    <h2>Camera</h2>
+    <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
+    <div class="pills" data-key="drag"><button data-v="orbit" class="on">Drag: orbit</button><button data-v="sun">Drag: sun</button></div>
+    <h2>Light</h2>
+    <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
+    <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
+    <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
+    <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
+    <label>Room light <span class="num" id="v-room"></span></label><input type="range" id="room" min="0" max="100" value="60">
+    <h2>Table</h2>
+    <div class="pills" data-key="ground"><button data-v="grain" class="on">Leather grain</button><button data-v="plain">Plain</button></div>
+    <p class="note">Drag: orbit — one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view pill puts the camera back. Drag: sun — the direction is the sun's angle, the middle high, the edge low.</p>
+  </div>
+  <div class="tab" data-tab="watch" hidden>
+    <h2>Preset <span class="num" id="v-build"></span></h2>
+    <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button><button data-v="dress">Dress</button></div>
+    <div class="pills"><button id="case-reset">Reset to the preset's numbers</button></div>
+    <h2>Parts</h2>
+    <div class="pills" data-key="bezelKind"><button data-v="rotating" class="on">Rotating bezel</button><button data-v="fixed">Fixed bezel</button></div>
+    <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
+    <div class="pills" data-key="metal"><button data-v="steel" class="on">Steel</button><button data-v="gold">Gold</button></div>
+    <div id="case-rows"></div>
+  </div>
 </div>
 <script src="scene.js"></script>
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
@@ -82,7 +96,12 @@ const CASES = {
     // recess `lip` deep from the top (kind "rotating": the diver's separate turning ring with its insert and coin edge; "fixed": a plain pressed ring, no insert, no teeth), `inIn` / `inOut` in from the ring's inner / outer radius; the crystal's rim `rim` in from the
     // ring's inner radius, up `up` over the ring's top, its dome `dome` high; the rehaut's wall from the dial's face to `lip` under the ring's top
     bezel: { kind: "rotating", inset: 0.65, width: 3.3, dialUp: 0.7, seat: 0.3, h: 2.3, chamfer: 0.45, lip: 0.55, inIn: 0.4, inOut: 0.6, rim: 0.4, up: 0.65, dome: 1.35, teeth: { n: 60, depth: 0.5, fill: 0.62, chamfer: 0.45 } },
-    crown: { at: 0, w: 6.4, h: 3.0, z: 6.0, flutes: 18 } },
+    crown: { at: 0, w: 6.4, h: 3.0, z: 6.0, flutes: 18 }, strap: "oyster" },
+  // a DRESS case, first draft (round 36): Claude's numbers from turning the diver's sliders, not from photographs — Okay's Calatrava-type references will correct it
+  dress: { name: "Dress", plan: "round", R: 18.5, l2l: 45, lugw: 20, lugT: 2.2, flare: 0.6, zBand: 1.8, zTop: 7.0, belly: 0.3, chamfer: 0.6, flank: "polished",
+    lug: { tipTop: 5.2, tipBot: 2.6, rootBot: 1.8, chamferTip: 0.5, holeIn: 1.6, corner: 0.8, fillet: 1.5, chamferIn: 0.2 },
+    bezel: { kind: "fixed", inset: 0.5, width: 2.2, dialUp: 0.7, seat: 0.3, h: 1.4, chamfer: 0.3, lip: 0.4, inIn: 0.4, inOut: 0.6, rim: 0.5, up: 0.4, dome: 1.8, teeth: { n: 60, depth: 0, fill: 0.62, chamfer: 0.45 } },
+    crown: { at: 0, w: 4.6, h: 2.4, z: 4.4, flutes: 18 }, strap: "leather" },
 };
 // a bracelet: columns across (a share of the width, a section, which side faces out, half a pitch off or not, an optional
 // finish "polished" for a column — the Sub's centre links; the goal's SPB143 is all brushed, so none here), and the
@@ -185,15 +204,17 @@ composer.addPass(gtao);
 class EdgePass extends Pass {
   constructor(scene, camera) { super(); this.scene = scene; this.camera = camera; this.normalMat = new THREE.MeshNormalMaterial();
     this.target = new THREE.WebGLRenderTarget(1, 1, { depthTexture: new THREE.DepthTexture(1, 1), minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
-    this.quad = new FullScreenQuad(new THREE.ShaderMaterial({ uniforms: { tDiffuse: { value: null }, tNormal: { value: null }, tDepth: { value: null }, res: { value: new THREE.Vector2(1, 1) }, near: { value: 10 }, far: { value: 2000 }, width: { value: 1.0 }, nTh: { value: 0.35 }, dTh: { value: 0.012 }, ink: { value: new THREE.Color(0x101010) } },
+    this.quad = new FullScreenQuad(new THREE.ShaderMaterial({ uniforms: { tDiffuse: { value: null }, tNormal: { value: null }, tDepth: { value: null }, res: { value: new THREE.Vector2(1, 1) }, near: { value: 10 }, far: { value: 2000 }, ws: { value: 1.6 }, wc: { value: 0.8 }, nTh: { value: 0.35 }, dAbs: { value: 0.15 }, dRel: { value: 0.002 }, creaseInk: { value: 0.7 }, ink: { value: new THREE.Color(0x101010) } },
       vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
-      fragmentShader: `uniform sampler2D tDiffuse, tNormal, tDepth; uniform vec2 res; uniform float near, far, width, nTh, dTh; uniform vec3 ink; varying vec2 vUv;
+      // two kinds of line (round 36): a SILHOUETTE where the depth steps (one part in front of another, or the background) — the heavier,
+      // sampled at radius ws; a CREASE where the normal turns past nTh — lighter (creaseInk), sampled at wc. Both soft-edged by smoothstep
+      fragmentShader: `uniform sampler2D tDiffuse, tNormal, tDepth; uniform vec2 res; uniform float near, far, ws, wc, nTh, dAbs, dRel, creaseInk; uniform vec3 ink; varying vec2 vUv;
         float lin(float d) { float z = d * 2.0 - 1.0; return (2.0 * near * far) / (far + near - z * (far - near)); }      // the depth buffer to view distance
-        void main() { vec2 px = width / res; vec3 n0 = texture2D(tNormal, vUv).xyz * 2.0 - 1.0; float z0 = lin(texture2D(tDepth, vUv).x);
-          float e = 0.0; for (int i = 0; i < 4; i++) { vec2 o = i == 0 ? vec2(px.x, 0.0) : i == 1 ? vec2(-px.x, 0.0) : i == 2 ? vec2(0.0, px.y) : vec2(0.0, -px.y);
-            vec3 n1 = texture2D(tNormal, vUv + o).xyz * 2.0 - 1.0; float z1 = lin(texture2D(tDepth, vUv + o).x);
-            e += step(nTh, 1.0 - dot(n0, n1)); e += step(dTh * min(z0, z1), abs(z0 - z1)); }      // a crease (the normals turn) or a step (one part in front of another)
-          vec4 c = texture2D(tDiffuse, vUv); gl_FragColor = vec4(mix(c.rgb, ink, clamp(e, 0.0, 1.0)), c.a); }` })); }
+        void main() { vec3 n0 = texture2D(tNormal, vUv).xyz * 2.0 - 1.0; float z0 = lin(texture2D(tDepth, vUv).x); float sil = 0.0, cr = 0.0;
+          for (int i = 0; i < 8; i++) { float a = float(i) * 0.7853982; vec2 dir = vec2(cos(a), sin(a));
+            float z1 = lin(texture2D(tDepth, vUv + dir * ws / res).x); float t = dAbs + dRel * min(z0, z1); sil = max(sil, smoothstep(t, t * 3.0, abs(z0 - z1)));      // a step of dAbs mm (a marker on the plate) counts at any distance; dRel keeps far, grazing surfaces quiet
+            if (i < 4) { vec3 n1 = texture2D(tNormal, vUv + dir * wc / res).xyz * 2.0 - 1.0; cr = max(cr, smoothstep(nTh, nTh * 1.5, 1.0 - dot(n0, n1))); } }
+          float e = max(sil, cr * creaseInk); vec4 c = texture2D(tDiffuse, vUv); gl_FragColor = vec4(mix(c.rgb, ink, e), c.a); }` })); }
   setSize(w, h) { this.target.setSize(w, h); this.quad.material.uniforms.res.value.set(w, h); }
   render(renderer, writeBuffer, readBuffer) { const bg = this.scene.background; this.scene.background = null; this.scene.overrideMaterial = this.normalMat;
     const ghosts = []; this.scene.traverse((o) => { if (!o.isMesh || !o.visible) return; const m = [].concat(o.userData.photo ?? o.material)[0]; if (m.transmission > 0 || (m.isMeshBasicMaterial && m.transparent)) { o.visible = false; ghosts.push(o); } });      // the crystal and the contact shadow draw no lines and hide none
@@ -205,8 +226,8 @@ const edgePass = new EdgePass(scene, camera); edgePass.enabled = false; composer
 const gridPass = new ShaderPass({ uniforms: { tDiffuse: { value: null }, res: { value: new THREE.Vector2(1, 1) }, cell: { value: 4 }, levels: { value: 0 }, dither: { value: 0 } },
   vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
   fragmentShader: `uniform sampler2D tDiffuse; uniform vec2 res; uniform float cell, levels, dither; varying vec2 vUv;
-    float bayer(vec2 p) { vec2 q = mod(floor(p), 4.0); float m[16]; m[0]=0.;m[1]=8.;m[2]=2.;m[3]=10.;m[4]=12.;m[5]=4.;m[6]=14.;m[7]=6.;m[8]=3.;m[9]=11.;m[10]=1.;m[11]=9.;m[12]=15.;m[13]=7.;m[14]=13.;m[15]=5.;
-      int i = int(q.y) * 4 + int(q.x); for (int k = 0; k < 16; k++) if (k == i) return (m[k] + 0.5) / 16.0; return 0.5; }
+    float bayer(vec2 p) { ivec2 q = ivec2(mod(floor(p), 8.0)); int x = q.x, y = q.y, v = 0;      // the 8×8 Bayer threshold by bit interleaving: no table
+      v = ((x ^ y) & 1) * 32 + (y & 1) * 16 + (((x ^ y) >> 1) & 1) * 8 + ((y >> 1) & 1) * 4 + (((x ^ y) >> 2) & 1) * 2 + ((y >> 2) & 1); return (float(v) + 0.5) / 64.0; }
     void main() { vec2 g = floor(vUv * res / cell); vec2 uv = (g + 0.5) * cell / res; vec3 c = texture2D(tDiffuse, uv).rgb;      // one sample a cell, at its centre
       if (levels > 0.5) { float t = dither > 0.5 ? bayer(g) - 0.5 : 0.0; c = floor(c * levels + 0.5 + t) / levels; }      // snap to levels; the dither nudges the snap by the cell's place in the Bayer tile
       gl_FragColor = vec4(c, 1.0); }` }); gridPass.enabled = false; composer.addPass(gridPass);
@@ -223,9 +244,10 @@ function styledMaterial(m, style) { if (style === "tech") return m.userData.tech
 function applyStyle(style) {
   const drawn = style !== "photo"; scene.traverse((o) => { if (!o.isMesh) return; o.userData.photo ??= o.material;
     o.material = drawn ? [].concat(o.userData.photo).map((m) => styledMaterial(m, style)) : o.userData.photo; if (Array.isArray(o.material) && o.material.length === 1) o.material = o.material[0]; });
-  gtao.enabled = !drawn; edgePass.enabled = drawn; gridPass.enabled = style === "pixel" || style === "dither";
-  const gu = gridPass.uniforms; if (style === "pixel") { gu.cell.value = 4; gu.levels.value = 6; gu.dither.value = 0; } if (style === "dither") { gu.cell.value = 2; gu.levels.value = 3; gu.dither.value = 1; }
-  const eu = edgePass.quad.material.uniforms; eu.width.value = (style === "tech" ? 1.2 : style === "pixel" ? 2.0 : 1.0) * renderer.getPixelRatio();      // the ink keeps its width on a 2× screen eu.nTh.value = style === "tech" ? 0.2 : 0.35; eu.ink.value.set(style === "tech" ? 0x202020 : 0x141414);
+  gtao.enabled = !drawn; edgePass.enabled = drawn; gridPass.enabled = style === "dither";
+  const gu = gridPass.uniforms; if (style === "dither") { gu.cell.value = renderer.getPixelRatio(); gu.levels.value = 4; gu.dither.value = 1; }      // one cell a CSS pixel, 4 levels a channel, an 8×8 Bayer tile: fine newsprint
+  const eu = edgePass.quad.material.uniforms, pr = renderer.getPixelRatio(); eu.ws.value = (style === "tech" ? 1.5 : 1.3) * pr; eu.wc.value = (style === "tech" ? 1.0 : 0.8) * pr;      // the ink keeps its width on a 2× screen
+  eu.nTh.value = style === "tech" ? 0.18 : 0.4; eu.creaseInk.value = style === "tech" ? 0.65 : 0.5; eu.dAbs.value = style === "tech" ? 0.08 : 0.15;      // the sheet shows a marker's 0.3 mm step; the toons need not eu.ink.value.set(style === "tech" ? 0x1a1a1a : 0x141414);
   fill.intensity = drawn ? (style === "tech" ? 0 : 0.9) : 0; scene.background = new THREE.Color(style === "tech" ? 0xffffff : floorHex);
   if (groundMesh) groundMesh.visible = style !== "tech"; if (shadowMesh) shadowMesh.visible = style !== "tech";
   renderer.toneMapping = style === "tech" ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping; }      // the technical sheet is paper-white, not filmic grey
@@ -409,7 +431,7 @@ function insertRing(ri, ro, zTop) {
 function mergeGeometries(geos) { const v = [], idx = []; let off = 0; for (const g of geos) { const p = g.attributes.position; for (let i = 0; i < p.count; i++) v.push(p.getX(i), p.getY(i), p.getZ(i)); const ix = g.index; if (ix) for (let i = 0; i < ix.count; i++) idx.push(ix.getX(i) + off); else for (let i = 0; i < p.count; i++) idx.push(i + off); off += p.count; }
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.setIndex(idx); g.computeVertexNormals(); return g; }
 
-let groundMesh, shadowMesh;      // the table and the contact shadow, placed under the caseback at each rebuild (placeGround)
+let groundMesh, shadowMesh, groundMap;      // the table and the contact shadow, placed under the caseback at each rebuild (placeGround)
 // ── 6 · the bracelet ───────────────────────────────────────────────────────────────────────────────────────────────────
 /** one link: a section (across x, up y) carried along the link (z), its ends rounding to a half-round of the link's
  *  thickness so it can hinge; `out` says which side faces the bracelet's edge (±1) or none (0). Materials per edge */
@@ -527,15 +549,20 @@ let groundMat, groundBump;
   for (let i = 0; i < 2600; i++) { const px = rnd() * n, py = rnd() * n, rr = 10 + rnd() * 26, sq = 0.5 + rnd() * 0.6, rot = rnd() * Math.PI, lum = 150 + rnd() * 60 | 0;
     const gr = x.createRadialGradient(0, 0, 0, 0, 0, rr); gr.addColorStop(0, `rgb(${lum},${lum},${lum})`); gr.addColorStop(0.75, `rgb(${lum - 50},${lum - 50},${lum - 50})`); gr.addColorStop(1, "rgb(60,60,60)");
     x.save(); x.translate(px, py); x.rotate(rot); x.scale(1, sq); x.fillStyle = gr; x.beginPath(); x.arc(0, 0, rr, 0, 2 * Math.PI); x.fill(); x.restore(); }
-  const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(60, 60); bump.anisotropy = 8;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, bumpMap: bump, bumpScale: 0.35, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad
+  const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(50, 50); bump.anisotropy = 8;
+  // the grain as COLOUR too (round 36): the bump alone never read on a screen — leather's grain is seen as a mottle of tone first, relief second. The
+  // same canvas tints the tan: each pebble's dome a little lighter at its crown, its rim a little darker, ±9 %
+  const cc2 = document.createElement("canvas"); cc2.width = cc2.height = n; const x2 = cc2.getContext("2d"), src = x.getImageData(0, 0, n, n).data, out = x2.createImageData(n, n), tan = [0xa8, 0x6a, 0x3c];
+  for (let i = 0; i < src.length; i += 4) { const f = 1 + 0.18 * (src[i] / 255 - 0.5); out.data[i] = tan[0] * f; out.data[i + 1] = tan[1] * f; out.data[i + 2] = tan[2] * f; out.data[i + 3] = 255; } x2.putImageData(out, 0, 0);
+  const grainMap = new THREE.CanvasTexture(cc2); grainMap.wrapS = grainMap.wrapT = THREE.RepeatWrapping; grainMap.repeat.set(50, 50); grainMap.anisotropy = 8; grainMap.colorSpace = THREE.SRGBColorSpace; groundMap = grainMap;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.62, metalness: 0, map: grainMap, bumpMap: bump, bumpScale: 0.7, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad
   m.rotation.x = -Math.PI / 2; groundMesh = m; m.receiveShadow = true; watch.add(m);      // the table at the caseback, in the case's scale. (Until round 34 this line sat inside the comment above: the table was never in the scene — the reason the ground grain was "invisible", open 8a)
   const s = 512, cc = document.createElement("canvas"); cc.width = cc.height = s; const cx = cc.getContext("2d"), gr = cx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = gr; cx.fillRect(0, 0, s, s);
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(54 * K, 54 * K), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; shadowMesh = sh; watch.add(sh); }
 const placeGround = () => { groundMesh.position.y = -DIAL_Z * K; shadowMesh.position.y = -DIAL_Z * K + 0.02; };      // the table under the caseback, wherever the datum puts it
 
 // ── 8 · building, the light and the controls ──
-const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "rotating", style: "photo" };
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "rotating", style: "photo", tab: "scene" };
 let info = null;
 function rebuild() {
   DIAL_Z = CASES[S.caseKey].zTop + CASES[S.caseKey].bezel.dialUp; placeGround();      // the dial's face is the datum (world y = 0): the case moves under it
@@ -550,17 +577,18 @@ sun.shadow.mapSize.set(4096, 4096); sun.shadow.camera.left = sun.shadow.camera.b
 // the views: Top (the app's), Photo (the goal's three-quarter), Wide (the same angle pulled back: the whole watch with both
 // strap ends — keepers, buckle), Low (a low three-quarter from the 5 o'clock side: the crystal's dome, the flank, the lugs' fall),
 // Side (from the crown: heights)
-const orbit = (elDeg, azDeg, d, fov, look) => { camera.fov = fov; const el = rad(elDeg), az = rad(azDeg); camera.position.set(Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d); camera.lookAt(...look); controls.target.set(...look); };
+const lens = () => S.style === "tech" ? 3.5 : 1;      // Technical: a 3.5× longer lens from 3.5× further — near-orthographic, as a drawing (round 36)
+const orbit = (elDeg, azDeg, d0, fov0, look) => { const d = d0 * lens(), fov = fov0 / lens(); camera.fov = fov; const el = rad(elDeg), az = rad(azDeg); camera.position.set(Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d); camera.lookAt(...look); controls.target.set(...look); };
 let placing = false;      // controls.update() fires "change" too: a preset press must not count as a hand on the orbit
 function placeCamera(view) { placing = true; watch.rotation.y = ["photo", "wide", "low"].includes(view) ? -10 * Math.PI / 180 : 0;
   if (view === "free") { placing = false; return; }                                                       // the orbit's own place: leave the camera where the hand left it
-  if (view === "top") { camera.fov = 13; camera.position.set(0, 325, 0.5); camera.lookAt(0, 0, 0); controls.target.set(0, 0, 0); }   // 0.5 off the pole: screen-up stays −z (12 up), as before
-  else if (view === "side") { camera.fov = 9; camera.position.set(520, 18, 0); camera.lookAt(0, -3, 0); controls.target.set(0, -3, 0); }
+  if (view === "top") { camera.fov = 13 / lens(); camera.position.set(0, 325 * lens(), 0.5); camera.lookAt(0, 0, 0); controls.target.set(0, 0, 0); }   // 0.5 off the pole: screen-up stays −z (12 up), as before
+  else if (view === "side") { camera.fov = 9 / lens(); camera.position.set(520 * lens(), 18, 0); camera.lookAt(0, -3, 0); controls.target.set(0, -3, 0); }
   else if (view === "wide") orbit(40, -38, 330, 24, [0, -8, 6]);
   else if (view === "low") orbit(14, -58, 185, 20, [0, -4, 0]);
   else orbit(36, -38, 190, 22, [0, -2, 0]);
   camera.updateProjectionMatrix(); controls.update(); placing = false; }
-const controls = new OrbitControls(camera, canvas); controls.enableDamping = false; controls.minDistance = 60; controls.maxDistance = 900; controls.zoomSpeed = 0.6; controls.rotateSpeed = 0.7;
+const controls = new OrbitControls(camera, canvas); controls.enableDamping = false; controls.minDistance = 60; controls.maxDistance = 3000; controls.zoomSpeed = 0.6; controls.rotateSpeed = 0.7;
 const $ = (id) => document.getElementById(id);
 function render() {
   const t0 = performance.now(), side = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
@@ -568,13 +596,16 @@ function render() {
   const a = (90 - S.from) * Math.PI / 180, r = S.rise * Math.PI / 180; sun.position.set(Math.cos(a) * Math.cos(r) * 200, Math.sin(r) * 200, -Math.sin(a) * Math.cos(r) * 200);
   if (S.mode === "studio") { sun.intensity = S.sun * 1.6; sun.shadow.radius = 10; scene.environmentIntensity = S.room * 2.0; } else { sun.intensity = S.sun * 5; sun.shadow.radius = 2; scene.environmentIntensity = S.room * 0.9; }
   if (S.style !== "photo") { sun.intensity = S.style === "tech" ? 0 : 1.6 + S.sun * 2.4; fill.intensity = S.style === "tech" ? 0 : 0.5 + S.room * 0.8; }      // the drawn styles: the sun steps the toon, the sky light fills
-  { const want = S.ground === "grain" ? groundBump : null; if (groundMat.bumpMap !== want) { groundMat.bumpMap = want; groundMat.needsUpdate = true; } }      // Plain drops the texture from the shader, not just its strength
+  { const want = S.ground === "grain" ? groundBump : null; if (groundMat.bumpMap !== want) { groundMat.bumpMap = want; groundMat.map = want ? groundMap : null; groundMat.color.set(want ? 0xffffff : 0xa86a3c); groundMat.needsUpdate = true; } }      // Plain drops the texture from the shader, not just its strength
   composer.render();
   status.textContent = `${canvas.width} × ${canvas.height} px · frame ${(performance.now() - t0).toFixed(1)} ms`;
 }
 const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-sun").textContent = Math.round(S.sun * 100) + " %"; $("v-room").textContent = Math.round(S.room * 100) + " %"; };
-for (const row of document.querySelectorAll(".pills")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
-  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); if (row.dataset.key === "style") applyStyle(S.style); render(); };
+const pick = (key, v) => { const row = document.querySelector(`.pills[data-key="${key}"]`); row.querySelector(".on")?.classList.remove("on"); row.querySelector(`[data-v="${v}"]`)?.classList.add("on"); S[key] = v; };
+for (const row of document.querySelectorAll(".pills[data-key]")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
+  if (row.dataset.key === "tab") { for (const t of document.querySelectorAll(".tab")) t.hidden = t.dataset.tab !== S.tab; return; }
+  if (row.dataset.key === "caseKey") { const C = CASES[S.caseKey]; pick("strap", C.strap); pick("bezelKind", C.bezel.kind); for (const i of document.querySelectorAll("#case-rows input")) i._show?.(); }      // a preset brings its strap and bezel kind
+  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); if (row.dataset.key === "style") { applyStyle(S.style); placeCamera(S.view); } render(); };
 for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
 let dragging = false;
 const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
@@ -598,7 +629,7 @@ const getAt = (o, path) => path.split(".").reduce((a, k) => a[k], o), setAt = (o
     const dec = step >= 1 ? 0 : step >= 0.1 ? 1 : 2, show = () => { const v = getAt(CASES[S.caseKey], path); inp.value = v; val.textContent = step >= 1 ? v : v.toFixed(dec) + " mm"; }; show(); inp._show = show;
     let pending = false; inp.oninput = () => { setAt(CASES[S.caseKey], path, +inp.value); show(); if (pending) return; pending = true;      // one rebuild a frame while the slider moves
       requestAnimationFrame(() => { pending = false; const t0 = performance.now(); rebuild(); render(); $("v-build").textContent = `built in ${(performance.now() - t0).toFixed(0)} ms`; }); }; }
-  $("case-reset").onclick = () => { Object.assign(CASES[S.caseKey], JSON.parse(JSON.stringify(CASES_0[S.caseKey]))); for (const i of box.querySelectorAll("input")) i._show(); rebuild(); render(); }; }
+  $("case-reset").onclick = () => { Object.assign(CASES[S.caseKey], JSON.parse(JSON.stringify(CASES_0[S.caseKey]))); pick("bezelKind", CASES[S.caseKey].bezel.kind); for (const i of box.querySelectorAll("input")) i._show(); rebuild(); render(); }; }
 window.onresize = render;
 rebuild(); placeCamera(S.view); dragMode(); show(); render();
 window.watch3d = { S, render, scene, camera, renderer, controls, set: (key, v) => document.querySelector(`.pills[data-key="${key}"] [data-v="${v}"]`)?.click(), setMode: (m) => document.querySelector(`.pills[data-key="mode"] [data-v="${m}"]`).click() };
