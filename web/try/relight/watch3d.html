@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 38 (8 Nov 2026): the dark room the default, the low card on sliders; 37: a Dark room beside the Light tent (darkStudio); 36: the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 39 (8 Nov 2026): the panel in Dial Tool's fashion (paper, panes, pill switches, folds); 38: the dark room the default, the low card on sliders; 37: a Dark room beside the Light tent (darkStudio); 36: the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -21,56 +21,136 @@
    · bezel teeth are prismatic blocks with gaps, not ripples; the crown is fluted, domed, chamfered
 -->
 <style>
-  body { margin: 0; background: #1c1c1f; color: #ddd; font: 13px/1.4 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; display: grid; grid-template-columns: 1fr 260px; height: 100vh; }
+  /* the panel in Dial Tool's fashion (round 39; docs/design.md §2, §6, §10; R32's tokens and unit scale; no icons yet):
+     paper, ink and grey; one sans; a 5.5 px unit; show mode's column measures (six columns of 42, margins of 16);
+     a thick line opens a pane, hairlines part its rows; a pane folds to its heading with a small grey summary at the right;
+     a pane's main selector stands on its heading line; a choice of a few words is a pill switch that scrolls sideways when
+     long; a slider is a thin track with ink up to a black disc; a note is part of its row's box; a nested row starts on the
+     controls' column behind a half line */
+  :root { --paper: #FCFCFA; --ink: #111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8; --scroll: #E8E8E6; --field: #fff; --hover: #F1F1EE; --well: var(--ground);
+    --unit: 5.5px; --u1: calc(var(--unit) / 2); --u2: var(--unit); --u3: calc(1.5 * var(--unit)); --u4: calc(2 * var(--unit)); --u6: calc(3 * var(--unit)); --air: calc(4 * var(--unit));
+    --hair: 1px; --thick: 2px; --margin: 16px; --eye: 16px; --gap: 12px; --col: 42px; --lead: calc(var(--eye) + var(--gap));
+    --panel: calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap)); --columns: var(--eye) repeat(6, minmax(0, 1fr));
+    --line: 34px; --head: 40px; --control: 26px; --round-pill: 999px; --thumb: 18px; --track: 4px; --thumb-eye: 2px; --leading: 1.4;
+    --t-xs: 11px; --t-s: 12px; --t-m: 13px; --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  @media (pointer: coarse) { :root { --thumb: 26px; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: var(--t-m) / var(--leading) var(--sans); display: grid; grid-template-columns: 1fr var(--panel); height: 100vh; height: 100dvh; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
   #stage { position: relative; display: grid; place-items: center; overflow: hidden; }
-  canvas#gl { display: block; touch-action: none; cursor: crosshair; }
-  #side { padding: 16px 18px; background: #2a2622; border-left: 1px solid #000; overflow: auto; }
-  h1 { font-size: 13px; font-weight: 600; margin: 0 0 12px; }
-  .pills { display: flex; gap: 4px; margin-bottom: 8px; }
-  .pills button { flex: 1; border: 1px solid #666; background: none; color: #ddd; border-radius: 99px; padding: 5px 0; font: inherit; cursor: pointer; }
-  .pills button.on { background: #ddd; color: #111; border-color: #ddd; }
-  label { display: grid; grid-template-columns: 1fr 64px; align-items: center; gap: 8px; margin: 10px 0 2px; }
-  input[type=range] { width: 100%; margin: 0 0 6px; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; color: #aaa; }
-  p.note { color: #998; margin: 14px 0 0; }
-  #status { position: absolute; left: 12px; bottom: 10px; color: #998; }
-  .tabs { margin-bottom: 14px; } .tabs button { border-radius: 6px; } .tabs button.on { background: #444; color: #fff; border-color: #444; }
-  h2 { font-size: 11px; font-weight: 600; color: #998; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.06em; } h2 .num { float: right; text-transform: none; letter-spacing: 0; font-weight: 400; }
-  #case-rows label { margin: 6px 0 0; }
+  canvas#gl { display: block; touch-action: none; cursor: grab; }
+  #status { position: absolute; left: 12px; bottom: 10px; color: var(--grey); font: var(--t-xs) / 1 var(--mono); }
+  /* the panel: a header with the title, the two tabs on their line, then the part that scrolls on its own, a shade darker */
+  #side { display: grid; grid-template-rows: auto auto minmax(0, 1fr); background: var(--paper); border-left: var(--hair) solid var(--rule); }
+  #side > header { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; height: var(--head); padding: 0 var(--margin); }
+  #side > header h1 { grid-column: 2 / -1; margin: 0; font-size: var(--t-m); font-weight: 600; }
+  #side > header .num { grid-column: 6 / -1; }
+  .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding: 0 var(--margin); border-top: var(--hair) solid var(--rule); }
+  .tabsbar .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  .tabsbar .segs > button { height: var(--head); font-weight: 600; color: var(--grey); border-bottom: var(--thick) solid transparent; }
+  .tabsbar .segs > button.on { color: var(--ink); border-bottom-color: var(--ink); }
+  .form { overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--margin) var(--air); background: var(--scroll); --row-rule: var(--field); }
+  .tab[hidden] { display: none; }
+  /* a pane: a thick line opens it; its heading a button (fold), the title at the left on the columns, the summary small and
+     grey at the right; its body on the columns, air under it. Folded: the body gone, the heading grey */
+  .pane { border-top: var(--thick) solid var(--ink); }
+  .pane.folded:last-child { border-bottom: var(--hair) solid var(--rule); }
+  .fold { display: grid; grid-template-columns: var(--eye) auto minmax(0, 1fr); column-gap: var(--gap); align-items: center; width: 100%; height: var(--head); text-align: left; }
+  .fold h2 { margin: 0; font-size: var(--t-m); font-weight: 600; }
+  .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); color: var(--grey); }
+  .folded > .fold h2 { color: var(--grey); }
+  @media (hover: hover) { .fold:hover h2 { color: var(--ink); } }
+  .folded > .body, .folded > .headcontrol { display: none; }
+  .body { padding-left: var(--lead); padding-bottom: var(--air); }
+  /* a pane whose main selector stands on its heading line: the pane is a grid of one row for the heading and one for the body;
+     the selector lies on the four control columns over the heading's right part, which hides its summary */
+  .pane.has { display: grid; grid-template-columns: var(--eye) repeat(6, minmax(0, 1fr)); column-gap: var(--gap); }
+  .pane.has > .fold { grid-row: 1; grid-column: 1 / -1; }
+  .pane.has > .headcontrol { grid-row: 1; grid-column: 4 / -1; align-self: center; z-index: 1; min-width: 0; }
+  .pane.has > .body { grid-row: 2; grid-column: 1 / -1; }
+  .pane.has:not(.folded) > .fold .summary { visibility: hidden; }
+  /* rows on the six columns (the body's lead already stands for the eye): label 2 · controls 4; a hairline before and after every row */
+  .row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; min-height: var(--line);
+    box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule), 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .row > label:first-child, .row > .name { grid-column: 1 / 3; color: var(--grey); font-size: var(--t-s); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row > .pills, .row > .btnline { grid-column: 3 / -1; }
+  .row > input[type="range"] { grid-column: 3 / 6; }
+  .row > .num { grid-column: 6 / -1; text-align: right; font-variant-numeric: lining-nums tabular-nums; font-size: var(--t-s); color: var(--ink); white-space: nowrap; }
+  /* a nested row (a question about the row above: the card under Room): its controls' column only, behind a half line from there to the right edge */
+  .row.nest { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right top / calc((100% + var(--gap)) / 3 * 2 - var(--gap)) var(--hair) no-repeat; }
+  .row.nest > label:first-child { padding-left: var(--u4); }
+  /* a note belongs to the row over it: no line between, small and grey, the box's line under the note */
+  .row.note { min-height: 0; box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .row:has(+ .row.note) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .row.note > p { grid-column: 1 / -1; margin: 0 0 var(--u3); font-size: var(--t-xs); color: var(--grey); }
+  /* a choice of a few words: a pill switch — a rounded outline as wide as its words, the chosen word ink; long, it scrolls sideways on its line */
+  .pills { display: flex; justify-self: start; width: max-content; max-width: 100%; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); overflow-x: auto; scrollbar-width: none; }
+  .pills::-webkit-scrollbar { display: none; }
+  .pills > button { flex: none; height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); white-space: nowrap; }
+  .pills > button.on { background: var(--ink); color: var(--paper); }
+  @media (hover: hover) { .pills > button:hover:not(.on) { color: var(--ink); } }
+  .pills > button[hidden] { display: none; }
+  /* a line of buttons stretched along a row's controls: equal, a unit apart, a hairline edge */
+  .btnline { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .btnline > button { height: var(--control); border: var(--hair) solid var(--rule); background: var(--field); font-size: var(--t-s); }
+  @media (hover: hover) { .btnline > button:hover { background: var(--hover); } }
+  /* a slider: a thin track, ink up to the handle (--p, set as it moves), the handle a black disc with a light eye */
+  input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: var(--control); margin: 0; background: none; cursor: pointer; --fill: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0)); }
+  input[type="range"]::-webkit-slider-runnable-track { height: var(--track); border-radius: var(--track); background: linear-gradient(to right, var(--ink) var(--fill), var(--rule) var(--fill)); }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: var(--thumb); height: var(--thumb); margin-top: calc((var(--track) - var(--thumb)) / 2); border: 0; border-radius: 50%; background: radial-gradient(circle, var(--field) 0 var(--thumb-eye), var(--ink) calc(var(--thumb-eye) + 0.75px)); }
+  input[type="range"]::-moz-range-track { height: var(--track); border-radius: var(--track); background: var(--rule); }
+  input[type="range"]::-moz-range-progress { height: var(--track); border-radius: var(--track); background: var(--ink); }
+  input[type="range"]::-moz-range-thumb { width: var(--thumb); height: var(--thumb); border: 0; border-radius: 50%; background: radial-gradient(circle, var(--field) 0 var(--thumb-eye), var(--ink) calc(var(--thumb-eye) + 0.75px)); }
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 38</h1>
-  <div class="pills tabs" data-key="tab"><button data-v="scene" class="on">Scene</button><button data-v="watch">Watch</button></div>
+  <header><h1>Watch 3D · round 39</h1></header>
+  <div class="tabsbar"><div class="segs pills-tabs" data-key="tab"><button data-v="scene" class="on">Scene</button><button data-v="watch">Watch</button></div></div>
+  <div class="form">
   <div class="tab" data-tab="scene">
-    <h2>Style</h2>
-    <div class="pills" data-key="style"><button data-v="photo" class="on">Photo</button><button data-v="toon">Toon</button><button data-v="cel">Cel</button><button data-v="dither">Dither</button><button data-v="tech">Technical</button></div>
-    <h2>Camera</h2>
-    <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
-    <div class="pills" data-key="drag"><button data-v="orbit" class="on">Drag: orbit</button><button data-v="sun">Drag: sun</button></div>
-    <h2>Light</h2>
-    <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
-    <div class="pills" data-key="studioKind"><button data-v="tent">Light tent</button><button data-v="dark" class="on">Dark room</button></div>
-    <div id="card-rows"><label>Card height <span class="num" id="v-card-height"></span></label><input type="range" id="card-height" min="-10" max="40" value="4">
-    <label>Card width <span class="num" id="v-card-size"></span></label><input type="range" id="card-size" min="10" max="160" value="70">
-    <label>Card brightness <span class="num" id="v-card-lum"></span></label><input type="range" id="card-lum" min="0" max="300" value="90"></div>
-    <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
-    <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
-    <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
-    <label>Room light <span class="num" id="v-room"></span></label><input type="range" id="room" min="0" max="100" value="60">
-    <h2>Table</h2>
-    <div class="pills" data-key="ground"><button data-v="grain" class="on">Leather grain</button><button data-v="plain">Plain</button></div>
-    <p class="note">Drag: orbit — one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view pill puts the camera back. Drag: sun — the direction is the sun's angle, the middle high, the edge low.</p>
+    <section class="pane has" data-pane="style"><button class="fold"><span></span><h2>Style</h2><span class="summary"></span></button>
+      <div class="pills headcontrol" data-key="style"><button data-v="photo" class="on">Photo</button><button data-v="toon">Toon</button><button data-v="cel">Cel</button><button data-v="dither">Dither</button><button data-v="tech">Technical</button></div>
+      <div class="body"></div></section>
+    <section class="pane has" data-pane="camera"><button class="fold"><span></span><h2>Camera</h2><span class="summary"></span></button>
+      <div class="pills headcontrol" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
+      <div class="body">
+        <div class="row"><label>Drag</label><div class="pills" data-key="drag"><button data-v="orbit" class="on">Orbit</button><button data-v="sun">Sun</button></div></div>
+        <div class="row note"><p>Orbit: one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view puts the camera back. Sun: the direction is the sun's angle, the middle high, the edge low.</p></div>
+      </div></section>
+    <section class="pane" data-pane="light"><button class="fold"><span></span><h2>Light</h2><span class="summary"></span></button>
+      <div class="body">
+        <div class="row"><label>Light</label><div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div></div>
+        <div class="row"><label>Sun from</label><input type="range" id="from" min="0" max="359" value="135"><span class="num" id="v-from"></span></div>
+        <div class="row"><label>Sun height</label><input type="range" id="rise" min="12" max="85" value="40"><span class="num" id="v-rise"></span></div>
+        <div class="row"><label>Sun strength</label><input type="range" id="sun" min="0" max="100" value="60"><span class="num" id="v-sun"></span></div>
+        <div class="row"><label>Room light</label><input type="range" id="room" min="0" max="100" value="60"><span class="num" id="v-room"></span></div>
+        <div class="row"><label>Room</label><div class="pills" data-key="studioKind"><button data-v="tent">Light tent</button><button data-v="dark" class="on">Dark room</button></div></div>
+        <div id="card-rows">
+          <div class="row nest"><label>Card height</label><input type="range" id="card-height" min="-10" max="40" value="4"><span class="num" id="v-card-height"></span></div>
+          <div class="row nest"><label>Card width</label><input type="range" id="card-size" min="10" max="160" value="70"><span class="num" id="v-card-size"></span></div>
+          <div class="row nest"><label>Card brightness</label><input type="range" id="card-lum" min="0" max="300" value="90"><span class="num" id="v-card-lum"></span></div>
+        </div>
+      </div></section>
+    <section class="pane" data-pane="table"><button class="fold"><span></span><h2>Table</h2><span class="summary"></span></button>
+      <div class="body">
+        <div class="row"><label>Surface</label><div class="pills" data-key="ground"><button data-v="grain" class="on">Leather grain</button><button data-v="plain">Plain</button></div></div>
+      </div></section>
   </div>
   <div class="tab" data-tab="watch" hidden>
-    <h2>Preset <span class="num" id="v-build"></span></h2>
-    <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button><button data-v="dress">Dress</button></div>
-    <div class="pills"><button id="case-reset">Reset to the preset's numbers</button></div>
-    <h2>Parts</h2>
-    <div class="pills" data-key="bezelKind"><button data-v="rotating" class="on">Rotating bezel</button><button data-v="fixed">Fixed bezel</button></div>
-    <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
-    <div class="pills" data-key="metal"><button data-v="steel" class="on">Steel</button><button data-v="gold">Gold</button></div>
+    <section class="pane has" data-pane="preset"><button class="fold"><span></span><h2>Preset</h2><span class="summary"></span></button>
+      <div class="pills headcontrol" data-key="caseKey"><button data-v="diver" class="on">Diver</button><button data-v="dress">Dress</button></div>
+      <div class="body">
+        <div class="row"><label>Numbers</label><div class="btnline"><button id="case-reset">Reset to the preset's</button></div></div>
+        <div class="row note"><p>Every number below is in millimetres; the teeth a count. <span id="v-build"></span></p></div>
+      </div></section>
+    <section class="pane" data-pane="parts"><button class="fold"><span></span><h2>Parts</h2><span class="summary"></span></button>
+      <div class="body">
+        <div class="row"><label>Bezel</label><div class="pills" data-key="bezelKind"><button data-v="rotating" class="on">Rotating</button><button data-v="fixed">Fixed</button></div></div>
+        <div class="row"><label>Band</label><div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div></div>
+        <div class="row"><label>Metal</label><div class="pills" data-key="metal"><button data-v="steel" class="on">Steel</button><button data-v="gold">Gold</button></div></div>
+      </div></section>
     <div id="case-rows"></div>
+  </div>
   </div>
 </div>
 <script src="scene.js"></script>
@@ -618,7 +698,7 @@ function render() {
 }
 const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-sun").textContent = Math.round(S.sun * 100) + " %"; $("v-room").textContent = Math.round(S.room * 100) + " %"; };
 const pick = (key, v) => { const row = document.querySelector(`.pills[data-key="${key}"]`); row.querySelector(".on")?.classList.remove("on"); row.querySelector(`[data-v="${v}"]`)?.classList.add("on"); S[key] = v; };
-for (const row of document.querySelectorAll(".pills[data-key]")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
+for (const row of document.querySelectorAll(".pills[data-key], .pills-tabs[data-key]")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
   if (row.dataset.key === "tab") { for (const t of document.querySelectorAll(".tab")) t.hidden = t.dataset.tab !== S.tab; return; }
   if (row.dataset.key === "caseKey") { const C = CASES[S.caseKey]; pick("strap", C.strap); pick("bezelKind", C.bezel.kind); for (const i of document.querySelectorAll("#case-rows input")) i._show?.(); }      // a preset brings its strap and bezel kind
   if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); if (row.dataset.key === "style") { applyStyle(S.style); placeCamera(S.view); } if (row.dataset.key === "studioKind") { setRoom(S.studioKind); cardRows(); } render(); };
@@ -641,15 +721,27 @@ const CASE_ROWS = [
   ["Crown", "Diameter", "crown.w", 3, 9, 0.1], ["Crown", "Length", "crown.h", 1, 5, 0.1], ["Crown", "Height", "crown.z", 3, 9, 0.1]];
 const CASES_0 = JSON.parse(JSON.stringify(CASES));      // the specs as written, for Reset
 const getAt = (o, path) => path.split(".").reduce((a, k) => a[k], o), setAt = (o, path, v) => { const ks = path.split("."), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
-{ const box = $("case-rows"); let grp = "";
-  for (const [g, label, path, min, max, step] of CASE_ROWS) { if (g !== grp) { grp = g; const h = document.createElement("h2"); h.textContent = g; box.appendChild(h); }
-    const lab = document.createElement("label"), val = document.createElement("span"), inp = document.createElement("input"); val.className = "num"; lab.textContent = label + " "; lab.appendChild(val);
-    inp.type = "range"; inp.min = min; inp.max = max; inp.step = step; inp.dataset.path = path; box.appendChild(lab); box.appendChild(inp);
-    const dec = step >= 1 ? 0 : step >= 0.1 ? 1 : 2, show = () => { const v = getAt(CASES[S.caseKey], path); inp.value = v; val.textContent = step >= 1 ? v : v.toFixed(dec) + " mm"; }; show(); inp._show = show;
+{ const box = $("case-rows"); let grp = "", body = null;
+  for (const [g, label, path, min, max, step] of CASE_ROWS) { if (g !== grp) { grp = g; const pane = document.createElement("section"); pane.className = "pane folded"; pane.dataset.pane = g.toLowerCase();
+      pane.innerHTML = `<button class="fold"><span></span><h2>${g}</h2><span class="summary"></span></button><div class="body"></div>`; box.appendChild(pane); body = pane.querySelector(".body"); }
+    const row = document.createElement("div"); row.className = "row"; const lab = document.createElement("label"), val = document.createElement("span"), inp = document.createElement("input"); val.className = "num"; lab.textContent = label;
+    inp.type = "range"; inp.min = min; inp.max = max; inp.step = step; inp.dataset.path = path; row.append(lab, inp, val); body.appendChild(row);
+    const dec = step >= 1 ? 0 : step >= 0.1 ? 1 : 2, show = () => { const v = getAt(CASES[S.caseKey], path); inp.value = v; fillOf(inp); val.textContent = step >= 1 ? v : v.toFixed(dec); }; show(); inp._show = show;      // the number alone: every number here is millimetres but the teeth, a count (the Preset note says so)
     let pending = false; inp.oninput = () => { setAt(CASES[S.caseKey], path, +inp.value); show(); if (pending) return; pending = true;      // one rebuild a frame while the slider moves
       requestAnimationFrame(() => { pending = false; const t0 = performance.now(); rebuild(); render(); $("v-build").textContent = `built in ${(performance.now() - t0).toFixed(0)} ms`; }); }; }
   $("case-reset").onclick = () => { Object.assign(CASES[S.caseKey], JSON.parse(JSON.stringify(CASES_0[S.caseKey]))); pick("bezelKind", CASES[S.caseKey].bezel.kind); for (const i of box.querySelectorAll("input")) i._show(); rebuild(); render(); }; }
+// every slider's ink runs to its handle (--p); set at load and as it moves
+function fillOf(inp) { inp.style.setProperty("--p", (inp.value - inp.min) / (inp.max - inp.min)); }
+for (const inp of document.querySelectorAll('input[type="range"]')) { fillOf(inp); inp.addEventListener("input", () => fillOf(inp)); }
+// panes fold to their heading; the summary says what the pane holds while folded
+const SUMMARY = { style: () => ({ photo: "Photo", toon: "Toon", cel: "Cel", dither: "Dither", tech: "Technical" })[S.style], camera: () => ({ top: "Top", photo: "Photo", wide: "Wide", low: "Low", side: "Side", free: "Free" })[S.view] + " · drag " + S.drag,
+  light: () => (S.mode === "studio" ? "Studio" : "Sun") + " · " + (S.studioKind === "dark" ? "dark room" : "light tent") + " · " + S.from + "° " + S.rise + "°", table: () => S.ground === "grain" ? "Leather grain" : "Plain",
+  preset: () => CASES[S.caseKey].name, parts: () => CASES[S.caseKey].bezel.kind + " · " + S.strap + " · " + S.metal,
+  body: () => `R ${CASES[S.caseKey].R} · ${CASES[S.caseKey].l2l} l2l`, lugs: () => `${CASES[S.caseKey].lugw} × ${CASES[S.caseKey].lugT}`, bezel: () => `${CASES[S.caseKey].bezel.kind} · h ${CASES[S.caseKey].bezel.h}`, crystal: () => `dome ${CASES[S.caseKey].bezel.dome}`, crown: () => `Ø ${CASES[S.caseKey].crown.w}` };
+function summaries() { for (const pane of document.querySelectorAll(".pane")) { const f = SUMMARY[pane.dataset.pane]; pane.querySelector(".summary").textContent = f ? f() : ""; } }
+for (const fold of document.querySelectorAll(".fold")) fold.onclick = () => { fold.parentElement.classList.toggle("folded"); summaries(); };
+document.querySelector(".form").addEventListener("input", summaries); document.querySelector(".form").addEventListener("click", () => requestAnimationFrame(summaries)); summaries();
 window.onresize = render;
 setRoom(S.studioKind); rebuild(); placeCamera(S.view); dragMode(); show(); render();
-window.watch3d = { S, render, scene, camera, renderer, controls, set: (key, v) => document.querySelector(`.pills[data-key="${key}"] [data-v="${v}"]`)?.click(), setMode: (m) => document.querySelector(`.pills[data-key="mode"] [data-v="${m}"]`).click() };
+window.watch3d = { S, render, scene, camera, renderer, controls, set: (key, v) => document.querySelector(`[data-key="${key}"] [data-v="${v}"]`)?.click(), setMode: (m) => document.querySelector(`.pills[data-key="mode"] [data-v="${m}"]`).click() };
 </script>
