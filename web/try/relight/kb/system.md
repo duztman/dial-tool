@@ -2,13 +2,13 @@
 
 ## The one rule
 
-**A part is a section swept along a path, with a finish per face.** The section carries the shape (a lug's slab, a link's bean, a band's flank), the path carries the taper and the bend (a lug's laws, a bracelet's curve, a case's outline), and the face list says which strips are brushed and which polished. Everything that isn't a sweep is a **lathe** (a profile spun round an axis: caseback, bezel ring, rehaut, crystal, crown) or a **plate** (a flat shape: the case top, the insert, the dial).
+**A part is a section swept along a path, with a finish per face.** The case's body and lugs are ONE such part since round 32: `casePlan(C)` gives the plan as one closed outline (body arcs, root fillets, lug edges, tips), each station with its kind, its y for the lug's laws and its chamfer; `buildCase` sweeps one section round it and closes the top with `coons()` patches over the lugs and flat sectors between them. The section carries the shape (a lug's slab, a link's bean, a band's flank), the path carries the taper and the bend (a lug's laws, a bracelet's curve, a case's outline), and the face list says which strips are brushed and which polished. Everything that isn't a sweep is a **lathe** (a profile spun round an axis: caseback, bezel ring, rehaut, crystal, crown) or a **plate** (a flat shape: the case top, the insert, the dial).
 
 So the watch is data. Two tables in `watch3d.html`:
 
 ```
 CASES.<key>      plan (round | cushion — the builders keep both; only the diver is in the table) and its numbers · zBand, zTop, belly, chamfer, flank finish
-                 lug: { tipTop, tipBot, rootBot, chamferTip, holeIn, corner }
+                 lug: { tipTop, tipBot, rootBot, chamferTip, holeIn, corner, fillet, chamferIn }   (fillet: the blend's radius where the lug leaves the body; chamferIn: the break on the inner wall's top edge)
                  bezel: { r0, r1, z0, z1, teeth: { n, depth, fill, chamfer } }   (teeth = scallops cut into the wall: n a turn, depth deep, fill of the pitch wide)
                  crown: { at (degrees from 3 o'clock), w, h, z, flutes }
 BRACELETS.<key>  W1, P0, P1, H1, gapx, gap · columns: [[share, section, out, offset, finish?], …]  (finish "polished" for a column; default brushed)
@@ -28,7 +28,9 @@ A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. Th
 |---|---|---|
 | `sweep(stations, mats, {closeSection, caps, crease})` | a list of sections (same point count), a material index per edge | one `BufferGeometry` with a group per edge; UVs u along the path · v round the section; a **tangent** per vertex along the path (the brushed anisotropy needs it — without it three builds a per-pixel frame from UV derivatives and the sweep blows white); **every strip owns its vertices**, so a section corner is a hard edge unless the bend is under `crease` (40°) — a bean's arc and the band's belly stay smooth, a chamfer stays a line |
 | `lathe(pts)` | `[r, z]` pairs in case space | a `LatheGeometry` round the dial's axis |
-| `outline(C)` | a case spec | `at(θ)` → point and outward normal on the plan outline; `yAt(x)` → the outline's y at x (where a lug or end link starts) |
+| `outline(C)` | a case spec | `at(θ)` → point and outward normal on the body's plan (the crown's place) |
+| `casePlan(C)` | a case spec | `loop`: the whole plan, body and lugs, as stations `{x, y, nx, ny, kind, part, c}`; `lugs[]`: each lug's inner and outer edge (root → tip) and root arc; the laws `lugTop(y)`, `lugBot(y)`, `u(y)` from the root; `yAt(x)` the slot's edge (body, then fillet) for the end link; `xOut(y)` |
+| `coons(bottom, top, left, right, zOf, mat, rows, cols, flip)` | four boundary curves in the plan, a height law | a patch filling them (a lug's top or underside), with UVs and tangents along its length |
 | `buildCase(C)` | a case spec | the group, and `info`: `xi, xo, half, yEdge, lugTop(y), lugBot(y), xOut(y), holeZ, tipH, yAt` — what the bracelet needs |
 | `link(sec, w, l, h, out, finish)` | bean · barn · slab · barrel; width, length, thickness; which side faces out; a finish for the whole link | a link whose ends round to the stadium of its thickness; the outer flank bowed 0.2 mm and screw heads on it if `out` |
 | `buildBracelet(key, info)` | a bracelet key and the case's `info` | end links, the offset columns' first half-links, then rows pin to pin along the curve |
@@ -36,7 +38,7 @@ A new case = a new row in `CASES`; a new bracelet = a new row in `BRACELETS`. Th
 | `insertRing()` | | the insert's picture on a flat ring |
 | `mergeGeometries(geos)` | | one geometry (the teeth) |
 
-**Laws** (functions of position, all in `buildCase` / `buildBracelet`): `lugTop(y)`, `lugBot(y)` smooth steps from the case to the tip; `xOut(y)` the lug's plan edge (a cubic for the flare); `widthAt(s)`, `thickAt(s)`, `pitchAt(s)` linear from the case to the clasp; `zAt(s)` the pins' curve — level 6 mm past the lugs, then an S down over 18 mm onto the table.
+**Laws** (functions of position, in `casePlan` / `buildBracelet`): `lugTop(y)`, `lugBot(y)` smooth steps from the lug's root (where the inner fillet meets the body) to the tip; `xOut(y)` the lug's plan edge (a cubic for the flare); `widthAt(s)`, `thickAt(s)`, `pitchAt(s)` linear from the case to the clasp; `zAt(s)` the pins' curve — level 6 mm past the lugs, then an S down over 18 mm onto the table.
 
 ## Materials
 
@@ -53,12 +55,13 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 
 - `node try/relight/shot3d.mjs out.png <from°> <rise°> [studio|sun] [top|photo|side] [diver] [oyster|barn|jubilee|leather]` — Chromium with SwiftShader; needs `three@0.170.0` in `node_modules` (`npm install --no-save three@0.170.0`). Slow (≈ 50 s a shot), grainy AO; the look is true, the frame times are not.
 - `node try/relight/build.mjs` → `relight-built.html`… for the 3D page the one-file build is made by inlining `scene.js` into `watch3d.html` (see `rounds.md` round 1's recipe) and published to the artifact *Watch 3D trial* by the same path.
+- `node try/relight/shot-set.mjs /tmp/n` shoots a round's set (top · low · side · lug join · underside) from the working page, for looking before publishing.
 - A part outside the fixed views (the keepers, the buckle): a one-off script on `shot3d.mjs`'s pattern that moves `window.watch3d.camera` (`position`, `lookAt`, `fov`, `updateProjectionMatrix`) before `render()` — run it from `web/` so playwright resolves.
 - R21: judge a height from the **Side** view, a seam from a **crop at 2×**, never from the top view alone.
 
 ## Known limits of the approach
 
-- No solid modelling: a hole is a disc on the wall, a lug meets the band by overlapping it (the band's top plate hides the join). Real cuts (a drilled lug, an engraved number) would need a CSG pass (three-bvh-csg) — not needed for the photo look so far.
+- No solid modelling: a hole is a disc on the wall. (The lug no longer overlaps the band — body and lugs are one skin since round 32.) Real cuts (a drilled lug, an engraved number) would need a CSG pass (three-bvh-csg) — not needed for the photo look so far.
 - `sweep` sections must keep their point count along the path; a shape that changes topology (a slot opening) is two sweeps.
 - The crystal refracts at its true thickness (1.2, ior 1.76, roughness 0 — three's transmission blur is roughness, not thickness); its dome is too flat (0.5 over 30 mm) to show a window streak, so the studio has no window panel: the tent's veil is its reflection.
 - Software GL in a session can't show anisotropy or AO as the iPad will; check there.

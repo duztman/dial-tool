@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 31 (7 Nov 2026): free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 32 (8 Nov 2026): the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -37,7 +37,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 31</h1>
+  <h1>Watch 3D · round 32</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
@@ -70,7 +70,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), ss = (u) => { u = clamp(
 const CASES = {
   // after the SPB143 / Submariner photographs: a round band with a belly and a polished chamfer, slab lugs with a flare in plan
   diver: { name: "Diver", plan: "round", R: 20.25, l2l: 47.6, lugw: 20, lugT: 2.9, flare: 3.6, zBand: 2.4, zTop: 9.3, belly: 0.3, chamfer: 0.9, flank: "polished",
-    lug: { tipTop: 7.3, tipBot: 4.1, rootBot: 2.4, chamferTip: 0.75, holeIn: 1.6, corner: 0.8 },
+    lug: { tipTop: 7.3, tipBot: 4.1, rootBot: 2.4, chamferTip: 0.75, holeIn: 1.6, corner: 0.8, fillet: 1.2, chamferIn: 0.25 },      // fillet: the soft blend where the lug leaves the body (Okay: soft is the default); chamferIn: the small break on the inner wall's top edge
     bezel: { r0: 16.3, r1: 19.6, z0: 9.6, z1: 11.9, teeth: { n: 60, depth: 0.5, fill: 0.62, chamfer: 0.45 } },
     crown: { at: 0, w: 6.4, h: 3.0, z: 6.0, flutes: 18 } },
 };
@@ -181,46 +181,115 @@ function outline(C) {
   return { at: (th) => { const p = pt(th), q = pt(th + 1e-3), r = pt(th - 1e-3), tx = q[0] - r[0], ty = q[1] - r[1], l = Math.hypot(tx, ty); return { p, n: [ty / l, -tx / l] }; },
     yAt: (x) => C.b * Math.max(0, 1 - (Math.abs(x) / C.a) ** C.n) ** (1 / C.n), xMax: C.a };
 }
-function buildCase(C) {
-  const g = new THREE.Group(), O = outline(C), half = C.l2l / 2, xi = C.lugw / 2, xo = xi + C.lugT;
-  // the caseback: a polished dish under the body
-  g.add(mesh(lathe([[0, 0], [O.xMax - 2.6, 0], [O.xMax - 1.0, 0.9], [O.xMax - 0.3, C.zBand]]), MATERIALS.polished()));
-  // the band: the flank section carried round the outline — up from zBand with a belly, then the chamfer in to the top
-  { const N = C.plan === "round" ? 256 : 320, stations = [], H = C.zTop - C.zBand, ZS = 7;
-    for (let k = 0; k <= N; k++) { const { p, n } = O.at(k / N * 2 * Math.PI), pts = [];
-      for (let j = 0; j <= ZS; j++) { const z = C.zBand + (H - C.chamfer) * j / ZS, d = C.belly * Math.sin(Math.PI * (z - C.zBand) / H); pts.push(W(p[0] + n[0] * d, p[1] + n[1] * d, z)); }
-      pts.push(W(p[0] - n[0] * C.chamfer, p[1] - n[1] * C.chamfer, C.zTop)); stations.push(pts); }
-    const mats = Array(ZS).fill(C.flank === "polished" ? 0 : 1).concat([0]);      // the flank's strips, then the chamfer polished
-    g.add(mesh(sweep(stations, mats, { closeSection: false }), PB())); }
-  // the top plate: the outline less the bezel's seat, brushed; a bottom plate too where the caseback dish doesn't reach (the cushion)
-  { const sh = new THREE.Shape(); for (let k = 0; k <= 256; k++) { const { p, n } = O.at(k / 256 * 2 * Math.PI); if (k) sh.lineTo(p[0] - n[0] * C.chamfer, p[1] - n[1] * C.chamfer); else sh.moveTo(p[0] - n[0] * C.chamfer, p[1] - n[1] * C.chamfer); }
-    const hole = new THREE.Path(); hole.absarc(0, 0, C.bezel.r0, 0, Math.PI * 2, true); sh.holes.push(hole);
-    const top = mesh(new THREE.ShapeGeometry(sh, 4), MATERIALS.brushed()); top.rotation.x = -Math.PI / 2; top.position.y = C.zTop - DIAL_Z; g.add(top);
-    if (C.plan !== "round") { const sh2 = new THREE.Shape(); for (let k = 0; k <= 256; k++) { const { p } = O.at(k / 256 * 2 * Math.PI); if (k) sh2.lineTo(p[0], p[1]); else sh2.moveTo(p[0], p[1]); }
-      const bot = mesh(new THREE.ShapeGeometry(sh2, 4), MATERIALS.polished()); bot.rotation.x = -Math.PI / 2; bot.position.y = C.zBand - DIAL_Z; g.add(bot); } }
-  // the lugs: a slab section (inner wall · top · chamfer · outer wall · underside) carried from inside the band to the tip,
-  // the top falling and the underside rising by the lug's laws, the chamfer running to the tip, the tip's corners rounded in plan
-  const yEdge = O.yAt(xi), L = C.lug, u = (y) => clamp((y - yEdge) / (half - yEdge), 0, 1);
-  const lugTop = (y) => C.zTop - (C.zTop - L.tipTop) * ss(u(y)), lugBot = (y) => L.rootBot + (L.tipBot - L.rootBot) * ss(Math.pow(u(y), 1.3));
-  const xb = xo + C.flare, yb = O.yAt(xb);      // for a flared lug the outer edge leaves the body at (xb, yb) and curves in to xo at the tip (watch.js lugPath's curve)
+/** the case's PLAN: body and lugs as ONE closed outline (round 32). Quadrant I is drawn piece by piece — the body arc, a
+ *  concave FILLET where the lug's outer edge leaves the body, the outer edge (its flare), the tip's two rounded corners and
+ *  face, the inner wall, a fillet into the body again, the body arc to 12 — and mirrored to the other three. Every station
+ *  knows its kind (body | lug), its y for the lug's laws and how far along the lug it is; the skin's section is read from these.
+ *  The lug's laws start at the ROOT: the y where the inner fillet meets the body — above that the lug is the body (flat top,
+ *  full height); from there to the tip the top falls and the underside rises. Each lug also keeps its two edges (inner, outer)
+ *  and its root arc for the top and underside patches */
+function casePlan(C) {
+  const R = C.R, half = C.l2l / 2, xi = C.lugw / 2, xo = xi + C.lugT, L = C.lug, rf = L.fillet, rc = L.corner, xb = xo + (C.flare || 0), yb = Math.sqrt(R * R - xb * xb);
+  const arc = (cx, cy, r, a0, a1, n) => Array.from({ length: n + 1 }, (_, k) => { const a = a0 + (a1 - a0) * k / n; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; });
+  const seg = (p, q, n) => Array.from({ length: n + 1 }, (_, k) => [p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]);
   const bez = (t, p0, p1, p2, p3) => { const q = 1 - t; return [q * q * q * p0[0] + 3 * q * q * t * p1[0] + 3 * q * t * t * p2[0] + t * t * t * p3[0], q * q * q * p0[1] + 3 * q * q * t * p1[1] + 3 * q * t * t * p2[1] + t * t * t * p3[1]]; };
-  const curve = Array.from({ length: 41 }, (_, k) => bez(k / 40, [xb, yb], [xb - 0.6, yb + 1.2], [xo, half - (half - yb) * 0.5], [xo, half - 0.8]));
-  const xOut = (y) => { if (!C.flare) return xo; if (y <= curve[0][1]) return xb; if (y >= curve[40][1]) return xo; let k = 0; while (curve[k + 1][1] < y) k++; const [x0, y0] = curve[k], [x1, y1] = curve[k + 1]; return x0 + (x1 - x0) * (y - y0) / (y1 - y0); };
-  const yHole = half - L.holeIn, holeZ = (lugTop(yHole) + lugBot(yHole)) / 2;
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-    const y0 = (C.flare ? yb : yEdge) - 2.0, N = 40, stations = [], H = C.zTop - C.zBand, M = 4, xr = C.flare ? xb : xo, nx = O.at(Math.atan2(O.yAt(xr), xr)).n[0];
-    const ys = Array.from({ length: N + 1 }, (_, k) => y0 + (half - y0) * (1 - Math.pow(1 - k / N, 1.4)));
-    ys.push(half - L.chamferTip); ys.sort((a, b) => a - b);      // one station exactly where the tip's chamfer begins, so its edge is sharp
-    for (const y of ys) { const zb = lugBot(y), c = C.chamfer + (L.chamferTip - C.chamfer) * u(y);
-      const zt = lugTop(y) + 0.01 - Math.max(0, y - (half - L.chamferTip));      // the tip's chamfer: the top turns down 45° over the last chamferTip mm (ref-11, ref-21)
-      const corner = y > half - L.corner ? L.corner - Math.sqrt(Math.max(0, L.corner ** 2 - (y - (half - L.corner)) ** 2)) : 0, xo_ = xOut(y) - corner, xi_ = xi + corner;
-      const belly = (z) => C.belly * nx * Math.sin(Math.PI * clamp((z - C.zBand) / H, 0, 1)) * (1 - u(y));      // the band's belly carried into the outer wall (its x part where the wall leaves the body), flat by the tip — one flank, not two
-      const P = (x, z) => W(sx * x, sy * y, z), wall = Array.from({ length: M }, (_, j) => { const z = zt - c + (zb - (zt - c)) * (j + 1) / (M + 1); return P(xo_ + belly(z), z); });
-      stations.push([P(xi_, zb), P(xi_, zt), P(xo_ - c, zt), P(xo_, zt - c), ...wall, P(xo_, zb)]); }
-    g.add(mesh(sweep(stations, [0, 1, 0, ...Array(M + 1).fill(0), 1, 0], { caps: true }), PB()));      // inner wall polished, top brushed, chamfer polished, outer wall polished (M + 1 strips), underside brushed, the tip's face polished
-    // the drilled hole: a dark dot in the outer flank with a bright rim
+  // the outer edge: the flare's curve from the body (xb, yb) up to the tip corner's start (xo, half − rc) — watch.js lugPath's curve; a straight wall without a flare
+  const P1 = [xb - 0.6, yb + 1.2], P2 = [xo, half - (half - yb) * 0.5], P3 = [xo, half - rc];
+  const edge = C.flare ? Array.from({ length: 61 }, (_, k) => bez(k / 60, [xb, yb], P1, P2, P3)) : seg([xb, yb], P3, 60);
+  // the OUTER FILLET: a circle of radius rf outside the body, tangent to the body and to the edge's first stretch (taken as a line)
+  const d = C.flare ? [P1[0] - xb, P1[1] - yb] : [0, 1], dl = Math.hypot(...d); d[0] /= dl; d[1] /= dl; const no = [d[1], -d[0]];      // along the edge, and its outer normal
+  const A = [xb + rf * no[0], yb + rf * no[1]], ad = A[0] * d[0] + A[1] * d[1], sFoot = -ad + Math.sqrt(ad * ad - (A[0] * A[0] + A[1] * A[1] - (R + rf) ** 2));
+  const co = [A[0] + sFoot * d[0], A[1] + sFoot * d[1]], foot = [xb + sFoot * d[0], yb + sFoot * d[1]], col = Math.hypot(...co), tco = [co[0] * R / col, co[1] * R / col];
+  // the INNER FILLET: centre (xi − rf, yc) at R + rf from the dial's axis, tangent to the wall x = xi at (xi, yc) and to the body
+  const yc = Math.sqrt((R + rf) ** 2 - (xi - rf) ** 2), ci = [xi - rf, yc], cil = Math.hypot(...ci), tci = [ci[0] * R / cil, ci[1] * R / cil];
+  const yRoot = tci[1];      // the lug's laws start here
+  const u = (y) => clamp((y - yRoot) / (half - yRoot), 0, 1);
+  const lugTop = (y) => C.zTop - (C.zTop - L.tipTop) * ss(u(y)), lugBot = (y) => L.rootBot + (L.tipBot - L.rootBot) * ss(Math.pow(u(y), 1.3));
+  const ang = (c, p) => Math.atan2(p[1] - c[1], p[0] - c[0]), short = (a0, a1) => { let da = a1 - a0; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI; return a0 + da; };
+  // quadrant I, in order, each piece tagged; a lug station's chamfer: the body's on the outer edge growing to the tip's, the tip's round the end, a small break on the inner wall
+  const pieces = [];
+  pieces.push(["body", arc(0, 0, R, 0, Math.atan2(tco[1], tco[0]), 40)]);
+  pieces.push(["lug", arc(co[0], co[1], rf, ang(co, tco), short(ang(co, tco), ang(co, foot)), 10), "outer"]);
+  pieces.push(["lug", edge.filter(([x, y]) => (x - xb) * d[0] + (y - yb) * d[1] > sFoot), "outer"]);
+  pieces.push(["lug", arc(xo - rc, half - rc, rc, 0, Math.PI / 2, 8), "cornerO"]);
+  pieces.push(["lug", seg([xo - rc, half], [xi + rc, half], 8), "tip"]);
+  pieces.push(["lug", arc(xi + rc, half - rc, rc, Math.PI / 2, Math.PI, 8), "cornerI"]);
+  pieces.push(["lug", seg([xi, half - rc], [xi, yc], 40), "inner"]);
+  pieces.push(["lug", arc(ci[0], ci[1], rf, 0, short(0, ang(ci, tci)), 10), "innerFillet"]);
+  pieces.push(["body", arc(0, 0, R, Math.atan2(tci[1], tci[0]), Math.PI / 2, 40)]);
+  const q1 = []; for (const [kind, pts, part] of pieces) for (let k = 0; k < pts.length; k++) { if (q1.length && k === 0) continue; q1.push({ x: pts[k][0], y: pts[k][1], kind, part }); }      // pieces share their joints
+  // the chamfer along the lug: outer edge and fillet by the laws; the outer corner the tip's; the tip the tip's; the inner corner from the tip's to the break; the inner wall the break; the inner fillet from the break to the body's
+  const cham = (st, k, n) => { if (st.kind === "body") return C.chamfer; const t = n > 1 ? k / (n - 1) : 0;
+    switch (st.part) { case "outer": return C.chamfer + (L.chamferTip - C.chamfer) * u(st.y); case "cornerO": case "tip": return L.chamferTip; case "cornerI": return L.chamferTip + (L.chamferIn - L.chamferTip) * t; case "inner": return L.chamferIn; default: return L.chamferIn + (C.chamfer - L.chamferIn) * t; } };
+  { let i = 0; while (i < q1.length) { let j = i; while (j < q1.length && q1[j].part === q1[i].part && q1[j].kind === q1[i].kind) j++; for (let k = i; k < j; k++) q1[k].c = cham(q1[k], k - i, j - i); i = j; } }
+  // the whole outline, counter-clockwise: Q1, Q2 (x mirrored, reversed), Q3 (both), Q4 (y mirrored, reversed); the lugs' quadrant signs ride along
+  const mirror = (sx, sy, rev) => { const q = q1.map((st) => ({ ...st, x: sx * st.x, y: sy * st.y, sx, sy })); return rev ? q.reverse() : q; };
+  const loop = [...mirror(1, 1, false), ...mirror(-1, 1, true).slice(1), ...mirror(-1, -1, false).slice(1), ...mirror(1, -1, true).slice(1)]; loop.pop();      // the last repeats the first
+  const N = loop.length; for (let k = 0; k < N; k++) { const a = loop[(k - 1 + N) % N], b = loop[(k + 1) % N], tx = b.x - a.x, ty = b.y - a.y, l = Math.hypot(tx, ty); loop[k].nx = ty / l; loop[k].ny = -tx / l; }
+  // each lug's edges for the top and underside patches, root → tip, and its root arc on the body between the two fillets' tangents
+  const lugs = []; for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+    const take = (parts) => q1.filter((st) => parts.includes(st.part)), m = (st) => ({ ...st, x: sx * st.x, y: sy * st.y });
+    const inner = take(["innerFillet", "inner", "cornerI"]).reverse().map(m), outer = take(["outer", "cornerO"]).map(m);      // both end at the tip face's corners
+    const a0 = Math.atan2(tco[1], tco[0]), a1 = Math.atan2(tci[1], tci[0]), rootArc = Array.from({ length: 21 }, (_, k) => { const a = a0 + (a1 - a0) * k / 20; return [sx * R * Math.cos(a), sy * R * Math.sin(a)]; });
+    lugs.push({ sx, sy, inner, outer, rootArc, a0, a1 }); }
+  // y of the outline in the slot between two lugs at x (the end link's inner edge): the body's circle, then the inner fillet's arc
+  const yAt = (x) => { const ax = Math.abs(x); if (ax <= tci[0]) return Math.sqrt(Math.max(0, R * R - ax * ax)); if (ax >= xi) return yc; return yc - Math.sqrt(Math.max(0, rf * rf - (ax - ci[0]) ** 2)); };
+  const xOut = (y) => { const ay = Math.abs(y); if (ay <= tco[1]) return Math.sqrt(Math.max(0, R * R - ay * ay)); const pts = [...q1.filter((st) => st.part === "outer")]; if (ay >= pts[pts.length - 1].y) return xo; let k = 0; while (k + 1 < pts.length && pts[k + 1].y < ay) k++; const p = pts[k], q = pts[Math.min(k + 1, pts.length - 1)]; return q.y === p.y ? p.x : p.x + (q.x - p.x) * (ay - p.y) / (q.y - p.y); };
+  return { loop, lugs, yRoot, u, lugTop, lugBot, yAt, xOut, xi, xo, half, R, yEdge: Math.sqrt(R * R - xi * xi) };
+}
+/** a COONS PATCH: four boundary curves (bottom, top, left, right as point lists), filled by a grid; z from a law of (x, y) */
+function coons(bottom, top, left, right, zOf, mat, rows, cols, flip = false) {      // flip: wind the faces the other way (a mirrored lug, an underside) so the AO pass, FrontSide, sees them
+  const at = (pts, t) => { const f = t * (pts.length - 1), k = Math.min(pts.length - 2, Math.floor(f)), r = f - k; return [pts[k][0] + (pts[k + 1][0] - pts[k][0]) * r, pts[k][1] + (pts[k + 1][1] - pts[k][1]) * r]; };
+  const b0 = bottom[0], b1 = bottom[bottom.length - 1], t0 = top[0], t1 = top[top.length - 1], v = [], idx = [], uv = [], tan = [];
+  for (let i = 0; i <= rows; i++) for (let j = 0; j <= cols; j++) { const t = i / rows, s = j / cols, B = at(bottom, s), T = at(top, s), Lf = at(left, t), Rt = at(right, t);
+    const x = (1 - s) * Lf[0] + s * Rt[0] + (1 - t) * B[0] + t * T[0] - ((1 - s) * (1 - t) * b0[0] + (1 - s) * t * t0[0] + s * (1 - t) * b1[0] + s * t * t1[0]);
+    const y = (1 - s) * Lf[1] + s * Rt[1] + (1 - t) * B[1] + t * T[1] - ((1 - s) * (1 - t) * b0[1] + (1 - s) * t * t0[1] + s * (1 - t) * b1[1] + s * t * t1[1]);
+    v.push(...W(x, y, zOf(x, y))); uv.push(t * 4, s); }
+  // the brushed grain runs along the lug (t): a tangent per vertex from the row before to the row after, as sweep() does — without it the anisotropic frame is per pixel and the top goes white (round 14)
+  for (let i = 0; i <= rows; i++) for (let j = 0; j <= cols; j++) { const a = (Math.max(0, i - 1) * (cols + 1) + j) * 3, b = (Math.min(rows, i + 1) * (cols + 1) + j) * 3; const T = new THREE.Vector3(v[b] - v[a], v[b + 1] - v[a + 1], v[b + 2] - v[a + 2]); if (T.lengthSq() < 1e-10) T.set(0, 0, -1); T.normalize(); tan.push(T.x, T.y, T.z, 1); }
+  for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) { const a = i * (cols + 1) + j, b = a + 1, c = a + cols + 1, d = c + 1; if (flip) idx.push(a, b, c, b, d, c); else idx.push(a, c, b, b, c, d); }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute("tangent", new THREE.Float32BufferAttribute(tan, 4)); g.setIndex(idx); g.computeVertexNormals();
+  return mesh(g, mat);
+}
+function buildCase(C) {
+  const g = new THREE.Group(), P = casePlan(C), half = P.half, xi = P.xi, xo = P.xo, L = C.lug, R = C.R;
+  // the caseback: a polished dish under the body, out to the body's edge (the lugs' undersides meet it there)
+  g.add(mesh(lathe([[0, 0], [R - 2.6, 0], [R - 1.0, 0.9], [R, C.zBand]]), MATERIALS.polished()));
+  // the SKIN: one section carried round the whole outline, body and lugs alike — up from the underside with a belly, then the
+  // chamfer in to the top. On the body: zBand to zTop, the body's chamfer. On a lug: the laws by y, the station's own chamfer,
+  // the belly fading to the tip. One surface, so the chamfer is one unbroken line round the case and the lug grows out of the body
+  { const ZS = 7, stations = [], loop = P.loop;
+    for (let k = 0; k <= loop.length; k++) { const st = loop[k % loop.length], body = st.kind === "body", zb = body ? C.zBand : P.lugBot(Math.abs(st.y)), zt = body ? C.zTop : P.lugTop(Math.abs(st.y)), c = st.c, bw = body ? 1 : 1 - P.u(Math.abs(st.y)), H = zt - zb, pts = [];
+      for (let j = 0; j <= ZS; j++) { const z = zb + (H - c) * j / ZS, dd = bw * C.belly * Math.sin(Math.PI * (z - zb) / H); pts.push(W(st.x + st.nx * dd, st.y + st.ny * dd, z)); }
+      pts.push(W(st.x - st.nx * c, st.y - st.ny * c, zt)); stations.push(pts); }
+    const mats = Array(ZS).fill(C.flank === "polished" ? 0 : 1).concat([0]);
+    g.add(mesh(sweep(stations, mats, { closeSection: false }), PB())); }
+  // the TOP: brushed, in pieces that share their edges — a flat sector of the body between each pair of lugs (less the bezel's
+  // seat), and over each lug a Coons patch from the bezel's seat out to the lug's tip, its sides the lug's edges inset by the
+  // chamfer, its height the lug's law (flat on the body, falling along the lug)
+  const inset = (pts) => pts.map((st) => [st.x - st.nx * st.c, st.y - st.ny * st.c]), ri = C.bezel.r0, rt = R - C.chamfer;
+  const nrm = (st) => { const k = P.loop.indexOf(P.loop.find((q) => q.x === st.x && q.y === st.y)); return P.loop[k]; };
+  for (const lug of P.lugs) { const inner = inset(lug.inner.map(nrm)), outer = inset(lug.outer.map(nrm)), { sx, sy, a0, a1 } = lug;
+    const radial = (a, r0, r1, n) => Array.from({ length: n + 1 }, (_, k) => { const r = r0 + (r1 - r0) * k / n; return [sx * r * Math.cos(a), sy * r * Math.sin(a)]; });
+    const bottom = Array.from({ length: 13 }, (_, k) => { const a = a0 + (a1 - a0) * k / 12; return [sx * ri * Math.cos(a), sy * ri * Math.sin(a)]; });      // the seat's arc, a0 → a1
+    const right = [...radial(a0, ri, rt, 12), ...outer.slice(1)], left = [...radial(a1, ri, rt, 12), ...inner.slice(1)];      // a0 side: the outer edge; a1 side: the inner edge
+    const top = [outer[outer.length - 1], inner[inner.length - 1]];      // the tip face, inset
+    g.add(coons(bottom, top, right, left, (x, y) => P.lugTop(Math.abs(y)), MATERIALS.brushed(), 48, 10, sx * sy < 0));
+    // the UNDERSIDE of the lug: from the root arc on the body's edge to the tip, the outline itself as its sides, rising by the law
+    const outerU = lug.outer.map((st) => [st.x, st.y]), innerU = lug.inner.map((st) => [st.x, st.y]);
+    g.add(coons(lug.rootArc, [outerU[outerU.length - 1], innerU[innerU.length - 1]], outerU, innerU, (x, y) => P.lugBot(Math.abs(y)), MATERIALS.brushed(), 24, 6, sx * sy > 0)); }
+  // the body's sectors between the lugs: from the seat to the top's edge; between a1 of one lug and a0 of the next, round the dial
+  { const spans = [[P.lugs.find((l) => l.sx === 1 && l.sy === 1), P.lugs.find((l) => l.sx === -1 && l.sy === 1)], [P.lugs.find((l) => l.sx === -1 && l.sy === 1), P.lugs.find((l) => l.sx === -1 && l.sy === -1)], [P.lugs.find((l) => l.sx === -1 && l.sy === -1), P.lugs.find((l) => l.sx === 1 && l.sy === -1)], [P.lugs.find((l) => l.sx === 1 && l.sy === -1), P.lugs.find((l) => l.sx === 1 && l.sy === 1)]];
+    const angOf = (l, a) => Math.atan2(l.sy * Math.sin(a), l.sx * Math.cos(a));
+    for (const [from, to] of spans) { let b0 = angOf(from, from.a1), b1 = angOf(to, to.a0); while (b1 <= b0) b1 += 2 * Math.PI;
+      const sh = new THREE.Shape(); sh.absarc(0, 0, rt, b0, b1, false); sh.absarc(0, 0, ri, b1, b0, true); sh.closePath();
+      const m = mesh(new THREE.ShapeGeometry(sh, 24), MATERIALS.brushed()); m.rotation.x = -Math.PI / 2; m.position.y = C.zTop - DIAL_Z; g.add(m); } }
+  // the drilled hole: a dark dot in the outer flank with a bright rim, on the belly
+  const yHole = half - L.holeIn, holeZ = (P.lugTop(yHole) + P.lugBot(yHole)) / 2;
+  for (const lug of P.lugs) { const { sx, sy } = lug, zb = P.lugBot(yHole), zt = P.lugTop(yHole), dd = (1 - P.u(yHole)) * C.belly * Math.sin(Math.PI * (holeZ - zb) / (zt - zb));
     const hole = new THREE.Group(); hole.add(mesh(new THREE.CircleGeometry(0.42, 24), MATERIALS.dark(), false), mesh(new THREE.RingGeometry(0.42, 0.52, 24), MATERIALS.polished(), false));
-    hole.position.set(...W(sx * (xOut(yHole) + 0.015), sy * yHole, holeZ)); hole.rotation.y = sx * Math.PI / 2; g.add(hole); }
+    hole.position.set(...W(sx * (P.xOut(yHole) + dd + 0.015), sy * yHole, holeZ)); hole.rotation.y = sx * Math.PI / 2; g.add(hole); }
+  const lugTop = P.lugTop, lugBot = P.lugBot, xOut = P.xOut, yEdge = P.yEdge, O = { yAt: P.yAt, at: outline(C).at };
   // the bezel stack: the rehaut's wall, the bezel ring, its teeth round the outside, the insert with its markings, the crystal
   const B = C.bezel;
   g.add(mesh(lathe([[14.6, DIAL_Z], [15.2, 11.35], [16.1, 11.5], [B.r0, 11.5], [B.r0, B.z0], [14.6, B.z0]]), MATERIALS.polished()));
@@ -241,7 +310,7 @@ function buildCase(C) {
       const f = Math.abs(((Math.atan2(z, x) * K_.flutes / (2 * Math.PI)) % 1 + 1) % 1 - 0.5), d = 0.28 * Math.max(0, 1 - (f / 0.28) ** 2), k = (r - d) / r; pos.setX(i, x * k); pos.setZ(i, z * k); }      // flutes: half-round grooves, flat lands between
     geo.computeVertexNormals(); geo.rotateZ(-Math.PI / 2);      // the stem along +x
     const { p } = O.at(rad(K_.at)), m = mesh(geo, MATERIALS.polished()); m.position.set(...W(p[0] - 0.4 * Math.cos(rad(K_.at)), p[1] - 0.4 * Math.sin(rad(K_.at)), K_.z)); m.rotation.y = rad(K_.at); g.add(m); }
-  return { group: g, xi, xo, half, yEdge, lugTop, lugBot, xOut, holeZ, tipH: lugTop(half) - lugBot(half), yAt: O.yAt };
+  return { group: g, xi, xo, half, yEdge, lugTop, lugBot, xOut, holeZ, tipH: lugTop(half) - lugBot(half), yAt: O.yAt, lug: C.lug };
 }
 /** the insert's markings as the reference's: numerals, long marks at the fives, a dot a minute, the triangle with its lume dot — a picture on a ring */
 function insertRing() {
