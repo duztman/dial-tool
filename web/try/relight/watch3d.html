@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 40 (8 Nov 2026): the eyes on the panes, the tool's Light and Watch icons on the tabs, a Backdrop pane, Cel gone, the room's rows hidden in the drawn styles; 39: the panel in Dial Tool's fashion (paper, panes, pill switches, folds); 38: the dark room the default, the low card on sliders; 37: a Dark room beside the Light tent (darkStudio); 36: the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 41 (8 Nov 2026): the canvas fills the stage (the iPad fit), a wood table, the shadow map 2048; 40: the eyes on the panes, the tool's Light and Watch icons on the tabs, a Backdrop pane, Cel gone, the room's rows hidden in the drawn styles; 39: the panel in Dial Tool's fashion (paper, panes, pill switches, folds); 38: the dark room the default, the low card on sliders; 37: a Dark room beside the Light tent (darkStudio); 36: the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -35,10 +35,10 @@
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
   @media (pointer: coarse) { :root { --thumb: 26px; } }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--ink); font: var(--t-m) / var(--leading) var(--sans); display: grid; grid-template-columns: 1fr var(--panel); height: 100vh; height: 100dvh; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: var(--t-m) / var(--leading) var(--sans); display: grid; grid-template-columns: minmax(0, 1fr) var(--panel); grid-template-rows: minmax(0, 1fr); height: 100vh; height: 100dvh; overflow: hidden; }
   button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-  #stage { position: relative; display: grid; place-items: center; overflow: hidden; }
-  canvas#gl { display: block; touch-action: none; cursor: grab; }
+  #stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--stage, var(--ground)); }
+  canvas#gl { position: absolute; inset: 0; display: block; touch-action: none; cursor: grab; }
   #status { position: absolute; left: 12px; bottom: 10px; color: var(--grey); font: var(--t-xs) / 1 var(--mono); }
   /* the panel: a header with the title, the two tabs on their line, then the part that scrolls on its own, a shade darker */
   #side { display: grid; grid-template-rows: auto auto minmax(0, 1fr); background: var(--paper); border-left: var(--hair) solid var(--rule); }
@@ -111,7 +111,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <header><h1>Watch 3D · round 40</h1></header>
+  <header><h1>Watch 3D · round 41</h1></header>
   <div class="tabsbar"><div class="segs pills-tabs" data-key="tab">
     <button data-v="scene" class="on"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"/><g class="sign"><circle cx="17" cy="17" r="3" fill="currentColor" stroke="none"/><path d="M22.75 17L24.75 17M21.07 21.07L22.48 22.48M17 22.75L17 24.75M12.93 21.07L11.52 22.48M11.25 17L9.25 17M12.93 12.93L11.52 11.52M17 11.25L17 9.25M21.07 12.93L22.48 11.52"/></g></svg><span>Scene</span></button>
     <button data-v="watch"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"/><g class="sign"><g transform="translate(5.9 5.9) scale(1.2)" stroke-width="1.25"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g></g></svg><span>Watch</span></button>
@@ -148,7 +148,7 @@
       </div></section>
     <section class="pane" data-pane="table"><button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>Table</h2><span class="summary"></span></button>
       <div class="body">
-        <div class="row"><label>Surface</label><div class="pills" data-key="ground"><button data-v="grain" class="on">Leather grain</button><button data-v="plain">Plain</button></div></div>
+        <div class="row"><label>Surface</label><div class="pills" data-key="ground"><button data-v="grain" class="on">Wood grain</button><button data-v="plain">Plain</button></div></div>
       </div></section>
   </div>
   <div class="tab" data-tab="watch" hidden>
@@ -655,19 +655,20 @@ const loader = new SVGLoader(), shapesOf = (d) => loader.parse(`<svg xmlns="http
     const a = it.hand ? scene3.A[it.hand] : 0; g.rotation.set(-Math.PI / 2, 0, -a * Math.PI / 180); g.position.y = z; watch.add(g); } }
 // the ground: tan leather with a drawn grain; a contact shadow under the watch where no light gets in
 let groundMat, groundBump;
-{ const n = 1024, c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d"); x.fillStyle = "#808080"; x.fillRect(0, 0, n, n); let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  // each pebble a DOME (a radial gradient, bright centre to a dark rim) so the height changes across the whole cell — a flat
-  // fill gives a bump map only a one-pixel ridge at its outline, which the mipmaps averaged away (rounds 1–23: never visible)
-  for (let i = 0; i < 2600; i++) { const px = rnd() * n, py = rnd() * n, rr = 10 + rnd() * 26, sq = 0.5 + rnd() * 0.6, rot = rnd() * Math.PI, lum = 150 + rnd() * 60 | 0;
-    const gr = x.createRadialGradient(0, 0, 0, 0, 0, rr); gr.addColorStop(0, `rgb(${lum},${lum},${lum})`); gr.addColorStop(0.75, `rgb(${lum - 50},${lum - 50},${lum - 50})`); gr.addColorStop(1, "rgb(60,60,60)");
-    x.save(); x.translate(px, py); x.rotate(rot); x.scale(1, sq); x.fillStyle = gr; x.beginPath(); x.arc(0, 0, rr, 0, 2 * Math.PI); x.fill(); x.restore(); }
-  const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(50, 50); bump.anisotropy = 8;
-  // the grain as COLOUR too (round 36): the bump alone never read on a screen — leather's grain is seen as a mottle of tone first, relief second. The
-  // same canvas tints the tan: each pebble's dome a little lighter at its crown, its rim a little darker, ±9 %
-  const cc2 = document.createElement("canvas"); cc2.width = cc2.height = n; const x2 = cc2.getContext("2d"), src = x.getImageData(0, 0, n, n).data, out = x2.createImageData(n, n);
-  for (let i = 0; i < src.length; i += 4) { const f = Math.min(255, 255 * (0.91 + 0.18 * (src[i] / 255 - 0.5))); out.data[i] = out.data[i + 1] = out.data[i + 2] = f; out.data[i + 3] = 255; }      // a neutral mottle, ±9 % about 91 % white: the table's colour comes from the material (the backdrop's), round 40 x2.putImageData(out, 0, 0);
-  const grainMap = new THREE.CanvasTexture(cc2); grainMap.wrapS = grainMap.wrapT = THREE.RepeatWrapping; grainMap.repeat.set(50, 50); grainMap.anisotropy = 8; grainMap.colorSpace = THREE.SRGBColorSpace; groundMap = grainMap;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, map: grainMap, bumpMap: bump, bumpScale: 0.7, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad
+{ const n = 1024, c = document.createElement("canvas"); c.width = c.height = n; const x = c.getContext("2d"), img = x.createImageData(n, n), d = img.data;
+  // WOOD (round 41; leather gone): a neutral grain the backdrop's colour tints. Value noise in two octaves bends the rings — the ring
+  // law is a sine of (y + wobble) with a slow drift across x, so the lines run along x and wander; a fine pore noise on top.
+  // Neutral about 92 % white, ±10 %: colour from the material, relief from the same picture
+  let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647), G = 64, grid = Float32Array.from({ length: G * G }, rnd);
+  const noise = (u, v) => { const i = Math.floor(u) & (G - 1), j = Math.floor(v) & (G - 1), fu = u - Math.floor(u), fv = v - Math.floor(v), su = fu * fu * (3 - 2 * fu), sv = fv * fv * (3 - 2 * fv);
+    const g = (a, b) => grid[((j + b) & (G - 1)) * G + ((i + a) & (G - 1))]; return (g(0, 0) * (1 - su) + g(1, 0) * su) * (1 - sv) + (g(0, 1) * (1 - su) + g(1, 1) * su) * sv; };
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const u = i / n, v = j / n;
+    const wob = 0.6 * noise(u * 3, v * 3) + 0.25 * noise(u * 9, v * 9), ring = Math.sin((v + 0.35 * wob + 0.08 * u) * 2 * Math.PI * 14), pore = noise(u * 500, v * 80) - 0.5;
+    const t = 0.92 + 0.07 * ring + 0.03 * Math.sign(ring) * Math.pow(Math.abs(ring), 0.3) + 0.04 * pore, k = (j * n + i) * 4, f = Math.max(0, Math.min(255, 255 * t)); d[k] = d[k + 1] = d[k + 2] = f; d[k + 3] = 255; }
+  x.putImageData(img, 0, 0);
+  const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(20, 20); bump.anisotropy = 8;      // one tile 200 mm: the rings about 14 mm apart, the watch over three
+  const grainMap = new THREE.CanvasTexture(c); grainMap.wrapS = grainMap.wrapT = THREE.RepeatWrapping; grainMap.repeat.set(20, 20); grainMap.anisotropy = 8; grainMap.colorSpace = THREE.SRGBColorSpace; groundMap = grainMap;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, map: grainMap, bumpMap: bump, bumpScale: 0.5, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad
   m.rotation.x = -Math.PI / 2; groundMesh = m; m.receiveShadow = true; watch.add(m);      // the table at the caseback, in the case's scale. (Until round 34 this line sat inside the comment above: the table was never in the scene — the reason the ground grain was "invisible", open 8a)
   const s = 512, cc = document.createElement("canvas"); cc.width = cc.height = s; const cx = cc.getContext("2d"), gr = cx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = gr; cx.fillRect(0, 0, s, s);
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(54 * K, 54 * K), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; shadowMesh = sh; watch.add(sh); }
@@ -685,7 +686,7 @@ function rebuild() {
   if (S.style !== "photo") applyStyle(S.style);      // new meshes wear the style too
 }
 const sun = new THREE.DirectionalLight(0xffffff, 1); sun.castShadow = true; scene.add(sun); scene.add(sun.target);
-sun.shadow.mapSize.set(4096, 4096); sun.shadow.camera.left = sun.shadow.camera.bottom = -45; sun.shadow.camera.right = sun.shadow.camera.top = 45; sun.shadow.camera.near = 50; sun.shadow.camera.far = 400; sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.05;
+sun.shadow.mapSize.set(2048, 2048);      // was 4096: a depth texture that large can fail on an iPad's GPU and leave the table all in shadow (round 41) sun.shadow.camera.left = sun.shadow.camera.bottom = -45; sun.shadow.camera.right = sun.shadow.camera.top = 45; sun.shadow.camera.near = 50; sun.shadow.camera.far = 400; sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.05;
 // the views: Top (the app's), Photo (the goal's three-quarter), Wide (the same angle pulled back: the whole watch with both
 // strap ends — keepers, buckle), Low (a low three-quarter from the 5 o'clock side: the crystal's dome, the flank, the lugs' fall),
 // Side (from the crown: heights)
@@ -703,8 +704,8 @@ function placeCamera(view) { placing = true; watch.rotation.y = ["photo", "wide"
 const controls = new OrbitControls(camera, canvas); controls.enableDamping = false; controls.minDistance = 60; controls.maxDistance = 3000; controls.zoomSpeed = 0.6; controls.rotateSpeed = 0.7;
 const $ = (id) => document.getElementById(id);
 function render() {
-  const t0 = performance.now(), side = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
-  if (canvas.clientWidth !== side) { renderer.setSize(side, side, true); composer.setSize(side, side); gridPass.uniforms.res.value.set(renderer.domElement.width, renderer.domElement.height); camera.aspect = 1; camera.updateProjectionMatrix(); }
+  const t0 = performance.now(), st = canvas.parentElement, w = st.clientWidth, h = st.clientHeight;      // the canvas fills the stage (round 41): on an iPad the square canvas was taller than the stage and pushed the page
+  if (canvas.clientWidth !== w || canvas.clientHeight !== h) { renderer.setSize(w, h, true); composer.setSize(w, h); gridPass.uniforms.res.value.set(renderer.domElement.width, renderer.domElement.height); camera.aspect = w / h; camera.updateProjectionMatrix(); }
   const a = (90 - S.from) * Math.PI / 180, r = S.rise * Math.PI / 180; sun.position.set(Math.cos(a) * Math.cos(r) * 200, Math.sin(r) * 200, -Math.sin(a) * Math.cos(r) * 200);
   if (S.mode === "studio") { sun.intensity = S.sun * 1.6; sun.shadow.radius = 10; scene.environmentIntensity = S.room * 2.0; } else { sun.intensity = S.sun * 5; sun.shadow.radius = 2; scene.environmentIntensity = S.room * 0.9; }
   if (S.style !== "photo") { sun.intensity = S.style === "tech" ? 0 : 1.6 + S.sun * 2.4; fill.intensity = S.style === "tech" ? 0 : 0.5 + S.room * 0.8; }      // the drawn styles: the sun steps the toon, the sky light fills
@@ -723,7 +724,7 @@ for (const [id, k, f] of [["card-height", "height", 1], ["card-size", "size", 1]
   let pending = false; inp.oninput = () => { S.card[k] = +inp.value * f; show(); if (pending) return; pending = true; requestAnimationFrame(() => { pending = false; if (S.studioKind === "dark") setRoom("dark", true); render(); }); }; }      // the card moves: the dark room is lit again
 const cardRows = () => { $("card-rows").hidden = S.studioKind !== "dark" || S.style !== "photo"; };      // the room is the photo's: toon materials see no room (R16: hidden, not disabled)
 const roomRows = () => { document.querySelector('[data-key="studioKind"]').closest(".row").hidden = S.style !== "photo"; cardRows(); }; roomRows();      // Room light stays: in the drawn styles it is the sky light's strength
-const setBackdrop = () => { floorHex = BACKDROPS[S.backdrop]; groundMat.color.set(floorHex); if (S.style !== "tech") scene.background = new THREE.Color(floorHex); };
+const setBackdrop = () => { floorHex = BACKDROPS[S.backdrop]; groundMat.color.set(floorHex); if (S.style !== "tech") scene.background = new THREE.Color(floorHex); document.documentElement.style.setProperty("--stage", "#" + floorHex.toString(16).padStart(6, "0")); }; setBackdrop();
 let dragging = false;
 const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
   S.from = ((90 - Math.atan2(y, x) * 180 / Math.PI) % 360 + 360) % 360 | 0; S.rise = Math.round(85 - 73 * d); $("from").value = S.from; $("rise").value = S.rise; show(); render(); };
@@ -753,13 +754,13 @@ function fillOf(inp) { inp.style.setProperty("--p", (inp.value - inp.min) / (inp
 for (const inp of document.querySelectorAll('input[type="range"]')) { fillOf(inp); inp.addEventListener("input", () => fillOf(inp)); }
 // panes fold to their heading; the summary says what the pane holds while folded
 const SUMMARY = { style: () => ({ photo: "Photo", toon: "Toon", dither: "Dither", tech: "Technical" })[S.style], backdrop: () => S.backdrop[0].toUpperCase() + S.backdrop.slice(1), camera: () => ({ top: "Top", photo: "Photo", wide: "Wide", low: "Low", side: "Side", free: "Free" })[S.view] + " · drag " + S.drag,
-  light: () => (S.mode === "studio" ? "Studio" : "Sun") + (S.style === "photo" ? " · " + (S.studioKind === "dark" ? "dark room" : "light tent") : "") + " · " + S.from + "° " + S.rise + "°", table: () => S.ground === "grain" ? "Leather grain" : "Plain",
+  light: () => (S.mode === "studio" ? "Studio" : "Sun") + (S.style === "photo" ? " · " + (S.studioKind === "dark" ? "dark room" : "light tent") : "") + " · " + S.from + "° " + S.rise + "°", table: () => S.ground === "grain" ? "Wood grain" : "Plain",
   preset: () => CASES[S.caseKey].name, parts: () => CASES[S.caseKey].bezel.kind + " · " + S.strap + " · " + S.metal,
   body: () => `R ${CASES[S.caseKey].R} · ${CASES[S.caseKey].l2l} l2l`, lugs: () => `${CASES[S.caseKey].lugw} × ${CASES[S.caseKey].lugT}`, bezel: () => `${CASES[S.caseKey].bezel.kind} · h ${CASES[S.caseKey].bezel.h}`, crystal: () => `dome ${CASES[S.caseKey].bezel.dome}`, crown: () => `Ø ${CASES[S.caseKey].crown.w}` };
 function summaries() { for (const pane of document.querySelectorAll(".pane")) { const f = SUMMARY[pane.dataset.pane]; pane.querySelector(".summary").textContent = f ? f() : ""; } }
 for (const fold of document.querySelectorAll(".fold")) fold.onclick = () => { fold.parentElement.classList.toggle("folded"); summaries(); };
 document.querySelector(".form").addEventListener("input", summaries); document.querySelector(".form").addEventListener("click", () => requestAnimationFrame(summaries)); summaries();
-window.onresize = render;
+window.onresize = render; new ResizeObserver(() => render()).observe(document.getElementById("stage"));
 setRoom(S.studioKind); rebuild(); placeCamera(S.view); dragMode(); show(); render();
 window.watch3d = { S, render, scene, camera, renderer, controls, set: (key, v) => document.querySelector(`[data-key="${key}"] [data-v="${v}"]`)?.click(), setMode: (m) => document.querySelector(`.pills[data-key="mode"] [data-v="${m}"]`).click() };
 </script>
