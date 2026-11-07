@@ -54,7 +54,7 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 
 ## Rooms (round 37)
 
-`S.room`: tent (grey light tent, `studio()`) · dark (`darkStudio()`: black room, key panel, strip, back glow, low card). `setRoom()` swaps the PMREM environment; each is made once. The sun and the table are the same in both.
+`S.studioKind` (not `room` — that is the Room-light slider): tent (grey light tent, `studio()`) · dark (`darkStudio()`: black room, key panel, strip, back glow, low card). `setRoom(room, fresh)` swaps the PMREM environment; each is made once, the dark one again when the card's sliders (`S.card`: height, size, lum) move. Dark is the default (round 38). The sun and the table are the same in both.
 
 ## Render styles (round 35)
 
