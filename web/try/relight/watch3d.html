@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 39 (8 Nov 2026): the panel in Dial Tool's fashion (paper, panes, pill switches, folds); 38: the dark room the default, the low card on sliders; 37: a Dark room beside the Light tent (darkStudio); 36: the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 40 (8 Nov 2026): the eyes on the panes, the tool's Light and Watch icons on the tabs, a Backdrop pane, Cel gone, the room's rows hidden in the drawn styles; 39: the panel in Dial Tool's fashion (paper, panes, pill switches, folds); 38: the dark room the default, the low card on sliders; 37: a Dark room beside the Light tent (darkStudio); 36: the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -47,16 +47,23 @@
   #side > header .num { grid-column: 6 / -1; }
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding: 0 var(--margin); border-top: var(--hair) solid var(--rule); }
   .tabsbar .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
-  .tabsbar .segs > button { height: var(--head); font-weight: 600; color: var(--grey); border-bottom: var(--thick) solid transparent; }
-  .tabsbar .segs > button.on { color: var(--ink); border-bottom-color: var(--ink); }
+  /* the section tabs as the tool's: the sign in a ring, the word under it; chosen, the ring fills ink, the sign turns paper, a triple line under (4a-panel.css .tabs) */
+  .tabsbar .segs > button { display: grid; justify-items: center; gap: var(--unit); padding: var(--unit) 0 var(--u4); color: var(--grey); font-size: var(--t-s); }
+  .tabsbar .segs > button svg { display: block; }
+  @media (hover: hover) { .tabsbar .segs > button:hover { color: var(--ink); } }
+  .tabsbar .segs > button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px 0 var(--ink); }
+  .tabsbar .segs > button.on .ring { fill: var(--ink); stroke: var(--ink); }
+  .tabsbar .segs > button.on .sign { color: var(--paper); }
   .form { overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--margin) var(--air); background: var(--scroll); --row-rule: var(--field); }
-  .tab[hidden] { display: none; }
+  .tab[hidden], .row[hidden], #card-rows[hidden] { display: none; }
   /* a pane: a thick line opens it; its heading a button (fold), the title at the left on the columns, the summary small and
      grey at the right; its body on the columns, air under it. Folded: the body gone, the heading grey */
   .pane { border-top: var(--thick) solid var(--ink); }
   .pane.folded:last-child { border-bottom: var(--hair) solid var(--rule); }
   .fold { display: grid; grid-template-columns: var(--eye) auto minmax(0, 1fr); column-gap: var(--gap); align-items: center; width: 100%; height: var(--head); text-align: left; }
   .fold h2 { margin: 0; font-size: var(--t-m); font-weight: 600; }
+  .fold .eye { display: grid; place-items: center; color: var(--ink); } .fold .eye svg { display: block; } .fold .eye .closed { display: none; }
+  .folded > .fold .eye { color: var(--grey); } .folded > .fold .eye .open { display: none; } .folded > .fold .eye .closed { display: block; }
   .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); color: var(--grey); }
   .folded > .fold h2 { color: var(--grey); }
   @media (hover: hover) { .fold:hover h2 { color: var(--ink); } }
@@ -104,20 +111,23 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <header><h1>Watch 3D · round 39</h1></header>
-  <div class="tabsbar"><div class="segs pills-tabs" data-key="tab"><button data-v="scene" class="on">Scene</button><button data-v="watch">Watch</button></div></div>
+  <header><h1>Watch 3D · round 40</h1></header>
+  <div class="tabsbar"><div class="segs pills-tabs" data-key="tab">
+    <button data-v="scene" class="on"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"/><g class="sign"><circle cx="17" cy="17" r="3" fill="currentColor" stroke="none"/><path d="M22.75 17L24.75 17M21.07 21.07L22.48 22.48M17 22.75L17 24.75M12.93 21.07L11.52 22.48M11.25 17L9.25 17M12.93 12.93L11.52 11.52M17 11.25L17 9.25M21.07 12.93L22.48 11.52"/></g></svg><span>Scene</span></button>
+    <button data-v="watch"><svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="17" cy="17" r="14.6875" stroke-width="1.625"/><g class="sign"><g transform="translate(5.9 5.9) scale(1.2)" stroke-width="1.25"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g></g></svg><span>Watch</span></button>
+  </div></div>
   <div class="form">
   <div class="tab" data-tab="scene">
-    <section class="pane has" data-pane="style"><button class="fold"><span></span><h2>Style</h2><span class="summary"></span></button>
-      <div class="pills headcontrol" data-key="style"><button data-v="photo" class="on">Photo</button><button data-v="toon">Toon</button><button data-v="cel">Cel</button><button data-v="dither">Dither</button><button data-v="tech">Technical</button></div>
+    <section class="pane has" data-pane="style"><button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>Style</h2><span class="summary"></span></button>
+      <div class="pills headcontrol" data-key="style"><button data-v="photo" class="on">Photo</button><button data-v="toon">Toon</button><button data-v="dither">Dither</button><button data-v="tech">Technical</button></div>
       <div class="body"></div></section>
-    <section class="pane has" data-pane="camera"><button class="fold"><span></span><h2>Camera</h2><span class="summary"></span></button>
+    <section class="pane has" data-pane="camera"><button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>Camera</h2><span class="summary"></span></button>
       <div class="pills headcontrol" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
       <div class="body">
         <div class="row"><label>Drag</label><div class="pills" data-key="drag"><button data-v="orbit" class="on">Orbit</button><button data-v="sun">Sun</button></div></div>
         <div class="row note"><p>Orbit: one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view puts the camera back. Sun: the direction is the sun's angle, the middle high, the edge low.</p></div>
       </div></section>
-    <section class="pane" data-pane="light"><button class="fold"><span></span><h2>Light</h2><span class="summary"></span></button>
+    <section class="pane" data-pane="light"><button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>Light</h2><span class="summary"></span></button>
       <div class="body">
         <div class="row"><label>Light</label><div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div></div>
         <div class="row"><label>Sun from</label><input type="range" id="from" min="0" max="359" value="135"><span class="num" id="v-from"></span></div>
@@ -131,19 +141,24 @@
           <div class="row nest"><label>Card brightness</label><input type="range" id="card-lum" min="0" max="300" value="90"><span class="num" id="v-card-lum"></span></div>
         </div>
       </div></section>
-    <section class="pane" data-pane="table"><button class="fold"><span></span><h2>Table</h2><span class="summary"></span></button>
+    <section class="pane" data-pane="backdrop"><button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>Backdrop</h2><span class="summary"></span></button>
+      <div class="body">
+        <div class="row"><label>Colour</label><div class="pills" data-key="backdrop"><button data-v="tan" class="on">Tan</button><button data-v="paper">Paper</button><button data-v="grey">Grey</button><button data-v="slate">Slate</button><button data-v="night">Night</button></div></div>
+        <div class="row note"><p>The table takes the colour too; Technical stays on white.</p></div>
+      </div></section>
+    <section class="pane" data-pane="table"><button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>Table</h2><span class="summary"></span></button>
       <div class="body">
         <div class="row"><label>Surface</label><div class="pills" data-key="ground"><button data-v="grain" class="on">Leather grain</button><button data-v="plain">Plain</button></div></div>
       </div></section>
   </div>
   <div class="tab" data-tab="watch" hidden>
-    <section class="pane has" data-pane="preset"><button class="fold"><span></span><h2>Preset</h2><span class="summary"></span></button>
+    <section class="pane has" data-pane="preset"><button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>Preset</h2><span class="summary"></span></button>
       <div class="pills headcontrol" data-key="caseKey"><button data-v="diver" class="on">Diver</button><button data-v="dress">Dress</button></div>
       <div class="body">
         <div class="row"><label>Numbers</label><div class="btnline"><button id="case-reset">Reset to the preset's</button></div></div>
         <div class="row note"><p>Every number below is in millimetres; the teeth a count. <span id="v-build"></span></p></div>
       </div></section>
-    <section class="pane" data-pane="parts"><button class="fold"><span></span><h2>Parts</h2><span class="summary"></span></button>
+    <section class="pane" data-pane="parts"><button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>Parts</h2><span class="summary"></span></button>
       <div class="body">
         <div class="row"><label>Bezel</label><div class="pills" data-key="bezelKind"><button data-v="rotating" class="on">Rotating</button><button data-v="fixed">Fixed</button></div></div>
         <div class="row"><label>Band</label><div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div></div>
@@ -244,7 +259,8 @@ const lathe = (pts, seg = 256) => new THREE.LatheGeometry(pts.map(([r, z]) => ne
 const mesh = (geo, mat, shadow = true) => { const m = new THREE.Mesh(geo, mat); m.castShadow = m.receiveShadow = shadow; for (const mm of [].concat(mat)) mm.side = THREE.DoubleSide; return m; };
 
 // ── 3 · materials: a small named list ──
-const METAL = { steel: "#c9c9c6", gold: scene3.metal }; let metalHex = METAL.steel; const leatherHex = scene3.leather, floorHex = scene3.floor;
+const METAL = { steel: "#c9c9c6", gold: scene3.metal }; let metalHex = METAL.steel; const leatherHex = scene3.leather;
+const BACKDROPS = { tan: 0xa86a3c, paper: 0xECECE8, grey: 0x8a8a86, slate: 0x3a3a3f, night: 0x141413 }; let floorHex = BACKDROPS.tan;      // the page's colour, the table's too (round 40)
 const metalMat = (rough, aniso) => Object.assign(new THREE.MeshPhysicalMaterial({ color: metalHex, metalness: 1, roughness: rough, anisotropy: aniso }), { userData: { metal: true } });
 const MATERIALS = {
   polished: () => metalMat(0.16, 0), brushed: () => metalMat(0.36, 0.85),
@@ -648,17 +664,17 @@ let groundMat, groundBump;
   const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.repeat.set(50, 50); bump.anisotropy = 8;
   // the grain as COLOUR too (round 36): the bump alone never read on a screen — leather's grain is seen as a mottle of tone first, relief second. The
   // same canvas tints the tan: each pebble's dome a little lighter at its crown, its rim a little darker, ±9 %
-  const cc2 = document.createElement("canvas"); cc2.width = cc2.height = n; const x2 = cc2.getContext("2d"), src = x.getImageData(0, 0, n, n).data, out = x2.createImageData(n, n), tan = [0xa8, 0x6a, 0x3c];
-  for (let i = 0; i < src.length; i += 4) { const f = 1 + 0.18 * (src[i] / 255 - 0.5); out.data[i] = tan[0] * f; out.data[i + 1] = tan[1] * f; out.data[i + 2] = tan[2] * f; out.data[i + 3] = 255; } x2.putImageData(out, 0, 0);
+  const cc2 = document.createElement("canvas"); cc2.width = cc2.height = n; const x2 = cc2.getContext("2d"), src = x.getImageData(0, 0, n, n).data, out = x2.createImageData(n, n);
+  for (let i = 0; i < src.length; i += 4) { const f = Math.min(255, 255 * (0.91 + 0.18 * (src[i] / 255 - 0.5))); out.data[i] = out.data[i + 1] = out.data[i + 2] = f; out.data[i + 3] = 255; }      // a neutral mottle, ±9 % about 91 % white: the table's colour comes from the material (the backdrop's), round 40 x2.putImageData(out, 0, 0);
   const grainMap = new THREE.CanvasTexture(cc2); grainMap.wrapS = grainMap.wrapT = THREE.RepeatWrapping; grainMap.repeat.set(50, 50); grainMap.anisotropy = 8; grainMap.colorSpace = THREE.SRGBColorSpace; groundMap = grainMap;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.62, metalness: 0, map: grainMap, bumpMap: bump, bumpScale: 0.7, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshPhysicalMaterial({ color: 0xa86a3c, roughness: 0.62, metalness: 0, map: grainMap, bumpMap: bump, bumpScale: 0.7, clearcoat: 0.25, clearcoatRoughness: 0.5 })); groundMat = m.material; groundBump = bump;      // the grain can be switched off (the Ground pill) — it costs a texture read a pixel on the iPad
   m.rotation.x = -Math.PI / 2; groundMesh = m; m.receiveShadow = true; watch.add(m);      // the table at the caseback, in the case's scale. (Until round 34 this line sat inside the comment above: the table was never in the scene — the reason the ground grain was "invisible", open 8a)
   const s = 512, cc = document.createElement("canvas"); cc.width = cc.height = s; const cx = cc.getContext("2d"), gr = cx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2); gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = gr; cx.fillRect(0, 0, s, s);
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(54 * K, 54 * K), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), transparent: true, depthWrite: false })); sh.rotation.x = -Math.PI / 2; shadowMesh = sh; watch.add(sh); }
 const placeGround = () => { groundMesh.position.y = -DIAL_Z * K; shadowMesh.position.y = -DIAL_Z * K + 0.02; };      // the table under the caseback, wherever the datum puts it
 
 // ── 8 · building, the light and the controls ──
-const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "rotating", style: "photo", tab: "scene", studioKind: "dark", card: { height: 4, size: 70, lum: 0.9 } };
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "rotating", style: "photo", tab: "scene", studioKind: "dark", backdrop: "tan", card: { height: 4, size: 70, lum: 0.9 } };
 let info = null;
 function rebuild() {
   DIAL_Z = CASES[S.caseKey].zTop + CASES[S.caseKey].bezel.dialUp; placeGround();      // the dial's face is the datum (world y = 0): the case moves under it
@@ -692,7 +708,7 @@ function render() {
   const a = (90 - S.from) * Math.PI / 180, r = S.rise * Math.PI / 180; sun.position.set(Math.cos(a) * Math.cos(r) * 200, Math.sin(r) * 200, -Math.sin(a) * Math.cos(r) * 200);
   if (S.mode === "studio") { sun.intensity = S.sun * 1.6; sun.shadow.radius = 10; scene.environmentIntensity = S.room * 2.0; } else { sun.intensity = S.sun * 5; sun.shadow.radius = 2; scene.environmentIntensity = S.room * 0.9; }
   if (S.style !== "photo") { sun.intensity = S.style === "tech" ? 0 : 1.6 + S.sun * 2.4; fill.intensity = S.style === "tech" ? 0 : 0.5 + S.room * 0.8; }      // the drawn styles: the sun steps the toon, the sky light fills
-  { const want = S.ground === "grain" ? groundBump : null; if (groundMat.bumpMap !== want) { groundMat.bumpMap = want; groundMat.map = want ? groundMap : null; groundMat.color.set(want ? 0xffffff : 0xa86a3c); groundMat.needsUpdate = true; } }      // Plain drops the texture from the shader, not just its strength
+  { const want = S.ground === "grain" ? groundBump : null; if (groundMat.bumpMap !== want) { groundMat.bumpMap = want; groundMat.map = want ? groundMap : null; groundMat.needsUpdate = true; } }      // Plain drops the texture from the shader, not just its strength
   composer.render();
   status.textContent = `${canvas.width} × ${canvas.height} px · frame ${(performance.now() - t0).toFixed(1)} ms`;
 }
@@ -701,11 +717,13 @@ const pick = (key, v) => { const row = document.querySelector(`.pills[data-key="
 for (const row of document.querySelectorAll(".pills[data-key], .pills-tabs[data-key]")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
   if (row.dataset.key === "tab") { for (const t of document.querySelectorAll(".tab")) t.hidden = t.dataset.tab !== S.tab; return; }
   if (row.dataset.key === "caseKey") { const C = CASES[S.caseKey]; pick("strap", C.strap); pick("bezelKind", C.bezel.kind); for (const i of document.querySelectorAll("#case-rows input")) i._show?.(); }      // a preset brings its strap and bezel kind
-  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); if (row.dataset.key === "style") { applyStyle(S.style); placeCamera(S.view); } if (row.dataset.key === "studioKind") { setRoom(S.studioKind); cardRows(); } render(); };
+  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); if (row.dataset.key === "style") { applyStyle(S.style); placeCamera(S.view); roomRows(); } if (row.dataset.key === "studioKind") { setRoom(S.studioKind); cardRows(); } if (row.dataset.key === "backdrop") setBackdrop(); render(); };
 for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
 for (const [id, k, f] of [["card-height", "height", 1], ["card-size", "size", 1], ["card-lum", "lum", 0.01]]) { const inp = $(id), show = () => { $("v-" + id).textContent = k === "lum" ? Math.round(S.card.lum * 100) + " %" : S.card[k] + " mm"; }; show();
   let pending = false; inp.oninput = () => { S.card[k] = +inp.value * f; show(); if (pending) return; pending = true; requestAnimationFrame(() => { pending = false; if (S.studioKind === "dark") setRoom("dark", true); render(); }); }; }      // the card moves: the dark room is lit again
-const cardRows = () => { $("card-rows").hidden = S.studioKind !== "dark"; }; cardRows();
+const cardRows = () => { $("card-rows").hidden = S.studioKind !== "dark" || S.style !== "photo"; };      // the room is the photo's: toon materials see no room (R16: hidden, not disabled)
+const roomRows = () => { document.querySelector('[data-key="studioKind"]').closest(".row").hidden = S.style !== "photo"; cardRows(); }; roomRows();      // Room light stays: in the drawn styles it is the sky light's strength
+const setBackdrop = () => { floorHex = BACKDROPS[S.backdrop]; groundMat.color.set(floorHex); if (S.style !== "tech") scene.background = new THREE.Color(floorHex); };
 let dragging = false;
 const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
   S.from = ((90 - Math.atan2(y, x) * 180 / Math.PI) % 360 + 360) % 360 | 0; S.rise = Math.round(85 - 73 * d); $("from").value = S.from; $("rise").value = S.rise; show(); render(); };
@@ -723,7 +741,7 @@ const CASES_0 = JSON.parse(JSON.stringify(CASES));      // the specs as written,
 const getAt = (o, path) => path.split(".").reduce((a, k) => a[k], o), setAt = (o, path, v) => { const ks = path.split("."), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
 { const box = $("case-rows"); let grp = "", body = null;
   for (const [g, label, path, min, max, step] of CASE_ROWS) { if (g !== grp) { grp = g; const pane = document.createElement("section"); pane.className = "pane folded"; pane.dataset.pane = g.toLowerCase();
-      pane.innerHTML = `<button class="fold"><span></span><h2>${g}</h2><span class="summary"></span></button><div class="body"></div>`; box.appendChild(pane); body = pane.querySelector(".body"); }
+      pane.innerHTML = `<button class="fold"><span class="eye"><svg class="open" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z"/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/></svg><svg class="closed" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.625" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05"/></svg></span><h2>${g}</h2><span class="summary"></span></button><div class="body"></div>`; box.appendChild(pane); body = pane.querySelector(".body"); }
     const row = document.createElement("div"); row.className = "row"; const lab = document.createElement("label"), val = document.createElement("span"), inp = document.createElement("input"); val.className = "num"; lab.textContent = label;
     inp.type = "range"; inp.min = min; inp.max = max; inp.step = step; inp.dataset.path = path; row.append(lab, inp, val); body.appendChild(row);
     const dec = step >= 1 ? 0 : step >= 0.1 ? 1 : 2, show = () => { const v = getAt(CASES[S.caseKey], path); inp.value = v; fillOf(inp); val.textContent = step >= 1 ? v : v.toFixed(dec); }; show(); inp._show = show;      // the number alone: every number here is millimetres but the teeth, a count (the Preset note says so)
@@ -734,8 +752,8 @@ const getAt = (o, path) => path.split(".").reduce((a, k) => a[k], o), setAt = (o
 function fillOf(inp) { inp.style.setProperty("--p", (inp.value - inp.min) / (inp.max - inp.min)); }
 for (const inp of document.querySelectorAll('input[type="range"]')) { fillOf(inp); inp.addEventListener("input", () => fillOf(inp)); }
 // panes fold to their heading; the summary says what the pane holds while folded
-const SUMMARY = { style: () => ({ photo: "Photo", toon: "Toon", cel: "Cel", dither: "Dither", tech: "Technical" })[S.style], camera: () => ({ top: "Top", photo: "Photo", wide: "Wide", low: "Low", side: "Side", free: "Free" })[S.view] + " · drag " + S.drag,
-  light: () => (S.mode === "studio" ? "Studio" : "Sun") + " · " + (S.studioKind === "dark" ? "dark room" : "light tent") + " · " + S.from + "° " + S.rise + "°", table: () => S.ground === "grain" ? "Leather grain" : "Plain",
+const SUMMARY = { style: () => ({ photo: "Photo", toon: "Toon", dither: "Dither", tech: "Technical" })[S.style], backdrop: () => S.backdrop[0].toUpperCase() + S.backdrop.slice(1), camera: () => ({ top: "Top", photo: "Photo", wide: "Wide", low: "Low", side: "Side", free: "Free" })[S.view] + " · drag " + S.drag,
+  light: () => (S.mode === "studio" ? "Studio" : "Sun") + (S.style === "photo" ? " · " + (S.studioKind === "dark" ? "dark room" : "light tent") : "") + " · " + S.from + "° " + S.rise + "°", table: () => S.ground === "grain" ? "Leather grain" : "Plain",
   preset: () => CASES[S.caseKey].name, parts: () => CASES[S.caseKey].bezel.kind + " · " + S.strap + " · " + S.metal,
   body: () => `R ${CASES[S.caseKey].R} · ${CASES[S.caseKey].l2l} l2l`, lugs: () => `${CASES[S.caseKey].lugw} × ${CASES[S.caseKey].lugT}`, bezel: () => `${CASES[S.caseKey].bezel.kind} · h ${CASES[S.caseKey].bezel.h}`, crystal: () => `dome ${CASES[S.caseKey].bezel.dome}`, crown: () => `Ø ${CASES[S.caseKey].crown.w}` };
 function summaries() { for (const pane of document.querySelectorAll(".pane")) { const f = SUMMARY[pane.dataset.pane]; pane.querySelector(".summary").textContent = f ? f() : ""; } }
