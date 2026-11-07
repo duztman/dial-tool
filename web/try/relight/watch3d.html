@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 34 (8 Nov 2026): the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 35 (8 Nov 2026): render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -39,10 +39,11 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 34</h1>
+  <h1>Watch 3D · round 35</h1>
   <div class="pills" data-key="caseKey"><button data-v="diver" class="on">Diver</button></div>
   <div class="pills" data-key="strap"><button data-v="oyster" class="on">Oyster</button><button data-v="barn">Barn</button><button data-v="jubilee">Jubilee</button><button data-v="leather">Leather</button></div>
   <div class="pills" data-key="view"><button data-v="top" class="on">Top</button><button data-v="photo">Photo</button><button data-v="wide">Wide</button><button data-v="low">Low</button><button data-v="side">Side</button><button data-v="free" hidden>Free</button></div>
+  <div class="pills" data-key="style"><button data-v="photo" class="on">Photo</button><button data-v="toon">Toon</button><button data-v="cel">Cel</button><button data-v="pixel">Pixel</button><button data-v="dither">Dither</button><button data-v="tech">Technical</button></div>
   <div class="pills" data-key="drag"><button data-v="orbit" class="on">Drag: orbit</button><button data-v="sun">Drag: sun</button></div>
   <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
   <div class="pills" data-key="metal"><button data-v="steel" class="on">Steel</button><button data-v="gold">Gold</button></div>
@@ -51,7 +52,7 @@
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
   <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
   <label>Room light <span class="num" id="v-room"></span></label><input type="range" id="room" min="0" max="100" value="60">
-  <details id="case"><summary>Case — the numbers <span class="num" id="v-build"></span></summary><div id="case-rows"></div><div class="pills" data-key="bezelKind"><button data-v="insert" class="on">Insert bezel</button><button data-v="plain">Plain bezel</button></div><div class="pills"><button id="case-reset">Reset to the diver's</button></div></details>
+  <details id="case"><summary>Case — the numbers <span class="num" id="v-build"></span></summary><div id="case-rows"></div><div class="pills" data-key="bezelKind"><button data-v="rotating" class="on">Rotating bezel</button><button data-v="fixed">Fixed bezel</button></div><div class="pills"><button id="case-reset">Reset to the diver's</button></div></details>
   <p class="note">Drag: orbit — one finger turns, pinch or wheel zooms, two fingers (or right-drag) pan; a view pill puts the camera back. Drag: sun — the direction is the sun's angle, the middle high, the edge low.</p>
 </div>
 <script src="scene.js"></script>
@@ -64,6 +65,8 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { Pass, FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 const scene3 = window.SCENE;      // the dial's parts (dump.mjs)
 let DIAL_Z = 10.0;                // the dial's face, mm over the caseback; world y = 0 there. Set per case at rebuild: zTop + bezel.dialUp (round 34)
 const W = (x, y, z) => [x, z - DIAL_Z, -y];      // case space (x, y of the dial plane, z up from the caseback) → world (dial y, 12 o'clock, is −z)
@@ -76,9 +79,9 @@ const CASES = {
     lug: { tipTop: 7.3, tipBot: 4.1, rootBot: 2.4, chamferTip: 0.75, holeIn: 1.6, corner: 0.8, fillet: 1.2, chamferIn: 0.25 },      // fillet: the soft blend where the lug leaves the body (Okay: soft is the default); chamferIn: the small break on the inner wall's top edge
     // the BEZEL STACK by named numbers, all relative (round 34): the ring's outer radius sits `inset` inside the body's, its inner `width` in from that;
     // the dial's face `dialUp` over the band top; the ring on a seat `seat` over the band top, `h` tall; its top chamfer `chamfer`; the insert in a
-    // recess `lip` deep from the top (kind "insert"), `inIn` / `inOut` in from the ring's inner / outer radius; the crystal's rim `rim` in from the
+    // recess `lip` deep from the top (kind "rotating": the diver's separate turning ring with its insert and coin edge; "fixed": a plain pressed ring, no insert, no teeth), `inIn` / `inOut` in from the ring's inner / outer radius; the crystal's rim `rim` in from the
     // ring's inner radius, up `up` over the ring's top, its dome `dome` high; the rehaut's wall from the dial's face to `lip` under the ring's top
-    bezel: { kind: "insert", inset: 0.65, width: 3.3, dialUp: 0.7, seat: 0.3, h: 2.3, chamfer: 0.45, lip: 0.55, inIn: 0.4, inOut: 0.6, rim: 0.4, up: 0.65, dome: 1.35, teeth: { n: 60, depth: 0.5, fill: 0.62, chamfer: 0.45 } },
+    bezel: { kind: "rotating", inset: 0.65, width: 3.3, dialUp: 0.7, seat: 0.3, h: 2.3, chamfer: 0.45, lip: 0.55, inIn: 0.4, inOut: 0.6, rim: 0.4, up: 0.65, dome: 1.35, teeth: { n: 60, depth: 0.5, fill: 0.62, chamfer: 0.45 } },
     crown: { at: 0, w: 6.4, h: 3.0, z: 6.0, flutes: 18 } },
 };
 // a bracelet: columns across (a share of the width, a section, which side faces out, half a pitch off or not, an optional
@@ -174,7 +177,58 @@ const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(s
 const gtao = new GTAOPass(scene, camera, 100, 100); gtao.output = GTAOPass.OUTPUT.Default;
 gtao.updateGtaoMaterial({ radius: 2.2, distanceExponent: 1, thickness: 1, scale: 2.2, samples: 16, distanceFallOff: 1, screenSpaceRadius: false });
 gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 4, radiusExponent: 1, rings: 2, samples: 16 });
-composer.addPass(gtao); composer.addPass(new OutputPass());
+composer.addPass(gtao);
+// ── 4b · the RENDER STYLES (round 35): Photo is the scene as lit. The others are the same scene under toon materials (flat steps of
+// light) with INK LINES drawn by a pass that renders the normals and depth and inks where they jump — the lines every style shares.
+// Pixel and Dither add a pass that samples the picture on a coarse grid (and snaps colours to a few levels, with a Bayer dither).
+// Technical is white parts, white table, lines only — the engineer's view from the 3D
+class EdgePass extends Pass {
+  constructor(scene, camera) { super(); this.scene = scene; this.camera = camera; this.normalMat = new THREE.MeshNormalMaterial();
+    this.target = new THREE.WebGLRenderTarget(1, 1, { depthTexture: new THREE.DepthTexture(1, 1), minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
+    this.quad = new FullScreenQuad(new THREE.ShaderMaterial({ uniforms: { tDiffuse: { value: null }, tNormal: { value: null }, tDepth: { value: null }, res: { value: new THREE.Vector2(1, 1) }, near: { value: 10 }, far: { value: 2000 }, width: { value: 1.0 }, nTh: { value: 0.35 }, dTh: { value: 0.012 }, ink: { value: new THREE.Color(0x101010) } },
+      vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+      fragmentShader: `uniform sampler2D tDiffuse, tNormal, tDepth; uniform vec2 res; uniform float near, far, width, nTh, dTh; uniform vec3 ink; varying vec2 vUv;
+        float lin(float d) { float z = d * 2.0 - 1.0; return (2.0 * near * far) / (far + near - z * (far - near)); }      // the depth buffer to view distance
+        void main() { vec2 px = width / res; vec3 n0 = texture2D(tNormal, vUv).xyz * 2.0 - 1.0; float z0 = lin(texture2D(tDepth, vUv).x);
+          float e = 0.0; for (int i = 0; i < 4; i++) { vec2 o = i == 0 ? vec2(px.x, 0.0) : i == 1 ? vec2(-px.x, 0.0) : i == 2 ? vec2(0.0, px.y) : vec2(0.0, -px.y);
+            vec3 n1 = texture2D(tNormal, vUv + o).xyz * 2.0 - 1.0; float z1 = lin(texture2D(tDepth, vUv + o).x);
+            e += step(nTh, 1.0 - dot(n0, n1)); e += step(dTh * min(z0, z1), abs(z0 - z1)); }      // a crease (the normals turn) or a step (one part in front of another)
+          vec4 c = texture2D(tDiffuse, vUv); gl_FragColor = vec4(mix(c.rgb, ink, clamp(e, 0.0, 1.0)), c.a); }` })); }
+  setSize(w, h) { this.target.setSize(w, h); this.quad.material.uniforms.res.value.set(w, h); }
+  render(renderer, writeBuffer, readBuffer) { const bg = this.scene.background; this.scene.background = null; this.scene.overrideMaterial = this.normalMat;
+    const ghosts = []; this.scene.traverse((o) => { if (!o.isMesh || !o.visible) return; const m = [].concat(o.userData.photo ?? o.material)[0]; if (m.transmission > 0 || (m.isMeshBasicMaterial && m.transparent)) { o.visible = false; ghosts.push(o); } });      // the crystal and the contact shadow draw no lines and hide none
+    renderer.setRenderTarget(this.target); renderer.clear(); renderer.render(this.scene, this.camera); for (const o of ghosts) o.visible = true; this.scene.overrideMaterial = null; this.scene.background = bg;
+    const u = this.quad.material.uniforms; u.tDiffuse.value = readBuffer.texture; u.tNormal.value = this.target.texture; u.tDepth.value = this.target.depthTexture; u.near.value = this.camera.near; u.far.value = this.camera.far;
+    renderer.setRenderTarget(this.renderToScreen ? null : writeBuffer); this.quad.render(renderer); }
+}
+const edgePass = new EdgePass(scene, camera); edgePass.enabled = false; composer.addPass(edgePass);
+const gridPass = new ShaderPass({ uniforms: { tDiffuse: { value: null }, res: { value: new THREE.Vector2(1, 1) }, cell: { value: 4 }, levels: { value: 0 }, dither: { value: 0 } },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: `uniform sampler2D tDiffuse; uniform vec2 res; uniform float cell, levels, dither; varying vec2 vUv;
+    float bayer(vec2 p) { vec2 q = mod(floor(p), 4.0); float m[16]; m[0]=0.;m[1]=8.;m[2]=2.;m[3]=10.;m[4]=12.;m[5]=4.;m[6]=14.;m[7]=6.;m[8]=3.;m[9]=11.;m[10]=1.;m[11]=9.;m[12]=15.;m[13]=7.;m[14]=13.;m[15]=5.;
+      int i = int(q.y) * 4 + int(q.x); for (int k = 0; k < 16; k++) if (k == i) return (m[k] + 0.5) / 16.0; return 0.5; }
+    void main() { vec2 g = floor(vUv * res / cell); vec2 uv = (g + 0.5) * cell / res; vec3 c = texture2D(tDiffuse, uv).rgb;      // one sample a cell, at its centre
+      if (levels > 0.5) { float t = dither > 0.5 ? bayer(g) - 0.5 : 0.0; c = floor(c * levels + 0.5 + t) / levels; }      // snap to levels; the dither nudges the snap by the cell's place in the Bayer tile
+      gl_FragColor = vec4(c, 1.0); }` }); gridPass.enabled = false; composer.addPass(gridPass);
+composer.addPass(new OutputPass());
+// toon materials stand in for the photo ones: one per mesh, made once, keeping the colour and the picture (an insert, the dial's plate)
+const steps = (n) => { const d = new Uint8Array(n); for (let i = 0; i < n; i++) d[i] = Math.round(255 * (0.35 + 0.65 * i / (n - 1))); const t = new THREE.DataTexture(d, n, 1, THREE.RedFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; };
+const GRADIENTS = { toon: steps(4), cel: steps(2) };
+const fill = new THREE.HemisphereLight(0xffffff, 0x6a5040, 0); scene.add(fill);      // toon materials see no room: a sky light stands in for it in the drawn styles
+function styledMaterial(m, style) { if (style === "tech") return m.userData.tech ??= new THREE.MeshBasicMaterial({ color: 0xf6f6f6, transparent: m.transparent, opacity: m.transmission ? 0.0 : 1, side: THREE.DoubleSide, map: null });
+  const k = "toon_" + style; if (m.userData[k]) return m.userData[k];
+  if (m.transmission) return m.userData[k] = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.1, depthWrite: false, side: THREE.DoubleSide });      // the crystal: a breath of white
+  if (m.isMeshBasicMaterial) return m.userData[k] = m;      // the contact shadow, the studio: as they are
+  return m.userData[k] = new THREE.MeshToonMaterial({ color: m.color, map: m.map ?? null, gradientMap: GRADIENTS[style] ?? GRADIENTS.toon, transparent: m.transparent, opacity: m.opacity, side: THREE.DoubleSide }); }
+function applyStyle(style) {
+  const drawn = style !== "photo"; scene.traverse((o) => { if (!o.isMesh) return; o.userData.photo ??= o.material;
+    o.material = drawn ? [].concat(o.userData.photo).map((m) => styledMaterial(m, style)) : o.userData.photo; if (Array.isArray(o.material) && o.material.length === 1) o.material = o.material[0]; });
+  gtao.enabled = !drawn; edgePass.enabled = drawn; gridPass.enabled = style === "pixel" || style === "dither";
+  const gu = gridPass.uniforms; if (style === "pixel") { gu.cell.value = 4; gu.levels.value = 6; gu.dither.value = 0; } if (style === "dither") { gu.cell.value = 2; gu.levels.value = 3; gu.dither.value = 1; }
+  const eu = edgePass.quad.material.uniforms; eu.width.value = (style === "tech" ? 1.2 : style === "pixel" ? 2.0 : 1.0) * renderer.getPixelRatio();      // the ink keeps its width on a 2× screen eu.nTh.value = style === "tech" ? 0.2 : 0.35; eu.ink.value.set(style === "tech" ? 0x202020 : 0x141414);
+  fill.intensity = drawn ? (style === "tech" ? 0 : 0.9) : 0; scene.background = new THREE.Color(style === "tech" ? 0xffffff : floorHex);
+  if (groundMesh) groundMesh.visible = style !== "tech"; if (shadowMesh) shadowMesh.visible = style !== "tech";
+  renderer.toneMapping = style === "tech" ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping; }      // the technical sheet is paper-white, not filmic grey
 const K = scene3.size;      // the case scaled to the dial, as watch.js does: the dial stays its 34 mm, the CASE and STRAP grow by K so the
                             // opening (r 14.6 in case mm) lands on the dial's edge (r 17) — the dial's size does not include the rehaut (Okay, 5 Nov 2026)
 const watch = new THREE.Group(); scene.add(watch);
@@ -317,7 +371,7 @@ function buildBezel(C, g) {
   const B = C.bezel, r1 = C.R - B.inset, r0 = r1 - B.width, z0 = C.zTop + B.seat, z1 = z0 + B.h, open = scene3.open ?? 14.6, ch = B.chamfer;
   // the rehaut: a polished wall up from the dial's face, sloping out to a flange under the ring's top
   g.add(mesh(lathe([[open, DIAL_Z], [open + 0.6, z1 - B.lip], [r0 - 0.2, z1 - B.lip + 0.15], [r0, z1 - B.lip + 0.15], [r0, z0], [open, z0]]), MATERIALS.polished()));
-  if (B.kind === "insert") {
+  if (B.kind === "rotating") {
     // the ring with a recess for the insert: up the outer wall, the chamfer to the lip, in across the lip, down into the recess, its floor at z1, up its inner wall, the inner lip, down to the rehaut's flange
     const ri = r0 + B.inIn, ro = r1 - B.inOut, lip = z1 + B.lip;
     g.add(mesh(lathe([[r0, z0], [r1, z0], [r1, z1], [r1 - ch, lip], [ro, lip], [ro, z1], [ri, z1], [ri, lip - 0.05], [ri - 0.2, lip], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]]), MATERIALS.brushed()));
@@ -326,8 +380,8 @@ function buildBezel(C, g) {
     // a plain bezel: the ring closed over the top, its top a gentle slope from the chamfer in to the crystal's rim
     const rim = r0 - B.rim;
     g.add(mesh(lathe([[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim + 0.3, z1 + B.lip], [rim, z1 + B.lip - 0.15], [rim, z1 - 0.3], [r0, z1 - 0.3]]), MATERIALS.polished())); }
-  // the COIN EDGE, machined: the ring's outer wall is one surface whose radius is a law of the angle — full on the lands, a round scallop (a circle of radius rd, `depth` deep, `fill` of the pitch wide) cut into each pitch (Okay: "machined out of metal, round divots")
-  { const T = B.teeth, R = r1 + T.depth, tch = T.chamfer, pitch = 2 * Math.PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth);
+  // the COIN EDGE (a rotating bezel's grip), machined: the ring's outer wall is one surface whose radius is a law of the angle — full on the lands, a round scallop (a circle of radius rd, `depth` deep, `fill` of the pitch wide) cut into each pitch (Okay: "machined out of metal, round divots")
+  if (B.kind === "rotating") { const T = B.teeth, R = r1 + T.depth, tch = T.chamfer, pitch = 2 * Math.PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth);
     const rAt = T.depth <= 0 ? () => R : (th) => { const x = R * ((th % pitch + pitch) % pitch - pitch / 2); return Math.abs(x) < a ? R - (Math.sqrt(rd * rd - x * x) - (rd - T.depth)) : R; };      // depth 0: a plain wall, no scallops
     const per = 28, N = T.n * per, stations = [];      // 28 stations a pitch: the scallop's rim lands on a station, so it stays a crisp edge
     for (let k = 0; k <= N; k++) { const th = k / N * 2 * Math.PI, r = rAt(th), c = Math.cos(th), sn = Math.sin(th), P = (rr, z) => W(rr * c, rr * sn, z);
@@ -481,7 +535,7 @@ let groundMat, groundBump;
 const placeGround = () => { groundMesh.position.y = -DIAL_Z * K; shadowMesh.position.y = -DIAL_Z * K + 0.02; };      // the table under the caseback, wherever the datum puts it
 
 // ── 8 · building, the light and the controls ──
-const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "insert" };
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "rotating", style: "photo" };
 let info = null;
 function rebuild() {
   DIAL_Z = CASES[S.caseKey].zTop + CASES[S.caseKey].bezel.dialUp; placeGround();      // the dial's face is the datum (world y = 0): the case moves under it
@@ -489,6 +543,7 @@ function rebuild() {
   metalHex = METAL[S.metal];
   info = buildCase(CASES[S.caseKey]); info.lug = CASES[S.caseKey].lug; caseGroup.add(info.group);
   strapGroup.add(S.strap === "leather" ? buildLeather(info) : buildBracelet(S.strap, info));
+  if (S.style !== "photo") applyStyle(S.style);      // new meshes wear the style too
 }
 const sun = new THREE.DirectionalLight(0xffffff, 1); sun.castShadow = true; scene.add(sun); scene.add(sun.target);
 sun.shadow.mapSize.set(4096, 4096); sun.shadow.camera.left = sun.shadow.camera.bottom = -45; sun.shadow.camera.right = sun.shadow.camera.top = 45; sun.shadow.camera.near = 50; sun.shadow.camera.far = 400; sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.05;
@@ -509,16 +564,17 @@ const controls = new OrbitControls(camera, canvas); controls.enableDamping = fal
 const $ = (id) => document.getElementById(id);
 function render() {
   const t0 = performance.now(), side = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
-  if (canvas.clientWidth !== side) { renderer.setSize(side, side, true); composer.setSize(side, side); camera.aspect = 1; camera.updateProjectionMatrix(); }
+  if (canvas.clientWidth !== side) { renderer.setSize(side, side, true); composer.setSize(side, side); gridPass.uniforms.res.value.set(renderer.domElement.width, renderer.domElement.height); camera.aspect = 1; camera.updateProjectionMatrix(); }
   const a = (90 - S.from) * Math.PI / 180, r = S.rise * Math.PI / 180; sun.position.set(Math.cos(a) * Math.cos(r) * 200, Math.sin(r) * 200, -Math.sin(a) * Math.cos(r) * 200);
   if (S.mode === "studio") { sun.intensity = S.sun * 1.6; sun.shadow.radius = 10; scene.environmentIntensity = S.room * 2.0; } else { sun.intensity = S.sun * 5; sun.shadow.radius = 2; scene.environmentIntensity = S.room * 0.9; }
+  if (S.style !== "photo") { sun.intensity = S.style === "tech" ? 0 : 1.6 + S.sun * 2.4; fill.intensity = S.style === "tech" ? 0 : 0.5 + S.room * 0.8; }      // the drawn styles: the sun steps the toon, the sky light fills
   { const want = S.ground === "grain" ? groundBump : null; if (groundMat.bumpMap !== want) { groundMat.bumpMap = want; groundMat.needsUpdate = true; } }      // Plain drops the texture from the shader, not just its strength
   composer.render();
   status.textContent = `${canvas.width} × ${canvas.height} px · frame ${(performance.now() - t0).toFixed(1)} ms`;
 }
 const show = () => { $("v-from").textContent = S.from + "°"; $("v-rise").textContent = S.rise + "°"; $("v-sun").textContent = Math.round(S.sun * 100) + " %"; $("v-room").textContent = Math.round(S.room * 100) + " %"; };
 for (const row of document.querySelectorAll(".pills")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
-  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); render(); };
+  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); if (row.dataset.key === "style") applyStyle(S.style); render(); };
 for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
 let dragging = false;
 const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);
