@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Watch 3D trial</title>
 <!--
-  watch3d.html — the 3D exercise, round 36 (8 Nov 2026): the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
+  watch3d.html — the 3D exercise, round 37 (8 Nov 2026): a Dark room beside the Light tent (darkStudio); 36: the panel in two tabs (Scene · Watch), a Dress preset, the table's grain as colour, two-weight soft ink lines, a long lens for Technical, Dither finer, Pixel gone; 35: render styles — Photo · Toon · Cel · Pixel · Dither · Technical, ink lines from an EdgePass (section 4b); the bezel named rotating · fixed; 34: the bezel stack by named relative numbers (buildBezel), the dial's face the datum, the table found missing and put back; 33: the case's numbers as sliders (section 7); 32: the case ONE outline — body and lugs one skin, fillets at the roots, Coons tops; 31: free orbit (OrbitControls; Drag: orbit · sun; the views presets); round 30: round 14 rebuilt from the photographs round ONE RULE; 15 gave the sweeps tangents; 16 the lug its belly and tip chamfer; 17 every sweep wound outward (the AO pass is FrontSide); 18 the teeth lower; 19 the cushion dropped; 20 the outer links' flanks convex; 21 the crown's dome and shoulder; 22 a Ground grain/plain switch; 23 the strap a flat band after ref-29; 24 its fold round the bar; 25 its end clear of the body; 26 keepers as leather loops; 27 the case scaled to the dial (the dial whole inside the opening); 28 the coin edge machined (scallops cut into the wall); 29 Wide and Low views; 30 the crystal domed and thick.
 
   Every part of a watch is a SECTION swept along a PATH, with a FINISH per face. A case band is a flank section carried
   round the case's outline; a lug is a slab section carried from the band to its tip, thinning as it goes; a bracelet link
@@ -40,7 +40,7 @@
 </style>
 <div id="stage"><canvas id="gl"></canvas><div id="status">loading three.js…</div></div>
 <div id="side">
-  <h1>Watch 3D · round 36</h1>
+  <h1>Watch 3D · round 37</h1>
   <div class="pills tabs" data-key="tab"><button data-v="scene" class="on">Scene</button><button data-v="watch">Watch</button></div>
   <div class="tab" data-tab="scene">
     <h2>Style</h2>
@@ -50,6 +50,7 @@
     <div class="pills" data-key="drag"><button data-v="orbit" class="on">Drag: orbit</button><button data-v="sun">Drag: sun</button></div>
     <h2>Light</h2>
     <div class="pills" data-key="mode"><button data-v="studio" class="on">Studio</button><button data-v="sun">Sun</button></div>
+    <div class="pills" data-key="room"><button data-v="tent" class="on">Light tent</button><button data-v="dark">Dark room</button></div>
     <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
     <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
     <label>Sun strength <span class="num" id="v-sun"></span></label><input type="range" id="sun" min="0" max="100" value="60">
@@ -183,6 +184,17 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure
 const scene = new THREE.Scene(); scene.background = new THREE.Color(floorHex);
 // the room the metal reflects: a light tent with a key softbox high at the upper left, fills, a black flag over the lens
 // (what polished tops and the crystal mirror straight back at a camera above), a darker table below
+// the DARK STUDIO (round 37): a black room with three soft panels — the way watches are photographed. Polished faces mirror black
+// except where they catch a panel, so the form reads in blacks and one bright line; brushed faces smear a panel into a gradient.
+// Key: a big soft panel high at the upper left with a falloff across it; strip: a tall narrow panel at the right for the
+// flank's line; card: a low white card at the front, the reflector that keeps a low view's flank from going all black
+function darkStudio() { const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(100, 32, 16), new THREE.MeshBasicMaterial({ color: 0x050505, side: THREE.BackSide })));
+  const soft = (w, h, x, y, z, lum) => { const c = document.createElement("canvas"); c.width = 256; c.height = 128; const g = c.getContext("2d"), gr = g.createLinearGradient(0, 0, 256, 0); gr.addColorStop(0, "rgba(255,255,255,0.15)"); gr.addColorStop(0.5, "rgba(255,255,255,1)"); gr.addColorStop(1, "rgba(255,255,255,0.15)"); g.fillStyle = gr; g.fillRect(0, 0, 256, 128);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), color: new THREE.Color().setScalar(lum) })); m.position.set(x, y, z); m.lookAt(0, 0, 0); s.add(m); };
+  soft(90, 45, -55, 55, -35, 7); soft(16, 70, 75, 20, 10, 4.5); soft(60, 12, 0, 8, 80, 1.2); soft(70, 20, 20, 4, 60, 0.9);      // key · strip · back glow · the low card
+  s.add(new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshBasicMaterial({ color: new THREE.Color().setScalar(0.06) })).rotateX(-Math.PI / 2).translateZ(-60));
+  return s; }
 function studio() { const s = new THREE.Scene();
   s.add(new THREE.Mesh(new THREE.SphereGeometry(100, 32, 16), new THREE.MeshBasicMaterial({ color: 0x8a8a8a, side: THREE.BackSide })));
   const box = (w, h, x, y, z, lum) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color().setScalar(lum) })); m.position.set(x, y, z); m.lookAt(0, 0, 0); s.add(m); };
@@ -190,7 +202,7 @@ function studio() { const s = new THREE.Scene();
   { const flag = new THREE.Mesh(new THREE.CircleGeometry(30, 48), new THREE.MeshBasicMaterial({ color: new THREE.Color().setScalar(0.04) })); flag.position.set(0, 95, 0); flag.lookAt(0, 0, 0); s.add(flag); }
   s.add(new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshBasicMaterial({ color: new THREE.Color().setScalar(0.35) })).rotateX(-Math.PI / 2).translateZ(-60));
   return s; }
-const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(studio(), 0.04).texture;
+const pmrem = new THREE.PMREMGenerator(renderer), ROOMS = {}; const setRoom = (room) => { scene.environment = ROOMS[room] ??= pmrem.fromScene(room === "dark" ? darkStudio() : studio(), 0.04).texture; }; setRoom("tent");      // the room the metal reflects: made once each, kept
 const camera = new THREE.PerspectiveCamera(22, 1, 10, 2000);
 const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
 const gtao = new GTAOPass(scene, camera, 100, 100); gtao.output = GTAOPass.OUTPUT.Default;
@@ -562,7 +574,7 @@ let groundMat, groundBump;
 const placeGround = () => { groundMesh.position.y = -DIAL_Z * K; shadowMesh.position.y = -DIAL_Z * K + 0.02; };      // the table under the caseback, wherever the datum puts it
 
 // ── 8 · building, the light and the controls ──
-const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "rotating", style: "photo", tab: "scene" };
+const S = { from: 135, rise: 40, sun: 0.6, room: 0.6, mode: "studio", view: "top", caseKey: "diver", strap: "oyster", metal: "steel", ground: "grain", drag: "orbit", bezelKind: "rotating", style: "photo", tab: "scene", room: "tent" };
 let info = null;
 function rebuild() {
   DIAL_Z = CASES[S.caseKey].zTop + CASES[S.caseKey].bezel.dialUp; placeGround();      // the dial's face is the datum (world y = 0): the case moves under it
@@ -605,7 +617,7 @@ const pick = (key, v) => { const row = document.querySelector(`.pills[data-key="
 for (const row of document.querySelectorAll(".pills[data-key]")) for (const b of row.querySelectorAll("button")) b.onclick = () => { row.querySelector(".on")?.classList.remove("on"); b.classList.add("on"); S[row.dataset.key] = b.dataset.v;
   if (row.dataset.key === "tab") { for (const t of document.querySelectorAll(".tab")) t.hidden = t.dataset.tab !== S.tab; return; }
   if (row.dataset.key === "caseKey") { const C = CASES[S.caseKey]; pick("strap", C.strap); pick("bezelKind", C.bezel.kind); for (const i of document.querySelectorAll("#case-rows input")) i._show?.(); }      // a preset brings its strap and bezel kind
-  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); if (row.dataset.key === "style") { applyStyle(S.style); placeCamera(S.view); } render(); };
+  if (row.dataset.key === "bezelKind") CASES[S.caseKey].bezel.kind = S.bezelKind; if (["caseKey", "strap", "metal", "bezelKind"].includes(row.dataset.key)) rebuild(); if (row.dataset.key === "view") placeCamera(S.view); if (row.dataset.key === "drag") dragMode(); if (row.dataset.key === "style") { applyStyle(S.style); placeCamera(S.view); } if (row.dataset.key === "room") setRoom(S.room); render(); };
 for (const [id, k, f] of [["from", "from", 1], ["rise", "rise", 1], ["sun", "sun", 0.01], ["room", "room", 0.01]]) $(id).oninput = (e) => { S[k] = +e.target.value * f; show(); render(); };
 let dragging = false;
 const sunAt = (e) => { const b = canvas.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - 0.5, y = 0.5 - (e.clientY - b.top) / b.height, d = Math.min(1, Math.hypot(x, y) * 2);

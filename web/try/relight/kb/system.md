@@ -52,6 +52,10 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 - The ground's drawn grain is a bump map; the **Ground** pill (grain / plain) removes it from the shader for a cheaper frame.
 - Views: **Top** (fov 13, straight down, 12 up), **Photo** (36° up from the lower right, watch turned −10°), **Wide** (the same angle pulled back: the whole watch, both strap ends), **Low** (14° up from the 5 o'clock side: the crystal's dome, the flank, the lugs' fall), **Side** (from the crown's side, a little above the table — the one that finds height bugs). `shot3d.mjs` takes any of them.
 
+## Rooms (round 37)
+
+`S.room`: tent (grey light tent, `studio()`) · dark (`darkStudio()`: black room, key panel, strip, back glow, low card). `setRoom()` swaps the PMREM environment; each is made once. The sun and the table are the same in both.
+
 ## Render styles (round 35)
 
 `S.style`: photo · toon · cel · pixel · dither · tech. `applyStyle()` swaps materials (each photo material keeps its stand-ins in `userData`), switches passes (GTAO for photo; `EdgePass` for the drawn styles; `gridPass` for pixel and dither) and the light (the `fill` hemisphere light, the sun's step strength in `render()`). `rebuild()` re-applies the style to new meshes. The bezel's `kind`: rotating (insert, coin edge) · fixed (plain ring).
