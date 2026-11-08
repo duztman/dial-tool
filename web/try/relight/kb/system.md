@@ -64,6 +64,7 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 
 - `node try/relight/shot3d.mjs out.png <from°> <rise°> [studio|sun] [top|photo|side] [diver] [oyster|barn|jubilee|leather]` — Chromium with SwiftShader; needs `three@0.170.0` in `node_modules` (`npm install --no-save three@0.170.0`). Slow (≈ 50 s a shot), grainy AO; the look is true, the frame times are not.
 - `node try/relight/build.mjs` → `relight-built.html`… for the 3D page the one-file build is made by inlining `scene.js` into `watch3d.html` (see `rounds.md` round 1's recipe) and published to the artifact *Watch 3D trial* by the same path.
+- `python3 try/relight/check.py` before any publish: the module parses and no statement hides after a `//` comment on its line (it happened four times).
 - `node try/relight/shot-set.mjs /tmp/n` shoots a round's set (top · low · side · lug join · underside) from the working page, for looking before publishing.
 - A part outside the fixed views (the keepers, the buckle): a one-off script on `shot3d.mjs`'s pattern that moves `window.watch3d.camera` (`position`, `lookAt`, `fov`, `updateProjectionMatrix`) before `render()` — run it from `web/` so playwright resolves.
 - R21: judge a height from the **Side** view, a seam from a **crop at 2×**, never from the top view alone.
