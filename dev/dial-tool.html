@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.54 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.55 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1992,15 +1992,7 @@
     .shaderows .row.side:hover input[type="range"] { --ink: var(--shade-lit); }      /* under the pointer the slider's fill and knob turn the lit colour, as its part in the diagram (Okay's drawing, 25 Oct 2026) */
   }
   .shaderows .row.ref > label { grid-column: 1 / -1; }
-  /* a hand's grip (#577): the 6-dot gripper at the row's left, its name moved in by the gripper's width (--u4 is the icons' 16);
-     dragged, the row dims and a line shows where it lands, as a ring's in the Rings tab */
-  .shaderows .row.side { position: relative; }
-  .shaderows .row.side > .grip { position: absolute; left: 0; top: 0; height: 100%; display: grid; place-items: center; color: var(--night-grey); opacity: var(--dim); cursor: grab; touch-action: none; z-index: 1; }
-  .shaderows .row.side > .grip + label { padding-left: calc(16px + var(--u1)); }      /* the gripper's box (every icon is 16, R33), then half a unit of air before the name */
-  .shaderows .row.side.dragged { opacity: var(--dim); }
-  .shaderows .row.side.dragged > .grip { cursor: grabbing; }
-  .shaderows > .dropline { position: absolute; left: 0; right: 0; height: var(--triple); background: var(--shade-lit); pointer-events: none; }
-  .shaderows { position: relative; }      /* the plate: the reference, nothing to size (Okay: "plate untouchable") */
+     /* the plate: the reference, nothing to size (Okay: "plate untouchable") */
   .stackpic { position: relative; border: var(--hair) solid var(--night-rule); border-radius: var(--round); }      /* outline only, no ground (Okay, 01:46); it stands from the hairline over the heading to --shade-pad under the last row */
   .stackpic .word { position: absolute; left: var(--shade-word-x); top: 0; height: var(--line); line-height: var(--line); font-size: var(--t-s); font-weight: 600; color: var(--night-rule); pointer-events: none; }
   .stackpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -7670,7 +7662,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.54 beta";
+var VERSION = "v1.1.55 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -8037,8 +8029,6 @@ var DEFAULTS = {
   ha_second: {},
   ha_gmt: {},
   // the GMT hand (#577), not added to start; its starting look is set below with the other hands'
-  ha_stack: ["gmt", "hour", "minute", "second"],
-  // the hands' order on the dial, bottom first (#577; Okay, 9 Nov 2026: "a row order I choose"): the Shadows pane's grips move a hand; a hand not on the dial keeps its place
   ha_cap_top: false,
   // the cap is part of the seconds hand (#262, beta 4.43); with no seconds hand it is drawn on the topmost hand only when this is on (web only, R30)
   da_on: false,
@@ -8633,13 +8623,7 @@ function from_beta1(old) {
   const hour = start2.ha_hour, minute = start2.ha_minute;
   DEFAULTS.ha_gmt = { ...HAND_BASE, on: false, added: false, shape: HAND_SHAPES.indexOf("arrow"), fit: false, len: +((hour.len + minute.len) / 2).toFixed(2), w: +(hour.w * 0.7).toFixed(2), tail: hour.tail, tip: +(hour.len * 0.18).toFixed(2), feature: +(hour.w * 1.6).toFixed(2), c: ACCENT };
 }
-function hand_stack(S) {
-  const given = Array.isArray(S.ha_stack) ? S.ha_stack.filter((h, i2, a) => HANDS.includes(h) && a.indexOf(h) === i2) : [];
-  if (given.length === HANDS.length) return given;
-  const out = [...given];
-  for (const h of DEFAULTS.ha_stack) if (!out.includes(h)) out.splice(Math.min(DEFAULTS.ha_stack.indexOf(h), out.length), 0, h);
-  return out;
-}
+var hand_stack = () => [...ADDED_HANDS, ...FIXED_HANDS];
 var hands_shown = (S) => S.ha_on ? hand_stack(S).filter((h) => hand_added(S, h) && S["ha_" + h] && S["ha_" + h].on) : [];
 var OLD_ONLY = Object.keys(BETA1_DEFAULTS).filter((k) => !(k in DEFAULTS));
 function fresh_settings(over = null) {
@@ -8660,7 +8644,6 @@ function fresh_settings(over = null) {
   }
   for (const h of HANDS) S["ha_" + h] = complete(HAND_BASE, S["ha_" + h]);
   for (const h of ADDED_HANDS) if (!S["ha_" + h].added) S["ha_" + h].on = false;
-  S.ha_stack = hand_stack(S);
   if (!("w_inks" in over) && ("w_ink" in over || S.rings.some((r) => r.ink_d))) {
     S.w_ink_all = +((S.w_ink - INK_START) * INK_STEP_MM).toFixed(3);
     S.w_inks = {};
@@ -8966,7 +8949,7 @@ var LINK_KEYS = [
   "sh_gmt",
   "added",
   "cycle"
-  // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand and the stack as it always was to start, as every older link
+  // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand to start, as every older link. ha_stack is dead since v1.1.55 (the stack is the movement's, hand_stack): kept, nothing reads it (R8)
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -11920,7 +11903,7 @@ var angles_of = (items) => {
 function draw2(tool2, items) {
   const S = tool2.S, g = tool2.watch_g;
   const shapes = items.filter((x2) => x2.fill && !x2.stroke);
-  const key = [shapes.length, ...shapes.map((x2) => x2.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, shows_day(S) ? day_hour(S) : "", tool2.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(","), HANDS.map((h) => `${+Boolean(S["ha_" + h].bevel)}${S["ha_" + h].bevel_look || 0}${+Boolean(S["ha_" + h].added)}`).join(""), (S.ha_stack || []).join("")].join("|");
+  const key = [shapes.length, ...shapes.map((x2) => x2.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, shows_day(S) ? day_hour(S) : "", tool2.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(","), HANDS.map((h) => `${+Boolean(S["ha_" + h].bevel)}${S["ha_" + h].bevel_look || 0}${+Boolean(S["ha_" + h].added)}`).join("")].join("|");
   if (key !== tool2.watch_key || !tool2.watch_statik || tool2.statik !== tool2.watch_statik) {
     tool2.watch_key = key;
     tool2.watch_statik = tool2.statik;
@@ -16964,10 +16947,6 @@ var COLOUR = {
     wrap.classList.add("bevels");
     wrap.append(el("label", { textContent: "Bevels" }), group);
     out.refresh = (S) => {
-      for (const h of hand_stack(S).slice().reverse()) {
-        const b = buttons.find((x2) => x2[0] === h)?.[1];
-        if (b) group.append(b);
-      }
       for (const [h, b] of buttons) {
         const on = Boolean(this.S["ha_" + h].bevel);
         b.classList.toggle("on", on);
@@ -22179,12 +22158,6 @@ var GUIDES = {
     const plate = el("div", { className: "row side ref" }, el("label", { textContent: "Plate" }));
     const discs = el("div", { className: "shadowdiscs" });
     const rows = el("div", { className: "shaderows" }, ...heights.map((r) => r.el), plate, discs);
-    for (const r of heights) if (r.el.dataset.part !== "cap") {
-      const grip = el("span", { className: "grip", title: "Drag to change the hands' order" });
-      grip.innerHTML = icon(TOOL_ICONS.grip);
-      grip.onpointerdown = (e) => this.drag_stack(e, rows, heights);
-      r.el.prepend(grip);
-    }
     let laid = "";
     const lay = (S) => {
       const key = order(S).join() + "|" + HANDS.filter((h) => hand_added(S, h)).join();
@@ -22210,51 +22183,6 @@ var GUIDES = {
     const block = { el: parts, rows: heights, discs, disc_rows: [], stack, lay };
     (this.height_blocks ||= []).push(block);
     return block;
-  },
-  /** a hand's grip in a heights block dragged (#577): the hand moves in the stack — the rows in the list, the hands on the
-   *  dial — and the hands trade rungs (the heights stay, the hands take them in the new order), so the ladder holds.
-   *  Undoable, as one change. The list is the hands' rows only; the cap stays on top. */
-  drag_stack(e, list, heights) {
-    e.preventDefault();
-    const grip = e.currentTarget, row = grip.parentElement, rows = [...list.children].filter((r) => !r.hidden && r.dataset.part && r.dataset.part !== "cap" && HANDS.includes(r.dataset.part));
-    const from = rows.indexOf(row);
-    if (from < 0) return;
-    const line = el("div", { className: "dropline" });
-    list.append(line);
-    row.classList.add("dragged");
-    grip.setPointerCapture(e.pointerId);
-    let to = from;
-    const move = (ev) => {
-      const box3 = list.getBoundingClientRect(), y = ev.clientY - box3.top + list.scrollTop;
-      let gap = rows.findIndex((r) => y < r.offsetTop + r.offsetHeight / 2);
-      if (gap < 0) gap = rows.length;
-      to = gap > from ? gap - 1 : gap;
-      const at = gap < rows.length ? rows[gap].offsetTop : rows[rows.length - 1].offsetTop + rows[rows.length - 1].offsetHeight;
-      line.style.top = `${Math.max(at - 1, 0)}px`;
-      line.hidden = to === from;
-    };
-    const drop = () => {
-      grip.onpointermove = grip.onpointerup = grip.onpointercancel = null;
-      line.remove();
-      row.classList.remove("dragged");
-      if (to === from) return;
-      const S = this.S, top_down = rows.map((r) => r.dataset.part), [name] = top_down.splice(from, 1);
-      top_down.splice(to, 0, name);
-      const rest = hand_stack(S).filter((h) => !top_down.includes(h));
-      const stack = [...rest, ...top_down.slice().reverse()];
-      const rungs = hand_stack(S).map((h) => S["sh_" + h]).sort((a, b) => b - a);
-      stack.slice().reverse().forEach((h, i2) => {
-        S["sh_" + h] = rungs[i2];
-      });
-      S.ha_stack = stack;
-      this.changed(true);
-    };
-    grip.onpointermove = move;
-    grip.onpointerup = drop;
-    grip.onpointercancel = () => {
-      to = from;
-      drop();
-    };
   },
   /** the shadows' switch and list show the settings. */
   sync_shadows() {
