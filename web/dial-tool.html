@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.55 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.56 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7662,7 +7662,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.55 beta";
+var VERSION = "v1.1.56 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7679,13 +7679,21 @@ var MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 var ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge", "cap middle"];
 var from_shift = (ring, extent) => extent * (ring.from || 0) / 2;
 var FIXED_HANDS = ["hour", "minute", "second"];
-var ADDED_HANDS = ["gmt"];
+var ADDED_HANDS = ["gmt", "date", "day", "month"];
 var HANDS = [...FIXED_HANDS, ...ADDED_HANDS];
-var HAND_WORD = { hour: "Hour", minute: "Minute", second: "Seconds", gmt: "GMT" };
-var HAND_PLURAL = { hour: "Hours", minute: "Minutes", second: "Seconds", gmt: "GMT" };
+var HAND_WORD = { hour: "Hour", minute: "Minute", second: "Seconds", gmt: "GMT", date: "Date", day: "Day", month: "Month" };
+var HAND_PLURAL = { hour: "Hours", minute: "Minutes", second: "Seconds", gmt: "GMT", date: "Date", day: "Day", month: "Month" };
 var hand_word = (name, what = "hand") => (HAND_WORD[name] || name) + (what ? " " + what : "");
 var hand_added = (S, name) => FIXED_HANDS.includes(name) || Boolean(S["ha_" + name] && S["ha_" + name].added);
-var HAND_FUNCTIONS = [["gmt", "GMT \u2014 another time"]];
+var scale = (like, labels, count, r_share, size_share, name) => ({ labels: LABEL_SETS.findIndex((l) => l[0] === "Custom"), custom: labels.join(", "), count, r: round(like.r * r_share * 100) / 100, size: round(like.size * size_share * 100) / 100, name });
+var FUNCTIONS = {
+  gmt: { ask: "GMT \u2014 another time", places: 0, ring: (S, R, like) => scale(like, [24, ...Array.from({ length: 23 }, (_, i2) => i2 + 1)], 24, 0.72, 0.55, "24 hours"), len: (ring) => ring.r * 0.9 },
+  date: { ask: "Date \u2014 a pointer date", places: 31, ring: (S, R, like) => scale(like, Array.from({ length: 31 }, (_, i2) => i2 + 1), 31, 1.2, 0.42, "Date ring"), len: (ring) => ring.r - ring.size * 0.9 },
+  day: { ask: "Day \u2014 the weekday", places: 7, ring: (S, R, like) => scale(like, NAMES.en.days, 7, 0.56, 0.45, "Day ring"), len: (ring) => ring.r * 0.9 },
+  month: { ask: "Month", places: 12, ring: (S, R, like) => scale(like, NAMES.en.months, 12, 0.42, 0.42, "Month ring"), len: (ring) => ring.r * 0.9 }
+};
+var HAND_FUNCTIONS = ADDED_HANDS.map((h) => [h, FUNCTIONS[h].ask]);
+var hand_place = (name, mo) => name === "date" ? mo.d - 1 : name === "day" ? mo.wd : name === "month" ? mo.m - 1 : null;
 var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];
 var DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];
 var WINDOW_KINDS = ["date", "day", "am \xB7 pm", "moon phase", "big date"];
@@ -7712,6 +7720,8 @@ var RING_BASE = {
   name: "",
   on: true,
   c: INK,
+  fn: "",
+  // the hand this ring is the scale of (#577: "gmt", "date", …; "" for a ring of its own): added and removed with that hand
   r: 13,
   count: 12,
   start: 0,
@@ -8028,7 +8038,10 @@ var DEFAULTS = {
   ha_minute: {},
   ha_second: {},
   ha_gmt: {},
-  // the GMT hand (#577), not added to start; its starting look is set below with the other hands'
+  ha_date: {},
+  ha_day: {},
+  ha_month: {},
+  // the hands of your own (#577), none added to start; their starting looks are set below with the other hands'
   ha_cap_top: false,
   // the cap is part of the seconds hand (#262, beta 4.43); with no seconds hand it is drawn on the topmost hand only when this is on (web only, R30)
   da_on: false,
@@ -8264,7 +8277,10 @@ var DEFAULTS = {
   sh_cap: 0.75,
   sh_disc: 0.15,
   sh_gmt: 0.1,
-  // the GMT hand's height (#577): under the hour hand to start, a step clear of it
+  sh_date: 0.1,
+  sh_day: 0.1,
+  sh_month: 0.1,
+  // the added hands' heights (#577): under the hour hand to start, a step clear of it; the same for all four until the movement says (one shows on most dials)
   gd_more: [],
   // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread, a ring's guide has the ring's own colour
   // the next five keys are unread: old settings files carry them (R8). Nothing writes them any more.
@@ -8429,6 +8445,14 @@ function new_ring(kind, S, like = null) {
   while (names.has(ring.name)) ring.name = `${base} ${n++}`;
   const taken = new Set(S.rings.map((r, i2) => ring_guide(S, i2)));
   ring.guide = RING_GUIDE_ORDER.find((k) => !taken.has(k)) ?? RING_GUIDE_ORDER[S.rings.length % RING_GUIDE_ORDER.length];
+  return ring;
+}
+function function_ring(S, name) {
+  const F = FUNCTIONS[name];
+  if (!F) return null;
+  const like = S.rings.find((r) => kind_of(r) === "numerals" && !r.fn) || complete(RING_BASE, { kind: KINDS.indexOf("numerals"), ...KIND_START.numerals(S.dial_d / 2) });
+  const ring = new_ring("numerals", S, like);
+  Object.assign(ring, F.ring(S, S.dial_d / 2, like), { fn: name });
   return ring;
 }
 var BETA1_DEFAULTS = {
@@ -8620,8 +8644,11 @@ function from_beta1(old) {
 {
   const start2 = from_beta1({});
   for (const k of ["rings", "ha_hour", "ha_minute", "ha_second"]) DEFAULTS[k] = start2[k];
-  const hour = start2.ha_hour, minute = start2.ha_minute;
-  DEFAULTS.ha_gmt = { ...HAND_BASE, on: false, added: false, shape: HAND_SHAPES.indexOf("arrow"), fit: false, len: +((hour.len + minute.len) / 2).toFixed(2), w: +(hour.w * 0.7).toFixed(2), tail: hour.tail, tip: +(hour.len * 0.18).toFixed(2), feature: +(hour.w * 1.6).toFixed(2), c: ACCENT };
+  const hour = start2.ha_hour, minute = start2.ha_minute, own = (more) => ({ ...HAND_BASE, on: false, added: false, fit: false, tail: hour.tail, c: ACCENT, ...more });
+  DEFAULTS.ha_gmt = own({ shape: HAND_SHAPES.indexOf("arrow"), len: +((hour.len + minute.len) / 2).toFixed(2), w: +(hour.w * 0.7).toFixed(2), tip: +(hour.len * 0.18).toFixed(2), feature: +(hour.w * 1.6).toFixed(2) });
+  DEFAULTS.ha_date = own({ shape: HAND_SHAPES.indexOf("breguet"), len: minute.len, w: +(hour.w * 0.4).toFixed(2), tip: +(minute.len * 0.08).toFixed(2), feature: +(hour.w * 1.2).toFixed(2), feature_at: 88 });
+  DEFAULTS.ha_day = own({ shape: 0, len: +(hour.len * 0.6).toFixed(2), w: +(hour.w * 0.5).toFixed(2) });
+  DEFAULTS.ha_month = own({ shape: 0, len: +(hour.len * 0.5).toFixed(2), w: +(hour.w * 0.5).toFixed(2) });
 }
 var hand_stack = () => [...ADDED_HANDS, ...FIXED_HANDS];
 var hands_shown = (S) => S.ha_on ? hand_stack(S).filter((h) => hand_added(S, h) && S["ha_" + h] && S["ha_" + h].on) : [];
@@ -8948,8 +8975,16 @@ var LINK_KEYS = [
   "ha_stack",
   "sh_gmt",
   "added",
-  "cycle"
+  "cycle",
   // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand to start, as every older link. ha_stack is dead since v1.1.55 (the stack is the movement's, hand_stack): kept, nothing reads it (R8)
+  "ha_date",
+  "ha_day",
+  "ha_month",
+  "sh_date",
+  "sh_day",
+  "sh_month",
+  "fn"
+  // v1.1.56 beta (#577): appended; the calendar hands and the ring key `fn` (which hand a ring serves); none to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -10278,7 +10313,12 @@ var COUNTER_AT = 0.16 / 0.22;
 function hand_angle(S, name, t) {
   const i2 = FIXED_HANDS.indexOf(name);
   if (i2 >= 0) return hand_angles(t, BEATS[S.ha_beat][1])[i2];
-  const H2 = S["ha_" + name] || HAND_BASE, day = ((t + (+H2.offset || 0) * 3600) % 86400 + 86400) % 86400;
+  const H2 = S["ha_" + name] || HAND_BASE;
+  if (FUNCTIONS[name] && FUNCTIONS[name].places) {
+    const place2 = hand_place(name, moment(shown_day(S), t));
+    return (place2 || 0) / FUNCTIONS[name].places * 360;
+  }
+  const day = ((t + (+H2.offset || 0) * 3600) % 86400 + 86400) % 86400;
   return HAND_CYCLES[H2.cycle] === "12 h" ? day % 43200 / 43200 * 360 : day / 86400 * 360;
 }
 function hand_angles(t, beats_per_second = 0) {
@@ -12102,10 +12142,10 @@ function offset2(text, style) {
   const track2 = parseFloat(style.letterSpacing) || 0;
   const key = font + "|" + track2 + "|" + text;
   if (!known.has(key)) {
-    const px = parseFloat(style.fontSize) || 10, scale = 10;
-    pen.font = `${style.fontStyle} ${style.fontWeight} ${px * scale}px ${style.fontFamily}`;
+    const px = parseFloat(style.fontSize) || 10, scale2 = 10;
+    pen.font = `${style.fontStyle} ${style.fontWeight} ${px * scale2}px ${style.fontFamily}`;
     const big = pen.measureText(text), m = {};
-    for (const k of ["width", "actualBoundingBoxLeft", "actualBoundingBoxRight", "actualBoundingBoxAscent", "actualBoundingBoxDescent", "fontBoundingBoxAscent", "fontBoundingBoxDescent"]) m[k] = big[k] / scale;
+    for (const k of ["width", "actualBoundingBoxLeft", "actualBoundingBoxRight", "actualBoundingBoxAscent", "actualBoundingBoxDescent", "fontBoundingBoxAscent", "fontBoundingBoxDescent"]) m[k] = big[k] / scale2;
     const ink_x = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
     const ink_y = (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
     const box_y = (Math.round(m.fontBoundingBoxDescent) - Math.round(m.fontBoundingBoxAscent)) / 2;
@@ -12630,7 +12670,7 @@ function spec_sheet(S, statik, t) {
   };
   const rule = (x2, y2, w) => out.push(`<rect x="${num(x2)}" y="${num(y2)}" width="${num(w)}" height="${SPEC.line}" fill="${SPEC.ink}"/>`);
   const box3 = 150, cx = SPEC.edge + box3 / 2, cy = SPEC.edge + 10 + box3 / 2, k = box3 / (S.dial_d + 8);
-  const scale = k >= 1 ? `${+k.toFixed(2)} : 1` : `1 : ${+(1 / k).toFixed(2)}`;
+  const scale2 = k >= 1 ? `${+k.toFixed(2)} : 1` : `1 : ${+(1 / k).toFixed(2)}`;
   out.push(`<g transform="translate(${num(cx)} ${num(cy)}) scale(${num(k, 6)})">`);
   for (const item of drawn(S, statik, t, false, null)) out.push(`<path d="${item.path.svg(4, true)}" fill="${rgb(item.fill)}"${item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : ""}/>`);
   const rings = S.rings.filter((r) => r.on), hair = 0.15 / k;
@@ -12645,7 +12685,7 @@ function spec_sheet(S, statik, t) {
     const n = text_path(String(i2 + 1), T, 2.2), b = n.bounds();
     if (b) out.push(`<path d="${n.translate(px - (b[0] + b[2]) / 2, -py - (b[1] + b[3]) / 2).svg(3, true)}" fill="#FFFFFF"/>`);
   });
-  words(`Dial Tool \xB7 spec sheet \xB7 ${mm(S.dial_d)} mm dial \xB7 drawn at ${scale}`, SPEC.edge, SPEC.edge + 4, SPEC.head);
+  words(`Dial Tool \xB7 spec sheet \xB7 ${mm(S.dial_d)} mm dial \xB7 drawn at ${scale2}`, SPEC.edge, SPEC.edge + 4, SPEC.head);
   words(`${MADE_BY} \xB7 ${file_name(S, "json").replace(/^.*mm-|\.json$/g, "")} \xB7 every measure in mm`, SPEC.edge, SPEC.edge + 9, SPEC.type, SPEC.soft);
   const x0 = SPEC.edge + box3 + 10, cols = [0, 5, 29, 48, 62, 76, 90, 103], width = SPEC.w - SPEC.edge - x0;
   let y = SPEC.edge + 4;
@@ -20265,23 +20305,46 @@ var HANDS2 = {
       });
     };
   },
-  /** a hand of your own put on the dial (#577): added and shown, its tab chosen; undoable */
+  /** a hand of your own put on the dial (#577): the pair — the hand, added and shown, its length to its scale ring, and
+   *  the ring itself on top of the ring list (G.function_ring); its tab chosen; one undo step */
   add_hand(name) {
-    const H2 = this.S["ha_" + name];
+    const S = this.S, H2 = S["ha_" + name];
     if (!H2 || H2.added) return;
+    const ring = function_ring(S, name);
+    if (ring && !S.rings.some((r) => r.fn === name)) {
+      S.rings.unshift(ring);
+      S.ui_ring += 1;
+      H2.len = +FUNCTIONS[name].len(ring).toFixed(2);
+    }
     H2.added = true;
     H2.on = true;
-    this.S.ui_hand = HANDS.indexOf(name);
-    this.changed(true);
+    S.ui_hand = HANDS.indexOf(name);
+    this.static_dirty = true;
+    this.steady(() => {
+      this.fill_ring_list();
+      this.sync_rows();
+    });
+    this.render();
   },
-  /** …and taken off again (the − on its Show line): its settings kept, so adding it back brings the same hand */
+  /** …and taken off again (the − on its Show line): the hand's settings kept, so adding it back brings the same hand;
+   *  its scale ring goes with it (the ring list keeps at least one ring) */
   remove_hand(name) {
-    const H2 = this.S["ha_" + name];
+    const S = this.S, H2 = S["ha_" + name];
     if (!H2 || !H2.added) return;
     H2.added = false;
     H2.on = false;
-    if (HANDS[this.S.ui_hand] === name) this.S.ui_hand = 0;
-    this.changed(true);
+    if (HANDS[S.ui_hand] === name) S.ui_hand = 0;
+    const left = S.rings.filter((r) => r.fn !== name);
+    if (left.length) {
+      S.rings = left;
+      S.ui_ring = Math.min(S.ui_ring, left.length - 1);
+    }
+    this.static_dirty = true;
+    this.steady(() => {
+      this.fill_ring_list();
+      this.sync_rows();
+    });
+    this.render();
   },
   /** Hands, always in view, one line (Okay, 12 Oct 2026): the name, a tick to show the hands, how they move. */
   row_hands_bar(wrap, out) {
@@ -20373,9 +20436,9 @@ var HANDS2 = {
       const h = this.hand(), disc = HAND_SHAPES[h.shape] === "disc", name = grip.dataset.grip;
       const key = name === "len" ? "len" : name === "tail" ? "tail" : disc ? "disc_d" : "w";
       const pic2 = [...box3.querySelectorAll("svg:not(.grips)")];
-      const shown = pic2.find((v) => v.getBoundingClientRect().width > 0), scale = shown.getScreenCTM().a;
+      const shown = pic2.find((v) => v.getBoundingClientRect().width > 0), scale2 = shown.getScreenCTM().a;
       const widest = (name === "w1" || name === "w2") && hand_widest(h);
-      this.hand_drag = { key, name, row: ROW(key), v0: +h[key], x: e.clientX, y: e.clientY, scale, lying: shown.classList.contains("lying"), widest, axis: widest ? null : "across" };
+      this.hand_drag = { key, name, row: ROW(key), v0: +h[key], x: e.clientX, y: e.clientY, scale: scale2, lying: shown.classList.contains("lying"), widest, axis: widest ? null : "across" };
       g.setPointerCapture(e.pointerId);
       box3.classList.add("dragging");
       this.hand_light(this.hand_drag.row);
@@ -22243,7 +22306,7 @@ var GUIDES = {
     const box3 = el("div", { className: "stackpic", id });
     box3.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><g class="drop"><line class="knock"/><line class="fixed"/><line class="moving"/></g><g class="parts top"></g></svg><span class="word">Parts</span>`;
     const svg = box3.querySelector("svg"), parts = box3.querySelector(".parts:not(.top)"), top = box3.querySelector(".parts.top"), axis = box3.querySelector(".axis"), drop = box3.querySelector(".drop");
-    const LEN = { hour: 23.5, minute: 34.5, second: 46, gmt: 29 }, TAIL = 10;
+    const LEN = { hour: 23.5, minute: 34.5, second: 46, gmt: 29, date: 40, day: 18, month: 15 }, TAIL = 10;
     const draw3 = {
       cap: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="6" ry="2.5"/>`,
       hand: (ax, y, h) => `<line x1="${ax - TAIL}" y1="${y}" x2="${ax + LEN[h]}" y2="${y}"/><ellipse class="fill" cx="${ax}" cy="${y}" rx="2.5" ry="1.4"/>`,
@@ -23005,7 +23068,7 @@ var CARDS = {
 
 // src/wearos/wff_assets.js
 function layer_svg(S, items, { background = null, size = 450 } = {}) {
-  const scale = size / S.dial_d;
+  const scale2 = size / S.dial_d;
   const center = size / 2;
   const out = [
     `<?xml version="1.0" encoding="UTF-8"?>`,
@@ -23014,7 +23077,7 @@ function layer_svg(S, items, { background = null, size = 450 } = {}) {
   if (background) {
     out.push(`  <rect width="${size}" height="${size}" fill="${background}"/>`);
   }
-  out.push(`  <g transform="translate(${center} ${center}) scale(${num(scale)})">`);
+  out.push(`  <g transform="translate(${center} ${center}) scale(${num(scale2)})">`);
   for (const item of items) {
     if (!item.path) continue;
     const alpha = item.fill && item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : "";
@@ -23067,13 +23130,13 @@ function build_single_window(S, winIndex, mutate) {
   return build_static(S_copy).windows[0];
 }
 function compute_window_layout(S, x2) {
-  const scale = 450 / S.dial_d;
+  const scale2 = 450 / S.dial_d;
   const b = (x2.frame ? x2.window.union(x2.frame).bounds() : x2.window.bounds()) || [-5, -5, 5, 5];
   const [x0, y0, x1, y1] = b;
-  const boxX = Math.max(0, Math.floor(225 + x0 * scale) - 1);
-  const boxY = Math.max(0, Math.floor(225 - y1 * scale) - 1);
-  const boxW = Math.max(2, Math.min(450, Math.ceil(225 + x1 * scale) + 1) - boxX);
-  const boxH = Math.max(2, Math.min(450, Math.ceil(225 - y0 * scale) + 1) - boxY);
+  const boxX = Math.max(0, Math.floor(225 + x0 * scale2) - 1);
+  const boxY = Math.max(0, Math.floor(225 - y1 * scale2) - 1);
+  const boxW = Math.max(2, Math.min(450, Math.ceil(225 + x1 * scale2) + 1) - boxX);
+  const boxH = Math.max(2, Math.min(450, Math.ceil(225 - y0 * scale2) + 1) - boxY);
   const kind = WINDOW_KINDS[x2.w.kind] || "date";
   let frames, cols, rows, colExpr, rowExpr;
   if (kind === "date" || kind === "big date") {
@@ -23120,7 +23183,7 @@ function compute_window_layout(S, x2) {
 function svg_window_sheet(S, x2) {
   const layout = compute_window_layout(S, x2);
   const { kind, boxX, boxY, boxW, boxH, frames, cols, sheetW, sheetH } = layout;
-  const scale = 450 / S.dial_d;
+  const scale2 = 450 / S.dial_d;
   const discColor = x2.w.disc_c || [1, 1, 1, 1];
   const discFill = rgb(discColor);
   const discAlpha = discColor[3] < 1 ? ` fill-opacity="${num(discColor[3])}"` : "";
@@ -23158,7 +23221,7 @@ function svg_window_sheet(S, x2) {
         w.age = k / 28 * 29.53;
       }
     });
-    out.push(`  <g transform="translate(${num(tx)} ${num(ty)}) scale(${num(scale)})">`);
+    out.push(`  <g transform="translate(${num(tx)} ${num(ty)}) scale(${num(scale2)})">`);
     out.push(`    <path d="${discD}" fill="${discFill}"${discAlpha}/>`);
     if (frameWin && frameWin.number && !empty(frameWin.number)) {
       out.push(`    <path d="${frameWin.number.svg(5, true)}" fill="${textFill}"${textAlpha}/>`);

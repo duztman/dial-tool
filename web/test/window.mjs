@@ -1069,10 +1069,20 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   const rows = await rows_seen(), at = rows.indexOf("Colour");
   const added = await page.evaluate(() => { const S = window.dial_tool.S, tabs = [...document.querySelectorAll(".tabsbar .segs > .tab")];
     return { tabs: tabs.map((t) => t.textContent + (t.classList.contains("on") ? "*" : "")).join(), ui_hand: S.ui_hand, on: S.ha_gmt.added && S.ha_gmt.on, plus: document.querySelector("#hand-add-plus").hidden, remove: !document.querySelector("#hand-remove").hidden }; });
-  check(before.tabs === "Hour,Minute,Seconds" && before.plus && before.round === "50%" && before.after === 1 && before.size === 20 && before.options === "GMT — another time" && before.remove,
+  check(before.tabs === "Hour,Minute,Seconds" && before.plus && before.round === "50%" && before.after === 1 && before.size === 20 && before.options === "GMT — another time,Date — a pointer date,Day — the weekday,Month" && before.remove,
     `after Hour · Minute · Seconds a round + (${before.size} wide, a unit after the last tab: ${before.after}) whose menu asks the function: ${before.options}; the fixed hands have no −`);
-  check(added.tabs === "Hour,Minute,Seconds,GMT*" && added.ui_hand === 3 && added.on && added.plus && added.remove && at >= 0 && rows.slice(at, at + 3).join() === "Colour,Turns in,Hours ahead",
-    `GMT chosen: a GMT tab, chosen, the hand on; the + gone (every function added, R16); the − on its Show line; its pane opens Colour · Turns in · Hours ahead (${rows.slice(at, at + 3).join(" · ")})`);
+  check(added.tabs === "Hour,Minute,Seconds,GMT*" && added.ui_hand === 3 && added.on && !added.plus && added.remove && at >= 0 && rows.slice(at, at + 3).join() === "Colour,Turns in,Hours ahead",
+    `GMT chosen: a GMT tab, chosen, the hand on; the + stays (three functions left); the − on its Show line; its pane opens Colour · Turns in · Hours ahead (${rows.slice(at, at + 3).join(" · ")})`);
+  // the pair (10 Nov 2026, "build a reasonable frame"): the GMT hand came with its scale ring on top of the ring list — 24 at 12, then 1 to 23 — and its length reaches it
+  const pair = await S("[S.rings[0].name, S.rings[0].fn, S.rings[0].count, S.rings[0].custom.slice(0, 12), S.rings[0].r, S.ha_gmt.len, S.rings.length]");
+  check(pair[0] === "24 hours" && pair[1] === "gmt" && pair[2] === 24 && pair[3] === "24, 1, 2, 3," && Math.abs(pair[5] - pair[4] * 0.9) < 0.01, `the GMT hand brings its 24-hour ring (${pair[0]}, fn ${pair[1]}, ${pair[2]} places, "${pair[3]}…", r ${pair[4]}) and reaches it (length ${pair[5]} = 0.9 r); ${pair[6]} rings`);
+  // a calendar hand: Date with its 31-place ring, jumping to the day's place as a date wheel (the 1st at 12)
+  await page.selectOption("#hand-add", "date"); await frame();
+  const cal = await S("(() => { const d = +(S.date || '').slice(8) || new Date().getDate(); return [S.rings[0].fn, S.rings[0].count, t.items.find((x) => x.role === 'hand' && x.name === 'date')?.angle, (d - 1) / 31 * 360, S.ha_date.added, [...document.querySelectorAll('.tabsbar .segs > .tab')].map((t) => t.textContent).join()]; })()");
+  check(cal[0] === "date" && cal[1] === 31 && Math.abs(cal[2] - cal[3]) < 1e-6 && cal[4] && cal[5] === "Hour,Minute,Seconds,GMT,Date", `the Date hand brings its 31-place ring and points at the day's place (${cal[2].toFixed(1)}°, the 1st at 12); the tabs ${cal[5]}`);
+  await page.click("#hand-remove"); await frame();
+  check(await S("!S.ha_date.added && !S.rings.some((r) => r.fn === 'date') && S.rings.some((r) => r.fn === 'gmt') && S.ui_hand === 0"), "the − takes the Date hand off with its ring; the GMT pair stays");
+  await page.click("#hand-tab-3"); await frame();
   // on the dial: the GMT hand drawn first, under the hour hand (the stack's order, bottom first), at the other time's angle — 24 h a turn, midnight at 12
   const on_dial = await S("[t.items.filter((x) => x.role === 'hand').map((x) => x.name + '@' + Math.round(x.angle * 10) / 10).join(), 'gmt,hour,minute,second', S.sh_gmt, Math.round((S.t % 86400) / 86400 * 3600) / 10, S.t]");
   const t = on_dial[4], want = `gmt@${on_dial[3]},hour@${Math.round((t % 43200) / 43200 * 3600) / 10},minute@${Math.round((t % 3600) / 3600 * 3600) / 10},second@${Math.round((t % 60) / 60 * 3600) / 10}`;
@@ -1092,7 +1102,7 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   await page.click("#hand-tab-3"); await frame();
   await page.click("#hand-remove"); await frame();
   const gone = await S("[!S.ha_gmt.added, !S.ha_gmt.on, S.ui_hand, [...document.querySelectorAll('.tabsbar .segs > .tab')].map((t) => t.textContent).join(), !document.querySelector('#hand-add-plus').hidden]");
-  check(gone.join() === "true,true,0,Hour,Minute,Seconds,true", `the − takes the GMT hand off: not added, not on, the Hour tab chosen, the tabs Hour · Minute · Seconds, the + back (${gone.join(" ")})`);
+  check(gone.join() === "true,true,0,Hour,Minute,Seconds,true" && await S("!S.rings.some((r) => r.fn)"), `the − takes the GMT hand off with its ring: not added, not on, the Hour tab chosen, the tabs Hour · Minute · Seconds, the + stays (${gone.join(" ")})`);
 }
 await page.click("#hand-tab-0");
 {

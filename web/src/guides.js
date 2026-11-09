@@ -532,7 +532,7 @@ export const GUIDES = {
     const box = el("div", { className: "stackpic", id });
     box.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><g class="drop"><line class="knock"/><line class="fixed"/><line class="moving"/></g><g class="parts top"></g></svg><span class="word">Parts</span>`;      // the order: the parts, the red drop over them, the lit part over all (Okay, 25 Oct 2026, 16:59: "White indicator drawing is the topest of all")
     const svg = box.querySelector("svg"), parts = box.querySelector(".parts:not(.top)"), top = box.querySelector(".parts.top"), axis = box.querySelector(".axis"), drop = box.querySelector(".drop");
-    const LEN = { hour: 23.5, minute: 34.5, second: 46, gmt: 29 }, TAIL = 10;      // a hand's reach right of the axis, and left (his drawing); the GMT hand between the hour's and the minute's, as it starts
+    const LEN = { hour: 23.5, minute: 34.5, second: 46, gmt: 29, date: 40, day: 18, month: 15 }, TAIL = 10;      // a hand's reach right of the axis, and left (his drawing); the added hands as they start: GMT between the hour's and the minute's, the date near the minute's, day and month short
     const draw = {
       cap: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="6" ry="2.5"/>`,
       hand: (ax, y, h) => `<line x1="${ax - TAIL}" y1="${y}" x2="${ax + LEN[h]}" y2="${y}"/><ellipse class="fill" cx="${ax}" cy="${y}" rx="2.5" ry="1.4"/>`,

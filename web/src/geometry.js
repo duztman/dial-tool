@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.55 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.56 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -44,16 +44,37 @@ export const from_shift = (ring, extent) => extent * (ring.from || 0) / 2;
 // function. An added hand is on the dial once `added` is set (the + on the Hands tab); hidden (on: false) it keeps its tab.
 // A new function is appended (R9: tabs and links count on the order).
 export const FIXED_HANDS = ["hour", "minute", "second"];
-export const ADDED_HANDS = ["gmt"];      // GMT (another time): 24 h a turn, or 12 h, an offset in hours (9 Nov 2026)
+export const ADDED_HANDS = ["gmt", "date", "day", "month"];      // appended only (R9): the + menu's order and the links count on it (gmt 9 Nov 2026; date · day · month 10 Nov 2026)
 export const HANDS = [...FIXED_HANDS, ...ADDED_HANDS];
 /** the word for a hand in every list: "Hour", "Seconds", "GMT"; hand_word("gmt") = "GMT hand", hand_word("hour", "lume") = "Hour lume" */
-export const HAND_WORD = { hour: "Hour", minute: "Minute", second: "Seconds", gmt: "GMT" };
-export const HAND_PLURAL = { hour: "Hours", minute: "Minutes", second: "Seconds", gmt: "GMT" };      // the Shadows pane's and show mode's Hands list's words
+export const HAND_WORD = { hour: "Hour", minute: "Minute", second: "Seconds", gmt: "GMT", date: "Date", day: "Day", month: "Month" };
+export const HAND_PLURAL = { hour: "Hours", minute: "Minutes", second: "Seconds", gmt: "GMT", date: "Date", day: "Day", month: "Month" };      // the Shadows pane's and show mode's Hands list's words
 export const hand_word = (name, what = "hand") => (HAND_WORD[name] || name) + (what ? " " + what : "");
 /** does this hand exist on the dial: a fixed hand always, an added one once its + was pressed */
 export const hand_added = (S, name) => FIXED_HANDS.includes(name) || Boolean(S["ha_" + name] && S["ha_" + name].added);
+// ── the functions a hand of your own can have (#577, the frame of 10 Nov 2026; Okay: "build a reasonable frame") ──
+//   A function is a pair: the hand's angle rule and the scale ring it is read on. The + menu offers the pair; adding
+//   one adds the hand and its ring (`fn` on the ring names the hand it serves), taking the hand off takes its ring too.
+//   ask: the menu's words · places: how many positions its ring has (0: a time hand, its ring the 24 hours) ·
+//   ring(S, R, like): the ring's settings over a fresh numerals ring of the dial's radius R — its labels as a watch
+//   prints them (Custom, so a 24 stands at 12 and a day wheel's names show); its radius and size shares of the top
+//   numerals ring's (`like`), a guess to start with, Okay's to move · len(ring): the hand's length to its ring.
+//   The rules of the angles are in hand_angle: a time hand turns with the day, a calendar hand jumps at midnight to its
+//   place as a date wheel, a day star or a month wheel does — the first place (1, Monday, January; 24 on the GMT
+//   ring) at 12. Later functions (noted in the build list, #577): chronograph hands (a stopped state, not the time),
+//   power reserve (a setting on an arc), sunrise · sunset and prayer times (the sun from a place and a date),
+//   retrograde hands (an arc, flying back), a second 12-hour time with a day · night disc.
+const scale = (like, labels, count, r_share, size_share, name) => ({ labels: LABEL_SETS.findIndex((l) => l[0] === "Custom"), custom: labels.join(", "), count, r: round(like.r * r_share * 100) / 100, size: round(like.size * size_share * 100) / 100, name });
+export const FUNCTIONS = {
+  gmt: { ask: "GMT — another time", places: 0, ring: (S, R, like) => scale(like, [24, ...Array.from({ length: 23 }, (_, i) => i + 1)], 24, 0.72, 0.55, "24 hours"), len: (ring) => ring.r * 0.9 },
+  date: { ask: "Date — a pointer date", places: 31, ring: (S, R, like) => scale(like, Array.from({ length: 31 }, (_, i) => i + 1), 31, 1.2, 0.42, "Date ring"), len: (ring) => ring.r - ring.size * 0.9 },
+  day: { ask: "Day — the weekday", places: 7, ring: (S, R, like) => scale(like, MOMENT_NAMES.en.days, 7, 0.56, 0.45, "Day ring"), len: (ring) => ring.r * 0.9 },
+  month: { ask: "Month", places: 12, ring: (S, R, like) => scale(like, MOMENT_NAMES.en.months, 12, 0.42, 0.42, "Month ring"), len: (ring) => ring.r * 0.9 },
+};
 /** what each added hand does, for the + menu: [name, the question's words] */
-export const HAND_FUNCTIONS = [["gmt", "GMT — another time"]];
+export const HAND_FUNCTIONS = ADDED_HANDS.map((h) => [h, FUNCTIONS[h].ask]);
+/** the place a calendar hand points at for a moment: 0 = the first (the 1st, Monday, January); null for a time hand */
+export const hand_place = (name, mo) => (name === "date" ? mo.d - 1 : name === "day" ? mo.wd : name === "month" ? mo.m - 1 : null);
 export const HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];      // disc: #164, 14 Oct 2026 (appended, R9)
 export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];      // only grows at its end (R9); 4 added 13 Oct 2026 (Ronda's 4H dial drawing)
 export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase", "big date"];      // big date appended (4.74, R9): two square holes, the tens and the units each on a disc of its own      // what a window shows (web version)
@@ -88,6 +109,7 @@ export const ACCENT = [0.80, 0.22, 0.10, 1];
 // every ring carries every key, so changing its kind keeps everything (R7)
 export const RING_BASE = {
   kind: 0, name: "", on: true, c: INK,
+  fn: "",                                          // the hand this ring is the scale of (#577: "gmt", "date", …; "" for a ring of its own): added and removed with that hand
   r: 13.0, count: 12, start: 0.0, span: 360.0, every: 1, offset: 0, invert: false,
   skip: 0, knock: 0, clear: 0.25,
   shape: 0, file: "", scale: 1.0, len: 2.8, w: 0.7, taper: 0.35, round_out: 0.0, round_in: 0.0, wall: 0.0,
@@ -236,7 +258,7 @@ export const DEFAULTS = {
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
   rings: [],
   ha_on: true, ha_beat: 0, ha_cap: 1.6, c_cap: ACCENT, ha_hour: {}, ha_minute: {}, ha_second: {},
-  ha_gmt: {},                                      // the GMT hand (#577), not added to start; its starting look is set below with the other hands'
+  ha_gmt: {}, ha_date: {}, ha_day: {}, ha_month: {},      // the hands of your own (#577), none added to start; their starting looks are set below with the other hands'
   ha_cap_top: false,                               // the cap is part of the seconds hand (#262, beta 4.43); with no seconds hand it is drawn on the topmost hand only when this is on (web only, R30)
   da_on: false, da_at: 0, da_r: 10.5, da_w: 2.6, da_h: 2.0, da_round: 0.2, da_frame: 0.15,
   da_clear: 0.25, da_day: "17", da_size: 62.0, da_ink: INK,
@@ -331,7 +353,7 @@ export const DEFAULTS = {
   sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
   sh_bevel: 100,                                   // the hands' bevels' strength, 0–100 % (Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"): a hand's own Bevel tick turns its bevel on (HAND_BASE.bevel, off to start); 100 = as 4.77 drew them
   sh_hour: 0.15, sh_minute: 0.35, sh_second: 0.6, sh_cap: 0.75, sh_disc: 0.15,
-  sh_gmt: 0.1,                                     // the GMT hand's height (#577): under the hour hand to start, a step clear of it
+  sh_gmt: 0.1, sh_date: 0.1, sh_day: 0.1, sh_month: 0.1,      // the added hands' heights (#577): under the hour hand to start, a step clear of it; the same for all four until the movement says (one shows on most dials)
   gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread, a ring's guide has the ring's own colour
   // the next five keys are unread: old settings files carry them (R8). Nothing writes them any more.
   gd_c: [0.0, 0.55, 0.9, 1], gd_strength: 50.0,
@@ -438,6 +460,17 @@ export function new_ring(kind, S, like = null) {
   return ring;
 }
 
+/** the scale ring of a hand's function (#577, FUNCTIONS): a numerals ring in the top numerals ring's type, its labels,
+ *  count, radius and size the function's; `fn` names the hand. null for a hand without a function (the fixed three). */
+export function function_ring(S, name) {
+  const F = FUNCTIONS[name];
+  if (!F) return null;
+  const like = S.rings.find((r) => kind_of(r) === "numerals" && !r.fn) || complete(RING_BASE, { kind: KINDS.indexOf("numerals"), ...KIND_START.numerals(S.dial_d / 2) });
+  const ring = new_ring("numerals", S, like);
+  Object.assign(ring, F.ring(S, S.dial_d / 2, like), { fn: name });
+  return ring;
+}
+
 // ── beta 1.0 settings → rings and hands (R8) ─────────────────
 
 const BETA1_DEFAULTS = {
@@ -524,8 +557,13 @@ export function from_beta1(old) {
   for (const k of ["rings", "ha_hour", "ha_minute", "ha_second"]) DEFAULTS[k] = start[k];
   // the GMT hand as it starts when added (#577): an arrow, as the 24-hour hands of the GMT watches, reaching between the
   // hour and the minute hand, thinner than the hour hand, in the seconds' accent colour — not on the dial until its + is pressed
-  const hour = start.ha_hour, minute = start.ha_minute;
-  DEFAULTS.ha_gmt = { ...HAND_BASE, on: false, added: false, shape: HAND_SHAPES.indexOf("arrow"), fit: false, len: +((hour.len + minute.len) / 2).toFixed(2), w: +(hour.w * 0.7).toFixed(2), tail: hour.tail, tip: +(hour.len * 0.18).toFixed(2), feature: +(hour.w * 1.6).toFixed(2), c: ACCENT };
+  const hour = start.ha_hour, minute = start.ha_minute, own = (more) => ({ ...HAND_BASE, on: false, added: false, fit: false, tail: hour.tail, c: ACCENT, ...more });
+  DEFAULTS.ha_gmt = own({ shape: HAND_SHAPES.indexOf("arrow"), len: +((hour.len + minute.len) / 2).toFixed(2), w: +(hour.w * 0.7).toFixed(2), tip: +(hour.len * 0.18).toFixed(2), feature: +(hour.w * 1.6).toFixed(2) });
+  // the calendar hands (10 Nov 2026): a pointer date long and thin with a ring near its tip, as the pointer-date watches
+  // draw it; day and month short batons. Their lengths are set to their rings when added (add_hand)
+  DEFAULTS.ha_date = own({ shape: HAND_SHAPES.indexOf("breguet"), len: minute.len, w: +(hour.w * 0.4).toFixed(2), tip: +(minute.len * 0.08).toFixed(2), feature: +(hour.w * 1.2).toFixed(2), feature_at: 88 });
+  DEFAULTS.ha_day = own({ shape: 0, len: +(hour.len * 0.6).toFixed(2), w: +(hour.w * 0.5).toFixed(2) });
+  DEFAULTS.ha_month = own({ shape: 0, len: +(hour.len * 0.5).toFixed(2), w: +(hour.w * 0.5).toFixed(2) });
 }
 /** the hands' order on the dial, bottom first — the stack as a movement builds it (9 Nov 2026, researched on Okay's
  *  word, "if so just remove movability"): the hands sit on nested pipes, the slow outer wheels lowest, so the hour hand is
@@ -647,6 +685,7 @@ export const LINK_KEYS = [
   "ink_h", "stroke_h", "frame_h",      // v1.1.44 beta: appended for the table's sake; a part's own ink height, show mode's, lean() leaves it out of a link (R7)
   "hole_as", "hole",        // v1.1.52 beta (#404): appended; no hole to start, as every older link
   "ha_gmt", "ha_stack", "sh_gmt", "added", "cycle",      // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand to start, as every older link. ha_stack is dead since v1.1.55 (the stack is the movement's, hand_stack): kept, nothing reads it (R8)
+  "ha_date", "ha_day", "ha_month", "sh_date", "sh_day", "sh_month", "fn",      // v1.1.56 beta (#577): appended; the calendar hands and the ring key `fn` (which hand a ring serves); none to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2077,7 +2116,12 @@ const COUNTER_AT = 0.16 / 0.22;                    // counterweight centre, as a
 export function hand_angle(S, name, t) {
   const i = FIXED_HANDS.indexOf(name);
   if (i >= 0) return hand_angles(t, BEATS[S.ha_beat][1])[i];
-  const H = S["ha_" + name] || HAND_BASE, day = (((t + (+H.offset || 0) * 3600) % 86400) + 86400) % 86400;
+  const H = S["ha_" + name] || HAND_BASE;
+  if (FUNCTIONS[name] && FUNCTIONS[name].places) {      // a calendar hand: its place for the moment, jumping as a wheel does
+    const place = hand_place(name, moment(shown_day(S), t));
+    return (place || 0) / FUNCTIONS[name].places * 360;
+  }
+  const day = (((t + (+H.offset || 0) * 3600) % 86400) + 86400) % 86400;
   return HAND_CYCLES[H.cycle] === "12 h" ? (day % 43200) / 43200 * 360 : day / 86400 * 360;
 }
 export function hand_angles(t, beats_per_second = 0) {

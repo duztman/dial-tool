@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## v1.1.56 beta · 10 Nov 2026 — #577: the functions frame — a hand of your own is a pair, hand and scale ring; GMT · Date · Day · Month
+
+Okay, 9 Nov 2026, 23:08: "Ok build a reasonable frame, see what would fit. Note others for other complicatins we can do later."
+
+- **The frame** (`geometry.js` `FUNCTIONS`, `hand_place`, `function_ring`): a function is its angle rule and the ring it is read on. The table says, per function, the + menu's words, how many places its ring has, the ring's settings over a fresh numerals ring (Custom labels as a watch prints them, radius and size as shares of the top numerals ring's — guesses to start, his to move) and the hand's length to that ring. The angle: a time hand turns with the day (GMT); a calendar hand jumps at midnight to its place as a date wheel, a day star or a month wheel does — the first place at 12 (24 on the GMT ring, the 1st, Monday, January). The date is the bar's (`shown_day`, `moment.js`).
+- **Four functions** in the + menu: GMT — another time (24 h · 12 h, hours ahead; its ring 24 · 1 … 23 at 0.72 of the numerals' radius) · Date — a pointer date (31 places at 1.2, a thin Breguet hand with its ring near the tip) · Day — the weekday (7 places, MON … SUN at 0.56) · Month (12 places, JAN … DEC at 0.42; both short batons). The names on the rings are English (moment.js EN); a language choice is for later.
+- **The pair** (`hands.js` `add_hand`, `remove_hand`; `RING_BASE.fn`): the + adds the hand and puts its ring on top of the ring list, `fn` on the ring naming the hand; the hand's Length is set to the ring; the − takes the hand off and its ring with it. One undo step each. The + stays until every function is added.
+- **Links** (`LINK_KEYS` appended: `ha_date`, `ha_day`, `ha_month`, `sh_date`, `sh_day`, `sh_month`, `fn`); the added hands' heights all start at 0.10 under the hour hand's 0.15 (one shows on most dials; the movement's numbers later).
+- **Seen, open**: with four added hands the seven tabs are narrow and "Seconds" is cut; the rings' radii crowd each other when all four are added at once (each alone sits clear) — for Okay's look.
+- **Later functions** (noted in `build-list-notes.md` #577): chronograph hands (a stopped state, not the time), power reserve (a setting on an arc), sunrise · sunset and prayer times (the sun from a place and a date — prayer times need a module on a real watch, Aramedes), retrograde hands (an arc, flying back), a second 12-hour time with a day · night disc, the hands' Fit holes (the pipes' Ø), the Wear OS export, the rings' names in the dial's language.
+- **Tests**: `linktrip.mjs` — the calendar angles on Monday 9 Nov 2026 (92.9° · 0° · 300°), a ring's `fn` through a link; `window.mjs` — the + menu's four, the GMT pair (ring, length), the Date pair and its angle, the − taking a pair off.
+
 ## v1.1.55 beta · 9 Nov 2026 — the hand stack is the movement's: nothing to move
 
 Okay, 9 Nov 2026, 22:59: "please research if the hand stack should be immovable, like seconds always needs to be on top and the complications get the lowest spot always? If so just remove movability". Researched: it should be — the hands sit on nested pipes, the slow outer wheels lowest (the hour wheel), the cannon pinion's minute hand over it, the seconds hand on the centre arbor on top; a central complication hand rides a wheel outside the hour wheel (a GMT hand's hole 1.8 mm against the hour hand's 1.5 on an ETA 2893-2; Seiko's NH34 the same way) and is fitted first, under them all.

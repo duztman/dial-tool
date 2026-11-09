@@ -4,7 +4,7 @@ One line per open item, in the order it will be done: **the first column is that
 
 Status words, four: **build** (Okay said build) · **verify** (built; Okay has not seen it on his machines) · **open** (not started; built on his word) · **parked** (Okay said park; comes back on his word). "As touched" means housekeeping done inside whatever push edits that file, never a push of its own.
 
-*Last updated 10 Nov 2026, 00:20 (v1.1.55 beta): the hand stack fixed as the movement's (the grips of v1.1.54 gone). 9 Nov 2026, 23:30 (v1.1.54 beta): #577 built for GMT, to verify — the + after the hand tabs, the GMT hand; its day · week · month functions stay in Later. 3 Nov 2026, 22:40 (v1.1.53 beta): #580 built, to verify — the Heights pane last on show mode's Dial tab; Now empty. 22:10 (v1.1.52 beta): #404 built, to verify — the hub one circle still, the pipe's hole None · Fit · Own, the boss lit as a dome in show mode; #580 next in Now. 21:45 — Okay: "404 first, then 580"; both in Now. 21:40: #175's Night, #579, #581 and #576 verified by Okay ("all verified"); #349 folded into #169 (done), its dial-side press to #61; Now is empty — #346 with #83 is next in line, #580 later.*
+*Last updated 10 Nov 2026, 01:10 (v1.1.56 beta): the functions frame built, to verify — the + offers GMT · Date · Day · Month, each a hand with its scale ring; the later functions noted on #577. 00:20 (v1.1.55 beta): the hand stack fixed as the movement's (the grips of v1.1.54 gone). 9 Nov 2026, 23:30 (v1.1.54 beta): #577 built for GMT, to verify — the + after the hand tabs, the GMT hand; its day · week · month functions stay in Later. 3 Nov 2026, 22:40 (v1.1.53 beta): #580 built, to verify — the Heights pane last on show mode's Dial tab; Now empty. 22:10 (v1.1.52 beta): #404 built, to verify — the hub one circle still, the pipe's hole None · Fit · Own, the boss lit as a dome in show mode; #580 next in Now. 21:45 — Okay: "404 first, then 580"; both in Now. 21:40: #175's Night, #579, #581 and #576 verified by Okay ("all verified"); #349 folded into #169 (done), its dial-side press to #61; Now is empty — #346 with #83 is next in line, #580 later.*
 
 ## Now — Okay said build
 
@@ -14,7 +14,7 @@ Nothing: the next item is his to call.
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| — | 577 | Hands of your own, GMT first (v1.1.54): a + after the hand tabs asks the function; the GMT hand turns 24 h or 12 h, hours ahead; it sits under the hour hand (the stack is the movement's, v1.1.55) | 9 Nov 2026 — "Let's start with adding a gmt hand. This is also addable through hands" | verify (v1.1.54) |
+| — | 577 | Hands of your own (v1.1.54–56): a + after the hand tabs asks the function — GMT (24 h or 12 h, hours ahead) · Date · Day · Month — and adds the hand with its scale ring; added hands sit under the hour hand (the stack is the movement's) | 9 Nov 2026 — "Let's start with adding a gmt hand. This is also addable through hands" | verify (v1.1.54) |
 | — | 580 | Show mode: the Heights pane (v1.1.53), last on the Dial tab — the Shadows pane's rows (no slider) and diagram on the column | 3 Nov 2026, 02:34; 22:07 — "go for 580" | verify (v1.1.53) |
 | — | 404 | Every hand a real hub (v1.1.52): the pipe's hole through it — Hole None · Fit (hour 1.50 · minute 0.90 · second 0.20) · Own Ø — and the boss lit as a dome of its own in show mode; the cap over it as before (#421 folded in) | 3 Nov 2026, 21:36 — "404 first, then 580"; 21:45 — "both should be options. also cap is an option still." | verify (v1.1.52) |
 
@@ -41,7 +41,7 @@ Okay, 1 Nov 2026: #184, then #169 ("core to our mission") — both built — the
 
 | Order | # | Item | From | Status |
 |---|---|---|---|---|
-| 8 | 577 | Hands of your own, the rest: day, week and month trackers in the + menu (the GMT hand is built, v1.1.54); a measured pipe Ø for a GMT hand's Fit hole; the GMT hand in the Wear OS export | 3 Nov 2026, 01:06 — "A plus sign next to the hands tabs, creates a new hand" | open |
+| 8 | 577 | Hands of your own, the later functions: chronograph hands, power reserve, sunrise · sunset, prayer times (the sun from a place and a date), retrograde hands, a second 12-hour time with a day · night disc; the rings' names in the dial's language; the added hands' Fit holes (the pipes' Ø) and heights; the Wear OS export; the seven tabs' width | 3 Nov 2026, 01:06 — "A plus sign next to the hands tabs, creates a new hand" | open |
 | 9 | 578 | Settings: the time bar at the top or the bottom; at the top the same bar, its numbers (silkscreen on the speed, mono on the time ruler) under it and its line at its foot | 3 Nov 2026, 01:06 — "time bar: top or bottom" | open |
 | 10 | 575 | Show mode on the iPad: every ± number and slider opens a controller, as on the dial side | 3 Nov 2026, 00:36 — "note all plusminus number and sliders on show case get controllers on ipad" | open |
 | 11 | 573 | A Faceted bevel for hands: a facet per side, mitred where two meet, how finely adjustable — v1.1.35–36's did not work | 2 Nov 2026, 18:48 — "facets system does not work, remove for now, note for later" | open |

@@ -112,22 +112,32 @@ export const HANDS = {
     };
   },
 
-  /** a hand of your own put on the dial (#577): added and shown, its tab chosen; undoable */
+  /** a hand of your own put on the dial (#577): the pair — the hand, added and shown, its length to its scale ring, and
+   *  the ring itself on top of the ring list (G.function_ring); its tab chosen; one undo step */
   add_hand(name) {
-    const H = this.S["ha_" + name];
+    const S = this.S, H = S["ha_" + name];
     if (!H || H.added) return;
+    const ring = G.function_ring(S, name);
+    if (ring && !S.rings.some((r) => r.fn === name)) { S.rings.unshift(ring); S.ui_ring += 1; H.len = +G.FUNCTIONS[name].len(ring).toFixed(2); }
     H.added = true; H.on = true;
-    this.S.ui_hand = G.HANDS.indexOf(name);
-    this.changed(true);
+    S.ui_hand = G.HANDS.indexOf(name);
+    this.static_dirty = true;
+    this.steady(() => { this.fill_ring_list(); this.sync_rows(); });
+    this.render();
   },
 
-  /** …and taken off again (the − on its Show line): its settings kept, so adding it back brings the same hand */
+  /** …and taken off again (the − on its Show line): the hand's settings kept, so adding it back brings the same hand;
+   *  its scale ring goes with it (the ring list keeps at least one ring) */
   remove_hand(name) {
-    const H = this.S["ha_" + name];
+    const S = this.S, H = S["ha_" + name];
     if (!H || !H.added) return;
     H.added = false; H.on = false;
-    if (G.HANDS[this.S.ui_hand] === name) this.S.ui_hand = 0;
-    this.changed(true);
+    if (G.HANDS[S.ui_hand] === name) S.ui_hand = 0;
+    const left = S.rings.filter((r) => r.fn !== name);
+    if (left.length) { S.rings = left; S.ui_ring = Math.min(S.ui_ring, left.length - 1); }
+    this.static_dirty = true;
+    this.steady(() => { this.fill_ring_list(); this.sync_rows(); });
+    this.render();
   },
 
   /** Hands, always in view, one line (Okay, 12 Oct 2026): the name, a tick to show the hands, how they move. */
