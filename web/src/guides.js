@@ -441,9 +441,8 @@ export const GUIDES = {
     // "seconds hand cant go below minutes and so on. Limit every value to their obvious limits"): each row's slider
     // runs between its neighbours' heights, a step clear of each (a hidden hand does not count), and a value at an
     // end flashes LIMIT (panel.js, `bounds`)
-    // The order is the hands' stack (#577; Okay, 9 Nov 2026: "a row order I choose"): the cap on top, then the hands top
-    // down as ha_stack has them; a hand's 6-dot grip, dragged, moves it in the stack — on the dial and here — and the
-    // hands trade rungs: the heights stay where they were, the hands take them in their new order
+    // The order is the hands' stack (hand_stack: the movement's, a complication hand under the hour hand, #577): the cap
+    // on top, then the hands top down
     const STEP = 0.05, KEY = (name) => "sh_" + name, order = (S) => ["cap", ...G.hand_stack(S).slice().reverse()];
     const shown = (S, h) => h === "cap" || (S.ha_on && G.hand_added(S, h) && S["ha_" + h] && S["ha_" + h].on);
     const bounds = (name, lo, hi) => (S) => {
@@ -461,12 +460,6 @@ export const GUIDES = {
     const plate = el("div", { className: "row side ref" }, el("label", { textContent: "Plate" }));
     const discs = el("div", { className: "shadowdiscs" });
     const rows = el("div", { className: "shaderows" }, ...heights.map((r) => r.el), plate, discs);
-    for (const r of heights) if (r.el.dataset.part !== "cap") {      // a hand's grip, before its name
-      const grip = el("span", { className: "grip", title: "Drag to change the hands' order" });
-      grip.innerHTML = icon(TOOL_ICONS.grip);
-      grip.onpointerdown = (e) => this.drag_stack(e, rows, heights);
-      r.el.prepend(grip);
-    }
     // the rows in the stack's order, a hand not on the dial without its row (R16); called as the settings change
     let laid = "";
     const lay = (S) => {
@@ -488,48 +481,6 @@ export const GUIDES = {
     const block = { el: parts, rows: heights, discs, disc_rows: [], stack, lay };
     (this.height_blocks ||= []).push(block);
     return block;
-  },
-
-  /** a hand's grip in a heights block dragged (#577): the hand moves in the stack — the rows in the list, the hands on the
-   *  dial — and the hands trade rungs (the heights stay, the hands take them in the new order), so the ladder holds.
-   *  Undoable, as one change. The list is the hands' rows only; the cap stays on top. */
-  drag_stack(e, list, heights) {
-    e.preventDefault();
-    const grip = e.currentTarget, row = grip.parentElement, rows = [...list.children].filter((r) => !r.hidden && r.dataset.part && r.dataset.part !== "cap" && G.HANDS.includes(r.dataset.part));
-    const from = rows.indexOf(row);
-    if (from < 0) return;
-    const line = el("div", { className: "dropline" });
-    list.append(line);
-    row.classList.add("dragged");
-    grip.setPointerCapture(e.pointerId);
-    let to = from;
-    const move = (ev) => {
-      const box = list.getBoundingClientRect(), y = ev.clientY - box.top + list.scrollTop;
-      let gap = rows.findIndex((r) => y < r.offsetTop + r.offsetHeight / 2);
-      if (gap < 0) gap = rows.length;
-      to = gap > from ? gap - 1 : gap;
-      const at = gap < rows.length ? rows[gap].offsetTop : rows[rows.length - 1].offsetTop + rows[rows.length - 1].offsetHeight;
-      line.style.top = `${Math.max(at - 1, 0)}px`;
-      line.hidden = to === from;
-    };
-    const drop = () => {
-      grip.onpointermove = grip.onpointerup = grip.onpointercancel = null;
-      line.remove();
-      row.classList.remove("dragged");
-      if (to === from) return;
-      const S = this.S, top_down = rows.map((r) => r.dataset.part), [name] = top_down.splice(from, 1);
-      top_down.splice(to, 0, name);
-      // the hands not in the list (not added) keep their place under the ones shown
-      const rest = G.hand_stack(S).filter((h) => !top_down.includes(h));
-      const stack = [...rest, ...top_down.slice().reverse()];
-      const rungs = G.hand_stack(S).map((h) => S["sh_" + h]).sort((a, b) => b - a);      // the heights as they stand, top first
-      stack.slice().reverse().forEach((h, i) => { S["sh_" + h] = rungs[i]; });
-      S.ha_stack = stack;
-      this.changed(true);
-    };
-    grip.onpointermove = move;
-    grip.onpointerup = drop;
-    grip.onpointercancel = () => { to = from; drop(); };
   },
 
   /** the shadows' switch and list show the settings. */

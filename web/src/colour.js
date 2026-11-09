@@ -727,8 +727,7 @@ export const COLOUR = {
     group.append(...buttons.map(([, b]) => b));
     wrap.classList.add("bevels");      // its pills from the second column to the line's end, on one line
     wrap.append(el("label", { textContent: "Bevels" }), group);
-    out.refresh = (S) => { for (const h of G.hand_stack(S).slice().reverse()) { const b = buttons.find((x) => x[0] === h)?.[1]; if (b) group.append(b); }      // the stack's order, top first (#577)
-      for (const [h, b] of buttons) { const on = Boolean(this.S["ha_" + h].bevel); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.hidden = !G.hand_added(S, h) || !this.S["ha_" + h].on || G.HAND_SHAPES[this.S["ha_" + h].shape] === "disc"; } };      // a disc hand has no bevel (02:11)
+    out.refresh = (S) => { for (const [h, b] of buttons) { const on = Boolean(this.S["ha_" + h].bevel); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.hidden = !G.hand_added(S, h) || !this.S["ha_" + h].on || G.HAND_SHAPES[this.S["ha_" + h].shape] === "disc"; } };      // a disc hand has no bevel (02:11)
   },
 
   /** a number box alone, for a line of show mode's Colours (#521): the row's own box and − +, its name the line's */

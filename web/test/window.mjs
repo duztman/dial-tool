@@ -1074,7 +1074,7 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   check(added.tabs === "Hour,Minute,Seconds,GMT*" && added.ui_hand === 3 && added.on && added.plus && added.remove && at >= 0 && rows.slice(at, at + 3).join() === "Colour,Turns in,Hours ahead",
     `GMT chosen: a GMT tab, chosen, the hand on; the + gone (every function added, R16); the − on its Show line; its pane opens Colour · Turns in · Hours ahead (${rows.slice(at, at + 3).join(" · ")})`);
   // on the dial: the GMT hand drawn first, under the hour hand (the stack's order, bottom first), at the other time's angle — 24 h a turn, midnight at 12
-  const on_dial = await S("[t.items.filter((x) => x.role === 'hand').map((x) => x.name + '@' + Math.round(x.angle * 10) / 10).join(), S.ha_stack.join(), S.sh_gmt, Math.round((S.t % 86400) / 86400 * 3600) / 10, S.t]");
+  const on_dial = await S("[t.items.filter((x) => x.role === 'hand').map((x) => x.name + '@' + Math.round(x.angle * 10) / 10).join(), 'gmt,hour,minute,second', S.sh_gmt, Math.round((S.t % 86400) / 86400 * 3600) / 10, S.t]");
   const t = on_dial[4], want = `gmt@${on_dial[3]},hour@${Math.round((t % 43200) / 43200 * 3600) / 10},minute@${Math.round((t % 3600) / 3600 * 3600) / 10},second@${Math.round((t % 60) / 60 * 3600) / 10}`;
   check(on_dial[0] === want && on_dial[1] === "gmt,hour,minute,second" && on_dial[2] === 0.1,
     `the GMT hand is drawn first, under the hour hand, at ${on_dial[3]}° (the day's ${(t / 3600).toFixed(2)} h of 24, midnight at 12); its height 0.10 under the hour's 0.15 (${on_dial[0]})`);
@@ -1082,19 +1082,13 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   await page.click("#hand-tab-0"); await frame();
   const hour_rows = await rows_seen(), h_at = hour_rows.indexOf("Colour");
   check(hour_rows.slice(h_at, h_at + 2).join() === "Colour,Length" && await S("document.querySelector('#hand-remove').hidden"), `the Hour tab has no Turns in, no Hours ahead and no − (${hour_rows.slice(h_at, h_at + 2).join(" · ")})`);
-  // the Shadows heights: a GMT row with a grip, under Hours; dragged over Seconds, the stack turns and the hands trade rungs
+  // the Shadows heights: a GMT row under Hours, no grip — the stack is the movement's (a complication hand under the hour hand, the seconds on top)
   await page.evaluate(() => { const l = document.querySelector("#shadow-list"); if (!l || l.hidden) document.querySelector("#shadows-more").click(); }); await frame(); await page.waitForTimeout(300);
   const hand_rows = () => page.evaluate(() => [...document.querySelectorAll("#shadow-list .shaderows .row")].filter((r) => !r.hidden && !(r.dataset.part || "").startsWith("disc")).map((x) => x.querySelector("label")?.textContent).join());
-  const list = await page.evaluate(() => { const rows = [...document.querySelectorAll('#shadow-list .shaderows .row')].filter((r) => !r.hidden); const g = document.querySelector('#shadow-list .shaderows .row[data-part="gmt"] .grip'), r = (e) => e.getBoundingClientRect(), unit = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); const ink = g && [...g.querySelectorAll("circle")].reduce((m, c) => Math.max(m, r(c).right), 0), l = g && g.nextElementSibling; return { grips: rows.filter((x) => x.querySelector(".grip")).map((x) => x.dataset.part).join(), air: g ? Math.round((r(l).left + parseFloat(getComputedStyle(l).paddingLeft) - ink) / unit * 10) / 10 : null }; });
-  check(await hand_rows() === "Cap,Seconds,Minutes,Hours,GMT,Plate" && list.grips === "second,minute,hour,gmt" && list.air >= 1, `the Shadows heights: Cap · Seconds · Minutes · Hours · GMT · Plate, a grip on every hand's row, ${list.air} units of air from the gripper's dots to the name`);
-  const g = await page.$('#shadow-list .shaderows .row[data-part="gmt"] .grip'), gb = await g.boundingBox(), sb = await (await page.$('#shadow-list .shaderows .row[data-part="second"]')).boundingBox();
-  await page.mouse.move(gb.x + gb.width / 2, gb.y + gb.height / 2); await page.mouse.down(); await page.mouse.move(gb.x + gb.width / 2, sb.y + 2, { steps: 6 }); await page.mouse.up(); await frame(); await page.waitForTimeout(200);
-  const moved = await S("[S.ha_stack.join(), [S.sh_gmt, S.sh_second, S.sh_minute, S.sh_hour].join(), t.items.filter((x) => x.role === 'hand').map((x) => x.name).join()]");
-  check(moved[0] === "hour,minute,second,gmt" && moved[1] === "0.6,0.35,0.15,0.1" && await hand_rows() === "Cap,GMT,Seconds,Minutes,Hours,Plate" && moved[2] === "hour,minute,second,gmt", `the GMT row dragged over Seconds: the stack ${moved[0].replaceAll(",", " · ")}, drawn last, the rungs kept and traded (GMT ${moved[1].split(",")[0]}, Hours ${moved[1].split(",")[3]}), the rows ${await hand_rows()}`);
+  const grips = await page.evaluate(() => document.querySelectorAll("#shadow-list .shaderows .grip").length);
+  check(await hand_rows() === "Cap,Seconds,Minutes,Hours,GMT,Plate" && grips === 0, `the Shadows heights: Cap · Seconds · Minutes · Hours · GMT · Plate, the movement's order, no grips (${grips})`);
   await page.evaluate(() => document.querySelector("#shadows-more").click()); await frame();
-  // undo takes the move back as one step; the − takes the hand off, its tab with it, the + back
-  await page.click("#undo"); await frame();
-  check(await S("S.ha_stack.join() === 'gmt,hour,minute,second' && S.sh_gmt === 0.1"), "one undo takes the move back, heights and all");
+  // the − takes the hand off, its tab with it, the + back
   await page.click("#hand-tab-3"); await frame();
   await page.click("#hand-remove"); await frame();
   const gone = await S("[!S.ha_gmt.added, !S.ha_gmt.on, S.ui_hand, [...document.querySelectorAll('.tabsbar .segs > .tab')].map((t) => t.textContent).join(), !document.querySelector('#hand-add-plus').hidden]");

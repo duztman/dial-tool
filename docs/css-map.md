@@ -70,7 +70,7 @@
 | `--day-handle` | `var(--triple)` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×3 |  |
 | `--day-wide` | `518px` | the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) | 7-bar |  |
 | `--details-line` · special | `17px` | the ring drawer's two lines of details, baseline to baseline (the same drawing: 16–17) | 4f-rings |  |
-| `--dim` · special | `0.45` | a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured | 4e-colour, 4f-rings ×2, 6-preview ×2 |  |
+| `--dim` · special | `0.45` | a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured | 4e-colour, 4f-rings ×2 |  |
 | `--dot` · special | `14px` | a swatch to pick from (a band's sectors); the Backdrop switch's sign is one | 4e-colour ×7, 6-preview | 1-tokens `:root` → `18px` |
 | `--dot-tiny` | `10px` | a colour inside a line of words: a folded pane's summary | 4e-colour ×2 |  |
 | `--eye` | `16px` | the toggle column | 1-tokens ×2, 4a-panel ×8, 4e-colour ×4 |  |
@@ -171,7 +171,7 @@
 | `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×4, 4e-colour ×2, 6-preview ×9 | 4c-rows `.heightsbox` → `var(--column-solid, var(--paper))`; set by show.js |
 | `--night-chip-rule` | `rgba(255, 255, 255, 0.28)` |  | 3-controls, 4e-colour |  |
 | `--night-field` | `#262624` |  | 3-controls ×2, 4a-panel ×5 | set by show.js |
-| `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview ×2 | 4c-rows `.heightsbox` → `var(--grey)` |
+| `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview | 4c-rows `.heightsbox` → `var(--grey)` |
 | `--night-hover` | `#34342F` |  | 3-controls, 4a-panel, 6-preview |  |
 | `--night-rule` | `#4A4A46` |  | 3-controls ×3, 4a-panel, 5-chosen, 6-preview ×14 | 4c-rows `.heightsbox` → `var(--rule)` |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
@@ -289,7 +289,7 @@
 | `--shade-gap` · special | `14px` | the pane's width, the drawing's — on every screen (16:55: "Keep window width same") · /* the pane's room inside its edge · its corners · from the top box to the parts' first line | 6-preview |  |
 | `--shade-knob` · special | `25px` | its fat track and the pill knob carrying the value; the thin fill inside the track, and how far in from the track's end it starts | 6-preview ×2 |  |
 | `--shade-left` · the window's | `—` |  | 6-preview | set by guides.js |
-| `--shade-lit` · special | `#F00` | the part being sized: its slider's fill and knob, and the line from the part down to the plate in the diagram; the dashes of the piece it changes | 4f-rings, 6-preview ×6 |  |
+| `--shade-lit` · special | `#F00` | the part being sized: its slider's fill and knob, and the line from the part down to the plate in the diagram; the dashes of the piece it changes | 4f-rings, 6-preview ×5 |  |
 | `--shade-named-gap` · special | `3px` | a named slider's third: the name's room from the line over it and from the left line; the slider's own room past that, at both ends; between the name and the slider | 6-preview |  |
 | `--shade-named-left` · special | `11px` | a named slider's third: the name's room from the line over it and from the left line; the slider's own room past that, at both ends; between the name and the slider | 6-preview |  |
 | `--shade-named-right` · special | `11px` | a named slider's third: the name's room from the line over it and from the left line; the slider's own room past that, at both ends; between the name and the slider | 6-preview |  |
@@ -396,8 +396,8 @@
 | `--track-100` | `0.1em` | tracking 100 (Okay, 04:59: "now gets 100 tracking") | 3-controls, 6-preview |  |
 | `--track-20` | `0.02em` | tracking 20: the controller's value, a little apart | 4f-rings |  |
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×4 |  |
-| `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4e-colour, 4f-rings ×2, 6-preview, 7-bar ×2 |  |
-| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×12, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×12, 7-bar ×2 |  |
+| `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4e-colour, 4f-rings ×2, 7-bar ×2 |  |
+| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×12, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
 | `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×3, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×3, 4e-colour ×15, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
 | `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour ×5, 4f-rings ×9, 4g-fonts ×7, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
 | `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×4, 4d-hands ×2, 4e-colour ×3, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |

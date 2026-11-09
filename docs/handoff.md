@@ -1,12 +1,12 @@
 # Handoff — where things stand
 
-*§1 is rewritten at every handover (last on 9 Nov 2026, 23:50, v1.1.54 beta); §2 says how. Everything else a successor needs is in `CLAUDE.md` (the read order, the loop) and `working-with-okay.md`.*
+*§1 is rewritten at every handover (last on 10 Nov 2026, 00:20, v1.1.55 beta); §2 says how. Everything else a successor needs is in `CLAUDE.md` (the read order, the loop) and `working-with-okay.md`.*
 
-## 1 · Where things stand (9 Nov 2026, 23:50; v1.1.54 beta on `dev` and /dev/, v1.0 beta on `main` and the released page)
+## 1 · Where things stand (10 Nov 2026, 00:20; v1.1.55 beta on `dev` and /dev/, v1.0 beta on `main` and the released page)
 
-- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **v1.1.54 beta**; <https://duztman.github.io/dial-tool/> and `main` are **v1.0 beta**. The step to `main` is Okay's to run (`tools/release.sh 1.2 "first line"`; a session's safety check refuses a production deploy). `dev` is clean and pushed.
-- **This session (9 Nov 2026)**: complications began with the GMT hand, #577 — the + after the hand tabs asks the function (GMT only now), the GMT hand turns 24 h (midnight at 12) or 12 h with hours ahead, its place in the stack movable by a grip in the Shadows heights (the hands trade rungs). His four picks are in `decisions.md`; the mechanism is in `changelog.md` v1.1.54.
-- **For Okay to verify**: #577 as built (the +, the GMT tab and its two rows, the − on its Show line, the grips in the Shadows pane and show mode's Heights pane, the drag) — on his Mac and the iPad (the grip by finger); #580 and #404 (v1.1.52–53) still unverified.
+- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **v1.1.55 beta**; <https://duztman.github.io/dial-tool/> and `main` are **v1.0 beta**. The step to `main` is Okay's to run (`tools/release.sh 1.2 "first line"`; a session's safety check refuses a production deploy). `dev` is clean and pushed.
+- **This session (9 Nov 2026)**: complications began with the GMT hand, #577 — the + after the hand tabs asks the function (GMT only now), the GMT hand turns 24 h (midnight at 12) or 12 h with hours ahead, under the hour hand — the stack is the movement's, fixed (v1.1.55, after his "if so just remove movability"). His picks are in `decisions.md`; the mechanism is in `changelog.md` v1.1.54–55.
+- **For Okay to verify**: #577 as built (the +, the GMT tab and its two rows, the − on its Show line, its row in the Shadows pane and show mode's Heights pane) — on his Mac and the iPad; #580 and #404 (v1.1.52–53) still unverified.
 - **Open on #577** (its row stays in Later): day · week · month trackers for the + menu; a measured pipe Ø for a GMT hand's Fit hole (`HOLE_FIT` has none; Fit cuts no hole on it, Own does); the GMT hand in the Wear OS export (the fixed three only); the stack picture's GMT length is a guess (29) between the hour's and the minute's.
 - **Next**: his to call — the build list's Now is empty; #346 with #83 (complications, systematized) is the line he put after #175.
 - **Flaky**: the guide-popup click (`pop_pick`, a `.tone` "not visible") timed out once on a full run and passed alone; the four known window checks as before.

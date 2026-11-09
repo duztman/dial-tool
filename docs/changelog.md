@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.55 beta · 9 Nov 2026 — the hand stack is the movement's: nothing to move
+
+Okay, 9 Nov 2026, 22:59: "please research if the hand stack should be immovable, like seconds always needs to be on top and the complications get the lowest spot always? If so just remove movability". Researched: it should be — the hands sit on nested pipes, the slow outer wheels lowest (the hour wheel), the cannon pinion's minute hand over it, the seconds hand on the centre arbor on top; a central complication hand rides a wheel outside the hour wheel (a GMT hand's hole 1.8 mm against the hour hand's 1.5 on an ETA 2893-2; Seiko's NH34 the same way) and is fitted first, under them all.
+
+- **The stack is fixed** (`geometry.js` `hand_stack()`): added hands, then hour · minute · second, bottom first. `ha_stack` is no longer a setting — its code stays in `LINK_KEYS`, dead (R8); a /dev/ link of v1.1.54 that carries it is read without it.
+- **Gone** (`guides.js`, `6-preview.css`): the grips on the Shadows heights' hand rows, `drag_stack`, the rows' drop line; show mode's Bevels pills keep their built order.
+- **Tests**: `linktrip.mjs` — the stack is the movement's, an old `ha_stack` dropped; `window.mjs` — the heights rows in that order, no grips.
+
 ## v1.1.54 beta · 9 Nov 2026 — #577: the GMT hand, the first hand of your own
 
 Okay, 3 Nov 2026, 01:06: "A plus sign next to the hands tabs, creates a new hand … Ask for function upfront, then add hand as normal. this hand is added to the stack for shadows"; 9 Nov 2026, 22:15: "Let's start with adding a gmt hand. This is also addable through hands"; asked, chose: the + that asks the function, GMT only now · a choice on its pane, 24 h · 12 h · midnight at top · the stack order movable, "a row order I choose".

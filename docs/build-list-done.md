@@ -6,7 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
-| 577 | Hands of your own, GMT first: the + after the hand tabs, the GMT hand (24 h · 12 h, hours ahead), the stack movable in the Shadows heights — day · week · month stay in the build list | **built** v1.1.54 beta, to verify |
+| 577 | Hands of your own, GMT first: the + after the hand tabs, the GMT hand (24 h · 12 h, hours ahead), under the hour hand in the movement's stack (v1.1.55) — day · week · month stay in the build list | **built** v1.1.54–55 beta, to verify |
 
 ## 3 Nov 2026, 22:10 — built, for Okay to verify
 

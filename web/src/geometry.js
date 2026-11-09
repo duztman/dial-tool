@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.54 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.55 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -237,7 +237,6 @@ export const DEFAULTS = {
   rings: [],
   ha_on: true, ha_beat: 0, ha_cap: 1.6, c_cap: ACCENT, ha_hour: {}, ha_minute: {}, ha_second: {},
   ha_gmt: {},                                      // the GMT hand (#577), not added to start; its starting look is set below with the other hands'
-  ha_stack: ["gmt", "hour", "minute", "second"],   // the hands' order on the dial, bottom first (#577; Okay, 9 Nov 2026: "a row order I choose"): the Shadows pane's grips move a hand; a hand not on the dial keeps its place
   ha_cap_top: false,                               // the cap is part of the seconds hand (#262, beta 4.43); with no seconds hand it is drawn on the topmost hand only when this is on (web only, R30)
   da_on: false, da_at: 0, da_r: 10.5, da_w: 2.6, da_h: 2.0, da_round: 0.2, da_frame: 0.15,
   da_clear: 0.25, da_day: "17", da_size: 62.0, da_ink: INK,
@@ -528,14 +527,12 @@ export function from_beta1(old) {
   const hour = start.ha_hour, minute = start.ha_minute;
   DEFAULTS.ha_gmt = { ...HAND_BASE, on: false, added: false, shape: HAND_SHAPES.indexOf("arrow"), fit: false, len: +((hour.len + minute.len) / 2).toFixed(2), w: +(hour.w * 0.7).toFixed(2), tail: hour.tail, tip: +(hour.len * 0.18).toFixed(2), feature: +(hour.w * 1.6).toFixed(2), c: ACCENT };
 }
-/** the hands' order on the dial, bottom first, made whole: every hand once, a missing one in its starting place */
-export function hand_stack(S) {
-  const given = Array.isArray(S.ha_stack) ? S.ha_stack.filter((h, i, a) => HANDS.includes(h) && a.indexOf(h) === i) : [];
-  if (given.length === HANDS.length) return given;
-  const out = [...given];
-  for (const h of DEFAULTS.ha_stack) if (!out.includes(h)) out.splice(Math.min(DEFAULTS.ha_stack.indexOf(h), out.length), 0, h);
-  return out;
-}
+/** the hands' order on the dial, bottom first — the stack as a movement builds it (9 Nov 2026, researched on Okay's
+ *  word, "if so just remove movability"): the hands sit on nested pipes, the slow outer wheels lowest, so the hour hand is
+ *  closest to the dial, the minute hand over it and the seconds hand on the centre arbor on top; a complication hand
+ *  rides a wheel outside the hour wheel (a GMT hand's hole is 1.8 mm against the hour's 1.5) and goes under them all,
+ *  as it is fitted first. Not a setting: `ha_stack` in a link is dead (R8). */
+export const hand_stack = () => [...ADDED_HANDS, ...FIXED_HANDS];
 /** the hands that draw, bottom first: added and on, with the hands shown at all */
 export const hands_shown = (S) => (S.ha_on ? hand_stack(S).filter((h) => hand_added(S, h) && S["ha_" + h] && S["ha_" + h].on) : []);
 const OLD_ONLY = Object.keys(BETA1_DEFAULTS).filter((k) => !(k in DEFAULTS));
@@ -560,7 +557,6 @@ export function fresh_settings(over = null) {
   if ("sh_bevel" in over && +over.sh_bevel > 0) for (const h of FIXED_HANDS) { const raw = over["ha_" + h]; if (!raw || !("bevel" in raw)) S["ha_" + h] = { ...(S["ha_" + h] || {}), bevel: true }; }
   for (const h of HANDS) S["ha_" + h] = complete(HAND_BASE, S["ha_" + h]);
   for (const h of ADDED_HANDS) if (!S["ha_" + h].added) S["ha_" + h].on = false;      // a hand of your own that was not added never draws (#577)
-  S.ha_stack = hand_stack(S);
   // inks in steps, from before show mode's Inks (#545): All inks (w_ink, 6 to start) becomes the mm added to every ink,
   // and a ring's own step (ink_d) its colour's height — the first ring of a colour says it
   if (!("w_inks" in over) && ("w_ink" in over || S.rings.some((r) => r.ink_d))) {
@@ -650,7 +646,7 @@ export const LINK_KEYS = [
   "mark_tri", "mark_stroke_w", "mark_stroke_c",      // v1.1.40 beta (#574): appended; a wedge as before and no stroke to start, as every older link
   "ink_h", "stroke_h", "frame_h",      // v1.1.44 beta: appended for the table's sake; a part's own ink height, show mode's, lean() leaves it out of a link (R7)
   "hole_as", "hole",        // v1.1.52 beta (#404): appended; no hole to start, as every older link
-  "ha_gmt", "ha_stack", "sh_gmt", "added", "cycle",      // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand and the stack as it always was to start, as every older link
+  "ha_gmt", "ha_stack", "sh_gmt", "added", "cycle",      // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand to start, as every older link. ha_stack is dead since v1.1.55 (the stack is the movement's, hand_stack): kept, nothing reads it (R8)
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
