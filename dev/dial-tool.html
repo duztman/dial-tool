@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.60 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.61 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7594,6 +7594,1098 @@ function otTagToLanguage(tag) {
 }
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
+// src/watch.js
+var PK = null;
+function attach(pk) {
+  PK = pk;
+}
+var STYLE = "miyazaki";
+var SOFT = false;
+var GLINT = "plain";
+var INK_K = 6;
+var INK_N = 0;
+var HAND_BEVEL = false;
+var FLARE_TINT = "#ffffff";
+var FLARE_SCALE = 1;
+var GLASS_K = 1;
+var SH_OP = 0.3;
+var FLARE_KIND = "arc";
+var GRADIENTS = true;
+var HEIGHTS = {};
+var BRACELET_KIND = "vault";
+var DIAL_IN = true;
+var OUTLINE_ON = true;
+var NO_LINES = false;
+var REHAUT = 0.8;
+var SHD = 1;
+var INSERT = { top: "#2b2c30", bottom: "#2b2c30" };
+var FL = { size: 1, tint: 0.45, bright: 1 };
+var GLASS = { fat: 1, len: 1, op: 1 };
+var DIALS = [];
+var HANDS_A = { hour: 305, minute: 60, second: 180 };
+var SUN_H = 40;
+var CLIPS = [];
+var clipN = 0;
+var BLOB = 0;
+var BLOB_N = 0;
+var VB_N = 0;
+var OUTL_S = [];
+var OUTL_C = [];
+var OUTT = [];
+var WEAVE = "weave";
+var f = (v) => +(+v).toFixed(3);
+var rad = (d) => d * Math.PI / 180;
+var hex2hsl = (h) => {
+  const n = parseInt(h.slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  let hh = 0, s = 0;
+  if (d) {
+    s = d / (1 - Math.abs(2 * l - 1));
+    hh = mx === r ? (g - b) / d % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    hh *= 60;
+    if (hh < 0) hh += 360;
+  }
+  return [hh, s, l];
+};
+var hsl2hex = ([h, s, l]) => {
+  s = Math.max(0, Math.min(1, s));
+  l = Math.max(0, Math.min(1, l));
+  const c = (1 - Math.abs(2 * l - 1)) * s, x2 = c * (1 - Math.abs(h / 60 % 2 - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x2, 0] : h < 120 ? [x2, c, 0] : h < 180 ? [0, c, x2] : h < 240 ? [0, x2, c] : h < 300 ? [x2, 0, c] : [c, 0, x2];
+  return "#" + [r, g, b].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join("");
+};
+var mixc = (a, b, t) => "#" + [1, 3, 5].map((i2) => Math.round(parseInt(a.slice(i2, i2 + 2), 16) * (1 - t) + parseInt(b.slice(i2, i2 + 2), 16) * t).toString(16).padStart(2, "0")).join("");
+var deepen = (c) => {
+  const [h, sat, l] = hex2hsl(c);
+  return hsl2hex([h, sat < 0.12 ? sat : Math.min(1, sat * 1.25), l * 0.86]);
+};
+function clampL(h) {
+  const [hue, sat, l] = hex2hsl(h);
+  if (l >= 0.15 && l <= 0.85) return h;
+  return hsl2hex([hue, sat, Math.min(0.85, Math.max(0.15, l))]);
+}
+var tri = (a) => [a, a, a];
+var STRIPES = {
+  bond: [[0, 0.3, 0], [0.3, 0.42, 1], [0.42, 0.58, 2], [0.58, 0.7, 1], [0.7, 1, 0]],
+  regimental: [[0, 0.2, 0], [0.2, 0.3, 2], [0.3, 0.7, 1], [0.7, 0.8, 2], [0.8, 1, 0]],
+  khaki: [[0, 0.38, 0], [0.38, 0.62, 1], [0.62, 1, 2]],
+  blackgrey: [[0, 0.25, 0], [0.25, 0.75, 1], [0.75, 1, 2]]
+};
+var TONES = {
+  engineer: {
+    INK: "#4d4d4d",
+    INKB: "#4d4d4d",
+    ink: [0.45, 0.5],
+    METALS: { steel: ["#dcdedb", "#a3a5a1", "#868885"], gold: ["#e6d3a3", "#b69c66", "#957d50"], alu: ["#cfd2d5", "#9da1a4", "#83878b"], bronze: ["#dcb185", "#a9784c", "#7e5636"], titanium: ["#cac9c3", "#908f89", "#73726d"], black: ["#55565a", "#2c2d30", "#1d1e20"] },
+    LEATHER: { tan: ["#b0835a", "#946b47", "#795537"], brown: ["#82614a", "#6c4f3a", "#59412f"], black: ["#4d4c4d", "#3e3d3e", "#323132"] },
+    NATO_SETS: { bond: [["#46506a", "#3a4459", "#30384a"], ["#8a4148", "#74343b", "#5e2a30"], ["#aeaba3", "#99968f", "#83817b"]], g10: [["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"]] },
+    NATO_MORE: {
+      regimental: [["#2f4a3a", "#263d30", "#1e3026"], ["#2a3550", "#222b42", "#1b2235"], ["#b28a3e", "#957332", "#775c28"]],
+      olive: tri(["#6a6c48", "#57593a", "#45472e"]),
+      grey: tri(["#7b7d80", "#66686b", "#525457"]),
+      khaki: [["#a99a72", "#8f815e", "#76694b"], ["#4b5a3a", "#3e4b30", "#323c27"], ["#a99a72", "#8f815e", "#76694b"]],
+      blackgrey: [["#3a3b3d", "#2f3032", "#252628"], ["#8e9093", "#76787b", "#5f6164"], ["#3a3b3d", "#2f3032", "#252628"]]
+    }
+  },
+  miyazaki: {
+    INK: "#262626",
+    INKB: null,
+    ink: [0.62, 0.8],
+    METALS: { steel: ["#cfd1cd", "#8a8c88", "#6b6d6a"], gold: ["#dcc18a", "#9c8250", "#7a653d"], alu: ["#c2c6c9", "#82868a", "#676b6f"], bronze: ["#cf9d6c", "#8f6440", "#6a472c"], titanium: ["#bdbcb6", "#7f7e78", "#62615c"], black: ["#4a4b4f", "#26272a", "#17181a"] },
+    LEATHER: { tan: ["#a2764f", "#83603f", "#674a30"], brown: ["#74533b", "#5c412e", "#463123"], black: ["#434243", "#323132", "#242324"] },
+    NATO_SETS: { bond: [["#46506a", "#3a4459", "#30384a"], ["#8a4148", "#74343b", "#5e2a30"], ["#aeaba3", "#99968f", "#83817b"]], g10: [["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"]] },
+    NATO_MORE: {
+      regimental: [["#2f4a3a", "#263d30", "#1e3026"], ["#2a3550", "#222b42", "#1b2235"], ["#b28a3e", "#957332", "#775c28"]],
+      olive: tri(["#6a6c48", "#57593a", "#45472e"]),
+      grey: tri(["#7b7d80", "#66686b", "#525457"]),
+      khaki: [["#a99a72", "#8f815e", "#76694b"], ["#4b5a3a", "#3e4b30", "#323c27"], ["#a99a72", "#8f815e", "#76694b"]],
+      blackgrey: [["#3a3b3d", "#2f3032", "#252628"], ["#8e9093", "#76787b", "#5f6164"], ["#3a3b3d", "#2f3032", "#252628"]]
+    }
+  }
+};
+{
+  const T = TONES.miyazaki;
+  T.METALS.steel.forEach((c, i2) => {
+    const [h, sat, l] = hex2hsl(c);
+    T.METALS.steel[i2] = hsl2hex([h, sat, l * 0.85]);
+  });
+  for (const tab of [T.METALS, T.LEATHER, T.NATO_SETS, T.NATO_MORE]) for (const k in tab) {
+    const v = tab[k];
+    if (typeof v[0] === "string") v.forEach((c, i2) => v[i2] = deepen(c));
+    else v.forEach((U) => U.forEach((c, i2) => U[i2] = deepen(c)));
+  }
+}
+var INK;
+var INKB;
+var METALS;
+var LEATHER;
+var NATO_SETS;
+var NATO_MORE;
+function use(style) {
+  STYLE = style;
+  ({ INK, INKB, METALS, LEATHER, NATO_SETS, NATO_MORE } = TONES[style]);
+}
+use(STYLE);
+var ramp6g = (T) => [mixc(T[2], "#000000", 0.62), mixc(T[2], "#000000", 0.3), T[2], T[1], mixc(T[0], "#ffffff", 0.25), mixc(T[0], "#ffffff", 0.8)];
+var ramp6E = (T) => {
+  const grey = hex2hsl(T[1])[1] < 0.12;
+  return [mixc(T[2], "#000000", grey ? 0.66 : 0.45), mixc(T[2], "#000000", grey ? 0.4 : 0.22), mixc(T[2], "#000000", grey ? 0.15 : 0), T[1], T[0], mixc(T[0], "#ffffff", 0.45)];
+};
+var ramp6M = (T) => {
+  if (T === METALS.gold) return ramp6g(T);
+  const [h, s] = hex2hsl(T[1]);
+  return ramp6g(METALS.gold).map((c) => hsl2hex([h, s, hex2hsl(c)[2]]));
+};
+var ramp6 = (T) => STYLE === "engineer" ? ramp6E(T) : ramp6M(T);
+var P = (pts) => "M" + pts.map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z";
+var circle = (r, cx = 0, cy = 0) => `M${f(cx - r)} ${f(cy)}A${f(r)} ${f(r)} 0 1 0 ${f(cx + r)} ${f(cy)}A${f(r)} ${f(r)} 0 1 0 ${f(cx - r)} ${f(cy)}Z`;
+var rrect = (x0, y0, x1, y1, r) => {
+  const [a, b] = [Math.min(x0, x1), Math.min(y0, y1)], [c, e] = [Math.max(x0, x1), Math.max(y0, y1)];
+  r = Math.min(r, (c - a) / 2, (e - b) / 2);
+  return `M${f(a + r)} ${f(b)}H${f(c - r)}Q${f(c)} ${f(b)} ${f(c)} ${f(b + r)}V${f(e - r)}Q${f(c)} ${f(e)} ${f(c - r)} ${f(e)}H${f(a + r)}Q${f(a)} ${f(e)} ${f(a)} ${f(e - r)}V${f(b + r)}Q${f(a)} ${f(b)} ${f(a + r)} ${f(b)}Z`;
+};
+function rrect4(x0, y0, x1, y1, [tl, tr, br, bl]) {
+  return `M${f(x0 + tl)} ${f(y0)}H${f(x1 - tr)}Q${f(x1)} ${f(y0)} ${f(x1)} ${f(y0 + tr)}V${f(y1 - br)}Q${f(x1)} ${f(y1)} ${f(x1 - br)} ${f(y1)}H${f(x0 + bl)}Q${f(x0)} ${f(y1)} ${f(x0)} ${f(y1 - bl)}V${f(y0 + tl)}Q${f(x0)} ${f(y0)} ${f(x0 + tl)} ${f(y0)}Z`;
+}
+var rrectD = (x0, y0, x1, y1, r, hole = false) => {
+  const [a, b] = [Math.min(x0, x1), Math.min(y0, y1)], [c, e] = [Math.max(x0, x1), Math.max(y0, y1)];
+  r = Math.min(r, (c - a) / 2, (e - b) / 2);
+  return hole ? `M${f(a + r)} ${f(b)}Q${f(a)} ${f(b)} ${f(a)} ${f(b + r)}V${f(e - r)}Q${f(a)} ${f(e)} ${f(a + r)} ${f(e)}H${f(c - r)}Q${f(c)} ${f(e)} ${f(c)} ${f(e - r)}V${f(b + r)}Q${f(c)} ${f(b)} ${f(c - r)} ${f(b)}Z` : `M${f(a + r)} ${f(b)}H${f(c - r)}Q${f(c)} ${f(b)} ${f(c)} ${f(b + r)}V${f(e - r)}Q${f(c)} ${f(e)} ${f(c - r)} ${f(e)}H${f(a + r)}Q${f(a)} ${f(e)} ${f(a)} ${f(e - r)}V${f(b + r)}Q${f(a)} ${f(b)} ${f(a + r)} ${f(b)}Z`;
+};
+function notchedPath(R, n, depth) {
+  const pts = [], rd = depth, dl = Math.asin(rd / R);
+  for (let k = 0; k < n; k++) {
+    const ac = k / n * 2 * Math.PI - Math.PI / 2, next = (k + 1) / n * 2 * Math.PI - Math.PI / 2;
+    const er = [Math.cos(ac), Math.sin(ac)], et2 = [-Math.sin(ac), Math.cos(ac)], cc = [er[0] * R, er[1] * R];
+    for (let j = 0; j <= 10; j++) {
+      const t = Math.PI * j / 10;
+      pts.push([cc[0] - rd * (Math.cos(t) * et2[0] + Math.sin(t) * er[0]), cc[1] - rd * (Math.cos(t) * et2[1] + Math.sin(t) * er[1])]);
+    }
+    for (let j = 1; j < 4; j++) {
+      const a = ac + dl + (next - ac - 2 * dl) * j / 4;
+      pts.push([Math.cos(a) * R, Math.sin(a) * R]);
+    }
+  }
+  return "M" + pts.map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z";
+}
+function teeth(R, n, depth) {
+  const out = [];
+  for (let k = 0; k < n; k++) {
+    const a0 = k / n * 2 * Math.PI - Math.PI / 2, a1 = a0 + 2 * Math.PI / n, r0 = R - depth - 0.05, pts = [];
+    for (let j = 0; j <= 4; j++) {
+      const a = a0 + (a1 - a0) * j / 4;
+      pts.push([Math.cos(a) * (R + 0.05), Math.sin(a) * (R + 0.05)]);
+    }
+    for (let j = 4; j >= 0; j--) {
+      const a = a0 + (a1 - a0) * j / 4;
+      pts.push([Math.cos(a) * r0, Math.sin(a) * r0]);
+    }
+    out.push({ d: "M" + pts.map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z", phi: (a0 + a1) / 2 * 180 / Math.PI });
+  }
+  return out;
+}
+function cushionPts(a, n, N = 160) {
+  return Array.from({ length: N }, (_, k) => {
+    const t = k / N * 2 * Math.PI, c = Math.cos(t), s = Math.sin(t);
+    return [a * Math.sign(c) * Math.abs(c) ** (2 / n), a * Math.sign(s) * Math.abs(s) ** (2 / n)];
+  });
+}
+function cushionLug(C2, sx, sy) {
+  const half = C2.l2l / 2, xi = C2.lugw / 2, xo = xi + C2.lugT, y0 = C2.cushion.a * 0.82, c = 0.9;
+  const p = (x2, y) => [sx * x2, sy * y];
+  return P([p(xi, y0), p(xi, half), p(xo - c, half), p(xo, half - c), p(xo, y0)]);
+}
+function lugPath(C2, sx, sy) {
+  if (C2.rails) {
+    const xi2 = C2.lugw / 2, xo2 = xi2 + C2.lugT, hy = C2.l2l / 2, c = 0.2;
+    return P([[sx * xi2, -hy], [sx * (xo2 - c), -hy], [sx * xo2, -hy + c], [sx * xo2, hy - c], [sx * (xo2 - c), hy], [sx * xi2, hy]]);
+  }
+  const R = C2.od / 2, half = C2.l2l / 2, xi = C2.lugw / 2, xo = xi + C2.lugT, xb = xo + C2.flare;
+  const yb = Math.sqrt(R * R - xb * xb), yi = Math.sqrt(R * R - xi * xi) - 1.5, r = 0.8;
+  const p = (x2, y) => `${f(sx * x2)} ${f(sy * y)}`;
+  return `M${p(xi, yi)}L${p(xi, half - r)}Q${p(xi, half)} ${p(xi + r, half)}L${p(xo - r, half)}Q${p(xo, half)} ${p(xo, half - r)}C${p(xo, half - (half - yb) * 0.5)} ${p(xb - 0.6, yb + 1.2)} ${p(xb, yb)}Z`;
+}
+function lugChamfer(C2, sx, sy, w = 0.75) {
+  const R = C2.od / 2, half = C2.l2l / 2, xo = C2.lugw / 2 + C2.lugT, xb = xo + C2.flare, yb = Math.sqrt(R * R - xb * xb), r = 0.8;
+  const p = (x2, y) => `${f(sx * x2)} ${f(sy * y)}`;
+  return `M${p(xo, half - r)}C${p(xo, half - (half - yb) * 0.5)} ${p(xb - 0.6, yb + 1.2)} ${p(xb, yb)}L${p(xb - w * 1.3, yb + 0.2)}C${p(xb - 0.6 - w, yb + 1.4)} ${p(xo - w, half - (half - yb) * 0.5)} ${p(xo - w, half - r)}Z`;
+}
+function scaleCase(C2, k) {
+  if (k === 1) return C2;
+  const s = (v) => typeof v === "number" ? v * k : Array.isArray(v) ? v.map(s) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([a, b]) => [a, ["n", "coin", "knurl", "at"].includes(a) ? b : s(b)])) : v;
+  const out = { ...C2 };
+  for (const key of ["od", "l2l", "lugw", "lugT", "flare", "bands", "opening", "dial", "crown", "insert", "cushion", "cushionBevel"]) if (key in C2) out[key] = s(C2[key]);
+  return out;
+}
+var SOFT_DEF = `<filter id="shsoft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600"><feGaussianBlur stdDeviation="0.07"/></filter>`;
+var soft_edge = () => SOFT ? ` filter="url(#shsoft)"` : "";
+var CASE_H = { dress: 0.22, field: 0.28, diver: 0.32 };
+var LOW_SUN = 20;
+var longer = (h) => Math.tan(rad(40)) / Math.tan(rad(Math.max(LOW_SUN, h)));
+var LW = 0.22;
+var strokeInk = (d, sw2 = LW, extra = "") => NO_LINES ? "" : `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
+var stroke = (...a) => STYLE === "engineer" ? strokeInk(...a) : "";
+var shape2 = (d, c, sw2 = LW, inner = null) => {
+  sw2 = LW;
+  if (NO_LINES) return c === "none" ? "" : `<path d="${d}" fill="${c}"/>`;
+  if (!inner || c === "none") return `<path d="${d}" fill="${c}" stroke="${INK}" stroke-width="${sw2}" stroke-linejoin="round"/>`;
+  const id = "in" + clipN++;
+  CLIPS.push(`<clipPath id="${id}"><path d="${d}"/></clipPath>`);
+  return `<path d="${d}" fill="${c}"/><path d="${d}" fill="none" stroke="${inner}" stroke-width="${f(sw2 * 3)}" stroke-linejoin="round" clip-path="url(#${id})"/><path d="${d}" fill="none" stroke="${INK}" stroke-width="${sw2}" stroke-linejoin="round"/>`;
+};
+var flat = (d, c) => `<path d="${d}" fill="${c}"/>`;
+function tone(T, phi, tilt, L) {
+  const s = Math.cos(rad(phi - L)) * tilt * Math.cos(rad(SUN_H)) / Math.cos(rad(40));
+  return s > 0.5 ? T[0] : s < 0.05 ? T[2] : T[1];
+}
+function sloped(r0, r1, T, L, out = 1, tilt = 1, N = 96) {
+  let html = "", run = null;
+  const wedge = (a0, a1) => `M${f(Math.cos(a0) * r1)} ${f(Math.sin(a0) * r1)}A${f(r1)} ${f(r1)} 0 0 1 ${f(Math.cos(a1) * r1)} ${f(Math.sin(a1) * r1)}L${f(Math.cos(a1) * r0)} ${f(Math.sin(a1) * r0)}A${f(r0)} ${f(r0)} 0 0 0 ${f(Math.cos(a0) * r0)} ${f(Math.sin(a0) * r0)}Z`;
+  const tones2 = Array.from({ length: N }, (_, k) => tone(T, (k + 0.5) / N * 360 + (out > 0 ? 0 : 180), tilt, L));
+  let start2 = 0;
+  while (start2 < N && tones2[start2] === tones2[(start2 + N - 1) % N]) start2++;
+  if (start2 === N) return flat(circle(r1) + circle(r0), tones2[0]).replace("<path", '<path fill-rule="evenodd"');
+  const put = (r) => {
+    const n = Math.ceil((r.a1 - r.a0) / (Math.PI * 0.9));
+    for (let j = 0; j < n; j++) html += flat(wedge(r.a0 + (r.a1 - r.a0) * j / n, r.a0 + (r.a1 - r.a0) * (j + 1) / n), r.t);
+  };
+  for (let k = 0; k < N; k++) {
+    const t = tones2[(start2 + k) % N], a0 = (start2 + k) / N * 2 * Math.PI, a1 = (start2 + k + 1) / N * 2 * Math.PI;
+    if (!run || run.t !== t) {
+      if (run) put(run);
+      run = { t, a0, a1 };
+    } else run.a1 = a1;
+  }
+  put(run);
+  return html + stroke(circle(r0), 0.12) + stroke(circle(r1), 0.12);
+}
+function blob(d, T, L, a = 0.9, b = 2, away = null) {
+  OUTT.push(d);
+  const id = "b" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
+  const lh = SUN_H > 55 ? 0.7 : 1, dk = (SUN_H < 25 ? 1.35 : 1) * 1.3;
+  CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
+  const cut = (dx, dy, fill, op = 1) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-500 -500H500V500H-500Z${d}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
+  if (away) CLIPS.push(`<clipPath id="${id}a"><path clip-rule="evenodd" d="M-500 -500H500V500H-500Z${away}"/></clipPath>`);
+  const light = cut(-u[0] * a * lh, -u[1] * a * lh, T[0]);
+  return `<path d="${d}" fill="${T[1]}"/><g clip-path="url(#${id}c)">${cut(u[0] * b * dk, u[1] * b * dk, T[2])}${away ? `<g clip-path="url(#${id}a)">${light}</g>` : light}</g>`;
+}
+function blobOver(d, L, a = 0.9, b = 2) {
+  const id = "o" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
+  CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
+  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-500 -500H500V500H-500Z${d}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
+  return `<g clip-path="url(#${id}c)">${cut(u[0] * b * 1.3, u[1] * b * 1.3, "#000", 0.36)}${cut(-u[0] * a, -u[1] * a, "#fff", 0.16)}</g>`;
+}
+var part = (d, T, L, a, b) => STYLE === "engineer" ? shape2(d, T[1], LW, T[2]) : blob(d, T, L, a, b);
+var TEXTURES = (() => {
+  let seed = 11;
+  const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
+  const pores = Array.from({ length: 90 }, () => `<ellipse cx="${f(rnd() * 9)}" cy="${f(rnd() * 9)}" rx="${f(0.08 + rnd() * 0.16)}" ry="${f(0.06 + rnd() * 0.1)}" transform="rotate(${f(rnd() * 180)} 0 0)"/>`).join("");
+  const creases = Array.from({ length: 14 }, () => {
+    const x2 = rnd() * 9, y = rnd() * 9, a = rnd() * Math.PI, l = 0.6 + rnd() * 1.2;
+    return `M${f(x2)} ${f(y)}l${f(Math.cos(a) * l)} ${f(Math.sin(a) * l)}`;
+  }).join("");
+  return `<pattern id="grain" width="9" height="9" patternUnits="userSpaceOnUse"><g fill="#000" fill-opacity="0.16">${pores}</g><path d="${creases}" stroke="#000" stroke-opacity="0.06" stroke-width="0.12" fill="none"/><g fill="#fff" fill-opacity="0.05" transform="translate(4.5 4.5)">${pores}</g></pattern><pattern id="weave" width="1.2" height="1.2" patternUnits="userSpaceOnUse"><rect width="1.2" height="0.5" fill="#fff" fill-opacity="0.13"/><rect y="0.6" width="1.2" height="0.5" fill="#fff" fill-opacity="0.05"/><rect x="0.1" width="0.38" height="0.6" fill="#000" fill-opacity="0.2"/><rect x="0.7" y="0.6" width="0.38" height="0.6" fill="#000" fill-opacity="0.2"/><rect y="0.55" width="1.2" height="0.07" fill="#000" fill-opacity="0.12"/></pattern><pattern id="weavebig" width="3.2" height="3.2" patternUnits="userSpaceOnUse"><rect width="3.2" height="1.35" fill="#fff" fill-opacity="0.14"/><rect y="1.6" width="3.2" height="1.35" fill="#fff" fill-opacity="0.05"/><rect x="0.25" width="1.05" height="1.6" fill="#000" fill-opacity="0.22"/><rect x="1.85" y="1.6" width="1.05" height="1.6" fill="#000" fill-opacity="0.22"/><rect y="1.5" width="3.2" height="0.18" fill="#000" fill-opacity="0.14"/></pattern><pattern id="brush" width="0.6" height="40" patternUnits="userSpaceOnUse"><rect x="0.05" width="0.07" height="40" fill="#fff" fill-opacity="0.16"/><rect x="0.33" width="0.05" height="40" fill="#000" fill-opacity="0.08"/></pattern>`;
+})();
+var glint = (r, L, w = 0.55, o = 0.6, span = 26) => {
+  if (GLINT === "off") return "";
+  if (GLINT !== "flare") return `<path d="M${f(Math.cos(rad(L - span)) * r)} ${f(Math.sin(rad(L - span)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span)) * r)} ${f(Math.sin(rad(L + span)) * r)}" fill="none" stroke="#fff" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
+  if (STYLE === "engineer") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.25)) * r)} ${f(Math.sin(rad(L - span * 1.25)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.25)) * r)} ${f(Math.sin(rad(L + span * 1.25)) * r)}" fill="none" stroke="${FLARE_TINT}" stroke-opacity="${f(Math.min(1, o * 0.45 * FLARE_SCALE * FL.bright))}" stroke-width="${f(w * 5 * FL.size)}" stroke-linecap="round"/>`;
+  const x2 = Math.cos(rad(L)) * r, y = Math.sin(rad(L)) * r;
+  if (FLARE_KIND === "arc") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.6)) * r)} ${f(Math.sin(rad(L - span * 1.6)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.6)) * r)} ${f(Math.sin(rad(L + span * 1.6)) * r)}" fill="none" stroke="${FLARE_TINT}" stroke-opacity="${f(Math.min(1, o * 0.9 * FL.bright))}" stroke-width="${f(w * 3.5 * FL.size)}" stroke-linecap="round"/>`;
+  return `<circle cx="${f(x2)}" cy="${f(y)}" r="${f((2.2 + w * 2.4) * FL.size)}" fill="${FLARE_TINT}" fill-opacity="${f(Math.min(1, o * 0.85 * FL.bright) * FLARE_SCALE)}" filter="url(#flare)"/><circle cx="${f(x2)}" cy="${f(y)}" r="${f((0.32 + w * 0.22) * FL.size)}" fill="#fff" fill-opacity="${f(Math.min(1, 0.95 * Math.sqrt(FLARE_SCALE) * FL.bright))}"/>`;
+};
+var flareColour = (T) => mixc(T[0], "#ffffff", 1 - FL.tint);
+var THICK = /* @__PURE__ */ new Map();
+var thickness = (p) => {
+  if (THICK.has(p)) return THICK.get(p);
+  const P2 = PK.FromSVGString(p), cmds = P2.toCmds();
+  P2.delete();
+  let signed = 0, absum = 0, per = 0, sub = 0, start2 = null, prev = null;
+  const close = () => {
+    signed += sub;
+    absum += Math.abs(sub);
+    sub = 0;
+  };
+  const to = (q) => {
+    if (prev) {
+      sub += prev[0] * q[1] - q[0] * prev[1];
+      per += Math.hypot(q[0] - prev[0], q[1] - prev[1]);
+    }
+    prev = q;
+  };
+  for (const c of cmds) {
+    const v = c[0], pts = [];
+    for (let k = 1; k + 1 < c.length; k += 2) pts.push([c[k], c[k + 1]]);
+    if (v === 0) {
+      if (start2 && prev) {
+        to(start2);
+        close();
+      }
+      start2 = pts[0];
+      prev = pts[0];
+    } else if (v === 5) {
+      if (start2 && prev) to(start2);
+      close();
+      prev = start2;
+    } else for (const q of v === 3 ? pts.slice(0, 2) : pts) to(q);
+  }
+  if (sub) close();
+  const A = Math.abs(signed) > absum * 0.3 ? Math.abs(signed) / 2 : absum / 2, w = per ? 2 * A / per : 1;
+  THICK.set(p, w);
+  return w;
+};
+var inkRelief = (x2, s, L) => {
+  const K = x2.ink ?? INK_K;
+  if (!K) return "";
+  const id = "ik" + INK_N++, ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, th = thickness(x2.p) * s, es = Math.min(0.035 * K, th * 0.16), eh = Math.min(0.025 * K, th * 0.1);
+  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`);
+  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x2.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
+  return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g>`;
+};
+var lumeShift = (L, a, s) => {
+  const ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, c = Math.cos(rad(a)), n = Math.sin(rad(a));
+  return [ux * c - uy * n, ux * n + uy * c];
+};
+var lumeRelief = (x2, s, L, A) => {
+  const K = x2.ink ?? INK_K;
+  if (!K || !x2.hand) return "";
+  const id = "lr" + INK_N++, th = thickness(x2.p) * s, es = Math.min(0.035 * K, th * 0.16), eh = Math.min(0.025 * K, th * 0.1), [ux, uy] = lumeShift(L, A[x2.hand], s);
+  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`);
+  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x2.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
+  return `<g data-hl="${x2.hand}" data-l="${f(L)}" data-s="${f(s)}" data-es="${f(es)}" data-eh="${f(eh)}" transform="rotate(${-A[x2.hand]})"><g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g></g>`;
+};
+var handBevel = (x2, A, L) => {
+  if (!HAND_BEVEL || !x2.hand || !x2.bevel) return "";
+  const id = "hb" + INK_N++, a = rad(A[x2.hand]), side = Math.cos(a) * Math.cos(rad(L)) + Math.sin(a) * Math.sin(rad(L));
+  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`);
+  const lit = 0.22 * HAND_BEVEL * Math.abs(side), dark = 0.26 * HAND_BEVEL * Math.abs(side);
+  if (x2.dome) {
+    const ramp = (n, s, c, k) => `<linearGradient id="${id}${n}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${f(s * x2.hw)}" y2="0"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}" stop-opacity="${f(Math.min(2 * k, 1))}"/></linearGradient>`;
+    CLIPS.push(ramp("r", 1, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark), ramp("l", -1, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit));
+    return `<g data-hb="${x2.hand}" data-dome="${id}" transform="rotate(${-A[x2.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="url(#${id}r)"/><rect x="-50" y="-50" width="50" height="100" fill="url(#${id}l)"/></g></g>`;
+  }
+  return `<g data-hb="${x2.hand}" transform="rotate(${-A[x2.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="${side > 0 ? "#fff" : "#000"}" fill-opacity="${f(side > 0 ? lit : dark)}"/><rect x="-50" y="-50" width="50" height="100" fill="${side > 0 ? "#000" : "#fff"}" fill-opacity="${f(side > 0 ? dark : lit)}"/></g></g>`;
+};
+var bossLight = (x2, L) => {
+  const id = "bs" + INK_N++, k = HAND_BEVEL || 0.6, lit = 0.22 * k, dark = 0.26 * k;
+  const ux = Math.cos(rad(L)), uy = -Math.sin(rad(L));
+  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`, `<linearGradient id="${id}g" gradientUnits="userSpaceOnUse" x1="${f(ux * x2.r)}" y1="${f(uy * x2.r)}" x2="${f(-ux * x2.r)}" y2="${f(-uy * x2.r)}"><stop offset="0" stop-color="#fff" stop-opacity="${f(lit)}"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${f(dark)}"/></linearGradient>`);
+  return `<g clip-path="url(#${id})"><rect x="${f(-x2.r)}" y="${f(-x2.r)}" width="${f(2 * x2.r)}" height="${f(2 * x2.r)}" fill="url(#${id}g)"/></g>`;
+};
+function dialSVG(C2, v, L) {
+  const D = DIALS[0], s = (C2.dial - (C2.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
+  const col2 = (x2) => clampL(x2.f);
+  const items = D.items;
+  const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
+  const handsShadow = items.filter((x2) => x2.hand || x2.role === "cap").map((x2) => {
+    const sh = away(HEIGHTS[x2.hand || "cap"] ?? 0.35);
+    return `<path d="${x2.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x2.hand ? ` data-hs="${x2.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x2.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`;
+  }).join("");
+  const body = items.map((x2) => `<path d="${x2.p}" fill="${col2(x2)}" fill-opacity="${x2.a}"${x2.hand ? ` data-h="${x2.hand}" transform="rotate(${-A[x2.hand]})"` : ""}/>` + (x2.hand ? x2.role === "lume" || x2.role === "mark" ? lumeRelief(x2, s, L, A) : handBevel(x2, A, L) : x2.role === "boss" ? bossLight(x2, L) : x2.role !== "plate" && x2.role !== "cap" ? inkRelief(x2, s, L) : ""));
+  const firstHand = items.findIndex((x2) => x2.hand || x2.role === "cap");
+  body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
+  return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;
+}
+var CASES = {
+  field: {
+    // a cushion case with sharp angles, after the 1939 military cushions (Eterna's reissue: 40 mm across, 11.7 high);
+    // lug to lug and lug width are assumptions (46, 20) — no drawing found that the workspace could open
+    name: "Field \xB7 military cushion, 1939 \xB7 aluminium",
+    cushion: { a: 20, n: 4.2 },
+    od: 40,
+    l2l: 46,
+    lugw: 20,
+    lugT: 3,
+    metal: null,
+    bands: [[17.6, 16.4, 1, 1]],
+    opening: 15.8,
+    dial: 31.4,
+    crown: { at: 0, w: 6.2, h: 3, knurl: 9 },
+    drilled: false,
+    dialName: "Fat field",
+    cushionBevel: 1.3
+  },
+  diver: {
+    name: "Diver \xB7 Seiko SPB143 \xB7 steel",
+    od: 40.5,
+    l2l: 47.6,
+    lugw: 20,
+    lugT: 2.9,
+    flare: 3.6,
+    metal: null,
+    bands: [],
+    insert: { od: 40, id: 32.2, coin: 60 },
+    opening: 15.4,
+    dial: 30.8,
+    crown: { at: 0, w: 6.4, h: 3, knurl: 9 },
+    drilled: false,
+    dialName: "Quiet diver"
+  },
+  emre01: {
+    name: "Emre \xB7 Emre's prototype \xB7 aluminium",
+    rails: true,
+    depth: 0.5,
+    od: 22,
+    l2l: 27,
+    lugw: 19.4,
+    lugT: 3.3,
+    flare: 0,
+    metal: null,
+    bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8, 1, 0.12]],
+    opening: 8,
+    dial: 16,
+    crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 },
+    drilled: false,
+    dialName: "Dress roman"
+  },
+  dress: {
+    name: "Dress \xB7 Calatrava 5196 \xB7 gold",
+    od: 37,
+    l2l: 44,
+    lugw: 20,
+    lugT: 1.9,
+    flare: 3,
+    metal: null,
+    bands: [[18.5, 18.1, 1, 0.4], [18.1, 17.3, 1, 1], [17.3, 16.8, 1, 0.5], [16.8, 16.2, 1, 1]],
+    // stepped: two polished steps
+    opening: 15.9,
+    dial: 31.6,
+    crown: { at: 0, w: 4.4, h: 2.2, knurl: 7 },
+    drilled: false,
+    dialName: "Dress roman"
+  }
+};
+var KINDS = Object.keys(CASES);
+function caseEngineer(C2, v, L) {
+  FLARE_TINT = flareColour(C2.metal);
+  const R = C2.cushion ? C2.cushion.a : C2.od / 2, T = C2.metal, out = [];
+  if (C2.cushion) {
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+      const d = cushionLug(C2, sx, sy);
+      out.push(shape2(d, T[1], 0.2, T[2]));
+    }
+  } else if (C2.rails) for (const sx of [-1, 1]) {
+    const xi = sx * C2.lugw / 2, xo = sx * (C2.lugw / 2 + C2.lugT), hy = C2.l2l / 2, b = 0.5, xa = Math.min(xi, xo), xz = Math.max(xi, xo);
+    const o = [[xa, -hy], [xz, -hy], [xz, hy], [xa, hy]], i2 = [[xa + b, -hy + b], [xz - b, -hy + b], [xz - b, hy - b], [xa + b, hy - b]];
+    out.push(shape2(P(o), T[1], 0.2, T[2]));
+    [[0, 1, 270], [1, 2, 0], [2, 3, 90], [3, 0, 180]].forEach(([a, z, phi]) => out.push(flat(P([o[a], o[z], i2[z], i2[a]]), tone(T, phi, 0.85, L))));
+    out.push(stroke(P(i2), 0.1), stroke(P(o), 0.2));
+  }
+  else for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+    out.push(shape2(lugPath(C2, sx, sy), T[1], 0.2, T[2]));
+    out.push(flat(lugChamfer(C2, sx, sy), tone(T, sx > 0 ? 0 : 180, 0.9, L)), stroke(lugChamfer(C2, sx, sy), 0.1));
+    if (C2.drilled) out.push(`<ellipse cx="${f(sx * (C2.lugw / 2 + C2.lugT + 0.05))}" cy="${f(sy * (C2.l2l / 2 - 2.4))}" rx="0.25" ry="0.55" fill="${INK}"/>`);
+  }
+  const RC = C2.rails ? C2.lugw / 2 + C2.lugT : R, cw = C2.crown.w, ch = C2.crown.h, x0 = RC - 0.4;
+  const top = P([[x0, -cw / 2], [x0 + ch, -cw / 2 + 0.25], [x0 + ch, 0], [x0, 0]]), bot = P([[x0, 0], [x0 + ch, 0], [x0 + ch, cw / 2 - 0.25], [x0, cw / 2]]);
+  out.push(shape2(P([[RC - 1.2, -cw * 0.32], [x0, -cw * 0.32], [x0, cw * 0.32], [RC - 1.2, cw * 0.32]]), T[2], 0.15));
+  out.push(flat(top, tone(T, 270, 0.9, L)), flat(bot, tone(T, 90, 0.9, L)), stroke(P([[x0, -cw / 2], [x0 + ch, -cw / 2 + 0.25], [x0 + ch, cw / 2 - 0.25], [x0, cw / 2]]), 0.2));
+  for (let k = 1; k < C2.crown.knurl; k++) {
+    const y = -cw / 2 + 0.3 + k * (cw - 0.6) / C2.crown.knurl;
+    out.push(stroke(`M${f(x0 + ch * 0.25)} ${f(y)}H${f(x0 + ch)}`, 0.07));
+  }
+  if (C2.cushion) {
+    const o = cushionPts(C2.cushion.a, C2.cushion.n), i2 = cushionPts(C2.cushion.a - C2.cushionBevel, C2.cushion.n);
+    out.push(shape2(P(o), T[1], 0.2, T[2]));
+    const N = o.length, quads = [];
+    for (let k = 0; k < N; k++) {
+      const k2 = (k + 1) % N, nx = o[k2][1] - o[k][1], ny = -(o[k2][0] - o[k][0]), phi = Math.atan2(ny, nx) * 180 / Math.PI;
+      quads.push({ pts: [o[k], o[k2], i2[k2], i2[k]], t: tone(T, phi, 0.85, L) });
+    }
+    for (const q of quads) out.push(`<path d="${P(q.pts)}" fill="${q.t}" stroke="${q.t}" stroke-width="0.05"/>`);
+    out.push(stroke(P(i2), 0.12), stroke(P(o), 0.2));
+  } else out.push(C2.insert ? `<path d="${circle(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>` : "", shape2(C2.insert ? notchedPath(R, C2.insert.coin, 0.5) : circle(R), T[1], 0.2, T[2]));
+  for (const [r1, r0, dir, tilt] of C2.bands) out.push(sloped(r0, r1, T, L, dir, tilt));
+  if (C2.insert) {
+    const I = C2.insert, ro = I.od / 2 - 0.9;
+    {
+      const id = "nc" + clipN++;
+      CLIPS.push(`<clipPath id="${id}"><path d="${notchedPath(R, I.coin, 0.5)}"/></clipPath>`);
+      out.push(`<g clip-path="url(#${id})">` + teeth(R, I.coin, 0.5).map((t) => `<path d="${t.d}" fill="${tone(T, t.phi, 0.9, L)}"/>`).join("") + `</g>`);
+    }
+    out.push(`<path d="${notchedPath(R, I.coin, 0.5)}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round"/>`);
+    const ins = (c) => [hsl(c, 1.33), c, hsl(c, 0.78)], half = "hb" + clipN++;
+    CLIPS.push(`<clipPath id="${half}"><rect x="-60" y="0" width="120" height="60"/></clipPath>`);
+    out.push(sloped(I.id / 2, ro, ins(INSERT.top), L, -1, 0.5));
+    if (INSERT.bottom !== INSERT.top) out.push(`<g clip-path="url(#${half})">${sloped(I.id / 2, ro, ins(INSERT.bottom), L, -1, 0.5)}</g>`);
+    out.push(sloped(C2.opening, I.id / 2, T, L, -1, 0.7));
+    for (let m = 5; m < 60; m += 5) {
+      const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.6, r1 = I.id / 2 + 2.5;
+      out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#d8d6cf" stroke-width="0.7" stroke-linecap="round"/>`);
+    }
+    out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d8d6cf"/>`);
+    out.push(stroke(circle(ro)), stroke(circle(I.id / 2)));
+  }
+  out.push(glint(C2.cushion ? C2.cushion.a - 0.7 : C2.od / 2 - 0.5, L), glint(C2.opening + 0.5, L, 0.4, 0.5, 20));
+  out.push(shape2(circle(C2.opening), T[2], 0.15));
+  if (DIAL_IN) out.push(`<g clip-path="url(#dial-${C2.key})">${dialSVG(C2, v, L)}</g>`);
+  if (C2.insert) out.push(sloped(C2.opening - REHAUT, C2.opening, T, L, -1, 0.9), stroke(circle(C2.opening - REHAUT), 0.15));
+  if (!DIAL_IN) return out.join("");
+  {
+    const uS = [Math.cos(rad(L)), Math.sin(rad(L))], sl = (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H))));
+    out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f(-uS[0] * sl)} ${f(-uS[1] * sl)})"><path d="M-500 -500H500V500H-500Z${circle(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.4 * SHD))}"/></g></g>`);
+  }
+  const g = (a, r, w, o) => `<path d="M${f(Math.cos(rad(a - 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 28 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 28 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, o * GLASS.op))}" stroke-width="${f(w * GLASS.fat)}" stroke-linecap="round"/>`;
+  out.push(g(L, C2.opening - 0.9, 0.8, 0.55), g(L + 180, C2.opening - 0.9, 0.4, 0.22));
+  out.push(stroke(circle(C2.opening), 0.2));
+  return out.join("");
+}
+function caseMiyazaki(C2, v, L) {
+  FLARE_TINT = flareColour(C2.metal);
+  const R = C2.cushion ? C2.cushion.a : C2.od / 2, T = C2.metal, out = [];
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C2.cushion ? cushionLug(C2, sx, sy) : lugPath(C2, sx, sy), T, L, 0.5, 1, C2.cushion || C2.rails ? null : circle(R + 0.6)));
+  const cw = C2.crown.w, ch = C2.crown.h;
+  const RC = C2.rails ? C2.lugw / 2 + C2.lugT - 0.1 : R;
+  {
+    const R2 = RC, cd = rrect(R2 - 1.2, -cw / 2, R2 + ch, cw / 2, Math.min(1, cw / 2)), id = "cr" + BLOB++, ly = Math.sin(rad(L)), lx = Math.cos(rad(L));
+    out.push(blob(cd, T, L, 0.5, 0.9));
+    CLIPS.push(`<clipPath id="${id}"><path d="${cd}"/></clipPath>`);
+    const top = ly <= 0.05, bw = cw * 0.24, xg = R2 + 0.15;
+    out.push(`<g clip-path="url(#${id})"><rect x="${f(R2 - 1.2)}" y="${f(top ? -cw / 2 : cw / 2 - bw)}" width="${f(ch + 1.2)}" height="${f(bw)}" fill="#fff" fill-opacity="${Math.abs(ly) < 0.3 ? 0.14 : 0.22}"/><rect x="${f(R2 - 1.2)}" y="${f(top ? cw / 2 - bw : -cw / 2)}" width="${f(ch + 1.2)}" height="${f(bw)}" fill="#000" fill-opacity="0.3"/>` + Array.from({ length: C2.crown.knurl * 2 - 1 }, (_, k) => {
+      const y = -cw / 2 + (k + 1) * cw / (C2.crown.knurl * 2);
+      return `<rect x="${f(xg)}" y="${f(y - 0.09)}" width="${f(R2 + ch - xg)}" height="0.18" fill="#000" fill-opacity="0.38"/>`;
+    }).join("") + `<rect x="${f(lx > 0 ? R2 + ch - 0.45 : xg)}" y="${f(-cw / 2)}" width="0.45" height="${f(cw)}" fill="${lx > 0 ? "#fff" : "#000"}" fill-opacity="${lx > 0 ? 0.25 : 0.2}"/></g>`);
+  }
+  if (C2.cushion) out.push(blob(P(cushionPts(C2.cushion.a, C2.cushion.n)), T, L, 1.1, 2.4));
+  else if (C2.insert) {
+    out.push(`<path d="${circle(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>`);
+    out.push(blob(notchedPath(R, C2.insert.coin, 0.5), T, L, 1, 2.2));
+    {
+      const id = "nc" + BLOB++;
+      CLIPS.push(`<clipPath id="${id}"><path d="${notchedPath(R, C2.insert.coin, 0.5)}"/></clipPath>`);
+      out.push(`<g clip-path="url(#${id})">` + teeth(R, C2.insert.coin, 0.5).map((t) => {
+        const c = Math.cos(rad(t.phi - L));
+        return `<path d="${t.d}" fill="${c > 0.45 ? mixc(T[0], "#ffffff", 0.3) : c < -0.25 ? T[2] : T[1]}"/>`;
+      }).join("") + `</g>`);
+    }
+  } else out.push(blob(circle(R), T, L, 1, 2.2));
+  const uL = [Math.cos(rad(L)), Math.sin(rad(L))];
+  const castBy = (rr, under, s = 0.9, op = 0.38) => {
+    const id = "cb" + BLOB++;
+    CLIPS.push(`<clipPath id="${id}"><path d="${under}"/></clipPath>`);
+    return `<g clip-path="url(#${id})"><path d="${circle(rr)}" transform="translate(${f(-uL[0] * s)} ${f(-uL[1] * s)})" fill="#000" fill-opacity="${op}"/></g>`;
+  };
+  if (C2.insert) {
+    const I = C2.insert, ro = I.od / 2 - 0.9;
+    out.push(castBy(ro, circle(R - 0.55)));
+    const ins = (c) => [hsl(c, 1.35), c, hsl(c, 0.65)], half = "hb" + BLOB++;
+    CLIPS.push(`<clipPath id="${half}"><rect x="-60" y="0" width="120" height="60"/></clipPath>`);
+    out.push(blob(circle(ro), ins(INSERT.top), L, 0.6, 1.2));
+    if (INSERT.bottom !== INSERT.top) out.push(`<g clip-path="url(#${half})">${blob(circle(ro), ins(INSERT.bottom), L, 0.6, 1.2)}</g>`);
+    {
+      const r0 = C2.opening, r1 = I.id / 2, rm = (r0 + r1) / 2, wd = r1 - r0, arc2 = (a2, sp) => `M${f(Math.cos(rad(a2 - sp)) * rm)} ${f(Math.sin(rad(a2 - sp)) * rm)}A${f(rm)} ${f(rm)} 0 0 1 ${f(Math.cos(rad(a2 + sp)) * rm)} ${f(Math.sin(rad(a2 + sp)) * rm)}`;
+      out.push(`<path d="${circle(r1)}${circle(r0)}" fill-rule="evenodd" fill="${T[1]}"/><path d="${arc2(L, 55)}" fill="none" stroke="${T[0]}" stroke-width="${f(wd * 0.6)}" stroke-linecap="round"/><path d="${arc2(L + 180, 55)}" fill="none" stroke="${T[2]}" stroke-width="${f(wd * 0.6)}" stroke-linecap="round"/>`);
+    }
+    for (let m = 5; m < 60; m += 5) {
+      const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.6, r1 = I.id / 2 + 2.5;
+      out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#bfbcb4" stroke-width="0.7" stroke-linecap="round"/>`);
+    }
+    out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d0cdc5"/>`);
+  } else if (!C2.cushion) out.push(castBy(R - 1, circle(R)), blob(circle(R - 1), T, L, 0.6, 1.1));
+  else out.push(castBy(C2.bands[0][0], P(cushionPts(C2.cushion.a, C2.cushion.n))), blob(circle(C2.bands[0][0]), T, L, 0.6, 1.1));
+  out.push(glint(C2.cushion ? C2.cushion.a - 0.8 : C2.od / 2 - 0.6, L, 0.8, 0.55, 24));
+  out.push(`<path d="${circle(C2.opening)}" fill="${T[2]}"/>`);
+  if (!DIAL_IN) return out.join("");
+  out.push(`<g clip-path="url(#dial-${C2.key})">${dialSVG(C2, v, L)}</g>`);
+  if (C2.insert) {
+    const r0 = C2.opening - REHAUT, r1 = C2.opening, rm = (r0 + r1) / 2, wd = r1 - r0, arc2 = (a2, sp) => `M${f(Math.cos(rad(a2 - sp)) * rm)} ${f(Math.sin(rad(a2 - sp)) * rm)}A${f(rm)} ${f(rm)} 0 0 1 ${f(Math.cos(rad(a2 + sp)) * rm)} ${f(Math.sin(rad(a2 + sp)) * rm)}`;
+    out.push(`<path d="${circle(r1)}${circle(r0)}" fill-rule="evenodd" fill="${T[1]}"/><path d="${arc2(L + 180, 70)}" fill="none" stroke="${T[0]}" stroke-width="${f(wd * 0.75)}" stroke-linecap="round"/><path d="${arc2(L, 60)}" fill="none" stroke="${T[2]}" stroke-width="${f(wd * 0.75)}" stroke-linecap="round"/><path d="${circle(r0)}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="0.12"/>`);
+  }
+  out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f(-uL[0] * (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))} ${f(-uL[1] * (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))})"><path d="M-500 -500H500V500H-500Z${circle(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.44 * SHD))}"/></g></g>`);
+  const r = C2.opening - 1.2, a = L;
+  out.push(`<path d="M${f(Math.cos(rad(a - 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 35 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 35 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, 0.5 * GLASS.op))}" stroke-width="${f(1.6 * GLASS_K * GLASS.fat)}" stroke-linecap="round"/>`);
+  return out.join("");
+}
+var caseSVG = (C2, v, L) => STYLE === "engineer" ? caseEngineer(C2, v, L) : caseMiyazaki(C2, v, L);
+function leatherPiece(y0, y1, w0, w1, T, L, tip = 0, holes = []) {
+  const s = Math.sign(y1 - y0), yEnd = y1 - s * tip, rw = 2.2;
+  let d = `M${f(-w0 / 2)} ${f(y0 + s * rw)}Q${f(-w0 / 2)} ${f(y0)} ${f(-w0 / 2 + rw)} ${f(y0)}L${f(w0 / 2 - rw)} ${f(y0)}Q${f(w0 / 2)} ${f(y0)} ${f(w0 / 2)} ${f(y0 + s * rw)}L${f(w1 / 2)} ${f(yEnd)}`;
+  if (tip) d += `Q${f(w1 / 2)} ${f(y1)} 0 ${f(y1)}Q${f(-w1 / 2)} ${f(y1)} ${f(-w1 / 2)} ${f(yEnd)}Z`;
+  else d += `L${f(-w1 / 2)} ${f(y1)}Z`;
+  let html = part(d, T, L, 1, 2.6) + `<path d="${d}" fill="url(#grain)"/>`;
+  if (STYLE === "engineer") {
+    const xp = (y) => w0 / 2 + (w1 - w0) / 2 * ((y - y0) / (y1 - y0)), pad = (side) => P([[side * (xp(y0) - 1.6), y0], [side * (xp(y0) - 3.4), y0], [side * (xp(yEnd) - 3.4), yEnd], [side * (xp(yEnd) - 1.6), yEnd]]);
+    html += flat(pad(1), tone(T, 0, 0.8, L)) + flat(pad(-1), tone(T, 180, 0.8, L));
+  }
+  html += `<path d="${rrectD(-w0 * 0.4, y0, w0 * 0.4, y0 + s * 0.6, 0.3)}" fill="#000" fill-opacity="0.45"/>`;
+  const xs = (y) => w0 / 2 + (w1 - w0) / 2 * ((y - y0) / (y1 - y0)), k = 0.9, ys = y0 + s * 1.8;
+  html += `<path d="M${f(-xs(ys) + k)} ${f(ys)}L${f(-xs(yEnd) + k)} ${f(yEnd)}M${f(xs(ys) - k)} ${f(ys)}L${f(xs(yEnd) - k)} ${f(yEnd)}" fill="none" stroke="#e9dccb" stroke-opacity="0.6" stroke-width="0.18" stroke-dasharray="0.7 0.6"/>`;
+  for (const y of holes) {
+    const u = [Math.cos(rad(L)), Math.sin(rad(L))], r = 0.85, p = [-u[1] * r, u[0] * r];
+    html += `<circle cx="0" cy="${f(y)}" r="${r}" fill="#000" fill-opacity="0.6"/><path d="M${f(p[0])} ${f(y + p[1])}A${r} ${r} 0 0 0 ${f(-p[0])} ${f(y - p[1])}" fill="none" stroke="${T[0]}" stroke-opacity="0.7" stroke-width="0.22"/>`;
+  }
+  return html;
+}
+function tangBuckle(yEnd, w) {
+  const W2 = w + 4, H2 = W2 * 0.8, x2 = -W2 / 2, y = yEnd - H2 + 1.7, bar = 1.2, sideB = 1.6, sideF = 2.4, front = H2 * 0.2, r = 2.6, slotY = yEnd + 3;
+  const hole = `M${f(x2 + W2 - sideB)} ${f(y + H2 - bar)}L${f(x2 + W2 - sideF)} ${f(y + front)}Q${f(x2 + W2 - sideF)} ${f(y + front - 0.6)} ${f(x2 + W2 - sideF - 0.6)} ${f(y + front - 0.6)}H${f(x2 + sideF + 0.6)}Q${f(x2 + sideF)} ${f(y + front - 0.6)} ${f(x2 + sideF)} ${f(y + front)}L${f(x2 + sideB)} ${f(y + H2 - bar)}Z`;
+  const frame2 = rrectD(x2, y, x2 + W2, y + H2, r) + hole;
+  const tongue = `M-1.1 ${f(slotY)}L1.1 ${f(slotY)}L0.7 ${f(y + 0.4)}Q0 ${f(y - 0.9)} -0.7 ${f(y + 0.4)}Z`;
+  const slot = `<rect x="-1.4" y="${f(slotY - 0.35)}" width="2.8" height="0.7" rx="0.3" fill="#000" fill-opacity="0.55"/>`;
+  return { frame: frame2, tongue, slot, W: W2, H: H2, y };
+}
+function buckle(y, w, T, L) {
+  const B = tangBuckle(y, w), x2 = -B.W / 2;
+  if (STYLE === "engineer") return { frame: shape2(B.frame, T[1], 0.2) + flat(P([[x2 + 2.2, B.y], [x2 + B.W - 2.2, B.y], [x2 + B.W - 2.2, B.y + 0.9], [x2 + 2.2, B.y + 0.9]]), tone(T, 270, 0.9, L)), slot: B.slot, tongue: shape2(B.tongue, tone(T, 0, 0.3, L), 0.15) };
+  return { frame: blob(B.frame, T, L, 0.6, 1.2), slot: B.slot, tongue: blob(B.tongue, T, L, 0.3, 0.6) };
+}
+function keeper(y, w, T, L, h = 3.2) {
+  const W2 = w + 1.4;
+  if (STYLE === "engineer") return shape2(P([[-W2 / 2, y], [W2 / 2, y], [W2 / 2, y + h], [-W2 / 2, y + h]]), T[1], 0.2) + flat(P([[-W2 / 2, y], [W2 / 2, y], [W2 / 2, y + h * 0.35], [-W2 / 2, y + h * 0.35]]), tone(T, 270, 0.9, L)) + flat(P([[-W2 / 2, y + h * 0.65], [W2 / 2, y + h * 0.65], [W2 / 2, y + h], [-W2 / 2, y + h]]), tone(T, 90, 0.9, L));
+  return blob(rrect(-W2 / 2, y, W2 / 2, y + h, 1), T, L, 0.5, 0.9);
+}
+function leatherSVG(C2, L, colour, open, span) {
+  const T = LEATHER[colour], w = C2.lugw, end = 16, yc = C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2);
+  const gap = "";
+  if (!open) return gap + leatherPiece(-yc, -span, w, w - 1.2, T, L) + leatherPiece(yc, span, w, w - 1.2, T, L, 0, [60, 67].filter((y) => y < span));
+  const up = leatherPiece(-yc, -(C2.l2l / 2 + 75), w, end, T, L), dn = leatherPiece(yc, C2.l2l / 2 + 115, w, end, T, L, 7, [72, 79, 86, 93, 100, 107].map((y) => C2.l2l / 2 + y - 25));
+  const B = buckle(-(C2.l2l / 2 + 75), end, C2.metal, L);
+  return gap + B.frame + up + dn + keeper(-(C2.l2l / 2 + 62), end + 0.4, T, L, 5.5) + B.slot + B.tongue;
+}
+function natoEngineer(C2, L, set, open, span) {
+  const S = NATO_SETS[set] || NATO_MORE[set], w = C2.lugw - 0.3, x0 = -w / 2;
+  const stripes = STRIPES[set] || [[0, 1, 0]];
+  const run = (y0, y1, layer = 0) => {
+    let h2 = "";
+    for (const [a, b, k] of stripes) {
+      const T = S[k];
+      h2 += `<rect x="${f(x0 + a * w)}" y="${f(Math.min(y0, y1))}" width="${f((b - a) * w)}" height="${f(Math.abs(y1 - y0))}" fill="${T[1]}"/>`;
+    }
+    h2 += `<rect x="${f(x0)}" y="${f(Math.min(y0, y1))}" width="${f(w)}" height="${f(Math.abs(y1 - y0))}" fill="url(#${WEAVE})"/>`;
+    h2 += flat(P([[x0, y0], [x0 + 0.5, y0], [x0 + 0.5, y1], [x0, y1]]), tone(S[0], 180, 0.9, L)) + flat(P([[-x0 - 0.5, y0], [-x0, y0], [-x0, y1], [-x0 - 0.5, y1]]), tone(S[0], 0, 0.9, L));
+    return h2 + stroke(P([[x0, y0], [-x0, y0], [-x0, y1], [x0, y1]]), 0.2);
+  };
+  const half = C2.l2l / 2;
+  if (!open) {
+    let h2 = run(-span, span);
+    h2 += stroke(`M${f(x0)} ${f(half + 10)}H${f(-x0)}`, 0.2);
+    h2 += `<path d="M${f(x0)} ${f(half + 10.3)}H${f(-x0)}" stroke="#000" stroke-opacity="0.25" stroke-width="0.6"/>`;
+    h2 += keeper(half + 15, w, C2.metal, L, 3.6);
+    for (let y = half + 14; y < span; y += 7) h2 += `<ellipse cx="0" cy="${f(-y)}" rx="0.85" ry="0.65" fill="${INK}" fill-opacity="0.75"/>`;
+    return h2;
+  }
+  let h = run(-(half + 70), half + 165);
+  {
+    const B = buckle(-(half + 70) + 1, w, C2.metal, L);
+    h += B.frame + B.tongue;
+  }
+  h += keeper(-(half + 58), w, C2.metal, L, 3.6);
+  h += keeper(half + 12, w, C2.metal, L, 3.6) + keeper(half + 87, w, C2.metal, L, 3.6);
+  for (let y = half + 165 - 25; y > half + 100; y -= 7) h += `<ellipse cx="0" cy="${f(y)}" rx="0.85" ry="0.65" fill="${INK}" fill-opacity="0.75"/>`;
+  return h;
+}
+function natoMiyazaki(C2, L, set, open, span) {
+  const S = NATO_SETS[set] || NATO_MORE[set], w = C2.lugw - 0.3, x0 = -w / 2, half = C2.l2l / 2;
+  const stripes = STRIPES[set] || [[0, 1, 0]];
+  const y0 = open ? -(half + 70) : -span, y1 = open ? half + 165 : span, band = rrect(x0, y0, -x0, y1, 1.2);
+  let h = stripes.map(([a, b, k]) => `<rect x="${f(x0 + a * w)}" y="${f(y0)}" width="${f((b - a) * w)}" height="${f(y1 - y0)}" fill="${S[k][1]}"/>`).join("");
+  OUTT.push(band);
+  h += `<path d="${band}" fill="url(#${WEAVE})"/>` + blobOver(band, L, 1, 2.6);
+  h += `${[0, 1, 2, 3].map((i2) => `<rect x="${f(x0)}" y="${f(half + 9.4 + i2 * 0.35)}" width="${f(w)}" height="${f(1.6 - i2 * 0.35)}" fill="#000" fill-opacity="0.07"/>`).join("")}`;
+  if (!open) {
+    h += keeper(half + 15, w, C2.metal, L, 3.6);
+    for (let y = half + 14; y < span; y += 7) h += `<circle cx="0" cy="${f(-y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`;
+  } else {
+    const B = buckle(y0 + 1, w, C2.metal, L);
+    h += B.frame + B.tongue + keeper(-(half + 58), w, C2.metal, L, 3.6) + keeper(half + 12, w, C2.metal, L, 3.6) + keeper(half + 87, w, C2.metal, L, 3.6);
+    for (let y = y1 - 25, n = 0; n < 9; y -= 7, n++) h += `<circle cx="0" cy="${f(y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`;
+  }
+  return h;
+}
+var natoSVG = (...a) => STYLE === "engineer" ? natoEngineer(...a) : natoMiyazaki(...a);
+function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
+  const id = "vb" + VB_N++, h = y1 - y0, N = 9;
+  CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
+  let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;
+  const dots = Array.from({ length: N }, (_, i2) => {
+    const t = ((i2 + 0.5) / N * 2 - 1) * flip, b = Math.asin(Math.max(-1, Math.min(1, t * k)));
+    return Math.max(0, Math.sin(b) * lv[1] + Math.cos(b) * lv[2]);
+  });
+  const order = dots.map((d2, i2) => [d2, i2]).sort((a, b) => a[0] - b[0]).map((p) => p[1]), rank = [];
+  order.forEach((i2, r) => rank[i2] = r);
+  for (let i2 = 0; i2 < N; i2++) {
+    const q = Math.min(ramp.length - 2, Math.floor(rank[i2] / N * (ramp.length - 1)));
+    s += `<rect x="${f(x0)}" y="${f(y0 + i2 * h / N - 0.01)}" width="${f(x1 - x0)}" height="${f(h / N + 0.02)}" fill="${ramp[q]}"/>`;
+  }
+  const e = 0.32, litL = lv[0] <= 0, litT = Math.abs(lv[1]) < 0.05 ? true : lv[1] < 0;
+  const vx = (left) => `<rect x="${f(left ? x0 : x1 - e)}" y="${f(y0)}" width="${f(e)}" height="${f(h)}"/>`;
+  const hz = (top) => `<rect x="${f(x0)}" y="${f(top ? y0 : y1 - e)}" width="${f(x1 - x0)}" height="${f(e)}"/>`;
+  s += `<g fill="${ramp[0]}">${vx(!litL)}${hz(!litT)}</g><g fill="${ramp[ramp.length - 1]}">${vx(litL)}${hz(litT)}</g>`;
+  return s + `</g>`;
+}
+function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
+  const id = "vb" + VB_N++, h = y1 - y0, N = 7;
+  CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
+  let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;
+  for (let i2 = 0; i2 < N; i2++) {
+    const t = ((i2 + 0.5) / N * 2 - 1) * flip, b = Math.asin(Math.max(-1, Math.min(1, t * k))), n = [0, Math.sin(b), Math.cos(b)];
+    const dot = Math.max(0, n[1] * lv[1] + n[2] * lv[2]), q = Math.min(ramp.length - 2, Math.round(dot * (ramp.length - 2)));
+    s += `<rect x="${f(x0)}" y="${f(y0 + i2 * h / N - 0.01)}" width="${f(x1 - x0)}" height="${f(h / N + 0.02)}" fill="${ramp[q]}"/>`;
+  }
+  const e = 0.32, litL = lv[0] <= 0, litT = Math.abs(lv[1]) < 0.05 ? true : lv[1] < 0;
+  const vx = (left) => `<rect x="${f(left ? x0 : x1 - e)}" y="${f(y0)}" width="${f(e)}" height="${f(h)}"/>`;
+  const hz = (top) => `<rect x="${f(x0)}" y="${f(top ? y0 : y1 - e)}" width="${f(x1 - x0)}" height="${f(e)}"/>`;
+  s += `<g fill="${ramp[0]}">${vx(!litL)}${hz(!litT)}</g><g fill="${ramp[ramp.length - 1]}">${vx(litL)}${hz(litT)}</g>`;
+  return s + `</g>`;
+}
+var barrel = (...a) => STYLE === "engineer" ? barrelEngineer(...a) : barrelMiyazaki(...a);
+function vaultEngineer({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
+  const pitch = 6.4, out = [];
+  for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
+    const w = Math.max(16, W2 - k * 0.45), mid = w * 0.36, g = 0.18, kk = 0.99;
+    const ya = wrap.map(y), yb = wrap.map(Math.min(span, y + pitch));
+    if (yb - ya < 0.12) break;
+    const a = sy * ya, b = sy * yb, top = Math.min(a, b), bot = Math.max(a, b), lv = wrap.light(lv0, (y + Math.min(span, y + pitch)) / 2);
+    const parts = [
+      [-w / 2, -mid / 2 - g / 2, [0.6, 0.12, 0.12, 0.6]],
+      [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
+      [-mid / 2 + g / 2, mid / 2 - g / 2, [0.25, 0.25, 0.25, 0.25]]
+    ];
+    out.push(`<rect x="${f(-w / 2 + 0.6)}" y="${f(top)}" width="${f(w - 1.2)}" height="${f(bot - top)}" fill="${ramp[ramp.length - 1]}"/>`);
+    for (const [pi, [x0, x1, rr]] of parts.entries()) {
+      const d = rrect4(x0, top, x1, bot, rr);
+      out.push(barrel(d, x0, top, x1, bot, kk, ramp, lv, 1));
+      if (pi < 2) {
+        const side = pi === 0 ? -1 : 1, lit = lv[0] * side > 0.05, wq = (x1 - x0) * 0.3, xa = side < 0 ? x0 : x1 - wq;
+        out.push(`<path d="${d}" fill="none"/><g clip-path="url(#vb${VB_N - 1}c)"><rect x="${f(xa)}" y="${f(top)}" width="${f(wq)}" height="${f(bot - top)}" fill="${lit ? "#fff" : "#000"}" fill-opacity="${lit ? 0.16 : 0.3}"/></g>`);
+      } else out.push(`<g clip-path="url(#vb${VB_N - 1}c)"><rect x="${f(x0)}" y="${f(top)}" width="${f(x1 - x0)}" height="${f(bot - top)}" fill="#fff" fill-opacity="0.1"/></g>`);
+      if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
+    }
+    {
+      const down = lv[1] < 0 ? 1 : -1, yc = down * sy > 0 ? bot : top;
+      out.push(`<rect x="${f(-w / 2)}" y="${f(down * sy > 0 ? yc : yc - 0.9)}" width="${f(w)}" height="0.9" fill="#000" fill-opacity="0.22"/>`);
+    }
+    out.push(`<path d="M${f(-w / 2 + 0.3)} ${f(sy > 0 ? bot : top)}H${f(w / 2 - 0.3)}" stroke="#141516" stroke-opacity="${ink ? 0.9 : 0.6}" stroke-width="${ink ? inkW * 1.6 : 0.45}"/>`);
+  }
+  return out.join("");
+}
+function vaultMiyazaki({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
+  const pitch = 6.4, out = [];
+  for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
+    const w = Math.max(16, W2 - k * 0.45), mid = w * 0.36, g = 0.18, kk = 0.99;
+    const ya = wrap.map(y), yb = wrap.map(Math.min(span, y + pitch));
+    if (yb - ya < 0.12) break;
+    const a = sy * ya, b = sy * yb, top = Math.min(a, b), bot = Math.max(a, b), lv = wrap.light(lv0, (y + Math.min(span, y + pitch)) / 2);
+    const parts = [
+      [-w / 2, -mid / 2 - g / 2, [0.6, 0.12, 0.12, 0.6]],
+      [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
+      [-mid / 2 + g / 2, mid / 2 - g / 2, [0.25, 0.25, 0.25, 0.25]]
+    ];
+    out.push(`<rect x="${f(-w / 2 + 0.6)}" y="${f(top)}" width="${f(w - 1.2)}" height="${f(bot - top)}" fill="${ramp[ramp.length - 1]}"/>`);
+    for (const [x0, x1, rr] of parts) {
+      const d = rrect4(x0, top, x1, bot, rr);
+      out.push(barrel(d, x0, top, x1, bot, kk, ramp, lv, 1));
+      if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
+    }
+    {
+      const down = lv[1] < 0 ? 1 : -1, yc = down * sy > 0 ? bot : top;
+      out.push(`<rect x="${f(-w / 2)}" y="${f(down * sy > 0 ? yc : yc - 0.9)}" width="${f(w)}" height="0.9" fill="#000" fill-opacity="0.22"/>`);
+    }
+    out.push(`<path d="M${f(-w / 2 + 0.3)} ${f(sy > 0 ? bot : top)}H${f(w / 2 - 0.3)}" stroke="#141516" stroke-opacity="${ink ? 0.9 : 0.6}" stroke-width="${ink ? inkW * 1.6 : 0.45}"/>`);
+  }
+  return out.join("");
+}
+var vaultBracelet = (o) => STYLE === "engineer" ? vaultEngineer(o) : vaultMiyazaki(o);
+function linksBracelet({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, wrap = FLAT_WRAP }) {
+  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
+  const h = 4.4, g = 0.15, mid = W2 * 0.46, out = [`<rect x="${f(-W2 / 2 + 0.3)}" y="${f(Math.min(sy * wrap.map(y0), sy * wrap.map(span)))}" width="${f(W2 - 0.6)}" height="${f(Math.abs(wrap.map(span) - wrap.map(y0)))}" fill="${ramp[0]}"/>`];
+  const piece = (x0, x1, a0, b0) => {
+    const a = wrap.map(a0), b = wrap.map(b0);
+    if (b - a < 0.12) return;
+    const lv = wrap.light(lv0, (a0 + b0) / 2), top = Math.min(sy * a, sy * b), bot = Math.max(sy * a, sy * b), r = Math.min(0.9, (bot - top) * 0.3), d = rrect4(x0, top, x1, bot, [r, r, r, r]);
+    out.push(barrel(d, x0, top, x1, bot, 0.99, ramp, lv, 1));
+    if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
+  };
+  piece(-mid / 2 + g / 2, mid / 2 - g / 2, y0, y0 + h / 2 - g);
+  for (let y = y0; y + h / 2 <= span + 0.01; y += h) {
+    const b = Math.min(span, y + h - g);
+    piece(-W2 / 2, -mid / 2 - g / 2, y, b);
+    piece(mid / 2 + g / 2, W2 / 2, y, b);
+    const c0 = y + h / 2, c1 = Math.min(span, c0 + h - g);
+    if (c1 > c0 + 0.5) piece(-mid / 2 + g / 2, mid / 2 - g / 2, c0, c1);
+  }
+  return out.join("");
+}
+var WRIST_R = 12;
+var WRIST_FLAT = 1;
+var FLAT_WRAP = { map: (y) => y, light: (lv) => lv };
+function wristWrap(y0) {
+  const ys = y0 + WRIST_FLAT, th = (y) => Math.max(0, Math.min(Math.PI / 2, (y - ys) / WRIST_R));
+  return {
+    span: ys + WRIST_R * Math.PI / 2,
+    map: (y) => y <= ys ? y : ys + WRIST_R * Math.sin(th(y)),
+    light: (lv, y) => {
+      const t = th(y), c = Math.cos(t), si = Math.sin(t);
+      return [lv[0], lv[1] * c - lv[2] * si, lv[1] * si + lv[2] * c];
+    }
+  };
+}
+function braceletSVG(C2, L, span) {
+  const R = C2.od / 2, lw = C2.lugw, W2 = C2.lugw - 0.2, yE = C2.l2l / 2 + 0.8, ramp = ramp6(C2.metal);
+  const lv0 = (sy) => [Math.cos(rad(SUN_H)) * Math.cos(rad(L)), Math.cos(rad(SUN_H)) * Math.sin(rad(L)) * sy, Math.sin(rad(SUN_H))];
+  let out = "";
+  for (const sy of [-1, 1]) {
+    const Rr = R + 0.1, arc2 = [];
+    for (let j = 0; j <= 16; j++) {
+      const x2 = -lw / 2 + lw * j / 16;
+      arc2.push([x2, sy * (Math.sqrt(Rr * Rr - x2 * x2) - 0.15)]);
+    }
+    const end = "M" + [...arc2, [lw / 2, sy * yE], [-lw / 2, sy * yE]].map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z";
+    const ys = [sy * (Math.sqrt(Rr * Rr - lw * lw / 4) - 0.15), sy * (Rr - 0.15), sy * yE], top = Math.min(...ys), bot = Math.max(...ys);
+    out += barrel(end, -lw / 2, Math.min(top, bot), lw / 2, Math.max(top, bot), 0.99, ramp, lv0(sy), 1);
+    const mid = W2 * 0.36;
+    for (const x2 of [-mid / 2, mid / 2]) out += `<path d="M${f(x2)} ${f(sy * (Math.sqrt(Rr * Rr - x2 * x2) - 0.15))}V${f(sy * yE)}" stroke="${ramp[0]}" stroke-width="0.22"/>`;
+    out += `<path d="M${arc2.map((p) => `${f(p[0])} ${f(p[1])}`).join("L")}" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="0.5"/>`;
+    out += INKB ? `<path d="${end}" fill="none" stroke="${INKB}" stroke-width="0.22" stroke-linejoin="round"/>` : "";
+    OUTT.push(end);
+    const wrap = wristWrap(yE), far = wrap.span;
+    out += (BRACELET_KIND === "links" ? linksBracelet : vaultBracelet)({ W: W2, y0: yE, span: far, sy, L, H: SUN_H, ramp, ink: INKB, wrap });
+    for (let k = 0, y = yE; y + 6.4 <= far + 0.01; k++, y += 6.4) {
+      const w = Math.max(16, W2 - k * 0.45), a = wrap.map(y), b = wrap.map(y + 6.4);
+      if (b - a < 0.12) break;
+      OUTT.push(`M${f(-w / 2)} ${f(sy * a)}H${f(w / 2)}V${f(sy * b)}H${f(-w / 2)}Z`);
+    }
+  }
+  return out;
+}
+var FLAT = /* @__PURE__ */ new Map();
+function polylines(d) {
+  if (FLAT.has(d)) return FLAT.get(d);
+  const P2 = PK.FromSVGString(d), cmds = P2.toCmds();
+  P2.delete();
+  const out = [];
+  let cur = null, prev = null;
+  const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  for (const c of cmds) {
+    const v = c[0], p = [];
+    for (let k = 1; k + 1 < c.length; k += 2) p.push([c[k], c[k + 1]]);
+    if (v === 0) {
+      cur = [p[0]];
+      out.push(cur);
+      prev = p[0];
+    } else if (v === 1) {
+      cur.push(p[0]);
+      prev = p[0];
+    } else if (v === 2 || v === 3) {
+      const w = v === 3 ? c[5] : 1;
+      for (let i2 = 1; i2 <= 8; i2++) {
+        const t = i2 / 8, a = (1 - t) * (1 - t), b = 2 * w * t * (1 - t), e = t * t, s = a + b + e;
+        cur.push([(a * prev[0] + b * p[0][0] + e * p[1][0]) / s, (a * prev[1] + b * p[0][1] + e * p[1][1]) / s]);
+      }
+      prev = p[1];
+    } else if (v === 4) {
+      for (let i2 = 1; i2 <= 8; i2++) {
+        const t = i2 / 8, q = lerp(lerp(lerp(prev, p[0], t), lerp(p[0], p[1], t), t), lerp(lerp(p[0], p[1], t), lerp(p[1], p[2], t), t), t);
+        cur.push(q);
+      }
+      prev = p[2];
+    } else if (v === 5 && cur) {
+      cur.push(cur[0]);
+    }
+  }
+  FLAT.set(d, out);
+  return out;
+}
+function sweep(d, v) {
+  let quads = "";
+  for (const line of polylines(d)) for (let i2 = 1; i2 < line.length; i2++) {
+    const p = line[i2 - 1], q = line[i2], cross = (q[0] - p[0]) * v[1] - (q[1] - p[1]) * v[0];
+    if (Math.abs(cross) < 1e-6) continue;
+    const [a, b] = cross > 0 ? [p, q] : [q, p];
+    quads += `M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}L${f(b[0] + v[0])} ${f(b[1] + v[1])}L${f(a[0] + v[0])} ${f(a[1] + v[1])}Z`;
+  }
+  return `<path d="${d}"/><path d="${d}" transform="translate(${f(v[0])} ${f(v[1])})"/><path d="${quads}"/>`;
+}
+function silhouette(C2) {
+  const R = C2.cushion ? C2.cushion.a : C2.od / 2, crown = rrectD(R - 1.2, -C2.crown.w / 2, R + C2.crown.h, C2.crown.w / 2, 1);
+  return [[C2.cushion ? P(cushionPts(C2.cushion.a, C2.cushion.n)) : circle(R), 1], ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => [(C2.cushion ? cushionLug : lugPath)(C2, sx, sy), 0.55])), [crown, 0.5]];
+}
+function contact(C2, L, strap, span, soft) {
+  const u = [Math.cos(rad(L)), Math.sin(rad(L))], k = longer(SUN_H), off = [-u[0] * 0.9 * k, -u[1] * 0.9 * k];
+  const w = C2.lugw - 0.2, leather = strap.startsWith("leather");
+  const area = OUTL_S.map((d) => `<path d="${d}"/>`).join("");
+  const id = "ct" + BLOB_N++;
+  CLIPS.push(`<clipPath id="${id}">${area}</clipPath>`);
+  let h = `<g clip-path="url(#${id})"><g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>${silhouette(C2).map(([d, kk]) => sweep(d, [off[0] * 1.6 * kk, off[1] * 1.6 * kk])).join("")}</g></g>`;
+  for (const sy of [-1, 1]) {
+    const tip = C2.l2l / 2;
+    if (!leather) h += `<path d="M${f(-w / 2)} ${f(sy * (tip - 2.6))}H${f(w / 2)}" stroke="#000" stroke-opacity="0.2" stroke-width="0.8"/><path d="M${f(-w / 2)} ${f(sy * (tip - 2.2))}H${f(w / 2)}" stroke="#fff" stroke-opacity="0.12" stroke-width="0.4"/>`;
+  }
+  return h;
+}
+function silhouetteOutline(paths, L = 0) {
+  if (!paths.length) return "";
+  const u = PK.FromSVGString(paths[0]);
+  for (const d2 of paths.slice(1)) {
+    const p = PK.FromSVGString(d2);
+    u.op(p, PK.PathOp.UNION);
+    p.delete();
+  }
+  const d = u.toSVGString();
+  u.delete();
+  if (!GRADIENTS) return `<path d="${d}" fill="none" stroke="#fff" stroke-opacity="0.3" stroke-width="0.2" stroke-linejoin="round"/>`;
+  const id = "og" + BLOB_N++, ux = Math.cos(rad(L)), uy = Math.sin(rad(L)), D = 24;
+  CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(-ux * D)}" y1="${f(-uy * D)}" x2="${f(ux * D)}" y2="${f(uy * D)}"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0.65"/></linearGradient>`);
+  return `<path d="${d}" fill="none" stroke="url(#${id})" stroke-width="0.2" stroke-linejoin="round"/>`;
+}
+function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1) {
+  WEAVE = strap.endsWith("-big") ? "weavebig" : "weave";
+  strap = strap.replace(/-big$/, "");
+  SUN_H = h;
+  CLIPS = [];
+  const C2 = live_case({ ...scaleCase(CASES[key], size), key, dialOverride: dial, ...metal ? { metal: METALS[metal] } : {} }), span = open ? 260 : 64;
+  OUTL_S = [];
+  OUTT = OUTL_S;
+  const strapSVG = strap === "bracelet" ? braceletSVG(C2, L, open ? C2.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C2, L, strap.split("-")[1], open, span) : natoSVG(C2, L, strap.split("-")[1], open, span);
+  const off = (d) => [-Math.cos(rad(L)) * d, -Math.sin(rad(L)) * d];
+  const k = longer(h), H2 = CASE_H[key] ? CASE_H[key] * C2.od : 2.4 * Math.tan(rad(40));
+  const vCase = off(H2 / Math.tan(rad(Math.max(LOW_SUN, h)))), vStrap = off(0.8 * k);
+  const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C2).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
+  OUTL_C = [];
+  OUTT = OUTL_C;
+  const caseStr = caseSVG(C2, v, L);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
+<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle(C2.opening)}"/></clipPath>${TEXTURES}</defs>
+<defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
+<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
+${blockShadow}
+
+${strapSVG}${strap === "bracelet" ? "" : contact(C2, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
+</svg>`;
+}
+var GREYS = ["#504f4f", "#444442", "#373735"];
+function frame(o) {
+  const kind = o.kind in CASES ? o.kind : "dress";
+  use("engineer");
+  NO_LINES = true;
+  INK = "none";
+  DIAL_IN = false;
+  GLINT = "off";
+  CLIPS = [];
+  SUN_H = 40;
+  LIVE = o.outer ? { outer: o.outer, dial: o.d } : null;
+  const C2 = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
+  INSERT = { top: GREYS[2], bottom: GREYS[2] };
+  const body = caseSVG(C2, "own", 225);
+  NO_LINES = false;
+  INSERT = was;
+  DIAL_IN = true;
+  use("engineer");
+  return `<g transform="scale(1 -1)"><defs>${CLIPS.join("")}</defs>${body}</g>`;
+}
+function silhouetteOf(key, size) {
+  use("miyazaki");
+  DIAL_IN = false;
+  GLINT = "off";
+  OUTLINE_ON = false;
+  const kind = key in CASES ? key : "dress";
+  METALS.custom = METALS.steel;
+  LEATHER.custom = LEATHER.brown;
+  sheet(kind, "leather-custom", "own", 225, true, 40, "live", "custom", size);
+  DIAL_IN = true;
+  OUTLINE_ON = true;
+  const u = PK.FromSVGString(OUTL_C[0]);
+  for (const d2 of OUTL_C.slice(1)) {
+    const p = PK.FromSVGString(d2);
+    u.op(p, PK.PathOp.UNION);
+    p.delete();
+  }
+  const d = u.toSVGString();
+  u.delete();
+  return d;
+}
+var TILES = {};
+function tilePicture(key, w = 38, h = 27) {
+  if (TILES[key]) return TILES[key];
+  const C2 = scaleCase(CASES[key] || CASES.dress, 1), d = silhouetteOf(key, 1), b = caseBox(key, 1), m = 1.15;
+  const s = Math.min(w / (b.w * m), h / (b.h * m));
+  return TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="currentColor" stroke="none"><path fill-rule="evenodd" d="${d} ${circle(C2.opening)}"/></svg>`;
+}
+var POOL_R = 44;
+var POOL_FULL = 0.45;
+var POOL_MID = 0.82;
+var POOL_EDGE = 0.57;
+var DETAIL = 31;
+var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
+var fullBox = (kind = null, size = 1, bracelet = false) => {
+  if (!bracelet || !CASES[kind]) return [FULL.w, FULL.h];
+  const C2 = scaleCase(CASES[kind], size), h = 2 * (C2.l2l / 2 + 0.8 + WRIST_FLAT + WRIST_R + 6);
+  return [h * FULL.w / FULL.h * 2, h];
+};
+var STYLES = {
+  engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
+  miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` }
+};
+var hsl = (h, k) => {
+  const [hh, s, l] = hex2hsl(h);
+  return hsl2hex([hh, s, Math.min(0.97, l * k)]);
+};
+var tones = (h, [up, down]) => [hsl(h, up), h, hsl(h, down)];
+function presets(style) {
+  use(style);
+  return {
+    floor: STYLES[style].floor,
+    metals: Object.fromEntries(Object.entries(METALS).map(([k, T]) => [k, T[1]])),
+    leather: Object.fromEntries(Object.entries(LEATHER).map(([k, T]) => [k, T[1]])),
+    nato: Object.fromEntries(Object.entries({ ...NATO_SETS, ...NATO_MORE }).map(([k, S]) => [k, S.map((T) => T[1])]))
+  };
+}
+var sizeFor = (key, d, outer = null) => {
+  const C2 = CASES[key] || CASES.dress;
+  return outer ? (2 * outer + 2 * CASE_LIP) / C2.od : d / (C2.dial - (C2.insert ? 2 * REHAUT : 0));
+};
+var CASE_LIP = 0.65;
+var LIVE = null;
+var live_case = (C2) => LIVE ? Object.assign(C2, { opening: LIVE.outer, dial: LIVE.dial, insert: null, bands: [] }) : C2;
+var caseBox = (key, size) => {
+  const C2 = scaleCase(CASES[key], size);
+  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.rails ? Math.max(C2.od, C2.lugw + 2 * C2.lugT) : C2.od) + 2 * C2.crown.h, dial: C2.dial };
+};
+function draw(o) {
+  use(o.style || "miyazaki");
+  const STYLE_ = STYLES[STYLE];
+  OUTLINE_ON = o.outline !== false;
+  LIVE = o.case ? { outer: o.case.outer, dial: o.d } : null;
+  DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
+  SOFT = Boolean(o.blurs);
+  GRADIENTS = o.gradients !== false;
+  HEIGHTS = o.heights || {};
+  HANDS_A = o.A;
+  FLARE_KIND = o.flare;
+  INK_K = o.ink ?? 6;
+  FL = o.fl;
+  GLASS = o.glass;
+  INSERT = o.insert;
+  SHD = o.shadow ?? 1;
+  HAND_BEVEL = +o.bevels || 0;
+  const own = (tabs, c, k) => tabs.flatMap((t) => Object.entries(t).filter(([n]) => n !== "custom").flatMap(([, v]) => typeof v[0] === "string" ? [v] : v)).find((T) => T[1] === c) || tones(c, k);
+  METALS.custom = own([METALS], o.metal, [1.35, 0.81]);
+  LEATHER.custom = own([LEATHER], o.leather, [1.18, 0.82]);
+  NATO_MORE.custom = o.natoColours.map((c) => own([NATO_SETS, NATO_MORE], c, [1.18, 0.82]));
+  STRIPES.custom = STRIPES[o.nato] || [[0, 1, 0]];
+  const two = o.floor2 && o.floor2 !== o.floor;
+  SH_OP = Math.min(1, STYLE_.shadow * SHD);
+  BRACELET_KIND = o.strap === "links" ? "links" : "vault";
+  const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
+  const make = (mode) => {
+    GLINT = mode;
+    return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur);
+  };
+  const vb = (x2, y, w, h) => `${f(x2)} ${f(y)} ${f(w)} ${f(h)}`;
+  const [fw, fh] = fullBox(o.key, o.size, o.strap === "bracelet" || o.strap === "links");
+  const box3 = o.view === "full" ? [-fw / 2, -fh / 2, fw, fh] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];
+  const e = (box3[2] + box3[3]) / 4, cx = box3[0] + box3[2] / 2, cy = box3[1] + box3[3] / 2;
+  const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f(cx - e)}" y1="${f(cy - e)}" x2="${f(cx + e)}" y2="${f(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";
+  const ground = (svg, fill) => svg.replace('<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>', `${lin ? `<defs>${lin}</defs><rect x="-300" y="-300" width="600" height="600" fill="url(#floorg)"/>` : ""}<rect x="-300" y="-300" width="600" height="600" fill="${fill}"/>`);
+  if (o.lighting !== "flat") {
+    const stops = two ? `<stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="${POOL_FULL}" stop-color="#000" stop-opacity="0"/><stop offset="0.7" stop-color="#000" stop-opacity="${f(1 - POOL_MID)}"/><stop offset="1" stop-color="#000" stop-opacity="${f(1 - POOL_EDGE - 0.08)}"/>` : `<stop offset="0" stop-color="${o.floor}"/><stop offset="${POOL_FULL}" stop-color="${o.floor}"/><stop offset="0.7" stop-color="${hsl(o.floor, POOL_MID)}"/><stop offset="1" stop-color="${hsl(o.floor, POOL_EDGE)}"/>`;
+    const pool = `<radialGradient id="pool" cx="0" cy="0" r="${POOL_R}" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
+    return ground(make(o.flareOn ? "flare" : "off").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, pool), "url(#pool)").replace("__VB__", vb(...box3));
+  }
+  return ground(make("off"), two ? "none" : o.floor).replace("__VB__", vb(...box3));
+}
+
 // src/moment.js
 var LANGS = ["en", "tr", "de", "fr", "it"];
 var NAMES = {
@@ -7670,13 +8762,13 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.60 beta";
+var VERSION = "v1.1.61 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
 var degrees = (a) => a * 180 / PI;
 var clone = (v) => JSON.parse(JSON.stringify(v));
-var KINDS = ["ticks", "markers", "numerals", "band", "text"];
+var KINDS2 = ["ticks", "markers", "numerals", "band", "text"];
 var has_text = (ring) => kind_of(ring) === "numerals" || kind_of(ring) === "text";
 var SHAPES = ["bar", "wedge", "dot", "file"];
 var TWELVES = ["same", "double", "triangle", "none"];
@@ -7732,13 +8824,13 @@ var LABEL_SETS = [
   ["Custom", ""],
   ["Numbers", ""]
 ];
-var INK = [0.08, 0.08, 0.08, 1];
+var INK2 = [0.08, 0.08, 0.08, 1];
 var ACCENT = [0.8, 0.22, 0.1, 1];
 var RING_BASE = {
   kind: 0,
   name: "",
   on: true,
-  c: INK,
+  c: INK2,
   surface: 0,
   r_from: 0,
   // the case (#582): which ground the ring lies on, a place in SURFACES (dial · rehaut · bezel); how its radius reads there, a place in R_FROM — from the centre, as on the dial; from the surface's inner edge; Fit (a band as wide as the surface, marks as long, words on its middle). On the dial both are 0
@@ -7941,7 +9033,7 @@ var WINDOW_BASE = {
   clear: 0.25,
   text: "17",
   size: 62,
-  ink: INK,
+  ink: INK2,
   hour: 10,
   age: 14.8,
   // 13 Oct 2026 — shape: a place in WINDOW_SHAPES · sides: of a polygon · turn: the hole turns with its radius (off the
@@ -8076,6 +9168,7 @@ var DEFAULTS = {
   bz_in_out: 0.6,
   bz_c: [0.8, 0.8, 0.78, 1],
   bz_insert_c: [0.17, 0.17, 0.19, 1],
+  // bz_c is dead (R8): the bezel is case material (case_metal)
   bz_teeth_n: 60,
   bz_teeth_depth: 0.5,
   bz_teeth_fill: 0.62,
@@ -8113,7 +9206,7 @@ var DEFAULTS = {
   da_clear: 0.25,
   da_day: "17",
   da_size: 62,
-  da_ink: INK,
+  da_ink: INK2,
   da_kind: 0,
   da_hour: 10,
   da_age: 14.8,
@@ -8479,12 +9572,12 @@ var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 var GEOMETRY_AFTER_ALL = ["out_hidden_cut"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
-  for (const [key, names] of [["kind", KINDS], ["shape", "fit" in base ? HAND_SHAPES : SHAPES]]) {
+  for (const [key, names] of [["kind", KINDS2], ["shape", "fit" in base ? HAND_SHAPES : SHAPES]]) {
     if (typeof out[key] === "string" && names.includes(out[key])) out[key] = names.indexOf(out[key]);
   }
   return out;
 }
-var kind_of = (ring) => KINDS[ring.kind];
+var kind_of = (ring) => KINDS2[ring.kind];
 var KIND_START = {
   // a new ring, sized for a dial of radius R
   ticks: (R) => ({ r: R - 0.6, count: 60, len: 1, w: 0.12 }),
@@ -8495,7 +9588,7 @@ var KIND_START = {
   // one word under the centre, as a dial's remark (#297)
 };
 function new_ring(kind, S, like = null) {
-  const ring = complete(RING_BASE, { kind: KINDS.indexOf(kind), ...KIND_START[kind](S.dial_d / 2) });
+  const ring = complete(RING_BASE, { kind: KINDS2.indexOf(kind), ...KIND_START[kind](S.dial_d / 2) });
   if (like) for (const k of TYPE_KEYS) ring[k] = clone(like[k]);
   const names = new Set(S.rings.map((r) => r.name));
   const base = kind[0].toUpperCase() + kind.slice(1);
@@ -8524,7 +9617,7 @@ var BETA1_DEFAULTS = {
   margin: 3,
   guides: true,
   c_plate: [0.93, 0.91, 0.86, 1],
-  c_ink: INK,
+  c_ink: INK2,
   c_hands: [0.1, 0.1, 0.12, 1],
   c_accent: ACCENT,
   c_backdrop: [0.8, 0.8, 0.78, 1],
@@ -8610,7 +9703,7 @@ function from_beta1(old) {
     const [every, invert] = { cardinals: [3, false], "non-cardinals": [3, true], "12 only": [12, false], "12 & 6": [6, false] }[name] || [1, false];
     return { every, offset: 0, invert, on: name !== "none" };
   };
-  const ring = (kind, name, kw) => complete(RING_BASE, { kind: KINDS.indexOf(kind), name, c: ink, ...kw });
+  const ring = (kind, name, kw) => complete(RING_BASE, { kind: KINDS2.indexOf(kind), name, c: ink, ...kw });
   const typ = { family: o.ty_family, ps: o.ty_ps, size: o.ty_size, tracking: o.ty_tracking, lang: o.ty_lang, axes: o.ty_axes, features: o.ty_features };
   const nudge = {};
   for (const k in o.nu_nudge) nudge[k === "12" ? "0" : String(parseInt(k))] = o.nu_nudge[k];
@@ -9203,13 +10296,13 @@ function lean(S) {
   }
   return out;
 }
-var PK = null;
+var PK2 = null;
 var STROKE_SCALE = 1e3;
 var PK_VERB = null;
 var HB = null;
 function start(pathkit2, harfbuzz) {
-  PK = pathkit2;
-  PK_VERB = { M: PK.MOVE_VERB, L: PK.LINE_VERB, C: PK.CUBIC_VERB, Z: PK.CLOSE_VERB };
+  PK2 = pathkit2;
+  PK_VERB = { M: PK2.MOVE_VERB, L: PK2.LINE_VERB, C: PK2.CUBIC_VERB, Z: PK2.CLOSE_VERB };
   HB = harfbuzz;
 }
 var NOTES = [];
@@ -9439,34 +10532,34 @@ var Path = class _Path {
   /** this path as PathKit's (its commands handed over as numbers, not written out and read back: that round trip
    *  cost more than the shape work itself — measured 25 Oct 2026, 2.3 ms against 0.3 for a ten-figure word). */
   _pk() {
-    return PK.FromCmds(this.d.map((c) => [PK_VERB[c[0]], ...c.slice(1)]));
+    return PK2.FromCmds(this.d.map((c) => [PK_VERB[c[0]], ...c.slice(1)]));
   }
   /** PathKit's path → ours, from its commands. A conic (a stroke's round cap) has no place in our commands: that path
    *  is read from PathKit's SVG text, where Skia turns conics into quadratics, as before. */
   static _from_pk(a) {
     const cmds = a.toCmds();
-    if (cmds.some((c) => c[0] === PK.CONIC_VERB)) return _Path.parse(a.toSVGString());
+    if (cmds.some((c) => c[0] === PK2.CONIC_VERB)) return _Path.parse(a.toSVGString());
     const p = new _Path();
     let x2 = 0, y = 0;
     for (const c of cmds) {
       const v = c[0];
-      if (v === PK.MOVE_VERB) {
+      if (v === PK2.MOVE_VERB) {
         p.moveTo([c[1], c[2]]);
         x2 = c[1];
         y = c[2];
-      } else if (v === PK.LINE_VERB) {
+      } else if (v === PK2.LINE_VERB) {
         p.lineTo([c[1], c[2]]);
         x2 = c[1];
         y = c[2];
-      } else if (v === PK.CUBIC_VERB) {
+      } else if (v === PK2.CUBIC_VERB) {
         p.curveTo([c[1], c[2]], [c[3], c[4]], [c[5], c[6]]);
         x2 = c[5];
         y = c[6];
-      } else if (v === PK.QUAD_VERB) {
+      } else if (v === PK2.QUAD_VERB) {
         p.curveTo([x2 + 2 / 3 * (c[1] - x2), y + 2 / 3 * (c[2] - y)], [c[3] + 2 / 3 * (c[1] - c[3]), c[4] + 2 / 3 * (c[2] - c[4])], [c[3], c[4]]);
         x2 = c[3];
         y = c[4];
-      } else if (v === PK.CLOSE_VERB) p.closePath();
+      } else if (v === PK2.CLOSE_VERB) p.closePath();
     }
     return p;
   }
@@ -9474,7 +10567,7 @@ var Path = class _Path {
     if (empty(other)) return this.copy();
     if (empty(this)) return op === "UNION" ? other.copy() : new _Path();
     const a = this._pk(), b = other._pk();
-    a.op(b, PK.PathOp[op]);
+    a.op(b, PK2.PathOp[op]);
     const out = _Path._from_pk(a)._wound();
     a.delete();
     b.delete();
@@ -9504,7 +10597,7 @@ var Path = class _Path {
   expandStroke(width, join = "Round") {
     const K = STROKE_SCALE;
     const a = this.copy().scale(K)._pk();
-    a.stroke({ width: width * K, join: PK.StrokeJoin[join.toUpperCase()] || PK.StrokeJoin.ROUND, cap: PK.StrokeCap.ROUND });
+    a.stroke({ width: width * K, join: PK2.StrokeJoin[join.toUpperCase()] || PK2.StrokeJoin.ROUND, cap: PK2.StrokeCap.ROUND });
     a.simplify();
     const out = _Path._from_pk(a)._wound().scale(1 / K);
     a.delete();
@@ -9515,7 +10608,7 @@ var clock_point = (r, a) => [r * sin(radians(a)), r * cos(radians(a))];
 function place(p, r, a) {
   return p.translate(0, r).rotate(-a);
 }
-var circle = (d) => new Path().oval(-d / 2, -d / 2, d, d);
+var circle2 = (d) => new Path().oval(-d / 2, -d / 2, d, d);
 function merge(paths) {
   const out = new Path();
   for (const p of paths) if (p) out.appendPath(p);
@@ -9578,8 +10671,8 @@ function sector(r_in, r_out, a0, a1) {
   r_in = max(r_in, 0);
   if (r_out <= r_in) return null;
   if (a1 - a0 >= 360 - 1e-6) {
-    const p2 = circle(2 * r_out);
-    return r_in > 1e-6 ? p2.difference(circle(2 * r_in)) : p2;
+    const p2 = circle2(2 * r_out);
+    return r_in > 1e-6 ? p2.difference(circle2(2 * r_in)) : p2;
   }
   const p = new Path();
   p.moveTo(clock_point(r_out, a0));
@@ -9634,7 +10727,7 @@ function distance_to(pt, outlines) {
   }
   return best;
 }
-var has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && ["numerals", "text", "ticks", "markers", "band"].includes(KINDS[ring.kind]));
+var has_stroke = (ring) => Boolean(ring.stroke && ring.stroke_w > 0 && ["numerals", "text", "ticks", "markers", "band"].includes(KINDS2[ring.kind]));
 function stroke_outline(p, w, side, join) {
   if (empty(p) || !(w > 0)) return null;
   p = p.copy().removeOverlap();
@@ -9847,7 +10940,7 @@ function mark_outline(ring, L, W2, shape3 = null, taper = null, grow = 0, solid2
     shape3 = "bar";
   }
   const outline = (L2, W3, ro2, ri2) => {
-    if (shape3 === "dot") return circle(W3);
+    if (shape3 === "dot") return circle2(W3);
     const wi = shape3 === "bar" ? W3 : W3 * taper;
     if (wi < 1e-3) return poly([[0, -L2 / 2], [W3 / 2, L2 / 2], [-W3 / 2, L2 / 2]], [ri2, ro2, ro2]);
     return poly([[-wi / 2, -L2 / 2], [wi / 2, -L2 / 2], [W3 / 2, L2 / 2], [-W3 / 2, L2 / 2]], [ri2, ri2, ro2, ro2]);
@@ -9973,8 +11066,29 @@ function placed(S, ring) {
   if (kind === "ticks" || kind === "markers") return { ...ring, r: b, len: b - a, from: 0 };
   return { ...ring, r: (a + b) / 2 };
 }
+var STYLE_NAMES = ["engineer", "miyazaki"];
+var METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
+var hex_rgba = (h) => [1, 3, 5].map((i2) => parseInt(h.slice(i2, i2 + 2), 16) / 255).concat(1);
+var case_metal = (S) => S.c_metal || hex_rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
+var REHAUT_SHADE = 0.3;
+var REHAUT_SECTORS = 72;
+function shaded_ring(a, b, colour, from, shade = REHAUT_SHADE, N = REHAUT_SECTORS) {
+  const out = [], step = 360 / N, arc2 = 4, tint = (c, k) => (k >= 0 ? c.slice(0, 3).map((v) => v + (1 - v) * k) : c.slice(0, 3).map((v) => v * (1 + k))).concat(c[3]);
+  for (let i2 = 0; i2 < N; i2++) {
+    const a0 = i2 * step, a1 = a0 + step, mid = (a0 + a1) / 2, k = cos((mid - from - 180) * PI / 180) * shade;
+    const pt = (r, deg) => [r * sin(deg * PI / 180), r * cos(deg * PI / 180)], pts = [];
+    for (let j = 0; j <= arc2; j++) pts.push(pt(b, a0 + (a1 - a0) * j / arc2));
+    for (let j = arc2; j >= 0; j--) pts.push(pt(a, a0 + (a1 - a0) * j / arc2));
+    out.push([new Path().polygon(...pts), tint(colour, k)]);
+  }
+  return out;
+}
 function case_grounds(S) {
-  const sp = case_spans(S), out = [], ring_shape = (a, b) => circle(2 * b).difference(circle(2 * a));
+  const key = "grounds" + JSON.stringify([S.dial_d, ...Object.keys(S).filter((k) => k.startsWith("rh_") || k.startsWith("bz_")).sort().map((k) => S[k]), S.sh_from, S.c_metal, S.w_metal, S.w_style, S.c_plate]);
+  return memo(key, () => build_case_grounds(S));
+}
+function build_case_grounds(S) {
+  const sp = case_spans(S), out = [], ring_shape = (a, b) => circle2(2 * b).difference(circle2(2 * a));
   const lighter = (c, k) => [...c.slice(0, 3).map((v) => min(1, v + (1 - v) * k)), c[3]], darker = (c, k) => [...c.slice(0, 3).map((v) => v * (1 - k)), c[3]];
   if (sp.bezel) {
     const [b0, b1] = sp.bezel, T = { n: max(3, round(S.bz_teeth_n) || 60), depth: S.bz_kind === 0 ? max(0, S.bz_teeth_depth) : 0, fill: min(max(S.bz_teeth_fill, 0.05), 0.95) };
@@ -9985,13 +11099,14 @@ function case_grounds(S) {
         const th = k / N * 2 * PI, x2 = R * ((th % pitch + pitch) % pitch - pitch / 2), r = abs(x2) < a ? R - (Math.sqrt(rd * rd - x2 * x2) - (rd - T.depth)) : R;
         pts.push([r * sin(th), r * cos(th)]);
       }
-      outer = new Path().polygon(...pts).difference(circle(2 * b0));
+      outer = new Path().polygon(...pts).difference(circle2(2 * b0));
     } else outer = ring_shape(b0, b1);
-    out.push(["bezel", outer, S.bz_c]);
-    if (sp.chamfer && sp.chamfer[0] > b0) out.push(["bezel chamfer", ring_shape(sp.chamfer[0], sp.chamfer[1]), lighter(S.bz_c, 0.35)]);
+    const metal = case_metal(S);
+    out.push(["bezel", outer, metal]);
+    if (sp.chamfer && sp.chamfer[0] > b0) out.push(["bezel chamfer", ring_shape(sp.chamfer[0], sp.chamfer[1]), lighter(metal, 0.35)]);
     if (sp.insert && sp.insert[1] > sp.insert[0]) out.push(["insert", ring_shape(sp.insert[0], sp.insert[1]), S.bz_insert_c]);
   }
-  if (sp.rehaut) out.push(["rehaut", ring_shape(sp.rehaut[0], sp.rehaut[1]), S.rh_c]);
+  if (sp.rehaut) for (const [path, c] of shaded_ring(sp.rehaut[0], sp.rehaut[1], S.rh_c, S.sh_from)) out.push(["rehaut", path, c]);
   return out;
 }
 function snap_radii(S, except = -1) {
@@ -10224,15 +11339,15 @@ function window_type(S, w) {
 var window_turn = (w) => w.turn && window_shape(w) !== "arc" ? (window_angle(w) % 90 + 90) % 90 : 0;
 function moon_parts(w, age) {
   const m = w / 4, base = -0.36 * w;
-  const arch = circle(2 * 0.5336 * w).translate(0, base + 0.1864 * w).intersection(new Path().rect(-w, base, 2 * w, 2 * w));
-  const opening2 = arch.difference(circle(2 * m).translate(-m, base)).difference(circle(2 * m).translate(m, base));
+  const arch = circle2(2 * 0.5336 * w).translate(0, base + 0.1864 * w).intersection(new Path().rect(-w, base, 2 * w, 2 * w));
+  const opening2 = arch.difference(circle2(2 * m).translate(-m, base)).difference(circle2(2 * m).translate(m, base));
   const f2 = (age % 29.53 + 29.53) % 29.53 / 29.53;
-  const moon = circle(2 * m).translate(-m * cos(PI * f2), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f2));
+  const moon = circle2(2 * m).translate(-m * cos(PI * f2), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f2));
   return { opening: opening2, moon };
 }
 function moon_lit(rm, age) {
   const f2 = (age % SYNODIC_DAYS + SYNODIC_DAYS) % SYNODIC_DAYS / SYNODIC_DAYS, c = cos(2 * PI * f2), wx = Math.max(Math.abs(c) * rm, 1e-3);
-  const disc = circle(2 * rm), half = disc.intersection(new Path().rect(0, -rm - 1, rm + 1, 2 * rm + 2));
+  const disc = circle2(2 * rm), half = disc.intersection(new Path().rect(0, -rm - 1, rm + 1, 2 * rm + 2));
   const ell = new Path().oval(-wx, -rm, 2 * wx, 2 * rm);
   let lit = c > 0 ? half.difference(ell) : half.union(ell);
   if (f2 > 0.5) lit = lit.scale(-1, 1);
@@ -10267,7 +11382,7 @@ var PICTURE_TONES = { shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], d
 function window_hole(w) {
   const shape3 = window_shape(w);
   if (shape3 === "rectangle") return [rounded_rect(w.w, w.h, w.round), (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d)];
-  if (shape3 === "circle") return [circle(w.w), (d) => circle(w.w + 2 * d)];
+  if (shape3 === "circle") return [circle2(w.w), (d) => circle2(w.w + 2 * d)];
   if (shape3 === "polygon") {
     const n = min(max(parseInt(w.sides) || 6, 3), 24), R = w.w / 2;
     const points = Array.from({ length: n }, (_, i2) => {
@@ -10291,7 +11406,7 @@ function window_hole(w) {
     return [make(0), make];
   }
   if (shape3 === "half") {
-    const make = (d) => circle(w.w + 2 * d).intersection(new Path().rect(-w.w, -d, 2 * w.w, w.w)).translate(0, -w.w / 4);
+    const make = (d) => circle2(w.w + 2 * d).intersection(new Path().rect(-w.w, -d, 2 * w.w, w.w)).translate(0, -w.w / 4);
     return [make(0), make];
   }
   const hole = moon_parts(w.w, 0).opening;
@@ -10332,7 +11447,7 @@ function build_window(S, w, index) {
     more = [{ path: dark, key: "c2", or: PICTURE_TONES.shade }];
   } else if (kind === "moon phase" && w.look === 2) {
     const rm = 0.36 * high, t = Math.max(0.05 * high, 0.06), { dark } = moon_lit(rm, w.age);
-    const ring = circle(2 * rm).difference(circle(2 * (rm - t)));
+    const ring = circle2(2 * rm).difference(circle2(2 * (rm - t)));
     content = merge([ring, dark]).intersection(opening2);
   } else if (kind === "moon phase") {
     const { moon } = moon_parts(w.w, w.age);
@@ -10380,11 +11495,11 @@ function window_disc(S, x2) {
     if (!e) return null;
     const inner = Math.max(e[0] - DISC_PAD, 0), outer = e[1] + DISC_PAD;
     const D = disc_places(S, w), print = memo("disc" + D.key, () => merge(D.list.map((_, p) => D.at(p))));
-    return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
+    return { band: circle2(2 * outer).difference(circle2(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
   }
   if (kind === "am \xB7 pm") {
     const { night: night2, r } = half_disc(w.w, disc_hour(S, w)), rho = r + DISC_PAD;
-    const band = put(circle(2 * rho).translate(0, -w.w / 4)), print = put(night2.copy());
+    const band = put(circle2(2 * rho).translate(0, -w.w / 4)), print = put(night2.copy());
     const off = put(new Path().rect(-1e-3, -w.w / 4 - 1e-3, 2e-3, 2e-3)).bounds(), pv = [(off[0] + off[2]) / 2, (off[1] + off[3]) / 2];
     const reach = Math.hypot(...pv) + rho;
     return { band, print, inner: 0, outer: rho, centre: pv, reach, fits: w.physics === false || reach <= room };
@@ -10398,15 +11513,15 @@ function disc_of(S, i2) {
 function build_static(S) {
   const windows = windows_of(S).map((w, i2) => w.on ? build_window(S, shown_window(S, w), i2) : null).filter(Boolean);
   const cut = windows.length === 0 ? null : windows.length === 1 ? windows[0].clear : merge(windows.map((x2) => x2.clear)).removeOverlap();
-  let plate = circle(S.dial_d);
+  let plate = circle2(S.dial_d);
   for (const x2 of windows) plate = plate.difference(x2.window);
   const d = S.dial_hole > 0 ? min(S.dial_hole, S.dial_d) : 0;
-  const hole = d > 0 ? circle(d) : null;
+  const hole = d > 0 ? circle2(d) : null;
   return {
     plate,
     plate_holed: hole ? plate.difference(hole) : plate,
     hole,
-    hole_line: hole ? circle(d + 0.1).difference(hole) : null,
+    hole_line: hole ? circle2(d + 0.1).difference(hole) : null,
     rings: build_rings(S, cut),
     windows,
     date: windows[0] || null
@@ -10484,11 +11599,11 @@ function hand_outline(shape3, L, W2, T, tip, F, at, R = 0, bulge = 37.5) {
     return p;
   }
   if (shape3 === "breguet") {
-    let p = pointed().union(circle(F).translate(0, at));
-    if (F - 2 * W2 > 0.02) p = p.difference(circle(F - 2 * W2).translate(0, at));
+    let p = pointed().union(circle2(F).translate(0, at));
+    if (F - 2 * W2 > 0.02) p = p.difference(circle2(F - 2 * W2).translate(0, at));
     return p;
   }
-  if (shape3 === "lollipop") return shaft(L, R).union(circle(F).translate(0, at));
+  if (shape3 === "lollipop") return shaft(L, R).union(circle2(F).translate(0, at));
   return new Path();
 }
 var HOLE_FIT = { hour: 1.5, minute: 0.9, second: 0.2 };
@@ -10496,7 +11611,7 @@ var hole_of = (h, name = "") => !(h.hub > 0) || HAND_SHAPES[h.shape] === "disc" 
 function hand_boss(h, name = "") {
   if (!(h.hub > 0) || HAND_SHAPES[h.shape] === "disc") return null;
   const hole = hole_of(h, name);
-  return memo("boss" + name + key_of(h), () => hole > 0 && hole < h.hub ? circle(h.hub).difference(circle(hole)) : circle(h.hub));
+  return memo("boss" + name + key_of(h), () => hole > 0 && hole < h.hub ? circle2(h.hub).difference(circle2(hole)) : circle2(h.hub));
 }
 function hand_shape(h, name = "") {
   return memo("hand" + (h.hole_as === 1 ? name : "") + key_of(h), () => {
@@ -10507,10 +11622,10 @@ function hand_shape(h, name = "") {
     }
     let p = shape3 === "disc" ? disc_hand(h) : hand_outline(shape3, h.len, h.w, h.tail, h.tip, h.feature, h.feature_at / 100 * h.len, h.round || 0, h.bulge ?? 37.5);
     if (h.wall > 0) p = p.difference(offset(p, -h.wall));
-    if (h.hub > 0 && shape3 !== "disc") p = p.union(circle(h.hub));
+    if (h.hub > 0 && shape3 !== "disc") p = p.union(circle2(h.hub));
     const hole = hole_of(h, name);
-    if (hole > 0) p = p.difference(circle(hole));
-    if (h.counter > 0) p = p.union(place(circle(h.counter), -h.tail * COUNTER_AT, 0));
+    if (hole > 0) p = p.difference(circle2(hole));
+    if (h.counter > 0) p = p.union(place(circle2(h.counter), -h.tail * COUNTER_AT, 0));
     const holes = hand_openings(h);
     if (holes) p = p.difference(holes);
     return p;
@@ -10525,7 +11640,7 @@ function hand_openings(h) {
     let p = new Path();
     for (let k = 0; k < n; k++) {
       const y0 = a + k * (each + gap);
-      p = p.union(h.op_shape === 1 ? circle(min(w, each)).translate(0, y0 + each / 2) : new Path().rect(-w / 2, y0, w, each));
+      p = p.union(h.op_shape === 1 ? circle2(min(w, each)).translate(0, y0 + each / 2) : new Path().rect(-w / 2, y0, w, each));
     }
     return p;
   });
@@ -10539,7 +11654,7 @@ function hand_widest(h) {
   return null;
 }
 function disc_hand(h) {
-  const disc = circle(max(h.disc_d, 0.1)), placed2 = disc_mark(h);
+  const disc = circle2(max(h.disc_d, 0.1)), placed2 = disc_mark(h);
   if (!placed2) return disc;
   if (h.mark_as === 1) return disc.union(placed2);
   return disc.difference(placed2).union(placed2.difference(disc));
@@ -10630,21 +11745,21 @@ function inks_of(S) {
   for (const ring of S.rings) {
     if (!ring.on) continue;
     out.push(ink_hex(ring.c));
-    if (KINDS[ring.kind] === "band" || has_text(ring)) for (const c of Object.values(ring.cs || {})) out.push(ink_hex(c));
+    if (KINDS2[ring.kind] === "band" || has_text(ring)) for (const c of Object.values(ring.cs || {})) out.push(ink_hex(c));
     if (has_stroke(ring)) out.push(ink_hex(ring.stroke_c));
   }
-  for (const w of windows_of(S)) if (w.on) out.push(ink_hex(w.ink || INK));
+  for (const w of windows_of(S)) if (w.on) out.push(ink_hex(w.ink || INK2));
   return [...new Set(out)];
 }
 var REG_MARK = 4;
 var REG_LINE = 0.1;
 function production_marks(S) {
-  const H2 = page_mm(S) / 2, out = [["outline", circle(S.dial_d + 2 * REG_LINE).difference(circle(S.dial_d))]];
+  const H2 = page_mm(S) / 2, out = [["outline", circle2(S.dial_d + 2 * REG_LINE).difference(circle2(S.dial_d))]];
   const m = production_mark_size(S);
   if (!m) return out;
   const at = H2 - m / 2 - 0.5;
   for (const [sx, sy] of [[-1, 1], [1, 1], [1, -1], [-1, -1]]) {
-    const ring = circle(m * 0.6).difference(circle(m * 0.6 - 2 * REG_LINE));
+    const ring = circle2(m * 0.6).difference(circle2(m * 0.6 - 2 * REG_LINE));
     const cross = new Path().rect(-m / 2, -REG_LINE / 2, m, REG_LINE).union(new Path().rect(-REG_LINE / 2, -m / 2, REG_LINE, m));
     out.push(["registration", ring.union(cross).translate(sx * at, sy * at)]);
   }
@@ -10688,7 +11803,7 @@ function scene(S, statik, t, preview = true, selected = null) {
     if (S.out_invert) {
       const marks = merge(items.map((i2) => i2.path));
       items.length = 0;
-      add("inverted", empty(marks) ? circle(S.dial_d) : circle(S.dial_d).difference(marks.removeOverlap()), black);
+      add("inverted", empty(marks) ? circle2(S.dial_d) : circle2(S.dial_d).difference(marks.removeOverlap()), black);
     }
     if (S.out_marks) for (const [role, path] of production_marks(S)) add(role, path, black);
   } else {
@@ -10723,14 +11838,14 @@ function scene(S, statik, t, preview = true, selected = null) {
         if (mark_stroke(h)) add("mark", mark_stroke(h), dim(h.mark_stroke_c || h.c, hands_layer), { name, angle: a, edge: true });
         if (fills_openings(h)) add("lume", hand_openings(h), dim(h.op_fill, hands_layer), { name, angle: a });
       }
-      if (cap_shows(S)) add("cap", circle(S.ha_cap), dim(S.c_cap, hands_layer));
+      if (cap_shows(S)) add("cap", circle2(S.ha_cap), dim(S.c_cap, hands_layer));
     }
     if (chosen) {
       const { x: x2, d } = chosen;
       add("disc", d.band, wc(x2).disc_c || [1, 1, 1, 1], { window: x2.index });
       add("disc print", d.print, wc(x2).text_c || wc(x2).ink, { window: x2.index });
-      add("disc edge", circle(2 * d.outer).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x2.index });
-      if (d.inner > 0) add("disc edge", circle(2 * d.inner).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x2.index });
+      add("disc edge", circle2(2 * d.outer).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x2.index });
+      if (d.inner > 0) add("disc edge", circle2(2 * d.inner).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x2.index });
     }
   }
   if (preview && S.guides) {
@@ -10739,7 +11854,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       const hex3 = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
       return [1, 3, 5].map((i2) => parseInt(hex3.slice(i2, i2 + 2), 16) / 255).concat([1]);
     };
-    const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
+    const round_guide = (r, key, px) => add("guide", circle2(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
     if ((S.gd_hole || S.gd_hole_live) && S.dial_hole > 0) round_guide(S.dial_hole / 2, "gd_k_hole", S.gd_w);
     if (S.gd_axes) {
@@ -10752,8 +11867,8 @@ function scene(S, statik, t, preview = true, selected = null) {
     };
     const stroke_guide = (path, k, px = S.gd_w, a = 1) => add("guide", path, null, { stroke: tone2(k, a), px });
     const edges = (k, outer, inner, px, a, at = (outer + inner) / 2) => {
-      for (const r of [.../* @__PURE__ */ new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px, a);
-      if (outer - inner > 0.01 && at > 0) add("guide", circle(2 * at), null, { stroke: tone2(k, a), px, dots: true });
+      for (const r of [.../* @__PURE__ */ new Set([outer, inner])]) if (r > 0) stroke_guide(circle2(2 * r), k, px, a);
+      if (outer - inner > 0.01 && at > 0) add("guide", circle2(2 * at), null, { stroke: tone2(k, a), px, dots: true });
     };
     const focus = { 1: "rings", 3: "windows" }[S.ui_section];
     const faded = (focused) => focused ? 1 : GUIDE_FADE;
@@ -10767,7 +11882,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       const px = focused ? S.gd_w * 1.5 : S.gd_w, al = faded(focused);
       if (has_text(ring)) {
         [inner, outer] = text_band(ring);
-        for (const r of [outer, (outer + inner) / 2, inner]) if (r > 0) add("guide", circle(2 * r), null, { stroke: tone2(k, al), px, dots: abs(r - ring.r) > 1e-6 });
+        for (const r of [outer, (outer + inner) / 2, inner]) if (r > 0) add("guide", circle2(2 * r), null, { stroke: tone2(k, al), px, dots: abs(r - ring.r) > 1e-6 });
       } else edges(k, outer, inner, px, al, ring.r);
     });
     for (const x2 of windows) {
@@ -10777,7 +11892,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       const d = window_disc(S, x2);
       if (d) {
         const px = focused ? S.gd_w * 1.5 : S.gd_w, a = faded(focused);
-        for (const r of [d.inner, d.outer]) if (r > 0) add("guide", circle(2 * r).translate(...d.centre), null, { stroke: r === d.outer && !d.fits ? [...DISC_WARN, a] : tone2(k, a), px, spaced: true });
+        for (const r of [d.inner, d.outer]) if (r > 0) add("guide", circle2(2 * r).translate(...d.centre), null, { stroke: r === d.outer && !d.fits ? [...DISC_WARN, a] : tone2(k, a), px, spaced: true });
       }
     }
     for (const g of S.gd_more || []) {
@@ -10787,7 +11902,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       else if (kind === "crosshair") {
         stroke_guide(new Path().line([at[0] - arm, at[1]], [at[0] + arm, at[1]]), g.k);
         stroke_guide(new Path().line([at[0], at[1] - arm], [at[0], at[1] + arm]), g.k);
-      } else if (kind === "circle" && g.r > 0) stroke_guide(circle(2 * g.r), g.k);
+      } else if (kind === "circle" && g.r > 0) stroke_guide(circle2(2 * g.r), g.k);
     }
   }
   return items;
@@ -10826,1098 +11941,6 @@ function set_measures(S, values, keys = null) {
   }, keys);
 }
 var page_mm = (S) => 2 * reach_mm(S) + 2 * S.margin;
-
-// src/watch.js
-var PK2 = null;
-function attach(pk) {
-  PK2 = pk;
-}
-var STYLE = "miyazaki";
-var SOFT = false;
-var GLINT = "plain";
-var INK_K = 6;
-var INK_N = 0;
-var HAND_BEVEL = false;
-var FLARE_TINT = "#ffffff";
-var FLARE_SCALE = 1;
-var GLASS_K = 1;
-var SH_OP = 0.3;
-var FLARE_KIND = "arc";
-var GRADIENTS = true;
-var HEIGHTS = {};
-var BRACELET_KIND = "vault";
-var DIAL_IN = true;
-var OUTLINE_ON = true;
-var NO_LINES = false;
-var REHAUT = 0.8;
-var SHD = 1;
-var INSERT = { top: "#2b2c30", bottom: "#2b2c30" };
-var FL = { size: 1, tint: 0.45, bright: 1 };
-var GLASS = { fat: 1, len: 1, op: 1 };
-var DIALS = [];
-var HANDS_A = { hour: 305, minute: 60, second: 180 };
-var SUN_H = 40;
-var CLIPS = [];
-var clipN = 0;
-var BLOB = 0;
-var BLOB_N = 0;
-var VB_N = 0;
-var OUTL_S = [];
-var OUTL_C = [];
-var OUTT = [];
-var WEAVE = "weave";
-var f = (v) => +(+v).toFixed(3);
-var rad = (d) => d * Math.PI / 180;
-var hex2hsl = (h) => {
-  const n = parseInt(h.slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
-  let hh = 0, s = 0;
-  if (d) {
-    s = d / (1 - Math.abs(2 * l - 1));
-    hh = mx === r ? (g - b) / d % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
-    hh *= 60;
-    if (hh < 0) hh += 360;
-  }
-  return [hh, s, l];
-};
-var hsl2hex = ([h, s, l]) => {
-  s = Math.max(0, Math.min(1, s));
-  l = Math.max(0, Math.min(1, l));
-  const c = (1 - Math.abs(2 * l - 1)) * s, x2 = c * (1 - Math.abs(h / 60 % 2 - 1)), m = l - c / 2;
-  const [r, g, b] = h < 60 ? [c, x2, 0] : h < 120 ? [x2, c, 0] : h < 180 ? [0, c, x2] : h < 240 ? [0, x2, c] : h < 300 ? [x2, 0, c] : [c, 0, x2];
-  return "#" + [r, g, b].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join("");
-};
-var mixc = (a, b, t) => "#" + [1, 3, 5].map((i2) => Math.round(parseInt(a.slice(i2, i2 + 2), 16) * (1 - t) + parseInt(b.slice(i2, i2 + 2), 16) * t).toString(16).padStart(2, "0")).join("");
-var deepen = (c) => {
-  const [h, sat, l] = hex2hsl(c);
-  return hsl2hex([h, sat < 0.12 ? sat : Math.min(1, sat * 1.25), l * 0.86]);
-};
-function clampL(h) {
-  const [hue, sat, l] = hex2hsl(h);
-  if (l >= 0.15 && l <= 0.85) return h;
-  return hsl2hex([hue, sat, Math.min(0.85, Math.max(0.15, l))]);
-}
-var tri = (a) => [a, a, a];
-var STRIPES = {
-  bond: [[0, 0.3, 0], [0.3, 0.42, 1], [0.42, 0.58, 2], [0.58, 0.7, 1], [0.7, 1, 0]],
-  regimental: [[0, 0.2, 0], [0.2, 0.3, 2], [0.3, 0.7, 1], [0.7, 0.8, 2], [0.8, 1, 0]],
-  khaki: [[0, 0.38, 0], [0.38, 0.62, 1], [0.62, 1, 2]],
-  blackgrey: [[0, 0.25, 0], [0.25, 0.75, 1], [0.75, 1, 2]]
-};
-var TONES = {
-  engineer: {
-    INK: "#4d4d4d",
-    INKB: "#4d4d4d",
-    ink: [0.45, 0.5],
-    METALS: { steel: ["#dcdedb", "#a3a5a1", "#868885"], gold: ["#e6d3a3", "#b69c66", "#957d50"], alu: ["#cfd2d5", "#9da1a4", "#83878b"], bronze: ["#dcb185", "#a9784c", "#7e5636"], titanium: ["#cac9c3", "#908f89", "#73726d"], black: ["#55565a", "#2c2d30", "#1d1e20"] },
-    LEATHER: { tan: ["#b0835a", "#946b47", "#795537"], brown: ["#82614a", "#6c4f3a", "#59412f"], black: ["#4d4c4d", "#3e3d3e", "#323132"] },
-    NATO_SETS: { bond: [["#46506a", "#3a4459", "#30384a"], ["#8a4148", "#74343b", "#5e2a30"], ["#aeaba3", "#99968f", "#83817b"]], g10: [["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"]] },
-    NATO_MORE: {
-      regimental: [["#2f4a3a", "#263d30", "#1e3026"], ["#2a3550", "#222b42", "#1b2235"], ["#b28a3e", "#957332", "#775c28"]],
-      olive: tri(["#6a6c48", "#57593a", "#45472e"]),
-      grey: tri(["#7b7d80", "#66686b", "#525457"]),
-      khaki: [["#a99a72", "#8f815e", "#76694b"], ["#4b5a3a", "#3e4b30", "#323c27"], ["#a99a72", "#8f815e", "#76694b"]],
-      blackgrey: [["#3a3b3d", "#2f3032", "#252628"], ["#8e9093", "#76787b", "#5f6164"], ["#3a3b3d", "#2f3032", "#252628"]]
-    }
-  },
-  miyazaki: {
-    INK: "#262626",
-    INKB: null,
-    ink: [0.62, 0.8],
-    METALS: { steel: ["#cfd1cd", "#8a8c88", "#6b6d6a"], gold: ["#dcc18a", "#9c8250", "#7a653d"], alu: ["#c2c6c9", "#82868a", "#676b6f"], bronze: ["#cf9d6c", "#8f6440", "#6a472c"], titanium: ["#bdbcb6", "#7f7e78", "#62615c"], black: ["#4a4b4f", "#26272a", "#17181a"] },
-    LEATHER: { tan: ["#a2764f", "#83603f", "#674a30"], brown: ["#74533b", "#5c412e", "#463123"], black: ["#434243", "#323132", "#242324"] },
-    NATO_SETS: { bond: [["#46506a", "#3a4459", "#30384a"], ["#8a4148", "#74343b", "#5e2a30"], ["#aeaba3", "#99968f", "#83817b"]], g10: [["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"]] },
-    NATO_MORE: {
-      regimental: [["#2f4a3a", "#263d30", "#1e3026"], ["#2a3550", "#222b42", "#1b2235"], ["#b28a3e", "#957332", "#775c28"]],
-      olive: tri(["#6a6c48", "#57593a", "#45472e"]),
-      grey: tri(["#7b7d80", "#66686b", "#525457"]),
-      khaki: [["#a99a72", "#8f815e", "#76694b"], ["#4b5a3a", "#3e4b30", "#323c27"], ["#a99a72", "#8f815e", "#76694b"]],
-      blackgrey: [["#3a3b3d", "#2f3032", "#252628"], ["#8e9093", "#76787b", "#5f6164"], ["#3a3b3d", "#2f3032", "#252628"]]
-    }
-  }
-};
-{
-  const T = TONES.miyazaki;
-  T.METALS.steel.forEach((c, i2) => {
-    const [h, sat, l] = hex2hsl(c);
-    T.METALS.steel[i2] = hsl2hex([h, sat, l * 0.85]);
-  });
-  for (const tab of [T.METALS, T.LEATHER, T.NATO_SETS, T.NATO_MORE]) for (const k in tab) {
-    const v = tab[k];
-    if (typeof v[0] === "string") v.forEach((c, i2) => v[i2] = deepen(c));
-    else v.forEach((U) => U.forEach((c, i2) => U[i2] = deepen(c)));
-  }
-}
-var INK2;
-var INKB;
-var METALS;
-var LEATHER;
-var NATO_SETS;
-var NATO_MORE;
-function use(style) {
-  STYLE = style;
-  ({ INK: INK2, INKB, METALS, LEATHER, NATO_SETS, NATO_MORE } = TONES[style]);
-}
-use(STYLE);
-var ramp6g = (T) => [mixc(T[2], "#000000", 0.62), mixc(T[2], "#000000", 0.3), T[2], T[1], mixc(T[0], "#ffffff", 0.25), mixc(T[0], "#ffffff", 0.8)];
-var ramp6E = (T) => {
-  const grey = hex2hsl(T[1])[1] < 0.12;
-  return [mixc(T[2], "#000000", grey ? 0.66 : 0.45), mixc(T[2], "#000000", grey ? 0.4 : 0.22), mixc(T[2], "#000000", grey ? 0.15 : 0), T[1], T[0], mixc(T[0], "#ffffff", 0.45)];
-};
-var ramp6M = (T) => {
-  if (T === METALS.gold) return ramp6g(T);
-  const [h, s] = hex2hsl(T[1]);
-  return ramp6g(METALS.gold).map((c) => hsl2hex([h, s, hex2hsl(c)[2]]));
-};
-var ramp6 = (T) => STYLE === "engineer" ? ramp6E(T) : ramp6M(T);
-var P = (pts) => "M" + pts.map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z";
-var circle2 = (r, cx = 0, cy = 0) => `M${f(cx - r)} ${f(cy)}A${f(r)} ${f(r)} 0 1 0 ${f(cx + r)} ${f(cy)}A${f(r)} ${f(r)} 0 1 0 ${f(cx - r)} ${f(cy)}Z`;
-var rrect = (x0, y0, x1, y1, r) => {
-  const [a, b] = [Math.min(x0, x1), Math.min(y0, y1)], [c, e] = [Math.max(x0, x1), Math.max(y0, y1)];
-  r = Math.min(r, (c - a) / 2, (e - b) / 2);
-  return `M${f(a + r)} ${f(b)}H${f(c - r)}Q${f(c)} ${f(b)} ${f(c)} ${f(b + r)}V${f(e - r)}Q${f(c)} ${f(e)} ${f(c - r)} ${f(e)}H${f(a + r)}Q${f(a)} ${f(e)} ${f(a)} ${f(e - r)}V${f(b + r)}Q${f(a)} ${f(b)} ${f(a + r)} ${f(b)}Z`;
-};
-function rrect4(x0, y0, x1, y1, [tl, tr, br, bl]) {
-  return `M${f(x0 + tl)} ${f(y0)}H${f(x1 - tr)}Q${f(x1)} ${f(y0)} ${f(x1)} ${f(y0 + tr)}V${f(y1 - br)}Q${f(x1)} ${f(y1)} ${f(x1 - br)} ${f(y1)}H${f(x0 + bl)}Q${f(x0)} ${f(y1)} ${f(x0)} ${f(y1 - bl)}V${f(y0 + tl)}Q${f(x0)} ${f(y0)} ${f(x0 + tl)} ${f(y0)}Z`;
-}
-var rrectD = (x0, y0, x1, y1, r, hole = false) => {
-  const [a, b] = [Math.min(x0, x1), Math.min(y0, y1)], [c, e] = [Math.max(x0, x1), Math.max(y0, y1)];
-  r = Math.min(r, (c - a) / 2, (e - b) / 2);
-  return hole ? `M${f(a + r)} ${f(b)}Q${f(a)} ${f(b)} ${f(a)} ${f(b + r)}V${f(e - r)}Q${f(a)} ${f(e)} ${f(a + r)} ${f(e)}H${f(c - r)}Q${f(c)} ${f(e)} ${f(c)} ${f(e - r)}V${f(b + r)}Q${f(c)} ${f(b)} ${f(c - r)} ${f(b)}Z` : `M${f(a + r)} ${f(b)}H${f(c - r)}Q${f(c)} ${f(b)} ${f(c)} ${f(b + r)}V${f(e - r)}Q${f(c)} ${f(e)} ${f(c - r)} ${f(e)}H${f(a + r)}Q${f(a)} ${f(e)} ${f(a)} ${f(e - r)}V${f(b + r)}Q${f(a)} ${f(b)} ${f(a + r)} ${f(b)}Z`;
-};
-function notchedPath(R, n, depth) {
-  const pts = [], rd = depth, dl = Math.asin(rd / R);
-  for (let k = 0; k < n; k++) {
-    const ac = k / n * 2 * Math.PI - Math.PI / 2, next = (k + 1) / n * 2 * Math.PI - Math.PI / 2;
-    const er = [Math.cos(ac), Math.sin(ac)], et2 = [-Math.sin(ac), Math.cos(ac)], cc = [er[0] * R, er[1] * R];
-    for (let j = 0; j <= 10; j++) {
-      const t = Math.PI * j / 10;
-      pts.push([cc[0] - rd * (Math.cos(t) * et2[0] + Math.sin(t) * er[0]), cc[1] - rd * (Math.cos(t) * et2[1] + Math.sin(t) * er[1])]);
-    }
-    for (let j = 1; j < 4; j++) {
-      const a = ac + dl + (next - ac - 2 * dl) * j / 4;
-      pts.push([Math.cos(a) * R, Math.sin(a) * R]);
-    }
-  }
-  return "M" + pts.map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z";
-}
-function teeth(R, n, depth) {
-  const out = [];
-  for (let k = 0; k < n; k++) {
-    const a0 = k / n * 2 * Math.PI - Math.PI / 2, a1 = a0 + 2 * Math.PI / n, r0 = R - depth - 0.05, pts = [];
-    for (let j = 0; j <= 4; j++) {
-      const a = a0 + (a1 - a0) * j / 4;
-      pts.push([Math.cos(a) * (R + 0.05), Math.sin(a) * (R + 0.05)]);
-    }
-    for (let j = 4; j >= 0; j--) {
-      const a = a0 + (a1 - a0) * j / 4;
-      pts.push([Math.cos(a) * r0, Math.sin(a) * r0]);
-    }
-    out.push({ d: "M" + pts.map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z", phi: (a0 + a1) / 2 * 180 / Math.PI });
-  }
-  return out;
-}
-function cushionPts(a, n, N = 160) {
-  return Array.from({ length: N }, (_, k) => {
-    const t = k / N * 2 * Math.PI, c = Math.cos(t), s = Math.sin(t);
-    return [a * Math.sign(c) * Math.abs(c) ** (2 / n), a * Math.sign(s) * Math.abs(s) ** (2 / n)];
-  });
-}
-function cushionLug(C2, sx, sy) {
-  const half = C2.l2l / 2, xi = C2.lugw / 2, xo = xi + C2.lugT, y0 = C2.cushion.a * 0.82, c = 0.9;
-  const p = (x2, y) => [sx * x2, sy * y];
-  return P([p(xi, y0), p(xi, half), p(xo - c, half), p(xo, half - c), p(xo, y0)]);
-}
-function lugPath(C2, sx, sy) {
-  if (C2.rails) {
-    const xi2 = C2.lugw / 2, xo2 = xi2 + C2.lugT, hy = C2.l2l / 2, c = 0.2;
-    return P([[sx * xi2, -hy], [sx * (xo2 - c), -hy], [sx * xo2, -hy + c], [sx * xo2, hy - c], [sx * (xo2 - c), hy], [sx * xi2, hy]]);
-  }
-  const R = C2.od / 2, half = C2.l2l / 2, xi = C2.lugw / 2, xo = xi + C2.lugT, xb = xo + C2.flare;
-  const yb = Math.sqrt(R * R - xb * xb), yi = Math.sqrt(R * R - xi * xi) - 1.5, r = 0.8;
-  const p = (x2, y) => `${f(sx * x2)} ${f(sy * y)}`;
-  return `M${p(xi, yi)}L${p(xi, half - r)}Q${p(xi, half)} ${p(xi + r, half)}L${p(xo - r, half)}Q${p(xo, half)} ${p(xo, half - r)}C${p(xo, half - (half - yb) * 0.5)} ${p(xb - 0.6, yb + 1.2)} ${p(xb, yb)}Z`;
-}
-function lugChamfer(C2, sx, sy, w = 0.75) {
-  const R = C2.od / 2, half = C2.l2l / 2, xo = C2.lugw / 2 + C2.lugT, xb = xo + C2.flare, yb = Math.sqrt(R * R - xb * xb), r = 0.8;
-  const p = (x2, y) => `${f(sx * x2)} ${f(sy * y)}`;
-  return `M${p(xo, half - r)}C${p(xo, half - (half - yb) * 0.5)} ${p(xb - 0.6, yb + 1.2)} ${p(xb, yb)}L${p(xb - w * 1.3, yb + 0.2)}C${p(xb - 0.6 - w, yb + 1.4)} ${p(xo - w, half - (half - yb) * 0.5)} ${p(xo - w, half - r)}Z`;
-}
-function scaleCase(C2, k) {
-  if (k === 1) return C2;
-  const s = (v) => typeof v === "number" ? v * k : Array.isArray(v) ? v.map(s) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([a, b]) => [a, ["n", "coin", "knurl", "at"].includes(a) ? b : s(b)])) : v;
-  const out = { ...C2 };
-  for (const key of ["od", "l2l", "lugw", "lugT", "flare", "bands", "opening", "dial", "crown", "insert", "cushion", "cushionBevel"]) if (key in C2) out[key] = s(C2[key]);
-  return out;
-}
-var SOFT_DEF = `<filter id="shsoft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600"><feGaussianBlur stdDeviation="0.07"/></filter>`;
-var soft_edge = () => SOFT ? ` filter="url(#shsoft)"` : "";
-var CASE_H = { dress: 0.22, field: 0.28, diver: 0.32 };
-var LOW_SUN = 20;
-var longer = (h) => Math.tan(rad(40)) / Math.tan(rad(Math.max(LOW_SUN, h)));
-var LW = 0.22;
-var strokeInk = (d, sw2 = LW, extra = "") => NO_LINES ? "" : `<path d="${d}" fill="none" stroke="${INK2}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
-var stroke = (...a) => STYLE === "engineer" ? strokeInk(...a) : "";
-var shape2 = (d, c, sw2 = LW, inner = null) => {
-  sw2 = LW;
-  if (NO_LINES) return c === "none" ? "" : `<path d="${d}" fill="${c}"/>`;
-  if (!inner || c === "none") return `<path d="${d}" fill="${c}" stroke="${INK2}" stroke-width="${sw2}" stroke-linejoin="round"/>`;
-  const id = "in" + clipN++;
-  CLIPS.push(`<clipPath id="${id}"><path d="${d}"/></clipPath>`);
-  return `<path d="${d}" fill="${c}"/><path d="${d}" fill="none" stroke="${inner}" stroke-width="${f(sw2 * 3)}" stroke-linejoin="round" clip-path="url(#${id})"/><path d="${d}" fill="none" stroke="${INK2}" stroke-width="${sw2}" stroke-linejoin="round"/>`;
-};
-var flat = (d, c) => `<path d="${d}" fill="${c}"/>`;
-function tone(T, phi, tilt, L) {
-  const s = Math.cos(rad(phi - L)) * tilt * Math.cos(rad(SUN_H)) / Math.cos(rad(40));
-  return s > 0.5 ? T[0] : s < 0.05 ? T[2] : T[1];
-}
-function sloped(r0, r1, T, L, out = 1, tilt = 1, N = 96) {
-  let html = "", run = null;
-  const wedge = (a0, a1) => `M${f(Math.cos(a0) * r1)} ${f(Math.sin(a0) * r1)}A${f(r1)} ${f(r1)} 0 0 1 ${f(Math.cos(a1) * r1)} ${f(Math.sin(a1) * r1)}L${f(Math.cos(a1) * r0)} ${f(Math.sin(a1) * r0)}A${f(r0)} ${f(r0)} 0 0 0 ${f(Math.cos(a0) * r0)} ${f(Math.sin(a0) * r0)}Z`;
-  const tones2 = Array.from({ length: N }, (_, k) => tone(T, (k + 0.5) / N * 360 + (out > 0 ? 0 : 180), tilt, L));
-  let start2 = 0;
-  while (start2 < N && tones2[start2] === tones2[(start2 + N - 1) % N]) start2++;
-  if (start2 === N) return flat(circle2(r1) + circle2(r0), tones2[0]).replace("<path", '<path fill-rule="evenodd"');
-  const put = (r) => {
-    const n = Math.ceil((r.a1 - r.a0) / (Math.PI * 0.9));
-    for (let j = 0; j < n; j++) html += flat(wedge(r.a0 + (r.a1 - r.a0) * j / n, r.a0 + (r.a1 - r.a0) * (j + 1) / n), r.t);
-  };
-  for (let k = 0; k < N; k++) {
-    const t = tones2[(start2 + k) % N], a0 = (start2 + k) / N * 2 * Math.PI, a1 = (start2 + k + 1) / N * 2 * Math.PI;
-    if (!run || run.t !== t) {
-      if (run) put(run);
-      run = { t, a0, a1 };
-    } else run.a1 = a1;
-  }
-  put(run);
-  return html + stroke(circle2(r0), 0.12) + stroke(circle2(r1), 0.12);
-}
-function blob(d, T, L, a = 0.9, b = 2, away = null) {
-  OUTT.push(d);
-  const id = "b" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
-  const lh = SUN_H > 55 ? 0.7 : 1, dk = (SUN_H < 25 ? 1.35 : 1) * 1.3;
-  CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
-  const cut = (dx, dy, fill, op = 1) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-500 -500H500V500H-500Z${d}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
-  if (away) CLIPS.push(`<clipPath id="${id}a"><path clip-rule="evenodd" d="M-500 -500H500V500H-500Z${away}"/></clipPath>`);
-  const light = cut(-u[0] * a * lh, -u[1] * a * lh, T[0]);
-  return `<path d="${d}" fill="${T[1]}"/><g clip-path="url(#${id}c)">${cut(u[0] * b * dk, u[1] * b * dk, T[2])}${away ? `<g clip-path="url(#${id}a)">${light}</g>` : light}</g>`;
-}
-function blobOver(d, L, a = 0.9, b = 2) {
-  const id = "o" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
-  CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
-  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-500 -500H500V500H-500Z${d}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
-  return `<g clip-path="url(#${id}c)">${cut(u[0] * b * 1.3, u[1] * b * 1.3, "#000", 0.36)}${cut(-u[0] * a, -u[1] * a, "#fff", 0.16)}</g>`;
-}
-var part = (d, T, L, a, b) => STYLE === "engineer" ? shape2(d, T[1], LW, T[2]) : blob(d, T, L, a, b);
-var TEXTURES = (() => {
-  let seed = 11;
-  const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
-  const pores = Array.from({ length: 90 }, () => `<ellipse cx="${f(rnd() * 9)}" cy="${f(rnd() * 9)}" rx="${f(0.08 + rnd() * 0.16)}" ry="${f(0.06 + rnd() * 0.1)}" transform="rotate(${f(rnd() * 180)} 0 0)"/>`).join("");
-  const creases = Array.from({ length: 14 }, () => {
-    const x2 = rnd() * 9, y = rnd() * 9, a = rnd() * Math.PI, l = 0.6 + rnd() * 1.2;
-    return `M${f(x2)} ${f(y)}l${f(Math.cos(a) * l)} ${f(Math.sin(a) * l)}`;
-  }).join("");
-  return `<pattern id="grain" width="9" height="9" patternUnits="userSpaceOnUse"><g fill="#000" fill-opacity="0.16">${pores}</g><path d="${creases}" stroke="#000" stroke-opacity="0.06" stroke-width="0.12" fill="none"/><g fill="#fff" fill-opacity="0.05" transform="translate(4.5 4.5)">${pores}</g></pattern><pattern id="weave" width="1.2" height="1.2" patternUnits="userSpaceOnUse"><rect width="1.2" height="0.5" fill="#fff" fill-opacity="0.13"/><rect y="0.6" width="1.2" height="0.5" fill="#fff" fill-opacity="0.05"/><rect x="0.1" width="0.38" height="0.6" fill="#000" fill-opacity="0.2"/><rect x="0.7" y="0.6" width="0.38" height="0.6" fill="#000" fill-opacity="0.2"/><rect y="0.55" width="1.2" height="0.07" fill="#000" fill-opacity="0.12"/></pattern><pattern id="weavebig" width="3.2" height="3.2" patternUnits="userSpaceOnUse"><rect width="3.2" height="1.35" fill="#fff" fill-opacity="0.14"/><rect y="1.6" width="3.2" height="1.35" fill="#fff" fill-opacity="0.05"/><rect x="0.25" width="1.05" height="1.6" fill="#000" fill-opacity="0.22"/><rect x="1.85" y="1.6" width="1.05" height="1.6" fill="#000" fill-opacity="0.22"/><rect y="1.5" width="3.2" height="0.18" fill="#000" fill-opacity="0.14"/></pattern><pattern id="brush" width="0.6" height="40" patternUnits="userSpaceOnUse"><rect x="0.05" width="0.07" height="40" fill="#fff" fill-opacity="0.16"/><rect x="0.33" width="0.05" height="40" fill="#000" fill-opacity="0.08"/></pattern>`;
-})();
-var glint = (r, L, w = 0.55, o = 0.6, span = 26) => {
-  if (GLINT === "off") return "";
-  if (GLINT !== "flare") return `<path d="M${f(Math.cos(rad(L - span)) * r)} ${f(Math.sin(rad(L - span)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span)) * r)} ${f(Math.sin(rad(L + span)) * r)}" fill="none" stroke="#fff" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
-  if (STYLE === "engineer") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.25)) * r)} ${f(Math.sin(rad(L - span * 1.25)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.25)) * r)} ${f(Math.sin(rad(L + span * 1.25)) * r)}" fill="none" stroke="${FLARE_TINT}" stroke-opacity="${f(Math.min(1, o * 0.45 * FLARE_SCALE * FL.bright))}" stroke-width="${f(w * 5 * FL.size)}" stroke-linecap="round"/>`;
-  const x2 = Math.cos(rad(L)) * r, y = Math.sin(rad(L)) * r;
-  if (FLARE_KIND === "arc") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.6)) * r)} ${f(Math.sin(rad(L - span * 1.6)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.6)) * r)} ${f(Math.sin(rad(L + span * 1.6)) * r)}" fill="none" stroke="${FLARE_TINT}" stroke-opacity="${f(Math.min(1, o * 0.9 * FL.bright))}" stroke-width="${f(w * 3.5 * FL.size)}" stroke-linecap="round"/>`;
-  return `<circle cx="${f(x2)}" cy="${f(y)}" r="${f((2.2 + w * 2.4) * FL.size)}" fill="${FLARE_TINT}" fill-opacity="${f(Math.min(1, o * 0.85 * FL.bright) * FLARE_SCALE)}" filter="url(#flare)"/><circle cx="${f(x2)}" cy="${f(y)}" r="${f((0.32 + w * 0.22) * FL.size)}" fill="#fff" fill-opacity="${f(Math.min(1, 0.95 * Math.sqrt(FLARE_SCALE) * FL.bright))}"/>`;
-};
-var flareColour = (T) => mixc(T[0], "#ffffff", 1 - FL.tint);
-var THICK = /* @__PURE__ */ new Map();
-var thickness = (p) => {
-  if (THICK.has(p)) return THICK.get(p);
-  const P2 = PK2.FromSVGString(p), cmds = P2.toCmds();
-  P2.delete();
-  let signed = 0, absum = 0, per = 0, sub = 0, start2 = null, prev = null;
-  const close = () => {
-    signed += sub;
-    absum += Math.abs(sub);
-    sub = 0;
-  };
-  const to = (q) => {
-    if (prev) {
-      sub += prev[0] * q[1] - q[0] * prev[1];
-      per += Math.hypot(q[0] - prev[0], q[1] - prev[1]);
-    }
-    prev = q;
-  };
-  for (const c of cmds) {
-    const v = c[0], pts = [];
-    for (let k = 1; k + 1 < c.length; k += 2) pts.push([c[k], c[k + 1]]);
-    if (v === 0) {
-      if (start2 && prev) {
-        to(start2);
-        close();
-      }
-      start2 = pts[0];
-      prev = pts[0];
-    } else if (v === 5) {
-      if (start2 && prev) to(start2);
-      close();
-      prev = start2;
-    } else for (const q of v === 3 ? pts.slice(0, 2) : pts) to(q);
-  }
-  if (sub) close();
-  const A = Math.abs(signed) > absum * 0.3 ? Math.abs(signed) / 2 : absum / 2, w = per ? 2 * A / per : 1;
-  THICK.set(p, w);
-  return w;
-};
-var inkRelief = (x2, s, L) => {
-  const K = x2.ink ?? INK_K;
-  if (!K) return "";
-  const id = "ik" + INK_N++, ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, th = thickness(x2.p) * s, es = Math.min(0.035 * K, th * 0.16), eh = Math.min(0.025 * K, th * 0.1);
-  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`);
-  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x2.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
-  return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g>`;
-};
-var lumeShift = (L, a, s) => {
-  const ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, c = Math.cos(rad(a)), n = Math.sin(rad(a));
-  return [ux * c - uy * n, ux * n + uy * c];
-};
-var lumeRelief = (x2, s, L, A) => {
-  const K = x2.ink ?? INK_K;
-  if (!K || !x2.hand) return "";
-  const id = "lr" + INK_N++, th = thickness(x2.p) * s, es = Math.min(0.035 * K, th * 0.16), eh = Math.min(0.025 * K, th * 0.1), [ux, uy] = lumeShift(L, A[x2.hand], s);
-  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`);
-  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x2.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
-  return `<g data-hl="${x2.hand}" data-l="${f(L)}" data-s="${f(s)}" data-es="${f(es)}" data-eh="${f(eh)}" transform="rotate(${-A[x2.hand]})"><g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g></g>`;
-};
-var handBevel = (x2, A, L) => {
-  if (!HAND_BEVEL || !x2.hand || !x2.bevel) return "";
-  const id = "hb" + INK_N++, a = rad(A[x2.hand]), side = Math.cos(a) * Math.cos(rad(L)) + Math.sin(a) * Math.sin(rad(L));
-  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`);
-  const lit = 0.22 * HAND_BEVEL * Math.abs(side), dark = 0.26 * HAND_BEVEL * Math.abs(side);
-  if (x2.dome) {
-    const ramp = (n, s, c, k) => `<linearGradient id="${id}${n}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${f(s * x2.hw)}" y2="0"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}" stop-opacity="${f(Math.min(2 * k, 1))}"/></linearGradient>`;
-    CLIPS.push(ramp("r", 1, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark), ramp("l", -1, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit));
-    return `<g data-hb="${x2.hand}" data-dome="${id}" transform="rotate(${-A[x2.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="url(#${id}r)"/><rect x="-50" y="-50" width="50" height="100" fill="url(#${id}l)"/></g></g>`;
-  }
-  return `<g data-hb="${x2.hand}" transform="rotate(${-A[x2.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="${side > 0 ? "#fff" : "#000"}" fill-opacity="${f(side > 0 ? lit : dark)}"/><rect x="-50" y="-50" width="50" height="100" fill="${side > 0 ? "#000" : "#fff"}" fill-opacity="${f(side > 0 ? dark : lit)}"/></g></g>`;
-};
-var bossLight = (x2, L) => {
-  const id = "bs" + INK_N++, k = HAND_BEVEL || 0.6, lit = 0.22 * k, dark = 0.26 * k;
-  const ux = Math.cos(rad(L)), uy = -Math.sin(rad(L));
-  CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`, `<linearGradient id="${id}g" gradientUnits="userSpaceOnUse" x1="${f(ux * x2.r)}" y1="${f(uy * x2.r)}" x2="${f(-ux * x2.r)}" y2="${f(-uy * x2.r)}"><stop offset="0" stop-color="#fff" stop-opacity="${f(lit)}"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${f(dark)}"/></linearGradient>`);
-  return `<g clip-path="url(#${id})"><rect x="${f(-x2.r)}" y="${f(-x2.r)}" width="${f(2 * x2.r)}" height="${f(2 * x2.r)}" fill="url(#${id}g)"/></g>`;
-};
-function dialSVG(C2, v, L) {
-  const D = DIALS[0], s = (C2.dial - (C2.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
-  const col2 = (x2) => clampL(x2.f);
-  const items = D.items;
-  const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
-  const handsShadow = items.filter((x2) => x2.hand || x2.role === "cap").map((x2) => {
-    const sh = away(HEIGHTS[x2.hand || "cap"] ?? 0.35);
-    return `<path d="${x2.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x2.hand ? ` data-hs="${x2.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x2.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`;
-  }).join("");
-  const body = items.map((x2) => `<path d="${x2.p}" fill="${col2(x2)}" fill-opacity="${x2.a}"${x2.hand ? ` data-h="${x2.hand}" transform="rotate(${-A[x2.hand]})"` : ""}/>` + (x2.hand ? x2.role === "lume" || x2.role === "mark" ? lumeRelief(x2, s, L, A) : handBevel(x2, A, L) : x2.role === "boss" ? bossLight(x2, L) : x2.role !== "plate" && x2.role !== "cap" ? inkRelief(x2, s, L) : ""));
-  const firstHand = items.findIndex((x2) => x2.hand || x2.role === "cap");
-  body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
-  return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;
-}
-var CASES = {
-  field: {
-    // a cushion case with sharp angles, after the 1939 military cushions (Eterna's reissue: 40 mm across, 11.7 high);
-    // lug to lug and lug width are assumptions (46, 20) — no drawing found that the workspace could open
-    name: "Field \xB7 military cushion, 1939 \xB7 aluminium",
-    cushion: { a: 20, n: 4.2 },
-    od: 40,
-    l2l: 46,
-    lugw: 20,
-    lugT: 3,
-    metal: null,
-    bands: [[17.6, 16.4, 1, 1]],
-    opening: 15.8,
-    dial: 31.4,
-    crown: { at: 0, w: 6.2, h: 3, knurl: 9 },
-    drilled: false,
-    dialName: "Fat field",
-    cushionBevel: 1.3
-  },
-  diver: {
-    name: "Diver \xB7 Seiko SPB143 \xB7 steel",
-    od: 40.5,
-    l2l: 47.6,
-    lugw: 20,
-    lugT: 2.9,
-    flare: 3.6,
-    metal: null,
-    bands: [],
-    insert: { od: 40, id: 32.2, coin: 60 },
-    opening: 15.4,
-    dial: 30.8,
-    crown: { at: 0, w: 6.4, h: 3, knurl: 9 },
-    drilled: false,
-    dialName: "Quiet diver"
-  },
-  emre01: {
-    name: "Emre \xB7 Emre's prototype \xB7 aluminium",
-    rails: true,
-    depth: 0.5,
-    od: 22,
-    l2l: 27,
-    lugw: 19.4,
-    lugT: 3.3,
-    flare: 0,
-    metal: null,
-    bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8, 1, 0.12]],
-    opening: 8,
-    dial: 16,
-    crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 },
-    drilled: false,
-    dialName: "Dress roman"
-  },
-  dress: {
-    name: "Dress \xB7 Calatrava 5196 \xB7 gold",
-    od: 37,
-    l2l: 44,
-    lugw: 20,
-    lugT: 1.9,
-    flare: 3,
-    metal: null,
-    bands: [[18.5, 18.1, 1, 0.4], [18.1, 17.3, 1, 1], [17.3, 16.8, 1, 0.5], [16.8, 16.2, 1, 1]],
-    // stepped: two polished steps
-    opening: 15.9,
-    dial: 31.6,
-    crown: { at: 0, w: 4.4, h: 2.2, knurl: 7 },
-    drilled: false,
-    dialName: "Dress roman"
-  }
-};
-var KINDS2 = Object.keys(CASES);
-function caseEngineer(C2, v, L) {
-  FLARE_TINT = flareColour(C2.metal);
-  const R = C2.cushion ? C2.cushion.a : C2.od / 2, T = C2.metal, out = [];
-  if (C2.cushion) {
-    for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-      const d = cushionLug(C2, sx, sy);
-      out.push(shape2(d, T[1], 0.2, T[2]));
-    }
-  } else if (C2.rails) for (const sx of [-1, 1]) {
-    const xi = sx * C2.lugw / 2, xo = sx * (C2.lugw / 2 + C2.lugT), hy = C2.l2l / 2, b = 0.5, xa = Math.min(xi, xo), xz = Math.max(xi, xo);
-    const o = [[xa, -hy], [xz, -hy], [xz, hy], [xa, hy]], i2 = [[xa + b, -hy + b], [xz - b, -hy + b], [xz - b, hy - b], [xa + b, hy - b]];
-    out.push(shape2(P(o), T[1], 0.2, T[2]));
-    [[0, 1, 270], [1, 2, 0], [2, 3, 90], [3, 0, 180]].forEach(([a, z, phi]) => out.push(flat(P([o[a], o[z], i2[z], i2[a]]), tone(T, phi, 0.85, L))));
-    out.push(stroke(P(i2), 0.1), stroke(P(o), 0.2));
-  }
-  else for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-    out.push(shape2(lugPath(C2, sx, sy), T[1], 0.2, T[2]));
-    out.push(flat(lugChamfer(C2, sx, sy), tone(T, sx > 0 ? 0 : 180, 0.9, L)), stroke(lugChamfer(C2, sx, sy), 0.1));
-    if (C2.drilled) out.push(`<ellipse cx="${f(sx * (C2.lugw / 2 + C2.lugT + 0.05))}" cy="${f(sy * (C2.l2l / 2 - 2.4))}" rx="0.25" ry="0.55" fill="${INK2}"/>`);
-  }
-  const RC = C2.rails ? C2.lugw / 2 + C2.lugT : R, cw = C2.crown.w, ch = C2.crown.h, x0 = RC - 0.4;
-  const top = P([[x0, -cw / 2], [x0 + ch, -cw / 2 + 0.25], [x0 + ch, 0], [x0, 0]]), bot = P([[x0, 0], [x0 + ch, 0], [x0 + ch, cw / 2 - 0.25], [x0, cw / 2]]);
-  out.push(shape2(P([[RC - 1.2, -cw * 0.32], [x0, -cw * 0.32], [x0, cw * 0.32], [RC - 1.2, cw * 0.32]]), T[2], 0.15));
-  out.push(flat(top, tone(T, 270, 0.9, L)), flat(bot, tone(T, 90, 0.9, L)), stroke(P([[x0, -cw / 2], [x0 + ch, -cw / 2 + 0.25], [x0 + ch, cw / 2 - 0.25], [x0, cw / 2]]), 0.2));
-  for (let k = 1; k < C2.crown.knurl; k++) {
-    const y = -cw / 2 + 0.3 + k * (cw - 0.6) / C2.crown.knurl;
-    out.push(stroke(`M${f(x0 + ch * 0.25)} ${f(y)}H${f(x0 + ch)}`, 0.07));
-  }
-  if (C2.cushion) {
-    const o = cushionPts(C2.cushion.a, C2.cushion.n), i2 = cushionPts(C2.cushion.a - C2.cushionBevel, C2.cushion.n);
-    out.push(shape2(P(o), T[1], 0.2, T[2]));
-    const N = o.length, quads = [];
-    for (let k = 0; k < N; k++) {
-      const k2 = (k + 1) % N, nx = o[k2][1] - o[k][1], ny = -(o[k2][0] - o[k][0]), phi = Math.atan2(ny, nx) * 180 / Math.PI;
-      quads.push({ pts: [o[k], o[k2], i2[k2], i2[k]], t: tone(T, phi, 0.85, L) });
-    }
-    for (const q of quads) out.push(`<path d="${P(q.pts)}" fill="${q.t}" stroke="${q.t}" stroke-width="0.05"/>`);
-    out.push(stroke(P(i2), 0.12), stroke(P(o), 0.2));
-  } else out.push(C2.insert ? `<path d="${circle2(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>` : "", shape2(C2.insert ? notchedPath(R, C2.insert.coin, 0.5) : circle2(R), T[1], 0.2, T[2]));
-  for (const [r1, r0, dir, tilt] of C2.bands) out.push(sloped(r0, r1, T, L, dir, tilt));
-  if (C2.insert) {
-    const I = C2.insert, ro = I.od / 2 - 0.9;
-    {
-      const id = "nc" + clipN++;
-      CLIPS.push(`<clipPath id="${id}"><path d="${notchedPath(R, I.coin, 0.5)}"/></clipPath>`);
-      out.push(`<g clip-path="url(#${id})">` + teeth(R, I.coin, 0.5).map((t) => `<path d="${t.d}" fill="${tone(T, t.phi, 0.9, L)}"/>`).join("") + `</g>`);
-    }
-    out.push(`<path d="${notchedPath(R, I.coin, 0.5)}" fill="none" stroke="${INK2}" stroke-width="${LW}" stroke-linejoin="round"/>`);
-    const ins = (c) => [hsl(c, 1.33), c, hsl(c, 0.78)], half = "hb" + clipN++;
-    CLIPS.push(`<clipPath id="${half}"><rect x="-60" y="0" width="120" height="60"/></clipPath>`);
-    out.push(sloped(I.id / 2, ro, ins(INSERT.top), L, -1, 0.5));
-    if (INSERT.bottom !== INSERT.top) out.push(`<g clip-path="url(#${half})">${sloped(I.id / 2, ro, ins(INSERT.bottom), L, -1, 0.5)}</g>`);
-    out.push(sloped(C2.opening, I.id / 2, T, L, -1, 0.7));
-    for (let m = 5; m < 60; m += 5) {
-      const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.6, r1 = I.id / 2 + 2.5;
-      out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#d8d6cf" stroke-width="0.7" stroke-linecap="round"/>`);
-    }
-    out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d8d6cf"/>`);
-    out.push(stroke(circle2(ro)), stroke(circle2(I.id / 2)));
-  }
-  out.push(glint(C2.cushion ? C2.cushion.a - 0.7 : C2.od / 2 - 0.5, L), glint(C2.opening + 0.5, L, 0.4, 0.5, 20));
-  out.push(shape2(circle2(C2.opening), T[2], 0.15));
-  if (DIAL_IN) out.push(`<g clip-path="url(#dial-${C2.key})">${dialSVG(C2, v, L)}</g>`);
-  if (C2.insert) out.push(sloped(C2.opening - REHAUT, C2.opening, T, L, -1, 0.9), stroke(circle2(C2.opening - REHAUT), 0.15));
-  if (!DIAL_IN) return out.join("");
-  {
-    const uS = [Math.cos(rad(L)), Math.sin(rad(L))], sl = (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H))));
-    out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f(-uS[0] * sl)} ${f(-uS[1] * sl)})"><path d="M-500 -500H500V500H-500Z${circle2(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.4 * SHD))}"/></g></g>`);
-  }
-  const g = (a, r, w, o) => `<path d="M${f(Math.cos(rad(a - 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 28 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 28 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, o * GLASS.op))}" stroke-width="${f(w * GLASS.fat)}" stroke-linecap="round"/>`;
-  out.push(g(L, C2.opening - 0.9, 0.8, 0.55), g(L + 180, C2.opening - 0.9, 0.4, 0.22));
-  out.push(stroke(circle2(C2.opening), 0.2));
-  return out.join("");
-}
-function caseMiyazaki(C2, v, L) {
-  FLARE_TINT = flareColour(C2.metal);
-  const R = C2.cushion ? C2.cushion.a : C2.od / 2, T = C2.metal, out = [];
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C2.cushion ? cushionLug(C2, sx, sy) : lugPath(C2, sx, sy), T, L, 0.5, 1, C2.cushion || C2.rails ? null : circle2(R + 0.6)));
-  const cw = C2.crown.w, ch = C2.crown.h;
-  const RC = C2.rails ? C2.lugw / 2 + C2.lugT - 0.1 : R;
-  {
-    const R2 = RC, cd = rrect(R2 - 1.2, -cw / 2, R2 + ch, cw / 2, Math.min(1, cw / 2)), id = "cr" + BLOB++, ly = Math.sin(rad(L)), lx = Math.cos(rad(L));
-    out.push(blob(cd, T, L, 0.5, 0.9));
-    CLIPS.push(`<clipPath id="${id}"><path d="${cd}"/></clipPath>`);
-    const top = ly <= 0.05, bw = cw * 0.24, xg = R2 + 0.15;
-    out.push(`<g clip-path="url(#${id})"><rect x="${f(R2 - 1.2)}" y="${f(top ? -cw / 2 : cw / 2 - bw)}" width="${f(ch + 1.2)}" height="${f(bw)}" fill="#fff" fill-opacity="${Math.abs(ly) < 0.3 ? 0.14 : 0.22}"/><rect x="${f(R2 - 1.2)}" y="${f(top ? cw / 2 - bw : -cw / 2)}" width="${f(ch + 1.2)}" height="${f(bw)}" fill="#000" fill-opacity="0.3"/>` + Array.from({ length: C2.crown.knurl * 2 - 1 }, (_, k) => {
-      const y = -cw / 2 + (k + 1) * cw / (C2.crown.knurl * 2);
-      return `<rect x="${f(xg)}" y="${f(y - 0.09)}" width="${f(R2 + ch - xg)}" height="0.18" fill="#000" fill-opacity="0.38"/>`;
-    }).join("") + `<rect x="${f(lx > 0 ? R2 + ch - 0.45 : xg)}" y="${f(-cw / 2)}" width="0.45" height="${f(cw)}" fill="${lx > 0 ? "#fff" : "#000"}" fill-opacity="${lx > 0 ? 0.25 : 0.2}"/></g>`);
-  }
-  if (C2.cushion) out.push(blob(P(cushionPts(C2.cushion.a, C2.cushion.n)), T, L, 1.1, 2.4));
-  else if (C2.insert) {
-    out.push(`<path d="${circle2(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>`);
-    out.push(blob(notchedPath(R, C2.insert.coin, 0.5), T, L, 1, 2.2));
-    {
-      const id = "nc" + BLOB++;
-      CLIPS.push(`<clipPath id="${id}"><path d="${notchedPath(R, C2.insert.coin, 0.5)}"/></clipPath>`);
-      out.push(`<g clip-path="url(#${id})">` + teeth(R, C2.insert.coin, 0.5).map((t) => {
-        const c = Math.cos(rad(t.phi - L));
-        return `<path d="${t.d}" fill="${c > 0.45 ? mixc(T[0], "#ffffff", 0.3) : c < -0.25 ? T[2] : T[1]}"/>`;
-      }).join("") + `</g>`);
-    }
-  } else out.push(blob(circle2(R), T, L, 1, 2.2));
-  const uL = [Math.cos(rad(L)), Math.sin(rad(L))];
-  const castBy = (rr, under, s = 0.9, op = 0.38) => {
-    const id = "cb" + BLOB++;
-    CLIPS.push(`<clipPath id="${id}"><path d="${under}"/></clipPath>`);
-    return `<g clip-path="url(#${id})"><path d="${circle2(rr)}" transform="translate(${f(-uL[0] * s)} ${f(-uL[1] * s)})" fill="#000" fill-opacity="${op}"/></g>`;
-  };
-  if (C2.insert) {
-    const I = C2.insert, ro = I.od / 2 - 0.9;
-    out.push(castBy(ro, circle2(R - 0.55)));
-    const ins = (c) => [hsl(c, 1.35), c, hsl(c, 0.65)], half = "hb" + BLOB++;
-    CLIPS.push(`<clipPath id="${half}"><rect x="-60" y="0" width="120" height="60"/></clipPath>`);
-    out.push(blob(circle2(ro), ins(INSERT.top), L, 0.6, 1.2));
-    if (INSERT.bottom !== INSERT.top) out.push(`<g clip-path="url(#${half})">${blob(circle2(ro), ins(INSERT.bottom), L, 0.6, 1.2)}</g>`);
-    {
-      const r0 = C2.opening, r1 = I.id / 2, rm = (r0 + r1) / 2, wd = r1 - r0, arc2 = (a2, sp) => `M${f(Math.cos(rad(a2 - sp)) * rm)} ${f(Math.sin(rad(a2 - sp)) * rm)}A${f(rm)} ${f(rm)} 0 0 1 ${f(Math.cos(rad(a2 + sp)) * rm)} ${f(Math.sin(rad(a2 + sp)) * rm)}`;
-      out.push(`<path d="${circle2(r1)}${circle2(r0)}" fill-rule="evenodd" fill="${T[1]}"/><path d="${arc2(L, 55)}" fill="none" stroke="${T[0]}" stroke-width="${f(wd * 0.6)}" stroke-linecap="round"/><path d="${arc2(L + 180, 55)}" fill="none" stroke="${T[2]}" stroke-width="${f(wd * 0.6)}" stroke-linecap="round"/>`);
-    }
-    for (let m = 5; m < 60; m += 5) {
-      const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.6, r1 = I.id / 2 + 2.5;
-      out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#bfbcb4" stroke-width="0.7" stroke-linecap="round"/>`);
-    }
-    out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d0cdc5"/>`);
-  } else if (!C2.cushion) out.push(castBy(R - 1, circle2(R)), blob(circle2(R - 1), T, L, 0.6, 1.1));
-  else out.push(castBy(C2.bands[0][0], P(cushionPts(C2.cushion.a, C2.cushion.n))), blob(circle2(C2.bands[0][0]), T, L, 0.6, 1.1));
-  out.push(glint(C2.cushion ? C2.cushion.a - 0.8 : C2.od / 2 - 0.6, L, 0.8, 0.55, 24));
-  out.push(`<path d="${circle2(C2.opening)}" fill="${T[2]}"/>`);
-  if (!DIAL_IN) return out.join("");
-  out.push(`<g clip-path="url(#dial-${C2.key})">${dialSVG(C2, v, L)}</g>`);
-  if (C2.insert) {
-    const r0 = C2.opening - REHAUT, r1 = C2.opening, rm = (r0 + r1) / 2, wd = r1 - r0, arc2 = (a2, sp) => `M${f(Math.cos(rad(a2 - sp)) * rm)} ${f(Math.sin(rad(a2 - sp)) * rm)}A${f(rm)} ${f(rm)} 0 0 1 ${f(Math.cos(rad(a2 + sp)) * rm)} ${f(Math.sin(rad(a2 + sp)) * rm)}`;
-    out.push(`<path d="${circle2(r1)}${circle2(r0)}" fill-rule="evenodd" fill="${T[1]}"/><path d="${arc2(L + 180, 70)}" fill="none" stroke="${T[0]}" stroke-width="${f(wd * 0.75)}" stroke-linecap="round"/><path d="${arc2(L, 60)}" fill="none" stroke="${T[2]}" stroke-width="${f(wd * 0.75)}" stroke-linecap="round"/><path d="${circle2(r0)}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="0.12"/>`);
-  }
-  out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f(-uL[0] * (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))} ${f(-uL[1] * (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))})"><path d="M-500 -500H500V500H-500Z${circle2(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.44 * SHD))}"/></g></g>`);
-  const r = C2.opening - 1.2, a = L;
-  out.push(`<path d="M${f(Math.cos(rad(a - 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 35 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 35 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, 0.5 * GLASS.op))}" stroke-width="${f(1.6 * GLASS_K * GLASS.fat)}" stroke-linecap="round"/>`);
-  return out.join("");
-}
-var caseSVG = (C2, v, L) => STYLE === "engineer" ? caseEngineer(C2, v, L) : caseMiyazaki(C2, v, L);
-function leatherPiece(y0, y1, w0, w1, T, L, tip = 0, holes = []) {
-  const s = Math.sign(y1 - y0), yEnd = y1 - s * tip, rw = 2.2;
-  let d = `M${f(-w0 / 2)} ${f(y0 + s * rw)}Q${f(-w0 / 2)} ${f(y0)} ${f(-w0 / 2 + rw)} ${f(y0)}L${f(w0 / 2 - rw)} ${f(y0)}Q${f(w0 / 2)} ${f(y0)} ${f(w0 / 2)} ${f(y0 + s * rw)}L${f(w1 / 2)} ${f(yEnd)}`;
-  if (tip) d += `Q${f(w1 / 2)} ${f(y1)} 0 ${f(y1)}Q${f(-w1 / 2)} ${f(y1)} ${f(-w1 / 2)} ${f(yEnd)}Z`;
-  else d += `L${f(-w1 / 2)} ${f(y1)}Z`;
-  let html = part(d, T, L, 1, 2.6) + `<path d="${d}" fill="url(#grain)"/>`;
-  if (STYLE === "engineer") {
-    const xp = (y) => w0 / 2 + (w1 - w0) / 2 * ((y - y0) / (y1 - y0)), pad = (side) => P([[side * (xp(y0) - 1.6), y0], [side * (xp(y0) - 3.4), y0], [side * (xp(yEnd) - 3.4), yEnd], [side * (xp(yEnd) - 1.6), yEnd]]);
-    html += flat(pad(1), tone(T, 0, 0.8, L)) + flat(pad(-1), tone(T, 180, 0.8, L));
-  }
-  html += `<path d="${rrectD(-w0 * 0.4, y0, w0 * 0.4, y0 + s * 0.6, 0.3)}" fill="#000" fill-opacity="0.45"/>`;
-  const xs = (y) => w0 / 2 + (w1 - w0) / 2 * ((y - y0) / (y1 - y0)), k = 0.9, ys = y0 + s * 1.8;
-  html += `<path d="M${f(-xs(ys) + k)} ${f(ys)}L${f(-xs(yEnd) + k)} ${f(yEnd)}M${f(xs(ys) - k)} ${f(ys)}L${f(xs(yEnd) - k)} ${f(yEnd)}" fill="none" stroke="#e9dccb" stroke-opacity="0.6" stroke-width="0.18" stroke-dasharray="0.7 0.6"/>`;
-  for (const y of holes) {
-    const u = [Math.cos(rad(L)), Math.sin(rad(L))], r = 0.85, p = [-u[1] * r, u[0] * r];
-    html += `<circle cx="0" cy="${f(y)}" r="${r}" fill="#000" fill-opacity="0.6"/><path d="M${f(p[0])} ${f(y + p[1])}A${r} ${r} 0 0 0 ${f(-p[0])} ${f(y - p[1])}" fill="none" stroke="${T[0]}" stroke-opacity="0.7" stroke-width="0.22"/>`;
-  }
-  return html;
-}
-function tangBuckle(yEnd, w) {
-  const W2 = w + 4, H2 = W2 * 0.8, x2 = -W2 / 2, y = yEnd - H2 + 1.7, bar = 1.2, sideB = 1.6, sideF = 2.4, front = H2 * 0.2, r = 2.6, slotY = yEnd + 3;
-  const hole = `M${f(x2 + W2 - sideB)} ${f(y + H2 - bar)}L${f(x2 + W2 - sideF)} ${f(y + front)}Q${f(x2 + W2 - sideF)} ${f(y + front - 0.6)} ${f(x2 + W2 - sideF - 0.6)} ${f(y + front - 0.6)}H${f(x2 + sideF + 0.6)}Q${f(x2 + sideF)} ${f(y + front - 0.6)} ${f(x2 + sideF)} ${f(y + front)}L${f(x2 + sideB)} ${f(y + H2 - bar)}Z`;
-  const frame2 = rrectD(x2, y, x2 + W2, y + H2, r) + hole;
-  const tongue = `M-1.1 ${f(slotY)}L1.1 ${f(slotY)}L0.7 ${f(y + 0.4)}Q0 ${f(y - 0.9)} -0.7 ${f(y + 0.4)}Z`;
-  const slot = `<rect x="-1.4" y="${f(slotY - 0.35)}" width="2.8" height="0.7" rx="0.3" fill="#000" fill-opacity="0.55"/>`;
-  return { frame: frame2, tongue, slot, W: W2, H: H2, y };
-}
-function buckle(y, w, T, L) {
-  const B = tangBuckle(y, w), x2 = -B.W / 2;
-  if (STYLE === "engineer") return { frame: shape2(B.frame, T[1], 0.2) + flat(P([[x2 + 2.2, B.y], [x2 + B.W - 2.2, B.y], [x2 + B.W - 2.2, B.y + 0.9], [x2 + 2.2, B.y + 0.9]]), tone(T, 270, 0.9, L)), slot: B.slot, tongue: shape2(B.tongue, tone(T, 0, 0.3, L), 0.15) };
-  return { frame: blob(B.frame, T, L, 0.6, 1.2), slot: B.slot, tongue: blob(B.tongue, T, L, 0.3, 0.6) };
-}
-function keeper(y, w, T, L, h = 3.2) {
-  const W2 = w + 1.4;
-  if (STYLE === "engineer") return shape2(P([[-W2 / 2, y], [W2 / 2, y], [W2 / 2, y + h], [-W2 / 2, y + h]]), T[1], 0.2) + flat(P([[-W2 / 2, y], [W2 / 2, y], [W2 / 2, y + h * 0.35], [-W2 / 2, y + h * 0.35]]), tone(T, 270, 0.9, L)) + flat(P([[-W2 / 2, y + h * 0.65], [W2 / 2, y + h * 0.65], [W2 / 2, y + h], [-W2 / 2, y + h]]), tone(T, 90, 0.9, L));
-  return blob(rrect(-W2 / 2, y, W2 / 2, y + h, 1), T, L, 0.5, 0.9);
-}
-function leatherSVG(C2, L, colour, open, span) {
-  const T = LEATHER[colour], w = C2.lugw, end = 16, yc = C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2);
-  const gap = "";
-  if (!open) return gap + leatherPiece(-yc, -span, w, w - 1.2, T, L) + leatherPiece(yc, span, w, w - 1.2, T, L, 0, [60, 67].filter((y) => y < span));
-  const up = leatherPiece(-yc, -(C2.l2l / 2 + 75), w, end, T, L), dn = leatherPiece(yc, C2.l2l / 2 + 115, w, end, T, L, 7, [72, 79, 86, 93, 100, 107].map((y) => C2.l2l / 2 + y - 25));
-  const B = buckle(-(C2.l2l / 2 + 75), end, C2.metal, L);
-  return gap + B.frame + up + dn + keeper(-(C2.l2l / 2 + 62), end + 0.4, T, L, 5.5) + B.slot + B.tongue;
-}
-function natoEngineer(C2, L, set, open, span) {
-  const S = NATO_SETS[set] || NATO_MORE[set], w = C2.lugw - 0.3, x0 = -w / 2;
-  const stripes = STRIPES[set] || [[0, 1, 0]];
-  const run = (y0, y1, layer = 0) => {
-    let h2 = "";
-    for (const [a, b, k] of stripes) {
-      const T = S[k];
-      h2 += `<rect x="${f(x0 + a * w)}" y="${f(Math.min(y0, y1))}" width="${f((b - a) * w)}" height="${f(Math.abs(y1 - y0))}" fill="${T[1]}"/>`;
-    }
-    h2 += `<rect x="${f(x0)}" y="${f(Math.min(y0, y1))}" width="${f(w)}" height="${f(Math.abs(y1 - y0))}" fill="url(#${WEAVE})"/>`;
-    h2 += flat(P([[x0, y0], [x0 + 0.5, y0], [x0 + 0.5, y1], [x0, y1]]), tone(S[0], 180, 0.9, L)) + flat(P([[-x0 - 0.5, y0], [-x0, y0], [-x0, y1], [-x0 - 0.5, y1]]), tone(S[0], 0, 0.9, L));
-    return h2 + stroke(P([[x0, y0], [-x0, y0], [-x0, y1], [x0, y1]]), 0.2);
-  };
-  const half = C2.l2l / 2;
-  if (!open) {
-    let h2 = run(-span, span);
-    h2 += stroke(`M${f(x0)} ${f(half + 10)}H${f(-x0)}`, 0.2);
-    h2 += `<path d="M${f(x0)} ${f(half + 10.3)}H${f(-x0)}" stroke="#000" stroke-opacity="0.25" stroke-width="0.6"/>`;
-    h2 += keeper(half + 15, w, C2.metal, L, 3.6);
-    for (let y = half + 14; y < span; y += 7) h2 += `<ellipse cx="0" cy="${f(-y)}" rx="0.85" ry="0.65" fill="${INK2}" fill-opacity="0.75"/>`;
-    return h2;
-  }
-  let h = run(-(half + 70), half + 165);
-  {
-    const B = buckle(-(half + 70) + 1, w, C2.metal, L);
-    h += B.frame + B.tongue;
-  }
-  h += keeper(-(half + 58), w, C2.metal, L, 3.6);
-  h += keeper(half + 12, w, C2.metal, L, 3.6) + keeper(half + 87, w, C2.metal, L, 3.6);
-  for (let y = half + 165 - 25; y > half + 100; y -= 7) h += `<ellipse cx="0" cy="${f(y)}" rx="0.85" ry="0.65" fill="${INK2}" fill-opacity="0.75"/>`;
-  return h;
-}
-function natoMiyazaki(C2, L, set, open, span) {
-  const S = NATO_SETS[set] || NATO_MORE[set], w = C2.lugw - 0.3, x0 = -w / 2, half = C2.l2l / 2;
-  const stripes = STRIPES[set] || [[0, 1, 0]];
-  const y0 = open ? -(half + 70) : -span, y1 = open ? half + 165 : span, band = rrect(x0, y0, -x0, y1, 1.2);
-  let h = stripes.map(([a, b, k]) => `<rect x="${f(x0 + a * w)}" y="${f(y0)}" width="${f((b - a) * w)}" height="${f(y1 - y0)}" fill="${S[k][1]}"/>`).join("");
-  OUTT.push(band);
-  h += `<path d="${band}" fill="url(#${WEAVE})"/>` + blobOver(band, L, 1, 2.6);
-  h += `${[0, 1, 2, 3].map((i2) => `<rect x="${f(x0)}" y="${f(half + 9.4 + i2 * 0.35)}" width="${f(w)}" height="${f(1.6 - i2 * 0.35)}" fill="#000" fill-opacity="0.07"/>`).join("")}`;
-  if (!open) {
-    h += keeper(half + 15, w, C2.metal, L, 3.6);
-    for (let y = half + 14; y < span; y += 7) h += `<circle cx="0" cy="${f(-y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`;
-  } else {
-    const B = buckle(y0 + 1, w, C2.metal, L);
-    h += B.frame + B.tongue + keeper(-(half + 58), w, C2.metal, L, 3.6) + keeper(half + 12, w, C2.metal, L, 3.6) + keeper(half + 87, w, C2.metal, L, 3.6);
-    for (let y = y1 - 25, n = 0; n < 9; y -= 7, n++) h += `<circle cx="0" cy="${f(y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`;
-  }
-  return h;
-}
-var natoSVG = (...a) => STYLE === "engineer" ? natoEngineer(...a) : natoMiyazaki(...a);
-function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
-  const id = "vb" + VB_N++, h = y1 - y0, N = 9;
-  CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
-  let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;
-  const dots = Array.from({ length: N }, (_, i2) => {
-    const t = ((i2 + 0.5) / N * 2 - 1) * flip, b = Math.asin(Math.max(-1, Math.min(1, t * k)));
-    return Math.max(0, Math.sin(b) * lv[1] + Math.cos(b) * lv[2]);
-  });
-  const order = dots.map((d2, i2) => [d2, i2]).sort((a, b) => a[0] - b[0]).map((p) => p[1]), rank = [];
-  order.forEach((i2, r) => rank[i2] = r);
-  for (let i2 = 0; i2 < N; i2++) {
-    const q = Math.min(ramp.length - 2, Math.floor(rank[i2] / N * (ramp.length - 1)));
-    s += `<rect x="${f(x0)}" y="${f(y0 + i2 * h / N - 0.01)}" width="${f(x1 - x0)}" height="${f(h / N + 0.02)}" fill="${ramp[q]}"/>`;
-  }
-  const e = 0.32, litL = lv[0] <= 0, litT = Math.abs(lv[1]) < 0.05 ? true : lv[1] < 0;
-  const vx = (left) => `<rect x="${f(left ? x0 : x1 - e)}" y="${f(y0)}" width="${f(e)}" height="${f(h)}"/>`;
-  const hz = (top) => `<rect x="${f(x0)}" y="${f(top ? y0 : y1 - e)}" width="${f(x1 - x0)}" height="${f(e)}"/>`;
-  s += `<g fill="${ramp[0]}">${vx(!litL)}${hz(!litT)}</g><g fill="${ramp[ramp.length - 1]}">${vx(litL)}${hz(litT)}</g>`;
-  return s + `</g>`;
-}
-function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
-  const id = "vb" + VB_N++, h = y1 - y0, N = 7;
-  CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
-  let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;
-  for (let i2 = 0; i2 < N; i2++) {
-    const t = ((i2 + 0.5) / N * 2 - 1) * flip, b = Math.asin(Math.max(-1, Math.min(1, t * k))), n = [0, Math.sin(b), Math.cos(b)];
-    const dot = Math.max(0, n[1] * lv[1] + n[2] * lv[2]), q = Math.min(ramp.length - 2, Math.round(dot * (ramp.length - 2)));
-    s += `<rect x="${f(x0)}" y="${f(y0 + i2 * h / N - 0.01)}" width="${f(x1 - x0)}" height="${f(h / N + 0.02)}" fill="${ramp[q]}"/>`;
-  }
-  const e = 0.32, litL = lv[0] <= 0, litT = Math.abs(lv[1]) < 0.05 ? true : lv[1] < 0;
-  const vx = (left) => `<rect x="${f(left ? x0 : x1 - e)}" y="${f(y0)}" width="${f(e)}" height="${f(h)}"/>`;
-  const hz = (top) => `<rect x="${f(x0)}" y="${f(top ? y0 : y1 - e)}" width="${f(x1 - x0)}" height="${f(e)}"/>`;
-  s += `<g fill="${ramp[0]}">${vx(!litL)}${hz(!litT)}</g><g fill="${ramp[ramp.length - 1]}">${vx(litL)}${hz(litT)}</g>`;
-  return s + `</g>`;
-}
-var barrel = (...a) => STYLE === "engineer" ? barrelEngineer(...a) : barrelMiyazaki(...a);
-function vaultEngineer({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
-  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
-  const pitch = 6.4, out = [];
-  for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
-    const w = Math.max(16, W2 - k * 0.45), mid = w * 0.36, g = 0.18, kk = 0.99;
-    const ya = wrap.map(y), yb = wrap.map(Math.min(span, y + pitch));
-    if (yb - ya < 0.12) break;
-    const a = sy * ya, b = sy * yb, top = Math.min(a, b), bot = Math.max(a, b), lv = wrap.light(lv0, (y + Math.min(span, y + pitch)) / 2);
-    const parts = [
-      [-w / 2, -mid / 2 - g / 2, [0.6, 0.12, 0.12, 0.6]],
-      [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
-      [-mid / 2 + g / 2, mid / 2 - g / 2, [0.25, 0.25, 0.25, 0.25]]
-    ];
-    out.push(`<rect x="${f(-w / 2 + 0.6)}" y="${f(top)}" width="${f(w - 1.2)}" height="${f(bot - top)}" fill="${ramp[ramp.length - 1]}"/>`);
-    for (const [pi, [x0, x1, rr]] of parts.entries()) {
-      const d = rrect4(x0, top, x1, bot, rr);
-      out.push(barrel(d, x0, top, x1, bot, kk, ramp, lv, 1));
-      if (pi < 2) {
-        const side = pi === 0 ? -1 : 1, lit = lv[0] * side > 0.05, wq = (x1 - x0) * 0.3, xa = side < 0 ? x0 : x1 - wq;
-        out.push(`<path d="${d}" fill="none"/><g clip-path="url(#vb${VB_N - 1}c)"><rect x="${f(xa)}" y="${f(top)}" width="${f(wq)}" height="${f(bot - top)}" fill="${lit ? "#fff" : "#000"}" fill-opacity="${lit ? 0.16 : 0.3}"/></g>`);
-      } else out.push(`<g clip-path="url(#vb${VB_N - 1}c)"><rect x="${f(x0)}" y="${f(top)}" width="${f(x1 - x0)}" height="${f(bot - top)}" fill="#fff" fill-opacity="0.1"/></g>`);
-      if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
-    }
-    {
-      const down = lv[1] < 0 ? 1 : -1, yc = down * sy > 0 ? bot : top;
-      out.push(`<rect x="${f(-w / 2)}" y="${f(down * sy > 0 ? yc : yc - 0.9)}" width="${f(w)}" height="0.9" fill="#000" fill-opacity="0.22"/>`);
-    }
-    out.push(`<path d="M${f(-w / 2 + 0.3)} ${f(sy > 0 ? bot : top)}H${f(w / 2 - 0.3)}" stroke="#141516" stroke-opacity="${ink ? 0.9 : 0.6}" stroke-width="${ink ? inkW * 1.6 : 0.45}"/>`);
-  }
-  return out.join("");
-}
-function vaultMiyazaki({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
-  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
-  const pitch = 6.4, out = [];
-  for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
-    const w = Math.max(16, W2 - k * 0.45), mid = w * 0.36, g = 0.18, kk = 0.99;
-    const ya = wrap.map(y), yb = wrap.map(Math.min(span, y + pitch));
-    if (yb - ya < 0.12) break;
-    const a = sy * ya, b = sy * yb, top = Math.min(a, b), bot = Math.max(a, b), lv = wrap.light(lv0, (y + Math.min(span, y + pitch)) / 2);
-    const parts = [
-      [-w / 2, -mid / 2 - g / 2, [0.6, 0.12, 0.12, 0.6]],
-      [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
-      [-mid / 2 + g / 2, mid / 2 - g / 2, [0.25, 0.25, 0.25, 0.25]]
-    ];
-    out.push(`<rect x="${f(-w / 2 + 0.6)}" y="${f(top)}" width="${f(w - 1.2)}" height="${f(bot - top)}" fill="${ramp[ramp.length - 1]}"/>`);
-    for (const [x0, x1, rr] of parts) {
-      const d = rrect4(x0, top, x1, bot, rr);
-      out.push(barrel(d, x0, top, x1, bot, kk, ramp, lv, 1));
-      if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
-    }
-    {
-      const down = lv[1] < 0 ? 1 : -1, yc = down * sy > 0 ? bot : top;
-      out.push(`<rect x="${f(-w / 2)}" y="${f(down * sy > 0 ? yc : yc - 0.9)}" width="${f(w)}" height="0.9" fill="#000" fill-opacity="0.22"/>`);
-    }
-    out.push(`<path d="M${f(-w / 2 + 0.3)} ${f(sy > 0 ? bot : top)}H${f(w / 2 - 0.3)}" stroke="#141516" stroke-opacity="${ink ? 0.9 : 0.6}" stroke-width="${ink ? inkW * 1.6 : 0.45}"/>`);
-  }
-  return out.join("");
-}
-var vaultBracelet = (o) => STYLE === "engineer" ? vaultEngineer(o) : vaultMiyazaki(o);
-function linksBracelet({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, wrap = FLAT_WRAP }) {
-  const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
-  const h = 4.4, g = 0.15, mid = W2 * 0.46, out = [`<rect x="${f(-W2 / 2 + 0.3)}" y="${f(Math.min(sy * wrap.map(y0), sy * wrap.map(span)))}" width="${f(W2 - 0.6)}" height="${f(Math.abs(wrap.map(span) - wrap.map(y0)))}" fill="${ramp[0]}"/>`];
-  const piece = (x0, x1, a0, b0) => {
-    const a = wrap.map(a0), b = wrap.map(b0);
-    if (b - a < 0.12) return;
-    const lv = wrap.light(lv0, (a0 + b0) / 2), top = Math.min(sy * a, sy * b), bot = Math.max(sy * a, sy * b), r = Math.min(0.9, (bot - top) * 0.3), d = rrect4(x0, top, x1, bot, [r, r, r, r]);
-    out.push(barrel(d, x0, top, x1, bot, 0.99, ramp, lv, 1));
-    if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
-  };
-  piece(-mid / 2 + g / 2, mid / 2 - g / 2, y0, y0 + h / 2 - g);
-  for (let y = y0; y + h / 2 <= span + 0.01; y += h) {
-    const b = Math.min(span, y + h - g);
-    piece(-W2 / 2, -mid / 2 - g / 2, y, b);
-    piece(mid / 2 + g / 2, W2 / 2, y, b);
-    const c0 = y + h / 2, c1 = Math.min(span, c0 + h - g);
-    if (c1 > c0 + 0.5) piece(-mid / 2 + g / 2, mid / 2 - g / 2, c0, c1);
-  }
-  return out.join("");
-}
-var WRIST_R = 12;
-var WRIST_FLAT = 1;
-var FLAT_WRAP = { map: (y) => y, light: (lv) => lv };
-function wristWrap(y0) {
-  const ys = y0 + WRIST_FLAT, th = (y) => Math.max(0, Math.min(Math.PI / 2, (y - ys) / WRIST_R));
-  return {
-    span: ys + WRIST_R * Math.PI / 2,
-    map: (y) => y <= ys ? y : ys + WRIST_R * Math.sin(th(y)),
-    light: (lv, y) => {
-      const t = th(y), c = Math.cos(t), si = Math.sin(t);
-      return [lv[0], lv[1] * c - lv[2] * si, lv[1] * si + lv[2] * c];
-    }
-  };
-}
-function braceletSVG(C2, L, span) {
-  const R = C2.od / 2, lw = C2.lugw, W2 = C2.lugw - 0.2, yE = C2.l2l / 2 + 0.8, ramp = ramp6(C2.metal);
-  const lv0 = (sy) => [Math.cos(rad(SUN_H)) * Math.cos(rad(L)), Math.cos(rad(SUN_H)) * Math.sin(rad(L)) * sy, Math.sin(rad(SUN_H))];
-  let out = "";
-  for (const sy of [-1, 1]) {
-    const Rr = R + 0.1, arc2 = [];
-    for (let j = 0; j <= 16; j++) {
-      const x2 = -lw / 2 + lw * j / 16;
-      arc2.push([x2, sy * (Math.sqrt(Rr * Rr - x2 * x2) - 0.15)]);
-    }
-    const end = "M" + [...arc2, [lw / 2, sy * yE], [-lw / 2, sy * yE]].map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z";
-    const ys = [sy * (Math.sqrt(Rr * Rr - lw * lw / 4) - 0.15), sy * (Rr - 0.15), sy * yE], top = Math.min(...ys), bot = Math.max(...ys);
-    out += barrel(end, -lw / 2, Math.min(top, bot), lw / 2, Math.max(top, bot), 0.99, ramp, lv0(sy), 1);
-    const mid = W2 * 0.36;
-    for (const x2 of [-mid / 2, mid / 2]) out += `<path d="M${f(x2)} ${f(sy * (Math.sqrt(Rr * Rr - x2 * x2) - 0.15))}V${f(sy * yE)}" stroke="${ramp[0]}" stroke-width="0.22"/>`;
-    out += `<path d="M${arc2.map((p) => `${f(p[0])} ${f(p[1])}`).join("L")}" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="0.5"/>`;
-    out += INKB ? `<path d="${end}" fill="none" stroke="${INKB}" stroke-width="0.22" stroke-linejoin="round"/>` : "";
-    OUTT.push(end);
-    const wrap = wristWrap(yE), far = wrap.span;
-    out += (BRACELET_KIND === "links" ? linksBracelet : vaultBracelet)({ W: W2, y0: yE, span: far, sy, L, H: SUN_H, ramp, ink: INKB, wrap });
-    for (let k = 0, y = yE; y + 6.4 <= far + 0.01; k++, y += 6.4) {
-      const w = Math.max(16, W2 - k * 0.45), a = wrap.map(y), b = wrap.map(y + 6.4);
-      if (b - a < 0.12) break;
-      OUTT.push(`M${f(-w / 2)} ${f(sy * a)}H${f(w / 2)}V${f(sy * b)}H${f(-w / 2)}Z`);
-    }
-  }
-  return out;
-}
-var FLAT = /* @__PURE__ */ new Map();
-function polylines(d) {
-  if (FLAT.has(d)) return FLAT.get(d);
-  const P2 = PK2.FromSVGString(d), cmds = P2.toCmds();
-  P2.delete();
-  const out = [];
-  let cur = null, prev = null;
-  const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-  for (const c of cmds) {
-    const v = c[0], p = [];
-    for (let k = 1; k + 1 < c.length; k += 2) p.push([c[k], c[k + 1]]);
-    if (v === 0) {
-      cur = [p[0]];
-      out.push(cur);
-      prev = p[0];
-    } else if (v === 1) {
-      cur.push(p[0]);
-      prev = p[0];
-    } else if (v === 2 || v === 3) {
-      const w = v === 3 ? c[5] : 1;
-      for (let i2 = 1; i2 <= 8; i2++) {
-        const t = i2 / 8, a = (1 - t) * (1 - t), b = 2 * w * t * (1 - t), e = t * t, s = a + b + e;
-        cur.push([(a * prev[0] + b * p[0][0] + e * p[1][0]) / s, (a * prev[1] + b * p[0][1] + e * p[1][1]) / s]);
-      }
-      prev = p[1];
-    } else if (v === 4) {
-      for (let i2 = 1; i2 <= 8; i2++) {
-        const t = i2 / 8, q = lerp(lerp(lerp(prev, p[0], t), lerp(p[0], p[1], t), t), lerp(lerp(p[0], p[1], t), lerp(p[1], p[2], t), t), t);
-        cur.push(q);
-      }
-      prev = p[2];
-    } else if (v === 5 && cur) {
-      cur.push(cur[0]);
-    }
-  }
-  FLAT.set(d, out);
-  return out;
-}
-function sweep(d, v) {
-  let quads = "";
-  for (const line of polylines(d)) for (let i2 = 1; i2 < line.length; i2++) {
-    const p = line[i2 - 1], q = line[i2], cross = (q[0] - p[0]) * v[1] - (q[1] - p[1]) * v[0];
-    if (Math.abs(cross) < 1e-6) continue;
-    const [a, b] = cross > 0 ? [p, q] : [q, p];
-    quads += `M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}L${f(b[0] + v[0])} ${f(b[1] + v[1])}L${f(a[0] + v[0])} ${f(a[1] + v[1])}Z`;
-  }
-  return `<path d="${d}"/><path d="${d}" transform="translate(${f(v[0])} ${f(v[1])})"/><path d="${quads}"/>`;
-}
-function silhouette(C2) {
-  const R = C2.cushion ? C2.cushion.a : C2.od / 2, crown = rrectD(R - 1.2, -C2.crown.w / 2, R + C2.crown.h, C2.crown.w / 2, 1);
-  return [[C2.cushion ? P(cushionPts(C2.cushion.a, C2.cushion.n)) : circle2(R), 1], ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => [(C2.cushion ? cushionLug : lugPath)(C2, sx, sy), 0.55])), [crown, 0.5]];
-}
-function contact(C2, L, strap, span, soft) {
-  const u = [Math.cos(rad(L)), Math.sin(rad(L))], k = longer(SUN_H), off = [-u[0] * 0.9 * k, -u[1] * 0.9 * k];
-  const w = C2.lugw - 0.2, leather = strap.startsWith("leather");
-  const area = OUTL_S.map((d) => `<path d="${d}"/>`).join("");
-  const id = "ct" + BLOB_N++;
-  CLIPS.push(`<clipPath id="${id}">${area}</clipPath>`);
-  let h = `<g clip-path="url(#${id})"><g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>${silhouette(C2).map(([d, kk]) => sweep(d, [off[0] * 1.6 * kk, off[1] * 1.6 * kk])).join("")}</g></g>`;
-  for (const sy of [-1, 1]) {
-    const tip = C2.l2l / 2;
-    if (!leather) h += `<path d="M${f(-w / 2)} ${f(sy * (tip - 2.6))}H${f(w / 2)}" stroke="#000" stroke-opacity="0.2" stroke-width="0.8"/><path d="M${f(-w / 2)} ${f(sy * (tip - 2.2))}H${f(w / 2)}" stroke="#fff" stroke-opacity="0.12" stroke-width="0.4"/>`;
-  }
-  return h;
-}
-function silhouetteOutline(paths, L = 0) {
-  if (!paths.length) return "";
-  const u = PK2.FromSVGString(paths[0]);
-  for (const d2 of paths.slice(1)) {
-    const p = PK2.FromSVGString(d2);
-    u.op(p, PK2.PathOp.UNION);
-    p.delete();
-  }
-  const d = u.toSVGString();
-  u.delete();
-  if (!GRADIENTS) return `<path d="${d}" fill="none" stroke="#fff" stroke-opacity="0.3" stroke-width="0.2" stroke-linejoin="round"/>`;
-  const id = "og" + BLOB_N++, ux = Math.cos(rad(L)), uy = Math.sin(rad(L)), D = 24;
-  CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(-ux * D)}" y1="${f(-uy * D)}" x2="${f(ux * D)}" y2="${f(uy * D)}"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0.65"/></linearGradient>`);
-  return `<path d="${d}" fill="none" stroke="url(#${id})" stroke-width="0.2" stroke-linejoin="round"/>`;
-}
-function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1) {
-  WEAVE = strap.endsWith("-big") ? "weavebig" : "weave";
-  strap = strap.replace(/-big$/, "");
-  SUN_H = h;
-  CLIPS = [];
-  const C2 = live_case({ ...scaleCase(CASES[key], size), key, dialOverride: dial, ...metal ? { metal: METALS[metal] } : {} }), span = open ? 260 : 64;
-  OUTL_S = [];
-  OUTT = OUTL_S;
-  const strapSVG = strap === "bracelet" ? braceletSVG(C2, L, open ? C2.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C2, L, strap.split("-")[1], open, span) : natoSVG(C2, L, strap.split("-")[1], open, span);
-  const off = (d) => [-Math.cos(rad(L)) * d, -Math.sin(rad(L)) * d];
-  const k = longer(h), H2 = CASE_H[key] ? CASE_H[key] * C2.od : 2.4 * Math.tan(rad(40));
-  const vCase = off(H2 / Math.tan(rad(Math.max(LOW_SUN, h)))), vStrap = off(0.8 * k);
-  const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C2).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
-  OUTL_C = [];
-  OUTT = OUTL_C;
-  const caseStr = caseSVG(C2, v, L);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
-<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle2(C2.opening)}"/></clipPath>${TEXTURES}</defs>
-<defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
-<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
-${blockShadow}
-
-${strapSVG}${strap === "bracelet" ? "" : contact(C2, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
-</svg>`;
-}
-var GREYS = ["#504f4f", "#444442", "#373735"];
-function frame(o) {
-  const kind = o.kind in CASES ? o.kind : "dress";
-  use("engineer");
-  NO_LINES = true;
-  INK2 = "none";
-  DIAL_IN = false;
-  GLINT = "off";
-  CLIPS = [];
-  SUN_H = 40;
-  LIVE = o.outer ? { outer: o.outer, dial: o.d } : null;
-  const C2 = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
-  INSERT = { top: GREYS[2], bottom: GREYS[2] };
-  const body = caseSVG(C2, "own", 225);
-  NO_LINES = false;
-  INSERT = was;
-  DIAL_IN = true;
-  use("engineer");
-  return `<g transform="scale(1 -1)"><defs>${CLIPS.join("")}</defs>${body}</g>`;
-}
-function silhouetteOf(key, size) {
-  use("miyazaki");
-  DIAL_IN = false;
-  GLINT = "off";
-  OUTLINE_ON = false;
-  const kind = key in CASES ? key : "dress";
-  METALS.custom = METALS.steel;
-  LEATHER.custom = LEATHER.brown;
-  sheet(kind, "leather-custom", "own", 225, true, 40, "live", "custom", size);
-  DIAL_IN = true;
-  OUTLINE_ON = true;
-  const u = PK2.FromSVGString(OUTL_C[0]);
-  for (const d2 of OUTL_C.slice(1)) {
-    const p = PK2.FromSVGString(d2);
-    u.op(p, PK2.PathOp.UNION);
-    p.delete();
-  }
-  const d = u.toSVGString();
-  u.delete();
-  return d;
-}
-var TILES = {};
-function tilePicture(key, w = 38, h = 27) {
-  if (TILES[key]) return TILES[key];
-  const C2 = scaleCase(CASES[key] || CASES.dress, 1), d = silhouetteOf(key, 1), b = caseBox(key, 1), m = 1.15;
-  const s = Math.min(w / (b.w * m), h / (b.h * m));
-  return TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="currentColor" stroke="none"><path fill-rule="evenodd" d="${d} ${circle2(C2.opening)}"/></svg>`;
-}
-var POOL_R = 44;
-var POOL_FULL = 0.45;
-var POOL_MID = 0.82;
-var POOL_EDGE = 0.57;
-var DETAIL = 31;
-var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
-var fullBox = (kind = null, size = 1, bracelet = false) => {
-  if (!bracelet || !CASES[kind]) return [FULL.w, FULL.h];
-  const C2 = scaleCase(CASES[kind], size), h = 2 * (C2.l2l / 2 + 0.8 + WRIST_FLAT + WRIST_R + 6);
-  return [h * FULL.w / FULL.h * 2, h];
-};
-var STYLES = {
-  engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
-  miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` }
-};
-var hsl = (h, k) => {
-  const [hh, s, l] = hex2hsl(h);
-  return hsl2hex([hh, s, Math.min(0.97, l * k)]);
-};
-var tones = (h, [up, down]) => [hsl(h, up), h, hsl(h, down)];
-function presets(style) {
-  use(style);
-  return {
-    floor: STYLES[style].floor,
-    metals: Object.fromEntries(Object.entries(METALS).map(([k, T]) => [k, T[1]])),
-    leather: Object.fromEntries(Object.entries(LEATHER).map(([k, T]) => [k, T[1]])),
-    nato: Object.fromEntries(Object.entries({ ...NATO_SETS, ...NATO_MORE }).map(([k, S]) => [k, S.map((T) => T[1])]))
-  };
-}
-var sizeFor = (key, d, outer = null) => {
-  const C2 = CASES[key] || CASES.dress;
-  return outer ? (2 * outer + 2 * CASE_LIP) / C2.od : d / (C2.dial - (C2.insert ? 2 * REHAUT : 0));
-};
-var CASE_LIP = 0.65;
-var LIVE = null;
-var live_case = (C2) => LIVE ? Object.assign(C2, { opening: LIVE.outer, dial: LIVE.dial, insert: null, bands: [] }) : C2;
-var caseBox = (key, size) => {
-  const C2 = scaleCase(CASES[key], size);
-  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.rails ? Math.max(C2.od, C2.lugw + 2 * C2.lugT) : C2.od) + 2 * C2.crown.h, dial: C2.dial };
-};
-function draw(o) {
-  use(o.style || "miyazaki");
-  const STYLE_ = STYLES[STYLE];
-  OUTLINE_ON = o.outline !== false;
-  LIVE = o.case ? { outer: o.case.outer, dial: o.d } : null;
-  DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
-  SOFT = Boolean(o.blurs);
-  GRADIENTS = o.gradients !== false;
-  HEIGHTS = o.heights || {};
-  HANDS_A = o.A;
-  FLARE_KIND = o.flare;
-  INK_K = o.ink ?? 6;
-  FL = o.fl;
-  GLASS = o.glass;
-  INSERT = o.insert;
-  SHD = o.shadow ?? 1;
-  HAND_BEVEL = +o.bevels || 0;
-  const own = (tabs, c, k) => tabs.flatMap((t) => Object.entries(t).filter(([n]) => n !== "custom").flatMap(([, v]) => typeof v[0] === "string" ? [v] : v)).find((T) => T[1] === c) || tones(c, k);
-  METALS.custom = own([METALS], o.metal, [1.35, 0.81]);
-  LEATHER.custom = own([LEATHER], o.leather, [1.18, 0.82]);
-  NATO_MORE.custom = o.natoColours.map((c) => own([NATO_SETS, NATO_MORE], c, [1.18, 0.82]));
-  STRIPES.custom = STRIPES[o.nato] || [[0, 1, 0]];
-  const two = o.floor2 && o.floor2 !== o.floor;
-  SH_OP = Math.min(1, STYLE_.shadow * SHD);
-  BRACELET_KIND = o.strap === "links" ? "links" : "vault";
-  const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
-  const make = (mode) => {
-    GLINT = mode;
-    return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur);
-  };
-  const vb = (x2, y, w, h) => `${f(x2)} ${f(y)} ${f(w)} ${f(h)}`;
-  const [fw, fh] = fullBox(o.key, o.size, o.strap === "bracelet" || o.strap === "links");
-  const box3 = o.view === "full" ? [-fw / 2, -fh / 2, fw, fh] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];
-  const e = (box3[2] + box3[3]) / 4, cx = box3[0] + box3[2] / 2, cy = box3[1] + box3[3] / 2;
-  const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f(cx - e)}" y1="${f(cy - e)}" x2="${f(cx + e)}" y2="${f(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";
-  const ground = (svg, fill) => svg.replace('<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>', `${lin ? `<defs>${lin}</defs><rect x="-300" y="-300" width="600" height="600" fill="url(#floorg)"/>` : ""}<rect x="-300" y="-300" width="600" height="600" fill="${fill}"/>`);
-  if (o.lighting !== "flat") {
-    const stops = two ? `<stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="${POOL_FULL}" stop-color="#000" stop-opacity="0"/><stop offset="0.7" stop-color="#000" stop-opacity="${f(1 - POOL_MID)}"/><stop offset="1" stop-color="#000" stop-opacity="${f(1 - POOL_EDGE - 0.08)}"/>` : `<stop offset="0" stop-color="${o.floor}"/><stop offset="${POOL_FULL}" stop-color="${o.floor}"/><stop offset="0.7" stop-color="${hsl(o.floor, POOL_MID)}"/><stop offset="1" stop-color="${hsl(o.floor, POOL_EDGE)}"/>`;
-    const pool = `<radialGradient id="pool" cx="0" cy="0" r="${POOL_R}" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
-    return ground(make(o.flareOn ? "flare" : "off").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, pool), "url(#pool)").replace("__VB__", vb(...box3));
-  }
-  return ground(make("off"), two ? "none" : o.floor).replace("__VB__", vb(...box3));
-}
 
 // src/lume.js
 var LUMES = [
@@ -12010,24 +12033,24 @@ function night(svg, moon, decay, blurs = false) {
 }
 
 // src/show.js
-var METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
+var METAL_NAMES2 = METAL_NAMES;
 var NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey", "solid"];
 var SOLID_NATO = "#2a3550";
 function nato_colours(S) {
-  const name = NATO_NAMES[S.w_nato], P2 = presets(STYLE_NAMES[S.w_style] || "miyazaki");
+  const name = NATO_NAMES[S.w_nato], P2 = presets(STYLE_NAMES2[S.w_style] || "miyazaki");
   if (S.c_nato) return S.c_nato.map(hex);
   return name === "solid" ? [SOLID_NATO, SOLID_NATO, SOLID_NATO] : P2.nato[name] || P2.nato.regimental;
 }
 var INSERTS = [["#2b2c30", "#2b2c30"], ["#1f3a6e", "#1f3a6e"], ["#1f5a3a", "#1f5a3a"], ["#23407a", "#a8262e"], ["#222326", "#22457e"], ["#222326", "#a3232b"], ["#2a2420", "#6b3f24"], ["#222326", "#2f7a3c"]];
 var metal_picture = (i2) => {
-  const c = presets("miyazaki").metals[METAL_NAMES[i2]] || "#9a9a9a";
+  const c = presets("miyazaki").metals[METAL_NAMES2[i2]] || "#9a9a9a";
   return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><circle r="11" fill="${c}"/><path d="M-11 0A11 11 0 0 1 11 0A11 8 0 0 0 -11 0Z" fill="#fff" fill-opacity="0.3"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`;
 };
 var insert_picture = (i2) => {
   const [a, b] = INSERTS[i2] || INSERTS[0];
   return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><path d="M-11 0A11 11 0 0 1 11 0H6.5A6.5 6.5 0 0 0 -6.5 0Z" fill="${a}"/><path d="M-11 0A11 11 0 0 0 11 0H6.5A6.5 6.5 0 0 1 -6.5 0Z" fill="${b}"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`;
 };
-var STYLE_NAMES = ["engineer", "miyazaki"];
+var STYLE_NAMES2 = STYLE_NAMES;
 var VIEW_NAMES = ["detail", "full", "dial"];
 var hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
 var PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);
@@ -12035,7 +12058,7 @@ var one = (x2, hand, H2, S) => {
   return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0 };
 };
 function options(S, items, effects) {
-  const style = STYLE_NAMES[S.w_style] || "miyazaki", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
+  const style = STYLE_NAMES2[S.w_style] || "miyazaki", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P2 = presets(style), lit = effects;
   return {
     style,
@@ -12055,7 +12078,7 @@ function options(S, items, effects) {
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather",
     nato: NATO_NAMES[S.w_nato] || "regimental",
-    metal: S.c_metal ? hex(S.c_metal) : P2.metals[METAL_NAMES[S.w_metal]] || P2.metals.steel,
+    metal: S.c_metal ? hex(S.c_metal) : P2.metals[METAL_NAMES2[S.w_metal]] || P2.metals.steel,
     leather: hex(S.c_strap),
     natoColours: nato_colours(S),
     insert: S.c_insert ? { top: hex(S.c_insert[0]), bottom: hex(S.c_insert[1]) } : { top: INSERTS[S.w_insert][0], bottom: INSERTS[S.w_insert][1] },
@@ -12081,8 +12104,8 @@ function options(S, items, effects) {
   };
 }
 var rgba = (h) => [1, 3, 5].map((i2) => parseInt(h.slice(i2, i2 + 2), 16) / 255).concat(1);
-var auto_ground = (S) => rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").floor);
-var metal_colour = (S) => rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
+var auto_ground = (S) => rgba(presets(STYLE_NAMES2[S.w_style] || "miyazaki").floor);
+var metal_colour = (S) => rgba(presets(STYLE_NAMES2[S.w_style] || "miyazaki").metals[METAL_NAMES2[S.w_metal]] || "#9c8250");
 var at_night = (S, svg) => S.w_night ? night(svg, S.w_moon, S.w_decay, Boolean(S.ui_effects && S.sh_blur)) : svg;
 var angles_of = (items) => {
   const A = {};
@@ -12215,7 +12238,7 @@ async function picture(tool2, px) {
   return { canvas: canvas2, mm: [w, h] };
 }
 async function export_watch(tool2, kind, save) {
-  const S = tool2.S, name = `${(S.name || "dial").replace(/[^\w-]+/g, "-").replace(/^-|-$/g, "") || "dial"}-${CASE_OF_BEZEL[S.bezel] || "dress"}-${STYLE_NAMES[S.w_style]}`;
+  const S = tool2.S, name = `${(S.name || "dial").replace(/[^\w-]+/g, "-").replace(/^-|-$/g, "") || "dial"}-${CASE_OF_BEZEL[S.bezel] || "dress"}-${STYLE_NAMES2[S.w_style]}`;
   tool2.log(`drawing the watch as ${kind.toUpperCase()}\u2026`);
   const { canvas: canvas2, mm } = await picture(tool2, S.out_watch_px);
   if (kind === "png") return save(name + ".png", await new Promise((ok) => canvas2.toBlob(ok, "image/png")), "image/png");
@@ -12765,7 +12788,7 @@ function pdf_sheet(S, statik, t) {
     if (a < 1 && !alphas.includes(a)) alphas.push(a);
     dial.push(a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`, ...path_ops(item.path), "f", "Q");
   }
-  if (S.out_cutline) dial.push("q", S.out_production ? "0 g" : "0 0 0 rg", ...path_ops(circle(2 * (R + CUT_AT + CUT_W)).difference(circle(2 * (R + CUT_AT)))), "f", "Q");
+  if (S.out_cutline) dial.push("q", S.out_production ? "0 g" : "0 0 0 rg", ...path_ops(circle2(2 * (R + CUT_AT + CUT_W)).difference(circle2(2 * (R + CUT_AT)))), "f", "Q");
   const form = dial.join("\n"), reach = R + CUT_AT + CUT_W + 0.5;
   const page = L.places.map(([x2, y]) => `q ${num(MM * flip, 6)} 0 0 ${num(MM, 6)} ${num(x2 * MM, 3)} ${num(y * MM, 3)} cm /Dial Do Q`).join("\n");
   const states = alphas.map((a, i2) => `/A${i2} << /ca ${num(a)} >>`).join(" ");
@@ -12824,7 +12847,7 @@ function spec_sheet(S, statik, t) {
   for (const item of drawn(S, statik, t, false, null)) out.push(`<path d="${item.path.svg(4, true)}" fill="${rgb(item.fill)}"${item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : ""}/>`);
   const rings = S.rings.filter((r) => r.on), hair = 0.15 / k;
   rings.forEach((ring, i2) => {
-    const r = ring.r, lap = circle(2 * r + hair).difference(circle(Math.max(2 * r - hair, 0)));
+    const r = ring.r, lap = circle2(2 * r + hair).difference(circle2(Math.max(2 * r - hair, 0)));
     out.push(`<path d="${lap.svg(4, true)}" fill="${SPEC.mark}" fill-opacity="0.8"/>`);
   });
   out.push(`</g>`);
@@ -13989,7 +14012,6 @@ ROWS.Dial = [
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num2("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
     num2("bz_chamfer", "Chamfer", 0, 2, 0.05, { ...CS, show: (T, S) => S.bz_on }),
-    col("bz_c", "Metal", { ...CS, show: (T, S) => S.bz_on }),
     num2("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => S.bz_on && S.bz_kind === 0 }),
     num2("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => S.bz_on && S.bz_kind === 0 }),
     col("bz_insert_c", "Insert", { ...CS, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
@@ -19666,7 +19688,7 @@ var RINGS = {
     };
     this.add_open = open;
     plus.onclick = () => open(menu.hidden);
-    KINDS.forEach((kind, i2) => {
+    KINDS2.forEach((kind, i2) => {
       const b = el("button", { type: "button", id: "add-" + kind, onclick: () => {
         open(false);
         this.ring_tool("add", kind);
@@ -19733,7 +19755,7 @@ var RINGS = {
     };
     this.kind_open = open;
     this.kind_menu = menu;
-    KINDS.forEach((kind, i2) => {
+    KINDS2.forEach((kind, i2) => {
       const b = el("button", { type: "button", id: `ring-kind-Kind-${i2}`, onclick: () => {
         open(false);
         this.set_value("ring", "kind", i2);
@@ -20749,15 +20771,15 @@ function case_section(S) {
     const [r0, r1] = sp.bezel;
     if (S.bz_kind === 0) {
       const ri = r0 + S.bz_in_in, ro = r1 - S.bz_in_out, top = z1 + lip;
-      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, top], [ro, top], [ro, z1], [ri, z1], [ri, top - 0.05], [ri - 0.2, top], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]], fill: S.bz_c });
+      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, top], [ro, top], [ro, z1], [ri, z1], [ri, top - 0.05], [ri - 0.2, top], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]], fill: case_metal(S) });
       out.push({ part: "insert", pts: [[ri, z1], [ro, z1], [ro, z1 + 0.5], [ri, z1 + 0.5]], fill: S.bz_insert_c });
       if (S.bz_teeth_depth > 0) {
         const d = S.bz_teeth_depth, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
-        out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: S.bz_c });
+        out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: case_metal(S) });
       }
     } else {
       const rim2 = r0 - S.bz_rim;
-      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim2 + 0.3, z1 + lip], [rim2, z1 + lip - 0.15], [rim2, z1 - 0.3], [r0, z1 - 0.3]], fill: S.bz_c });
+      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim2 + 0.3, z1 + lip], [rim2, z1 + lip - 0.15], [rim2, z1 - 0.3], [r0, z1 - 0.3]], fill: case_metal(S) });
     }
   }
   return out;
@@ -21615,7 +21637,7 @@ var PREVIEW = {
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
     const NAMES2 = { dress: "Dress", field: "Field", diver: "Diver", emre01: "Emre" };
     menu.append(el("option", { value: "none", textContent: "No case" }));
-    KINDS2.forEach((kind) => menu.append(el("option", { value: String(BEZEL_OF_CASE[kind]), textContent: NAMES2[kind] })));
+    KINDS.forEach((kind) => menu.append(el("option", { value: String(BEZEL_OF_CASE[kind]), textContent: NAMES2[kind] })));
     menu.onchange = () => {
       if (menu.value === "none") this.set_value("global", "ui_case", false);
       else {
@@ -23398,7 +23420,7 @@ function layer_svg(S, items, { background = null, size = 450 } = {}) {
 function svg_dial_face(S, statik, ambient = false) {
   const items = [];
   const rings = statik.rings.slice().reverse();
-  const plate = statik.plate ? circle(S.dial_d) : null;
+  const plate = statik.plate ? circle2(S.dial_d) : null;
   if (!ambient || ambient === "plate") {
     if (plate) items.push({ role: "plate", path: plate, fill: S.c_plate });
   } else if (ambient === "dimmed") {
@@ -23557,7 +23579,7 @@ function svg_hand(S, name, ambient = false) {
 }
 function svg_cap(S) {
   if (!S.ha_on || S.ha_cap <= 0) return null;
-  const path = circle(S.ha_cap);
+  const path = circle2(S.ha_cap);
   return layer_svg(S, [{ role: "cap", path, fill: S.c_cap }]);
 }
 function svg_preview(S, statik) {
@@ -23590,7 +23612,7 @@ function svg_preview(S, statik) {
       }
     });
     if (S.ha_cap > 0) {
-      items.push({ role: "cap", path: circle(S.ha_cap), fill: S.c_cap });
+      items.push({ role: "cap", path: circle2(S.ha_cap), fill: S.c_cap });
     }
   }
   return layer_svg(S, items, { size: 450 });
