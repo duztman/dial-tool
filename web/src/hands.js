@@ -117,8 +117,8 @@ export const HANDS = {
   add_hand(name) {
     const S = this.S, H = S["ha_" + name];
     if (!H || H.added) return;
-    const ring = G.function_ring(S, name);
-    if (ring && !S.rings.some((r) => r.fn === name)) { S.rings.unshift(ring); S.ui_ring += 1; H.len = +G.FUNCTIONS[name].len(ring).toFixed(2); }
+    const rings = G.function_rings(S, name);
+    if (rings.length && !S.rings.some((r) => r.fn === name)) { S.rings.unshift(...rings); S.ui_ring += rings.length; H.len = +G.FUNCTIONS[name].len(rings[0]).toFixed(2); }
     H.added = true; H.on = true;
     S.ui_hand = G.HANDS.indexOf(name);
     this.static_dirty = true;

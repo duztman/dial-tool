@@ -10,7 +10,8 @@ What each word means **in this project**; Turkish where it is the trade word. On
 | **Plate** | | The dial disc (`dial_d`, colour `c_plate`). |
 | **Movement** | mekanizma | The mechanism behind the dial; not chosen yet. |
 | **Hour / minute / seconds hand** | akrep / yelkovan / saniye ibresi | The fixed hands, each with its own shape and settings (`ha_hour`, `ha_minute`, `ha_second`). |
-| **Function** (of a hand) | | What a hand of your own does: its angle rule and the scale ring it is read on, a pair added and removed together (`FUNCTIONS`; a ring's `fn` names its hand). GMT · Date · Day · Month. |
+| **Function** (of a hand) | | What a hand of your own does: its angle rule and the scale ring(s) it is read on, a pair added and removed together (`FUNCTIONS`; a ring's `fn` names its hand). GMT · Date · Day · Month. The scale rings are Barlow Condensed capitals; a calendar hand's names in one of five languages (`lang`, the Names pill). |
+| **Zones** (ring) | | The GMT pair's second ring: the world-time cities as three-letter codes, one per hour of offset from London at 24 (`ZONE_CODES`); a legend under the 24 hours, as a world-timer's city ring. |
 | **Date / Day / Month hand** | | Calendar hands (#577): each jumps at midnight to its place on its ring — 31 · 7 · 12 places, the first (1, Monday, January) at 12 — as a date wheel, day star or month wheel turns. Keys `ha_date`, `ha_day`, `ha_month`. |
 | **GMT hand** | | A hand of your own (#577) showing another time: `offset` hours ahead of the time shown, turning once a day (`cycle` 24 h — midnight at 12, read on a 24-hour ring) or twice (12 h). Key `ha_gmt`; on the dial once `added`. |
 | **Hand stack** | | The hands' order on the dial, bottom first, as a movement builds it (`hand_stack()`: a complication hand under the hour hand, then minute, the seconds on top — nested pipes, the outer slow wheels lowest). Not a setting. The cap sits on the topmost shown hand. |

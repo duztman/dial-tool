@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.56 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.57 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -56,20 +56,35 @@ export const hand_added = (S, name) => FIXED_HANDS.includes(name) || Boolean(S["
 //   A function is a pair: the hand's angle rule and the scale ring it is read on. The + menu offers the pair; adding
 //   one adds the hand and its ring (`fn` on the ring names the hand it serves), taking the hand off takes its ring too.
 //   ask: the menu's words · places: how many positions its ring has (0: a time hand, its ring the 24 hours) ·
-//   ring(S, R, like): the ring's settings over a fresh numerals ring of the dial's radius R — its labels as a watch
-//   prints them (Custom, so a 24 stands at 12 and a day wheel's names show); its radius and size shares of the top
-//   numerals ring's (`like`), a guess to start with, Okay's to move · len(ring): the hand's length to its ring.
+//   labels(lang): the names on its ring in the hand's language (MOMENT_LANGS: EN · TR · DE · FR · IT), as a watch prints
+//   them — capitals · rings(S, R, lang): its scale rings over fresh numerals rings, one function may bring two (GMT: the
+//   24 hours and the cities) · len(ring): the hand's length to its first ring.
+//   The rings' look (Okay, 9 Nov 2026, 23:18: "a nice minimal default ring … All uppercase, condensed fonts. in a few
+//   languages, gmt with timezones named. We already have similar dials"): the Gallery's World time dial's type — Barlow
+//   Condensed Medium, tracked 50 — upright, in the dial's ink; sizes in mm for a Ø 30 dial, scaled with the radius; radii
+//   shares of the radius. All of it a start: his to move or remove (Okay: "User can edit or remove as they wish").
 //   The rules of the angles are in hand_angle: a time hand turns with the day, a calendar hand jumps at midnight to its
 //   place as a date wheel, a day star or a month wheel does — the first place (1, Monday, January; 24 on the GMT
 //   ring) at 12. Later functions (noted in the build list, #577): chronograph hands (a stopped state, not the time),
 //   power reserve (a setting on an arc), sunrise · sunset and prayer times (the sun from a place and a date),
 //   retrograde hands (an arc, flying back), a second 12-hour time with a day · night disc.
-const scale = (like, labels, count, r_share, size_share, name) => ({ labels: LABEL_SETS.findIndex((l) => l[0] === "Custom"), custom: labels.join(", "), count, r: round(like.r * r_share * 100) / 100, size: round(like.size * size_share * 100) / 100, name });
+const SCALE_TYPE = { family: "Barlow", ps: "BarlowCondensed-Medium", tracking: 50, axes: {}, features: {} };      // the World time dial's cities (gallery.mjs)
+const scale = (R, labels, r_share, size_mm, name, more = {}) => ({ ...SCALE_TYPE, labels: LABEL_SETS.findIndex((l) => l[0] === "Custom"), custom: labels.join(", "), count: labels.length, r: round(R * r_share * 100) / 100, size: round(size_mm * R / 15 * 100) / 100, mode: 0, name, ...more });
+// the 24 cities of the world-time convention (Cottier; the Gallery's World time dial): one per hour of offset from London
+// at 24 — a legend of the zones under the hours, LONDON 0 · PARIS +1 · … · AUCKLAND +12 · MIDWAY −11 · … · AZORES −1.
+// On the ring they stand as three-letter codes (the airports' where there is one): the full names need a Ø 38 dial
+// without big numerals (the World time dial); the codes fit inside the numerals of any dial
+export const ZONE_CITIES = ["LONDON", "PARIS", "CAIRO", "ISTANBUL", "DUBAI", "KARACHI", "DHAKA", "BANGKOK", "HONG KONG", "TOKYO", "SYDNEY", "NOUMEA", "AUCKLAND", "MIDWAY", "HONOLULU", "ALASKA", "L. ANGELES", "DENVER", "CHICAGO", "NEW YORK", "CARACAS", "RIO", "S. GEORGIA", "AZORES"];
+export const ZONE_CODES = ["LON", "PAR", "CAI", "IST", "DXB", "KHI", "DAC", "BKK", "HKG", "TYO", "SYD", "NOU", "AKL", "MDY", "HNL", "ANC", "LAX", "DEN", "CHI", "NYC", "CCS", "RIO", "SGS", "AZO"];
+const upper = (words, lang) => words.map((w) => w.toLocaleUpperCase(MOMENT_LANGS[lang] || "en"));
+const HOURS_24 = [24, ...Array.from({ length: 23 }, (_, i) => i + 1)];
 export const FUNCTIONS = {
-  gmt: { ask: "GMT — another time", places: 0, ring: (S, R, like) => scale(like, [24, ...Array.from({ length: 23 }, (_, i) => i + 1)], 24, 0.72, 0.55, "24 hours"), len: (ring) => ring.r * 0.9 },
-  date: { ask: "Date — a pointer date", places: 31, ring: (S, R, like) => scale(like, Array.from({ length: 31 }, (_, i) => i + 1), 31, 1.2, 0.42, "Date ring"), len: (ring) => ring.r - ring.size * 0.9 },
-  day: { ask: "Day — the weekday", places: 7, ring: (S, R, like) => scale(like, MOMENT_NAMES.en.days, 7, 0.56, 0.45, "Day ring"), len: (ring) => ring.r * 0.9 },
-  month: { ask: "Month", places: 12, ring: (S, R, like) => scale(like, MOMENT_NAMES.en.months, 12, 0.42, 0.42, "Month ring"), len: (ring) => ring.r * 0.9 },
+  gmt: { ask: "GMT — another time", places: 0, labels: () => HOURS_24,
+    rings: (S, R) => [scale(R, HOURS_24, 0.47, 1.15, "24 hours"), scale(R, ZONE_CODES, 0.56, 0.62, "Zones", { mode: 3 })],      // the zones' codes on the path just outside the hours (the full names, ZONE_CITIES, need a Ø 38 dial without big numerals)
+    len: (ring) => ring.r * 0.9 },
+  date: { ask: "Date — a pointer date", places: 31, labels: () => Array.from({ length: 31 }, (_, i) => i + 1), rings: (S, R, lang, F) => [scale(R, F.labels(lang), 0.8, 0.9, "Date ring")], len: (ring) => ring.r - ring.size * 0.9 },
+  day: { ask: "Day — the weekday", places: 7, labels: (lang) => upper((MOMENT_NAMES[MOMENT_LANGS[lang]] || MOMENT_NAMES.en).days, lang), rings: (S, R, lang, F) => [scale(R, F.labels(lang), 0.5, 1.0, "Day ring")], len: (ring) => ring.r * 0.9 },
+  month: { ask: "Month", places: 12, labels: (lang) => upper((MOMENT_NAMES[MOMENT_LANGS[lang]] || MOMENT_NAMES.en).months, lang), rings: (S, R, lang, F) => [scale(R, F.labels(lang), 0.38, 0.95, "Month ring")], len: (ring) => ring.r * 0.9 },
 };
 /** what each added hand does, for the + menu: [name, the question's words] */
 export const HAND_FUNCTIONS = ADDED_HANDS.map((h) => [h, FUNCTIONS[h].ask]);
@@ -212,6 +227,7 @@ export const HAND_BASE = {
   // second hour hand read on the ordinary numerals · offset — the other time, hours ahead of the time shown (half hours
   // for the half-hour zones; 0 to start)
   added: false, cycle: 0, offset: 0,
+  lang: 0,      // a calendar hand's names on its ring, a place in MOMENT_LANGS (EN · TR · DE · FR · IT); the Names pill
 };
 export const HAND_CYCLES = ["24 h", "12 h"];      // a GMT hand's turn: once a day · twice a day (R9: appended only)
 export const BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];      // R9: a new look is appended; Faceted (1) is not offered (#573) and draws as a Ridge
@@ -460,15 +476,21 @@ export function new_ring(kind, S, like = null) {
   return ring;
 }
 
-/** the scale ring of a hand's function (#577, FUNCTIONS): a numerals ring in the top numerals ring's type, its labels,
- *  count, radius and size the function's; `fn` names the hand. null for a hand without a function (the fixed three). */
-export function function_ring(S, name) {
+/** the scale rings of a hand's function (#577, FUNCTIONS): numerals rings in the scale type, their labels in the hand's
+ *  language, count, radius and size the function's; `fn` names the hand; the first is the hand's own (its length).
+ *  [] for a hand without a function (the fixed three). */
+export function function_rings(S, name) {
   const F = FUNCTIONS[name];
-  if (!F) return null;
-  const like = S.rings.find((r) => kind_of(r) === "numerals" && !r.fn) || complete(RING_BASE, { kind: KINDS.indexOf("numerals"), ...KIND_START.numerals(S.dial_d / 2) });
-  const ring = new_ring("numerals", S, like);
-  Object.assign(ring, F.ring(S, S.dial_d / 2, like), { fn: name });
-  return ring;
+  if (!F) return [];
+  const lang = +(S["ha_" + name] || {}).lang || 0;
+  return F.rings(S, S.dial_d / 2, lang, F).map((settings) => Object.assign(new_ring("numerals", S), settings, { fn: name }));
+}
+/** a function's rings relabelled in the hand's language (the Names pill): the first ring of a calendar hand */
+export function relabel_function(S, name) {
+  const F = FUNCTIONS[name], ring = S.rings.find((r) => r.fn === name);
+  if (!F || !ring || !F.places) return;
+  const words = F.labels(+(S["ha_" + name] || {}).lang || 0);
+  ring.custom = words.join(", "); ring.count = words.length;
 }
 
 // ── beta 1.0 settings → rings and hands (R8) ─────────────────

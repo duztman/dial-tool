@@ -89,7 +89,7 @@ for (const [name, settings] of dials) {
   const cal = G.fresh_settings({ date: "2026-11-09", ha_date: { added: true, on: true }, ha_day: { added: true, on: true }, ha_month: { added: true, on: true } });
   const angles = ["date", "day", "month"].map((h) => G.hand_angle(cal, h, t));
   check(Math.abs(angles[0] - 8 / 31 * 360) < 1e-9 && angles[1] === 0 && angles[2] === 300, `the calendar hands on Monday 9 Nov 2026: date ${angles[0].toFixed(1)}°, day ${angles[1]}°, month ${angles[2]}°`);
-  const ring = G.function_ring(cal, "day"); cal.rings.unshift(ring);
+  const [ring] = G.function_rings(cal, "day"); cal.rings.unshift(ring);
   const back2 = G.fresh_settings(read(link(cal)));
   check(back2.rings[0].fn === "day" && back2.rings[0].count === 7 && back2.rings[0].custom === "MON, TUE, WED, THU, FRI, SAT, SUN" && back2.ha_month.added, `a function's ring travels with its fn (${back2.rings[0].fn}, ${back2.rings[0].count} places: ${back2.rings[0].custom})`);
   const bad = G.fresh_settings({ ha_stack: ["second", "nothing", "second"], ha_gmt: { added: false, on: true } });

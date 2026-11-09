@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.57 beta · 10 Nov 2026 — #577: the scale rings designed — condensed capitals, the zones under the GMT hours, names in five languages
+
+Okay, 9 Nov 2026, 23:18: "let's design a nice minimal default ring for them to add with as default. User can edit or remove as they wish. All uppercase, condensed fonts. in a few languages, gmt with timezones named. We already have similar dials."
+
+- **The scale type** (`geometry.js` `SCALE_TYPE`, `scale`): the Gallery's World time dial's — Barlow Condensed Medium, tracked 50 — upright, in the dial's ink, sizes in mm for a Ø 30 dial scaled with the radius, radii as shares of it. All a start, his to move or remove.
+- **GMT brings two rings**: the 24 hours (24 at 12, r 0.47 R, 1.15 mm) and **Zones** — the world-time cities as three-letter codes on the path just outside the hours (r 0.56 R, 0.62 mm; `ZONE_CODES`: LON · PAR · CAI · IST · DXB · KHI · DAC · BKK · HKG · TYO · SYD · NOU · AKL · MDY · HNL · ANC · LAX · DEN · CHI · NYC · CCS · RIO · SGS · AZO, London at 24, one per hour of offset). Measured (R21): the full names (`ZONE_CITIES`, the World time dial's) need a Ø 38 dial without big numerals — on the default dial they ran under the markers at r 12 and into each other at r 8.5 — the codes fit inside any dial's numerals. The zones ring is a legend of offsets under the hours, as a world-timer's: with a hand instead of a turning disc it does not read every city's time.
+- **Names in a language** (`HAND_BASE.lang`, `relabel_function`; `rows.js` the **Names** pill EN · TR · DE · FR · IT on the Day and Month tabs): the ring's labels are the language's short names in its own capitals (`moment.js` NAMES; Turkish keeps its dotted İ) — PZT … PAZ, JAN · FÉV … DÉC. The Date ring stays figures 1–31 (r 0.8 R, 0.9 mm); Day at 0.5 R, Month at 0.38 R, 1.0 and 0.95 mm.
+- **Tests**: `window.mjs` — the GMT pair's two rings, their type and the zones on the path; Names → TR relabels the Day ring; `linktrip.mjs` as before with `function_rings`.
+
 ## v1.1.56 beta · 10 Nov 2026 — #577: the functions frame — a hand of your own is a pair, hand and scale ring; GMT · Date · Day · Month
 
 Okay, 9 Nov 2026, 23:08: "Ok build a reasonable frame, see what would fit. Note others for other complicatins we can do later."

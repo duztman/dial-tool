@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.56 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.57 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7662,7 +7662,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.56 beta";
+var VERSION = "v1.1.57 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7685,12 +7685,23 @@ var HAND_WORD = { hour: "Hour", minute: "Minute", second: "Seconds", gmt: "GMT",
 var HAND_PLURAL = { hour: "Hours", minute: "Minutes", second: "Seconds", gmt: "GMT", date: "Date", day: "Day", month: "Month" };
 var hand_word = (name, what = "hand") => (HAND_WORD[name] || name) + (what ? " " + what : "");
 var hand_added = (S, name) => FIXED_HANDS.includes(name) || Boolean(S["ha_" + name] && S["ha_" + name].added);
-var scale = (like, labels, count, r_share, size_share, name) => ({ labels: LABEL_SETS.findIndex((l) => l[0] === "Custom"), custom: labels.join(", "), count, r: round(like.r * r_share * 100) / 100, size: round(like.size * size_share * 100) / 100, name });
+var SCALE_TYPE = { family: "Barlow", ps: "BarlowCondensed-Medium", tracking: 50, axes: {}, features: {} };
+var scale = (R, labels, r_share, size_mm, name, more = {}) => ({ ...SCALE_TYPE, labels: LABEL_SETS.findIndex((l) => l[0] === "Custom"), custom: labels.join(", "), count: labels.length, r: round(R * r_share * 100) / 100, size: round(size_mm * R / 15 * 100) / 100, mode: 0, name, ...more });
+var ZONE_CODES = ["LON", "PAR", "CAI", "IST", "DXB", "KHI", "DAC", "BKK", "HKG", "TYO", "SYD", "NOU", "AKL", "MDY", "HNL", "ANC", "LAX", "DEN", "CHI", "NYC", "CCS", "RIO", "SGS", "AZO"];
+var upper = (words, lang) => words.map((w) => w.toLocaleUpperCase(LANGS[lang] || "en"));
+var HOURS_24 = [24, ...Array.from({ length: 23 }, (_, i2) => i2 + 1)];
 var FUNCTIONS = {
-  gmt: { ask: "GMT \u2014 another time", places: 0, ring: (S, R, like) => scale(like, [24, ...Array.from({ length: 23 }, (_, i2) => i2 + 1)], 24, 0.72, 0.55, "24 hours"), len: (ring) => ring.r * 0.9 },
-  date: { ask: "Date \u2014 a pointer date", places: 31, ring: (S, R, like) => scale(like, Array.from({ length: 31 }, (_, i2) => i2 + 1), 31, 1.2, 0.42, "Date ring"), len: (ring) => ring.r - ring.size * 0.9 },
-  day: { ask: "Day \u2014 the weekday", places: 7, ring: (S, R, like) => scale(like, NAMES.en.days, 7, 0.56, 0.45, "Day ring"), len: (ring) => ring.r * 0.9 },
-  month: { ask: "Month", places: 12, ring: (S, R, like) => scale(like, NAMES.en.months, 12, 0.42, 0.42, "Month ring"), len: (ring) => ring.r * 0.9 }
+  gmt: {
+    ask: "GMT \u2014 another time",
+    places: 0,
+    labels: () => HOURS_24,
+    rings: (S, R) => [scale(R, HOURS_24, 0.47, 1.15, "24 hours"), scale(R, ZONE_CODES, 0.56, 0.62, "Zones", { mode: 3 })],
+    // the zones' codes on the path just outside the hours (the full names, ZONE_CITIES, need a Ø 38 dial without big numerals)
+    len: (ring) => ring.r * 0.9
+  },
+  date: { ask: "Date \u2014 a pointer date", places: 31, labels: () => Array.from({ length: 31 }, (_, i2) => i2 + 1), rings: (S, R, lang, F) => [scale(R, F.labels(lang), 0.8, 0.9, "Date ring")], len: (ring) => ring.r - ring.size * 0.9 },
+  day: { ask: "Day \u2014 the weekday", places: 7, labels: (lang) => upper((NAMES[LANGS[lang]] || NAMES.en).days, lang), rings: (S, R, lang, F) => [scale(R, F.labels(lang), 0.5, 1, "Day ring")], len: (ring) => ring.r * 0.9 },
+  month: { ask: "Month", places: 12, labels: (lang) => upper((NAMES[LANGS[lang]] || NAMES.en).months, lang), rings: (S, R, lang, F) => [scale(R, F.labels(lang), 0.38, 0.95, "Month ring")], len: (ring) => ring.r * 0.9 }
 };
 var HAND_FUNCTIONS = ADDED_HANDS.map((h) => [h, FUNCTIONS[h].ask]);
 var hand_place = (name, mo) => name === "date" ? mo.d - 1 : name === "day" ? mo.wd : name === "month" ? mo.m - 1 : null;
@@ -7901,7 +7912,9 @@ var HAND_BASE = {
   // for the half-hour zones; 0 to start)
   added: false,
   cycle: 0,
-  offset: 0
+  offset: 0,
+  lang: 0
+  // a calendar hand's names on its ring, a place in MOMENT_LANGS (EN · TR · DE · FR · IT); the Names pill
 };
 var HAND_CYCLES = ["24 h", "12 h"];
 var BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];
@@ -8447,13 +8460,18 @@ function new_ring(kind, S, like = null) {
   ring.guide = RING_GUIDE_ORDER.find((k) => !taken.has(k)) ?? RING_GUIDE_ORDER[S.rings.length % RING_GUIDE_ORDER.length];
   return ring;
 }
-function function_ring(S, name) {
+function function_rings(S, name) {
   const F = FUNCTIONS[name];
-  if (!F) return null;
-  const like = S.rings.find((r) => kind_of(r) === "numerals" && !r.fn) || complete(RING_BASE, { kind: KINDS.indexOf("numerals"), ...KIND_START.numerals(S.dial_d / 2) });
-  const ring = new_ring("numerals", S, like);
-  Object.assign(ring, F.ring(S, S.dial_d / 2, like), { fn: name });
-  return ring;
+  if (!F) return [];
+  const lang = +(S["ha_" + name] || {}).lang || 0;
+  return F.rings(S, S.dial_d / 2, lang, F).map((settings) => Object.assign(new_ring("numerals", S), settings, { fn: name }));
+}
+function relabel_function(S, name) {
+  const F = FUNCTIONS[name], ring = S.rings.find((r) => r.fn === name);
+  if (!F || !ring || !F.places) return;
+  const words = F.labels(+(S["ha_" + name] || {}).lang || 0);
+  ring.custom = words.join(", ");
+  ring.count = words.length;
 }
 var BETA1_DEFAULTS = {
   dial_d: 30,
@@ -13411,6 +13429,18 @@ var ROWS = {
     // hours ahead — on the GMT tab alone; the fixed three keep their motion
     seg("cycle", "Turns in", HAND_CYCLES, { ...H, side: true, short: "Turns", show: (T, S) => HANDS[S.ui_hand] === "gmt" }),
     num2("offset", "Hours ahead", -12, 14, 0.5, { ...H, side: true, short: "Ahead", show: (T, S) => HANDS[S.ui_hand] === "gmt" }),
+    // a calendar hand's names in a language (Okay, 9 Nov 2026: "in a few languages"): the pill rewrites its ring's labels
+    seg("lang", "Names", ["EN", "TR", "DE", "FR", "IT"], {
+      ...H,
+      side: true,
+      show: (T, S) => ["day", "month"].includes(HANDS[S.ui_hand]),
+      put: (tool2, v) => {
+        const name = HANDS[tool2.S.ui_hand];
+        tool2.S["ha_" + name].lang = v;
+        relabel_function(tool2.S, name);
+        tool2.changed(true);
+      }
+    }),
     num2("len", "Length", 0.5, 30, 0.05, { ...H, side: true, say: (T) => HAND_SHAPES[T.shape] === "disc" ? ["Marker at", "Marker at"] : ["Length", "Length"] }),
     // a disc's: where its marker's outer end is, and named so (#574; Okay, 2 Nov 2026, 22:18: "The distance of that dot from the center has its own slider")
     num2("disc_d", "Disc \xD8", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
@@ -20310,11 +20340,11 @@ var HANDS2 = {
   add_hand(name) {
     const S = this.S, H2 = S["ha_" + name];
     if (!H2 || H2.added) return;
-    const ring = function_ring(S, name);
-    if (ring && !S.rings.some((r) => r.fn === name)) {
-      S.rings.unshift(ring);
-      S.ui_ring += 1;
-      H2.len = +FUNCTIONS[name].len(ring).toFixed(2);
+    const rings = function_rings(S, name);
+    if (rings.length && !S.rings.some((r) => r.fn === name)) {
+      S.rings.unshift(...rings);
+      S.ui_ring += rings.length;
+      H2.len = +FUNCTIONS[name].len(rings[0]).toFixed(2);
     }
     H2.added = true;
     H2.on = true;
