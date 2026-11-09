@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.57 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.58 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -697,6 +697,7 @@
   .handsbar + .tabsbar { border-top: var(--hair) solid transparent; background: linear-gradient(var(--rule) 0 0) 100% 0 / calc(100% - var(--lead)) var(--hair) no-repeat border-box; }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: var(--u3); border-top: var(--thick) solid var(--ink); }
+  .tabsbar > .segs { grid-column: 2 / -1; }      /* tabs alone on the line (the Dial tab's Dial · Rehaut · Bezel, #582) */
   .tabsbar > .tabsline { grid-column: 2 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--u2); align-items: end; }      /* the tabs, then the + that adds a hand (#577) */
   /* the + after the hand tabs and the − on an added hand's Show line (#577): the Added guides' round buttons — a circle in
      the grey, its sign inside, the hidden select over the + that the tool's own list opens from (6-preview.css) */
@@ -931,6 +932,12 @@
     .body > .detail { grid-column: 2 / span 2; grid-row: 2 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; }      /* beside the box */
   }
+  /* the case's section (#582): the right half of the case cut through its middle, the parts in their colours, the tab's
+     part outlined in ink; the axis a hairline up the middle */
+  .casedetail .section { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
+  .casedetail .section path { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  .casedetail .section path.focus { stroke: var(--ink); stroke-width: var(--thick); }
+  .casedetail .section .axis { stroke: var(--rule); stroke-width: var(--hair); stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
   /* a side row, at every width: the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250); the
      number box. Narrow, the rows go under the box (8-narrow) and keep this line (Okay, 18 Oct 2026, 22:35, on the iPad: "Hands sliders squeezed, use all row width") */
   .body > .row.side { grid-template-columns: var(--side-columns); column-gap: 0; }
@@ -7662,7 +7669,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.57 beta";
+var VERSION = "v1.1.58 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7731,6 +7738,9 @@ var RING_BASE = {
   name: "",
   on: true,
   c: INK,
+  surface: 0,
+  r_from: 0,
+  // the case (#582): which ground the ring lies on, a place in SURFACES (dial · rehaut · bezel); how its radius reads there, a place in R_FROM — from the centre, as on the dial; from the surface's inner edge; Fit (a band as wide as the surface, marks as long, words on its middle). On the dial both are 0
   fn: "",
   // the hand this ring is the scale of (#577: "gmt", "date", …; "" for a ring of its own): added and removed with that hand
   r: 13,
@@ -8043,6 +8053,39 @@ var DEFAULTS = {
   c_plate: [0.93, 0.91, 0.86, 1],
   c_backdrop: [0.8, 0.8, 0.78, 1],
   rings: [],
+  // ── the case round the dial (#582, 10 Nov 2026; Okay: "bezel and rehault and its editable parts … Implement its rules in
+  // 2d") — the 3D exercise's bezel stack (try/relight, round 34) by its named numbers, in dial millimetres (the spec's at
+  // its opening of Ø 29.2; here for Ø 30, scaled with the dial by Scale everything). Off to start: an older link draws
+  // as before (R31). In plan: the REHAUT a ring of rh_w from the dial's edge; the BEZEL ring bz_w wide outside it, its
+  // top chamfer bz_chamfer in from its outer edge; a rotating bezel's INSERT bz_in_in / bz_in_out in from the ring's
+  // inner / outer edge, and its COIN EDGE outside — bz_teeth_n scallops a turn, bz_teeth_depth deep, bz_teeth_fill of the
+  // pitch wide, chamfered bz_teeth_chamfer. The heights (bz_dial_up the dial's face over the band's top · bz_seat the ring's
+  // seat · bz_h its height · bz_lip the recess · bz_rim · bz_up · bz_dome the crystal's) show in the section diagram and
+  // in show mode; the plan does not see them
+  rh_on: false,
+  rh_w: 1.7,
+  rh_c: [0.78, 0.78, 0.76, 1],
+  bz_on: false,
+  bz_kind: 0,
+  bz_w: 3.3,
+  bz_chamfer: 0.45,
+  bz_in_in: 0.4,
+  bz_in_out: 0.6,
+  bz_c: [0.8, 0.8, 0.78, 1],
+  bz_insert_c: [0.17, 0.17, 0.19, 1],
+  bz_teeth_n: 60,
+  bz_teeth_depth: 0.5,
+  bz_teeth_fill: 0.62,
+  bz_teeth_chamfer: 0.45,
+  bz_dial_up: 0.7,
+  bz_seat: 0.3,
+  bz_h: 2.3,
+  bz_lip: 0.55,
+  bz_rim: 0.4,
+  bz_up: 0.65,
+  bz_dome: 1.35,
+  ui_dial_tab: 0,
+  // the Dial tab's own tabs: Dial · Rehaut · Bezel (#582; ui_case is the canvas's Case view)
   ha_on: true,
   ha_beat: 0,
   ha_cap: 1.6,
@@ -9001,8 +9044,33 @@ var LINK_KEYS = [
   "sh_date",
   "sh_day",
   "sh_month",
-  "fn"
+  "fn",
   // v1.1.56 beta (#577): appended; the calendar hands and the ring key `fn` (which hand a ring serves); none to start, as every older link
+  "rh_on",
+  "rh_w",
+  "rh_c",
+  "bz_on",
+  "bz_kind",
+  "bz_w",
+  "bz_chamfer",
+  "bz_in_in",
+  "bz_in_out",
+  "bz_c",
+  "bz_insert_c",
+  "bz_teeth_n",
+  "bz_teeth_depth",
+  "bz_teeth_fill",
+  "bz_teeth_chamfer",
+  "bz_dial_up",
+  "bz_seat",
+  "bz_h",
+  "bz_lip",
+  "bz_rim",
+  "bz_up",
+  "bz_dome",
+  "surface",
+  "r_from"
+  // v1.1.58 beta (#582): appended; the case off to start, every ring on the dial, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -9876,14 +9944,57 @@ function ring_edges(ring) {
   const outer = ring.r + from_shift(ring, ext);
   return [ring.r, outer - ext, outer];
 }
+var SURFACES = ["dial", "rehaut", "bezel"];
+var R_FROM = ["Centre", "Edge", "Fit"];
+var BEZEL_KINDS = ["Rotating", "Fixed"];
+function case_spans(S) {
+  const R = S.dial_d / 2, rh = S.rh_on ? [R, R + S.rh_w] : null, b0 = rh ? rh[1] : R;
+  const bz = S.bz_on ? [b0, b0 + S.bz_w] : null;
+  const rotating = bz && S.bz_kind === 0;
+  const insert = rotating ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
+  const teeth2 = rotating && S.bz_teeth_depth > 0 ? bz[1] + S.bz_teeth_depth : bz ? bz[1] : null;
+  return { dial: [0, R], rehaut: rh, bezel: bz, insert, outer: teeth2 ?? (rh ? rh[1] : R), chamfer: bz ? [bz[1] - S.bz_chamfer, bz[1]] : null };
+}
+var reach_mm = (S) => case_spans(S).outer;
+function placed(S, ring) {
+  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? case_spans(S).insert || case_spans(S).bezel : null;
+  if (!span || !ring.r_from) return ring;
+  const [a, b] = span, kind = kind_of(ring);
+  if (R_FROM[ring.r_from] === "Edge") return { ...ring, r: a + ring.r };
+  if (kind === "band") return { ...ring, r: (a + b) / 2, width: b - a, from: 1 };
+  if (kind === "ticks" || kind === "markers") return { ...ring, r: b, len: b - a, from: 0 };
+  return { ...ring, r: (a + b) / 2 };
+}
+function case_grounds(S) {
+  const sp = case_spans(S), out = [], ring_shape = (a, b) => circle(2 * b).difference(circle(2 * a));
+  const lighter = (c, k) => [...c.slice(0, 3).map((v) => min(1, v + (1 - v) * k)), c[3]], darker = (c, k) => [...c.slice(0, 3).map((v) => v * (1 - k)), c[3]];
+  if (sp.bezel) {
+    const [b0, b1] = sp.bezel, T = { n: max(3, round(S.bz_teeth_n) || 60), depth: S.bz_kind === 0 ? max(0, S.bz_teeth_depth) : 0, fill: min(max(S.bz_teeth_fill, 0.05), 0.95) };
+    let outer;
+    if (T.depth > 0) {
+      const R = b1 + T.depth, pitch = 2 * PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth), per = 28, N = T.n * per, pts = [];
+      for (let k = 0; k < N; k++) {
+        const th = k / N * 2 * PI, x2 = R * ((th % pitch + pitch) % pitch - pitch / 2), r = abs(x2) < a ? R - (Math.sqrt(rd * rd - x2 * x2) - (rd - T.depth)) : R;
+        pts.push([r * sin(th), r * cos(th)]);
+      }
+      outer = new Path().polygon(...pts).difference(circle(2 * b0));
+    } else outer = ring_shape(b0, b1);
+    out.push(["bezel", outer, S.bz_c]);
+    if (sp.chamfer && sp.chamfer[0] > b0) out.push(["bezel chamfer", ring_shape(sp.chamfer[0], sp.chamfer[1]), lighter(S.bz_c, 0.35)]);
+    if (sp.insert && sp.insert[1] > sp.insert[0]) out.push(["insert", ring_shape(sp.insert[0], sp.insert[1]), S.bz_insert_c]);
+  }
+  if (sp.rehaut) out.push(["rehaut", ring_shape(sp.rehaut[0], sp.rehaut[1]), S.rh_c]);
+  return out;
+}
 function snap_radii(S, except = -1) {
   if (!S.ui_snap) return [];
   const out = /* @__PURE__ */ new Set();
   S.rings.forEach((ring, i2) => {
     if (ring.on && i2 !== except) {
-      for (const r of ring_edges(ring)) if (r > 0) out.add(+r.toFixed(3));
+      for (const r of ring_edges(placed(S, ring))) if (r > 0) out.add(+r.toFixed(3));
     }
   });
+  for (const span of [case_spans(S).rehaut, case_spans(S).bezel, case_spans(S).insert]) if (span) for (const r of span) out.add(+r.toFixed(3));
   if (S.ui_snap_guides) {
     for (const g of S.gd_more || []) if (g.k >= 0 && GUIDE_MORE[g.kind] === "circle" && g.r > 0) out.add(+g.r.toFixed(3));
   }
@@ -10042,7 +10153,8 @@ var window_place = (w) => {
 };
 function build_rings(S, cut = null) {
   const holes = windows_of(S).filter((w) => w.on).map(window_angle), done = [];
-  for (const ring of S.rings) {
+  for (const raw of S.rings) {
+    const ring = placed(S, raw);
     if (!ring.on && !S.out_hidden_cut) continue;
     const kind = kind_of(ring), angles = ring_angles(ring);
     let keep = angles.map((_, i2) => i2).filter((i2) => picked(ring, i2));
@@ -10063,7 +10175,7 @@ function build_rings(S, cut = null) {
       return out;
     };
     const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d2) => [key_of(d2.ring), d2.keep]), cut ? date_key(S) : null]);
-    const d = { ring, kind, keep, taken, shape: shape3, at, parts, path: memo(key, final), ghost: !ring.on };
+    const d = { ring, raw, kind, keep, taken, shape: shape3, at, parts, path: memo(key, final), ghost: !ring.on };
     if (has_stroke(ring)) d.stroke = memo("stroke" + key, () => stroke_outline(d.path, ring.stroke_w, STROKE_SIDES[ring.stroke_side] || "Outside", STROKE_JOINS[ring.stroke_join] || "Miter"));
     if ((kind === "band" || kind === "numerals" || kind === "text") && at.some((i2) => ring.cs && ring.cs[String(i2)])) {
       const groups = /* @__PURE__ */ new Map();
@@ -10419,10 +10531,10 @@ function hand_widest(h) {
   return null;
 }
 function disc_hand(h) {
-  const disc = circle(max(h.disc_d, 0.1)), placed = disc_mark(h);
-  if (!placed) return disc;
-  if (h.mark_as === 1) return disc.union(placed);
-  return disc.difference(placed).union(placed.difference(disc));
+  const disc = circle(max(h.disc_d, 0.1)), placed2 = disc_mark(h);
+  if (!placed2) return disc;
+  if (h.mark_as === 1) return disc.union(placed2);
+  return disc.difference(placed2).union(placed2.difference(disc));
 }
 function disc_mark(h) {
   return memo("mark" + key_of(h), () => {
@@ -10548,7 +10660,7 @@ function scene(S, statik, t, preview = true, selected = null) {
     return now_w.get(x2.index);
   };
   const rings = statik.rings.slice().reverse();
-  const index = (d) => S.rings.indexOf(d.ring);
+  const index = (d) => S.rings.indexOf(d.raw || d.ring);
   if (S.out_production) {
     const black = [0, 0, 0, 1], cuts = S.out_cutlines !== false;
     const ink = S.out_ink || "", of = (c) => !ink || ink_hex(c) === ink;
@@ -10572,6 +10684,7 @@ function scene(S, statik, t, preview = true, selected = null) {
     }
     if (S.out_marks) for (const [role, path] of production_marks(S)) add(role, path, black);
   } else {
+    if (preview) for (const [role, path, fill] of case_grounds(S)) add(role, path, fill);
     const discs = preview && S.xray ? windows.map((x2) => ({ x: x2, d: window_disc(S, x2) })).filter((v) => v.d) : [];
     const xray = discs.length > 0, chosen = xray ? discs.find((v) => v.x.index === (S.ui_window ?? 0)) || null : null;
     const under = discs.filter((v) => v !== chosen).sort((p, q) => q.d.outer - p.d.outer);
@@ -10636,7 +10749,8 @@ function scene(S, statik, t, preview = true, selected = null) {
     };
     const focus = { 1: "rings", 3: "windows" }[S.ui_section];
     const faded = (focused) => focused ? 1 : GUIDE_FADE;
-    S.rings.forEach((ring, i2) => {
+    S.rings.forEach((raw, i2) => {
+      const ring = placed(S, raw);
       const focused = focus === "rings" && i2 === selected, chosen = focused && S.gd_sel, k = ring_guide(S, i2);
       if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
       const kind = kind_of(ring);
@@ -10674,6 +10788,7 @@ var turned = (path, angle) => path.copy().rotate(-angle);
 var RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
 var HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub", "hole"];
 var WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
+var CASE_MM = ["rh_w", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_teeth_depth", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome"];
 function each_measure(S, visit, keys = null) {
   if (keys) {
     for (const ring of S.rings) for (const key of keys.ring) visit(ring, key);
@@ -10688,6 +10803,7 @@ function each_measure(S, visit, keys = null) {
   for (const h of HANDS) for (const key of HAND_MM) visit(S["ha_" + h], key);
   for (const w of windows_of(S)) for (const key of WINDOW_MM) visit(w, key);
   visit(S, "ha_cap");
+  for (const key of CASE_MM) visit(S, key);
 }
 var WEIGHT_KEYS = { ring: ["w", "width", "wall"], hand: ["w", "wall", "mark_w"], window: ["frame"] };
 function measures(S, keys = null) {
@@ -10701,7 +10817,7 @@ function set_measures(S, values, keys = null) {
     d[key] = values[i2++];
   }, keys);
 }
-var page_mm = (S) => S.dial_d + 2 * S.margin;
+var page_mm = (S) => 2 * reach_mm(S) + 2 * S.margin;
 
 // src/watch.js
 var PK2 = null;
@@ -13207,43 +13323,45 @@ var WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }, 
 var TAB_NAMES = { Date: "Windows", "Show dial": "Dial", "Show export": "Export" };
 var H = { scope: "hand" };
 var cap_rows = (S) => S.ui_hand === top_hand(S) && (S.ha_second.on || S.ha_cap_top);
+var DIAL_ROWS = [
+  // Okay, 13 Oct 2026: Dial and Page stay in view (pinned); the list of colours scrolls under them.
+  hdr("Dial", { pin: true }),
+  // the plate: how big, what colour, what is on it
+  num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),
+  // typed past these it stops there and says so (#233: 0 and 1000 were taken)
+  chk("ui_scale", "Scale everything with it", { nest: true }),
+  // Weight (#88; atlas 6.19, Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the
+  // settings all at once"): every width on the dial at once, as Scale changes every measure — the panel's numbers
+  // stay true, since the widths themselves change; one undo takes it all back
+  num2("ui_weight", "Weight %", 50, 200, 1, { whole: true }),
+  info("Every width on the dial at once \u2014 marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
+  num2("dial_hole", "Centre hole", 0, 6, 0.1),
+  // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
+  col("c_plate", "Plate", { head: true }),
+  // the plate's colour on the Dial heading line, no row of its own (Okay, 24 Oct 2026: his drawing, the pill up on "Dial", "Row gone")
+  custom("background"),
+  hdr("Page", { folded: true }),
+  // around the dial: preview and page only. Under the pinned part, with what scrolls (Okay, 20 Oct 2026, 03:41: "Page moves to gray area")
+  num2("margin", "Page margin", 0, 10, 0.5),
+  col("c_backdrop", "Backdrop"),
+  // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
+  // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
+  // fit in that line as tiny swatches. Default: compacted")
+  hdr("Colours", { folded: true, summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
+  custom("colours"),
+  // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
+  // 2026, 10:46: "under the dial tab under colors. And a warning should be placed near it. Not under the dial like a
+  // view option! That is dangerous"). Open, its button stands on the heading line and the warning under it; folded,
+  // the line says Reset and nothing else (Okay, 16 Oct 2026, #269)
+  hdr("Reset", { folded: true }),
+  custom("reset_go", { head: true }),
+  custom("reset"),
+  custom("reset_blank")
+  // a blank face: for whoever wants to start from nothing (Okay, 18 Oct 2026, notes 2)
+];
 var ROWS = {
-  Dial: [
-    // Okay, 13 Oct 2026: Dial and Page stay in view (pinned); the list of colours scrolls under them.
-    hdr("Dial", { pin: true }),
-    // the plate: how big, what colour, what is on it
-    num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),
-    // typed past these it stops there and says so (#233: 0 and 1000 were taken)
-    chk("ui_scale", "Scale everything with it", { nest: true }),
-    // Weight (#88; atlas 6.19, Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the
-    // settings all at once"): every width on the dial at once, as Scale changes every measure — the panel's numbers
-    // stay true, since the widths themselves change; one undo takes it all back
-    num2("ui_weight", "Weight %", 50, 200, 1, { whole: true }),
-    info("Every width on the dial at once \u2014 marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
-    num2("dial_hole", "Centre hole", 0, 6, 0.1),
-    // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
-    col("c_plate", "Plate", { head: true }),
-    // the plate's colour on the Dial heading line, no row of its own (Okay, 24 Oct 2026: his drawing, the pill up on "Dial", "Row gone")
-    custom("background"),
-    hdr("Page", { folded: true }),
-    // around the dial: preview and page only. Under the pinned part, with what scrolls (Okay, 20 Oct 2026, 03:41: "Page moves to gray area")
-    num2("margin", "Page margin", 0, 10, 0.5),
-    col("c_backdrop", "Backdrop"),
-    // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
-    // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
-    // fit in that line as tiny swatches. Default: compacted")
-    hdr("Colours", { folded: true, summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
-    custom("colours"),
-    // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
-    // 2026, 10:46: "under the dial tab under colors. And a warning should be placed near it. Not under the dial like a
-    // view option! That is dangerous"). Open, its button stands on the heading line and the warning under it; folded,
-    // the line says Reset and nothing else (Okay, 16 Oct 2026, #269)
-    hdr("Reset", { folded: true }),
-    custom("reset_go", { head: true }),
-    custom("reset"),
-    custom("reset_blank")
-    // a blank face: for whoever wants to start from nothing (Okay, 18 Oct 2026, notes 2)
-  ],
+  Dial: [],
+  // filled below: the Dial tab's own tabs (#582), the Dial rows, then the Rehaut and Bezel rows
   Rings: [
     // one list; rows that don't apply hide (R16)
     // one pinned pane (Okay's drawings, 13 Oct 2026). Its heading line carries the list's tools: a plus that opens
@@ -13285,6 +13403,11 @@ var ROWS = {
     // is normal text on second column before dropdown. Dropdown here stretches all in-between")
     hdr("Resize Ring", { folded: true }),
     custom("resize_from", { head: true, text: "Resize ring from" }),
+    // the ring's ground (#582; Okay, 9 Nov 2026: "Rings on rehault and bezel addable, stackable"; the radius "Both, and a
+    // 'fit' option. If i am doing bands etc."): Dial · Rehaut · Bezel, the two shown once the case has them; on a surface
+    // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
+    seg("surface", "Surface", ["Dial", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...S.rh_on ? [1] : [], ...S.bz_on ? [2] : []] }),
+    seg("r_from", "Radius from", R_FROM, { show: (R, S) => R.surface > 0 && (R.surface === 1 && S.rh_on || R.surface === 2 && S.bz_on) }),
     num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num2("w", "\xD8", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
     num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
@@ -13826,6 +13949,49 @@ ROWS["Show export"] = [
 var SHOW_SECTIONS = ["Show dial", "Watch", "Light", "Show export"];
 var SECTIONS = Object.keys(ROWS);
 var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
+var on_tab = (n) => (rows) => rows.map((r) => r.pin ? r : { ...r, show: (T, S, app) => (S.ui_dial_tab || 0) === n && (!r.show || r.show(T, S, app)) });
+var CS = { side: true };
+ROWS.Dial = [
+  custom("case_tabs", { pin: true, bar: true }),
+  ...on_tab(0)(DIAL_ROWS),
+  ...on_tab(1)([
+    // the REHAUT: the ring between the dial's edge and the bezel (the dial's size does not include it; Okay, 5 Nov 2026)
+    hdr("Rehaut", { headless: true }),
+    chk("rh_on", "Rehaut", {}),
+    custom("case_detail", {}),
+    num2("rh_w", "Width", 0.2, 8, 0.05, { ...CS, show: (T, S) => S.rh_on }),
+    col("rh_c", "Colour", { ...CS, show: (T, S) => S.rh_on }),
+    info("The rehaut starts at the dial\u2019s edge and rises to the bezel; its height is the bezel\u2019s, on the Bezel tab. Rings go on it: a ring\u2019s Surface, in Rings.", { show: (T, S) => S.rh_on })
+  ]),
+  ...on_tab(2)([
+    // the BEZEL stack (the 3D exercise's named numbers, in 2D): the ring, its insert and coin edge in plan; the heights in the section
+    hdr("Bezel", { headless: true }),
+    chk("bz_on", "Bezel", {}),
+    custom("case_preset", { show: (T, S) => S.bz_on }),
+    seg("bz_kind", "Kind", BEZEL_KINDS, { show: (T, S) => S.bz_on }),
+    custom("case_detail", { show: (T, S) => S.bz_on }),
+    num2("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
+    num2("bz_chamfer", "Chamfer", 0, 2, 0.05, { ...CS, show: (T, S) => S.bz_on }),
+    col("bz_c", "Metal", { ...CS, show: (T, S) => S.bz_on }),
+    num2("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num2("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    col("bz_insert_c", "Insert", { ...CS, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    hdr("Coin edge", { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num2("bz_teeth_n", "Scallops", 12, 180, 1, { whole: true, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num2("bz_teeth_depth", "Depth", 0, 2, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num2("bz_teeth_fill", "Fill", 0.1, 0.95, 0.01, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num2("bz_teeth_chamfer", "Chamfer", 0, 1, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    hdr("Heights", { folded: true, show: (T, S) => S.bz_on }),
+    info("Seen in the section and in show mode, not in the plan.", { show: (T, S) => S.bz_on }),
+    num2("bz_dial_up", "Dial over band", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
+    num2("bz_seat", "Seat", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
+    num2("bz_h", "Ring height", 0.3, 6, 0.05, { show: (T, S) => S.bz_on }),
+    num2("bz_lip", "Lip", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
+    num2("bz_rim", "Crystal rim", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
+    num2("bz_up", "Crystal up", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
+    num2("bz_dome", "Dome", 0, 5, 0.05, { show: (T, S) => S.bz_on })
+  ])
+];
 for (const name of SECTIONS) for (const row of ROWS[name]) {
   row.scope ??= name === "Rings" ? "ring" : "global";
   name_row(row);
@@ -18410,6 +18576,8 @@ var PANEL = {
     for (const r of this.rows) if (r.fold) r.empty = true;
     for (const r of this.rows) if (r.group && r.applies) r.group.empty = false;
     for (const r of this.rows) if (r.fold && r.empty && this.rows.some((x2) => x2.group === r)) r.el.hidden = true;
+    const pin_grip = this.pinned.querySelector("#pin-grip");
+    if (pin_grip) pin_grip.hidden = ![...this.pinned.querySelectorAll(".pane")].some((p) => !p.hidden);
     for (const r of this.rows) {
       const row = r.el;
       if (!row.classList.contains("row") || row.classList.contains("note") || row.hidden) continue;
@@ -18750,7 +18918,7 @@ var PANEL = {
         const at = row.get ? row.get(T) : T[row.key];
         buttons.forEach((b, i2) => {
           b.classList.toggle("on", i2 === at);
-          if (row.offered) b.hidden = !row.offered(T).includes(i2);
+          if (row.offered) b.hidden = !row.offered(T, this.S).includes(i2);
         });
         if (row.say) name.textContent = label_of(row, T);
       };
@@ -19252,7 +19420,7 @@ var RINGS = {
    *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
   draw_picked() {
     const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Edit one numeral");
-    const d = !S.ui_show && !this.unselected && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x2) => x2.ring === R) : null;
+    const d = !S.ui_show && !this.unselected && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x2) => (x2.raw || x2.ring) === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part2 = k >= 0 && d.parts ? d.parts[k] : null;
     const b = part2 ? part2.bounds() : null, f2 = (v) => v.toFixed(3);
     const path = b ? `M${f2(b[0])} ${f2(b[1])}H${f2(b[2])}V${f2(b[3])}H${f2(b[0])}Z` : "", tone2 = GUIDE_COLOURS[ring_guide(S, S.ui_ring) ?? S.gd_k_sel] || GUIDE_COLOURS[0];
@@ -19985,7 +20153,7 @@ var RINGS = {
         return `${h}:${String(m % 60).padStart(2, "0")}`;
       };
       const labels = text ? ring_labels(R) : ring_angles(R).map(at);
-      const built = this.statik && this.statik.rings.find((x2) => x2.ring === R);
+      const built = this.statik && this.statik.rings.find((x2) => (x2.raw || x2.ring) === R);
       const drawn2 = built ? built.at.filter((i2) => i2 < labels.length) : labels.map((_, i2) => i2);
       if (drawn2.length && !drawn2.includes(+this.nudge_at)) this.nudge_at = String(drawn2[0]);
       const name = (i2) => `${labels[i2] || "\u2014"}${R.nudge[String(i2)] ? "  \u2022" : ""}`;
@@ -20085,7 +20253,7 @@ var RINGS = {
     let grab = null, drawn2 = "";
     const show = () => STRIP_SHOWS[this.S.ui_strip] || STRIP_SHOWS[0];
     const drawn_of = (R) => {
-      const built = this.statik && this.statik.rings.find((x2) => x2.ring === R);
+      const built = this.statik && this.statik.rings.find((x2) => (x2.raw || x2.ring) === R);
       return new Set(built ? built.at : positions_of(R));
     };
     const value = (R, i2) => {
@@ -20544,6 +20712,101 @@ var HANDS2 = {
       if (d) p.setAttribute("d", d);
       else p.removeAttribute("d");
     }
+  }
+};
+
+// src/case.js
+var CASE_PRESETS = [
+  ["Diver", { rh_w: 1.7, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_teeth_n: 60, bz_teeth_depth: 0.5, bz_teeth_fill: 0.62, bz_teeth_chamfer: 0.45, bz_dial_up: 0.7, bz_seat: 0.3, bz_h: 2.3, bz_lip: 0.55, bz_rim: 0.4, bz_up: 0.65, bz_dome: 1.35 }],
+  ["Dress", { rh_w: 1.2, bz_kind: 1, bz_w: 2.2, bz_chamfer: 0.3, bz_in_in: 0.4, bz_in_out: 0.6, bz_teeth_n: 60, bz_teeth_depth: 0, bz_teeth_fill: 0.62, bz_teeth_chamfer: 0.45, bz_dial_up: 0.7, bz_seat: 0.3, bz_h: 1.4, bz_lip: 0.4, bz_rim: 0.5, bz_up: 0.4, bz_dome: 1.8 }]
+];
+function case_section(S) {
+  const sp = case_spans(S), R = S.dial_d / 2, out = [];
+  const z_dial = S.bz_dial_up, z0 = S.bz_seat, z1 = z0 + S.bz_h, lip = S.bz_lip, ch = S.bz_chamfer;
+  const PLATE = 0.4;
+  out.push({ part: "dial", pts: [[0, z_dial - PLATE], [R, z_dial - PLATE], [R, z_dial], [0, z_dial]], fill: S.c_plate });
+  if (sp.rehaut) {
+    const r0 = sp.rehaut[1], top = (sp.bezel ? z1 : z_dial + 1.2) - lip;
+    out.push({ part: "rehaut", pts: [[R, z_dial], [R + 0.6, top], [r0 - 0.2, top + 0.15], [r0, top + 0.15], [r0, z0], [R, z0]], fill: S.rh_c });
+  }
+  if (sp.bezel) {
+    const [r0, r1] = sp.bezel;
+    if (S.bz_kind === 0) {
+      const ri = r0 + S.bz_in_in, ro = r1 - S.bz_in_out, top = z1 + lip;
+      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, top], [ro, top], [ro, z1], [ri, z1], [ri, top - 0.05], [ri - 0.2, top], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]], fill: S.bz_c });
+      out.push({ part: "insert", pts: [[ri, z1], [ro, z1], [ro, z1 + 0.5], [ri, z1 + 0.5]], fill: S.bz_insert_c });
+      if (S.bz_teeth_depth > 0) {
+        const d2 = S.bz_teeth_depth, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
+        out.push({ part: "teeth", pts: [[r1, z0], [r1 + d2, z0], [r1 + d2, z1 - tch], [r1 + d2 - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d2 * 0.9, mid], [r1, mid - 0.35]], fill: S.bz_c });
+      }
+    } else {
+      const rim3 = r0 - S.bz_rim;
+      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim3 + 0.3, z1 + lip], [rim3, z1 + lip - 0.15], [rim3, z1 - 0.3], [r0, z1 - 0.3]], fill: S.bz_c });
+    }
+    const rim2 = r0 - S.bz_rim, zb = z1 - 0.35, zr = z1 + S.bz_up, zt = zr + S.bz_dome, d = zt - zr;
+    out.push({ part: "crystal", pts: [[0, zb], [rim2, zb], [rim2, zr], [rim2 - 0.1, zr + 0.26 * d], [rim2 - 0.4, zr + 0.44 * d], [rim2 - 0.9, zr + 0.56 * d], [rim2 - 1.5, zr + 0.59 * d], [rim2 * 0.69, zr + 0.74 * d], [rim2 * 0.44, zr + 0.89 * d], [rim2 * 0.22, zr + 0.98 * d], [0, zt]], fill: [0.6, 0.72, 0.8, 0.35] });
+  }
+  return out;
+}
+var CASE = {
+  /** the Dial tab's own tabs, always in view: Dial · Rehaut · Bezel (Okay, 9 Nov 2026: "Tab under dial. What we have now
+   *  is a tab, bezel and rehault are tabs"), as the hand tabs are */
+  row_case_tabs(wrap, out) {
+    wrap.className = "tabsbar casetabs";
+    const tabs = el("span", { className: "segs", role: "tablist", ariaLabel: "Dial, rehaut or bezel" });
+    ["Dial", "Rehaut", "Bezel"].forEach((name, i2) => {
+      const b = el("button", { type: "button", className: "tab", id: "case-tab-" + i2, textContent: name, onclick: () => {
+        this.S.ui_dial_tab = i2;
+        this.sync_rows();
+        this.render();
+      } });
+      b.setAttribute("role", "tab");
+      tabs.append(b);
+    });
+    wrap.append(tabs);
+    out.refresh = (S) => [...tabs.children].forEach((b, i2) => {
+      const on = i2 === (S.ui_dial_tab || 0);
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-selected", String(on));
+    });
+  },
+  /** the section beside the rows (Okay: "a diagram next to sliders like we have in hands"): the right half of the case
+   *  cut through its middle — the plate, the rehaut's wall, the ring, its insert and coin edge, the crystal's dome — drawn
+   *  from the same numbers the rows set, so what a number changes is seen beside it. The part the rows are about (the
+   *  tab's) is in ink, the rest in their colours. */
+  row_case_detail(wrap, out) {
+    wrap.className = "detail casedetail";
+    let drawn2 = "";
+    out.refresh = (S) => {
+      let n = 0;
+      for (let e = wrap.previousElementSibling; e; e = e.previousElementSibling) if (!e.hidden) n++;
+      wrap.style.gridRow = `${n + 1} / span 40`;
+      const parts = case_section(S), f2 = (v) => v.toFixed(3);
+      const xs = parts.flatMap((p) => p.pts.map((q) => q[0])), zs = parts.flatMap((p) => p.pts.map((q) => q[1]));
+      const x0 = S.dial_d / 2 - 4, x1 = Math.max(...xs), zlo = Math.min(...zs), zhi = Math.max(...zs), m = (x1 - x0) * 0.04;
+      const focus = ["dial", "rehaut", "bezel"][S.ui_dial_tab || 0];
+      const shape3 = (p) => `<path class="${p.part}${p.part === focus || focus === "bezel" && (p.part === "insert" || p.part === "teeth") ? " focus" : ""}" d="M${p.pts.map(([x2, z]) => `${f2(x2)} ${f2(-z)}`).join("L")}Z" fill="${to_hex(p.fill)}" fill-opacity="${p.fill[3] ?? 1}"/>`;
+      const now = `<svg class="section" viewBox="${f2(x0 - m)} ${f2(-zhi - m)} ${f2(x1 - x0 + 2 * m)} ${f2(zhi - zlo + 2 * m)}" aria-hidden="true" preserveAspectRatio="xMidYMid meet"><line class="axis" x1="${f2(S.dial_d / 2)}" y1="${f2(-zhi - m)}" x2="${f2(S.dial_d / 2)}" y2="${f2(-zlo + m)}"/>${parts.map(shape3).join("")}</svg>`;
+      if (now !== drawn2) {
+        drawn2 = now;
+        wrap.innerHTML = now;
+      }
+    };
+  },
+  /** the presets, a pill: Diver · Dress set every case number (the colours stay); none lit once a number differs */
+  row_case_preset(wrap, out) {
+    wrap.className = "row";
+    const group = el("span", { className: "pillswitch", role: "radiogroup", ariaLabel: "Preset" });
+    const buttons = CASE_PRESETS.map(([name, values], i2) => el("button", { type: "button", id: "case-preset-" + i2, textContent: name, onclick: () => {
+      Object.assign(this.S, values);
+      this.changed(true);
+    } }));
+    group.append(...buttons);
+    wrap.append(el("label", { textContent: "Preset" }), group);
+    out.refresh = (S) => buttons.forEach((b, i2) => {
+      const on = Object.entries(CASE_PRESETS[i2][1]).every(([k, v]) => Math.abs(S[k] - v) < 1e-9);
+      b.classList.toggle("on", on);
+    });
   }
 };
 
@@ -21665,7 +21928,7 @@ var PREVIEW = {
       }
     }
     if (!d) return r <= S.dial_d / 2 && !S.out_production ? { kind: "plate", name: "Plate", path: this.statik.plate, angle: 0 } : null;
-    const piece = { kind: "ring", ring: S.rings.indexOf(d.ring), name: d.ring.name || kind_of(d.ring), path: d.path, angle: 0 };
+    const piece = { kind: "ring", ring: S.rings.indexOf(d.raw || d.ring), name: d.ring.name || kind_of(d.ring), path: d.path, angle: 0 };
     if (d.kind !== "band" && d.parts) {
       let best = Infinity;
       d.parts.forEach((part2, k) => {
@@ -28067,7 +28330,7 @@ var DialTool = class _DialTool {
     console.log(message);
   }
 };
-Object.assign(DialTool.prototype, PANEL, RINGS, HANDS2, WINDOWS, COLOUR, FONTS, PREVIEW, GUIDES, BAR, CARDS, EXPORT, MODE);
+Object.assign(DialTool.prototype, PANEL, RINGS, HANDS2, CASE, WINDOWS, COLOUR, FONTS, PREVIEW, GUIDES, BAR, CARDS, EXPORT, MODE);
 var tool = null;
 async function open_window(pathkit2, harfbuzz, font_bytes) {
   start(pathkit2, harfbuzz);
