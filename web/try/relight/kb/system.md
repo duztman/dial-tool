@@ -60,6 +60,33 @@ Two metal finishes, used everywhere, chosen per face: **polished** (roughness 0.
 
 `S.style`: photo · toon · cel · pixel · dither · tech. `applyStyle()` swaps materials (each photo material keeps its stand-ins in `userData`), switches passes (GTAO for photo; `EdgePass` for the drawn styles; `gridPass` for pixel and dither) and the light (the `fill` hemisphere light, the sun's step strength in `render()`). `rebuild()` re-applies the style to new meshes. The bezel's `kind`: rotating (insert, coin edge) · fixed (plain ring).
 
+## Colour: the Background and the column (round 76)
+
+The Show Case's system (`show-case/app/src/main.js` on `show-case-app`; Okay, 10 Nov 2026: "implement show case's color system exactly"). `S.floor` is the ground's colour (hex), `S.floor2` a second one for a gradient at 45°, the first at the top left. **Background** is a canvas switch at the bottom left; its popup holds ten colours (`SOLIDS`), ten gradients (`GROUND_GRADS`) and the colour itself — the system's picker lies over its swatch, inside the popup (`.pickwrap > .overpick`). Nothing may stand outside the layout: an input out of the flow scrolls the document when focused (`rounds.md` 76).
+
+- **The table** takes the colour in its shader (`tintGround`): the material is white, the shader multiplies in `mix(gA, gB, t)`, t read off the pixel's place on the canvas — the gradient stays put while the camera moves. The table's toon stand-in gets the same hook (`styledMaterial`). `setBackdrop()` writes the uniforms; `groundChanged()` is what a control calls.
+- **The column** (`groundLook()`): the ground's hue, saturation × 2.2 + 0.15, lightness × 30 %, at 85 %; the title and tabs a tenth lighter; row lines 22 points from the column, words 66 above it, boxes 11, hover 16, outlines 22. The round swatch at the title's end (`#sc-grey`) swaps to the bar's grey (`hsl(0 0% 13%)`, solid).
+- **The drawing** (SVG) takes `S.floor` only: a gradient is not drawn there.
+
+## The table's surface (round 76)
+
+`GROUND_KINDS` — Plain · Grid · Scruffy · Wood (`S.ground`). A surface is one picture in **neutral greys**: 128 leaves the colour alone, lighter lifts it, darker lowers it (the shader doubles the picture, `gGain`), so one picture serves every colour and a scratch can be lighter than its table. The same picture is the bump map. Each kind: `tile` (mm on the table), `px`, `bump`, `rough`, `coat`, `draw()`. Pictures are drawn on first use and kept (`groundTex`). `tileNoise` wraps its lattice, so tiles meet without seams.
+
+| Kind | Tile · picture | What is drawn |
+|---|---|---|
+| Wood | 160 mm · 2048 px | a field whose whole numbers are growth rings (44 a tile, 3.6 mm), wandering by slow noise; each ring light to a dark late-wood line; fibre streaks, pores, a slow drift; two knots (`KNOTS`, mm from the tile's middle, where the watch stands): the rings part round them, inside they run in ragged circles, darker, with a dark core and edge |
+| Scruffy | 200 mm · 2048 px | speckle and blotches; 1100 scratches (68 % one way, −22°; 12 % long), each a light line with a dark lip; 40 scuffed patches of fine hairs; 30 gouges; 700 pits |
+| Grid | 100 mm · 2000 px | a cutting mat's print: lines each 5 mm (faint), 10 mm, heavier each 50 mm; no relief; dark lines, or light ones where the ground's lightness is under 0.18 |
+| Plain | — | no picture |
+
+## On the canvas (round 76)
+
+Dial Tool's canvas switches (`.onview`, `web/src/css/6-preview.css` on `dev`: 32 high, a hairline at 35 % of the canvas ink, the ink white on a ground darker than 0.55 and black otherwise, the ground's colour behind the words, corners 10) — Okay: "On canvas buttons come from the app itself". Top left: **Camera · Sun**, what a drag moves (`S.drag`: `orbit` · `sun` · `none`), each joined to its **lock** (`S.lockCam`, `S.lockSun`). Locked = frozen to the hand: it can't be chosen or dragged; the views and the sliders still move it. Locking the chosen one hands the drag to the other if that is free. Bottom left: Background.
+
+## One file
+
+`watch3d.html` holds the page, imagetracerjs and the drawing's core (the module that was `svg3d-core.mjs`) inline; only `scene.js` is apart. The artifact's page is `watch3d.html` with `scene.js` inlined in place of its tag.
+
 ## Shooting and publishing
 
 - `node try/relight/shot3d.mjs out.png <from°> <rise°> [studio|sun] [top|photo|side] [diver] [oyster|barn|jubilee|leather]` — Chromium with SwiftShader; needs `three@0.170.0` in `node_modules` (`npm install --no-save three@0.170.0`). Slow (≈ 50 s a shot), grainy AO; the look is true, the frame times are not.
