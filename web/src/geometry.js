@@ -12,9 +12,10 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.60 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.61 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
+import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
 const { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 const radians = (a) => a * PI / 180;
@@ -284,7 +285,7 @@ export const DEFAULTS = {
   // seat · bz_h its height · bz_lip the recess · bz_rim · bz_up · bz_dome the crystal's) show in the section diagram and
   // in show mode; the plan does not see them
   rh_on: false, rh_deg: 24, rh_len: 1.5, rh_c: [0.78, 0.78, 0.76, 1],      // 24° and 1.5 mm: the 3D exercise's wall, 0.6 out over 1.35 up. rh_w is dead (R8): nothing reads it
-  bz_on: false, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_c: [0.80, 0.80, 0.78, 1], bz_insert_c: [0.17, 0.17, 0.19, 1],
+  bz_on: false, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_c: [0.80, 0.80, 0.78, 1], bz_insert_c: [0.17, 0.17, 0.19, 1],      // bz_c is dead (R8): the bezel is case material (case_metal)
   bz_teeth_n: 60, bz_teeth_depth: 0.5, bz_teeth_fill: 0.62, bz_teeth_chamfer: 0.45,
   bz_dial_up: 0.7, bz_seat: 0.3, bz_h: 2.3, bz_lip: 0.55, bz_rim: 0.4, bz_up: 0.65, bz_dome: 1.35,
   ui_dial_tab: 0,                                  // the Dial tab's own tabs: Dial · Rehaut · Bezel (#582; ui_case is the canvas's Case view)
@@ -1640,9 +1641,33 @@ export function placed(S, ring) {
   if (kind === "ticks" || kind === "markers") return { ...ring, r: b, len: b - a, from: 0 };
   return { ...ring, r: (a + b) / 2 };
 }
+/** the case's metal as a colour: a colour of your own (c_metal) or the chosen metal's preset in the chosen paint (show.js keeps
+ *  the same lists). The bezel is always case material (Okay, 10 Nov 2026: "bezel is always case material for now. link and lock") */
+export const STYLE_NAMES = ["engineer", "miyazaki"], METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];      // R9: appended only
+const hex_rgba = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).concat(1);
+export const case_metal = (S) => S.c_metal || hex_rgba(WATCH_PRESETS(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
+/** the rehaut's shading in plan (Okay, 10 Nov 2026: "Rehault might need shadows hightilghts to sell it"): the wall leans out, so
+ *  its inner face is lit where it faces the sun — the far side from the sun's clock angle — and dark under the sun; N
+ *  sectors of the ring, each tinted toward white or black by REHAUT_SHADE at most, as a drawing of a turned wall is */
+export const REHAUT_SHADE = 0.3, REHAUT_SECTORS = 72;
+export function shaded_ring(a, b, colour, from, shade = REHAUT_SHADE, N = REHAUT_SECTORS) {
+  const out = [], step = 360 / N, arc = 4, tint = (c, k) => (k >= 0 ? c.slice(0, 3).map((v) => v + (1 - v) * k) : c.slice(0, 3).map((v) => v * (1 + k))).concat(c[3]);
+  for (let i = 0; i < N; i++) {
+    const a0 = i * step, a1 = a0 + step, mid = (a0 + a1) / 2, k = cos((mid - from - 180) * PI / 180) * shade;      // lit opposite the sun
+    const pt = (r, deg) => [r * sin(deg * PI / 180), r * cos(deg * PI / 180)], pts = [];
+    for (let j = 0; j <= arc; j++) pts.push(pt(b, a0 + (a1 - a0) * j / arc));
+    for (let j = arc; j >= 0; j--) pts.push(pt(a, a0 + (a1 - a0) * j / arc));
+    out.push([new Path().polygon(...pts), tint(colour, k)]);
+  }
+  return out;
+}
 /** the case's grounds in plan: [role, path, colour], bottom first. The coin edge is the bezel ring's own outline —
  *  the radius a law of the angle, full on the lands, a round scallop in each pitch (the 3D exercise's rule, round 28) */
 export function case_grounds(S) {
+  const key = "grounds" + JSON.stringify([S.dial_d, ...Object.keys(S).filter((k) => k.startsWith("rh_") || k.startsWith("bz_")).sort().map((k) => S[k]), S.sh_from, S.c_metal, S.w_metal, S.w_style, S.c_plate]);
+  return memo(key, () => build_case_grounds(S));      // the sectors and the scalloped outline are built once per set of numbers, not every frame
+}
+function build_case_grounds(S) {
   const sp = case_spans(S), out = [], ring_shape = (a, b) => circle(2 * b).difference(circle(2 * a));
   const lighter = (c, k) => [...c.slice(0, 3).map((v) => min(1, v + (1 - v) * k)), c[3]], darker = (c, k) => [...c.slice(0, 3).map((v) => v * (1 - k)), c[3]];
   if (sp.bezel) {
@@ -1653,11 +1678,12 @@ export function case_grounds(S) {
       for (let k = 0; k < N; k++) { const th = k / N * 2 * PI, x = R * (((th % pitch) + pitch) % pitch - pitch / 2), r = abs(x) < a ? R - (Math.sqrt(rd * rd - x * x) - (rd - T.depth)) : R; pts.push([r * sin(th), r * cos(th)]); }
       outer = new Path().polygon(...pts).difference(circle(2 * b0));
     } else outer = ring_shape(b0, b1);
-    out.push(["bezel", outer, S.bz_c]);
-    if (sp.chamfer && sp.chamfer[0] > b0) out.push(["bezel chamfer", ring_shape(sp.chamfer[0], sp.chamfer[1]), lighter(S.bz_c, 0.35)]);      // the top chamfer catches the light
+    const metal = case_metal(S);      // the bezel is case material, linked and locked (bz_c is unread: R8)
+    out.push(["bezel", outer, metal]);
+    if (sp.chamfer && sp.chamfer[0] > b0) out.push(["bezel chamfer", ring_shape(sp.chamfer[0], sp.chamfer[1]), lighter(metal, 0.35)]);      // the top chamfer catches the light
     if (sp.insert && sp.insert[1] > sp.insert[0]) out.push(["insert", ring_shape(sp.insert[0], sp.insert[1]), S.bz_insert_c]);
   }
-  if (sp.rehaut) out.push(["rehaut", ring_shape(sp.rehaut[0], sp.rehaut[1]), S.rh_c]);
+  if (sp.rehaut) for (const [path, c] of shaded_ring(sp.rehaut[0], sp.rehaut[1], S.rh_c, S.sh_from)) out.push(["rehaut", path, c]);      // the wall's light and shade, by the sun's angle
   return out;
 }
 export function snap_radii(S, except = -1) {

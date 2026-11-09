@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.61 beta · 10 Nov 2026 — #582: the bezel is case material, linked and locked; the rehaut shaded by the sun
+
+Okay, 10 Nov 2026, 01:05: "now bezel is always case material for now.link and lock. Rehault might need shadows hightilghts to sell it."
+
+- **The bezel's colour** (`geometry.js` `case_metal`): the case's metal — a colour of your own (`c_metal`) or the chosen metal's preset in the chosen paint (`METAL_NAMES`, `STYLE_NAMES` now live in geometry.js; show.js reads them) — in plan, in the section and in show mode. The Bezel tab's Metal row is gone; `bz_c` is dead (R8). Gold to start, as the Watch tab's metal is.
+- **The rehaut's shading** (`shaded_ring`, `REHAUT_SHADE` 0.3, `REHAUT_SECTORS` 72): the wall leans out, so its inner face is lit where it faces the sun — the far side from the sun's clock angle (`sh_from`) — and dark under it; 72 sectors tinted toward white or black by 30 % at most. The grounds are built once per set of numbers (`memo`), not every frame.
+- **Tests**: `window.mjs` — no Metal row, the bezel's fill the metal's, the rehaut lit opposite the sun and dark under it.
+
 ## v1.1.60 beta · 10 Nov 2026 — #582: show mode takes the tool's rehaut and bezel as they are
 
 Okay, 10 Nov 2026, 00:51: "The bezel and rehault should apply to showcase as they are."

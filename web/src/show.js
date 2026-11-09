@@ -14,7 +14,7 @@ import * as G from "./geometry.js";
 import { night } from "./night.js";      // the night laid over the watch's drawing (#175)
 import * as WATCH from "./watch.js";
 
-export const METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
+export const METAL_NAMES = G.METAL_NAMES;
 export const NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey", "solid"];      // solid: one colour, your own (#524; Okay, 24 Oct 2026: "One solid option")
 const SOLID_NATO = "#2a3550";      // a solid NATO's colour to start: the regimental's navy
 /** a NATO's three stripe colours as drawn: your own (c_nato), else the pattern's, in the style's tones; a solid one's, three of one */
@@ -30,7 +30,7 @@ export const metal_picture = (i) => { const c = WATCH.presets("miyazaki").metals
 /** an insert's picture for its tile: a ring, its top half in its first colour, its bottom half in its second */
 export const insert_picture = (i) => { const [a, b] = INSERTS[i] || INSERTS[0];
   return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><path d="M-11 0A11 11 0 0 1 11 0H6.5A6.5 6.5 0 0 0 -6.5 0Z" fill="${a}"/><path d="M-11 0A11 11 0 0 0 11 0H6.5A6.5 6.5 0 0 1 -6.5 0Z" fill="${b}"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`; };
-const STYLE_NAMES = ["engineer", "miyazaki"], VIEW_NAMES = ["detail", "full", "dial"];
+const STYLE_NAMES = G.STYLE_NAMES, VIEW_NAMES = ["detail", "full", "dial"];
 const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
 const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);      // the case's grounds (#582) are flat, not inks      // what carries ink relief: a window's disc is the ground under its hole, not ink
 // a hand's lume is printed too: an ink on the hand (#175), its height the ink's

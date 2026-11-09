@@ -30,15 +30,15 @@ export function case_section(S) {
     const [r0, r1] = sp.bezel;
     if (S.bz_kind === 0) {      // the turning ring with a recess for the insert
       const ri = r0 + S.bz_in_in, ro = r1 - S.bz_in_out, top = z1 + lip;
-      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, top], [ro, top], [ro, z1], [ri, z1], [ri, top - 0.05], [ri - 0.2, top], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]], fill: S.bz_c });
+      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, top], [ro, top], [ro, z1], [ri, z1], [ri, top - 0.05], [ri - 0.2, top], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]], fill: G.case_metal(S) });
       out.push({ part: "insert", pts: [[ri, z1], [ro, z1], [ro, z1 + 0.5], [ri, z1 + 0.5]], fill: S.bz_insert_c });
       if (S.bz_teeth_depth > 0) {      // the coin edge: a scallop's depth as a notch in the outer wall, chamfered on top
         const d = S.bz_teeth_depth, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
-        out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: S.bz_c });
+        out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: G.case_metal(S) });
       }
     } else {      // a plain bezel, closed over the top, sloping from the chamfer in to the crystal's rim
       const rim = r0 - S.bz_rim;
-      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim + 0.3, z1 + lip], [rim, z1 + lip - 0.15], [rim, z1 - 0.3], [r0, z1 - 0.3]], fill: S.bz_c });
+      out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim + 0.3, z1 + lip], [rim, z1 + lip - 0.15], [rim, z1 - 0.3], [r0, z1 - 0.3]], fill: G.case_metal(S) });
     }
   }      // the crystal is not drawn: the section shows the dial's line and the tab's part alone (Okay, 10 Nov 2026: "remove all other items")
   return out;
