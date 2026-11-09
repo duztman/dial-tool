@@ -1145,6 +1145,21 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
     return { outer: +b[3].toFixed(2), ins_out: +ins[1].toFixed(2), len: +(built.ring.len).toFixed(2), ins_w: +(ins[1] - ins[0]).toFixed(2), rows: rows.filter((x) => /Surface|Radius from/.test(x)).join(), raw_r: R.r, drawn_r: built.ring.r }; });
   check(placed.rows === "Surface,Radius from" && Math.abs(placed.outer - placed.ins_out) < 0.02 && Math.abs(placed.len - placed.ins_w) < 0.02 && placed.raw_r !== placed.drawn_r,
     `Markers put on the bezel, Fit: Surface and Radius from show; the marks reach the insert's outer edge (${placed.outer} = ${placed.ins_out}) and are as long as it is wide (${placed.len}); the ring's own radius is untouched (${placed.raw_r} → drawn at ${placed.drawn_r})`);
+  // show mode takes the tool's case as it is (Okay, 10 Nov 2026, 00:51: "The bezel and rehault should apply to showcase as they are"): the
+  // published case gives up its insert and rehaut, its opening widens to the tool's outer edge, the body's rim 0.65 outside; the grounds flat.
+  // In a page of its own, so this window is left as it was found
+  { const own = await (await visitor()).newPage();
+    await own.goto("file://" + process.cwd() + "/dial-tool.html");
+    await own.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+    const shown = await own.evaluate(async () => { const t = window.dial_tool, S = t.S, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+      S.bz_on = true; S.rh_on = true; S.bezel = 1; t.static_dirty = true; t.changed(true); t.show_mode(true, true); await tick(); await new Promise((ok) => setTimeout(ok, 600));
+      const g = t.watch_g, R = S.dial_d / 2 + S.rh_len * Math.sin(S.rh_deg * Math.PI / 180) + S.bz_w + S.bz_teeth_depth;
+      const clip = g.querySelector('clipPath[id^="dial-"] path')?.getAttribute("d") || "", m = clip.match(/^M(-?[\d.]+)/), r_clip = m ? -parseFloat(m[1]) : null;
+      S.ui_section = 6; t.show_section(); t.sync_rows(); await tick();      // show mode's Watch tab
+      const insert_row = document.querySelector('[id^="global-w-insert"]')?.closest(".row");
+      return { r_clip: r_clip && +r_clip.toFixed(2), outer: +R.toFixed(2), insert_hidden: !insert_row || insert_row.hidden || !insert_row.checkVisibility(), section: S.ui_section, tabs: [...document.querySelectorAll(".tabs button")].filter((b) => !b.hidden).map((b) => b.dataset.tab).join(" ") }; });
+    check(shown.r_clip !== null && Math.abs(shown.r_clip - shown.outer) < 0.05 && shown.insert_hidden, `in show mode the diver case opens to the tool's bezel (the dial's clip r ${shown.r_clip} = the coin edge ${shown.outer}); the Watch pane's Insert tiles go (the Bezel tab's insert rules) (${shown.tabs})`);
+    await own.close(); }
   await page.evaluate(() => { const t = window.dial_tool, S = t.S; const R = S.rings[S.ui_ring]; R.surface = 0; R.r_from = 0; S.bz_on = false; S.rh_on = false; S.ui_dial_tab = 0; t.static_dirty = true; t.sync_rows(); t.render(); });      // the window as it was found: the case off, the Dial tab on Dial
   await frame();
 }

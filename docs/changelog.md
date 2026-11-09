@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.60 beta · 10 Nov 2026 — #582: show mode takes the tool's rehaut and bezel as they are
+
+Okay, 10 Nov 2026, 00:51: "The bezel and rehault should apply to showcase as they are."
+
+- **The live case** (`watch.js` `LIVE`, `live_case`, `sizeFor(key, d, outer)`): with the tool's rehaut or bezel on, the published case gives up its own insert, rehaut and bands — its opening (the dial's clip, the crystal's seat) widens to the tool's outer edge, the body's rim `CASE_LIP` 0.65 outside it (the 3D exercise's `inset`), the lugs and crown as the chosen case has them, scaled to fit. The tool's grounds come in with the dial's items, flat in their colours (`show.js` `PRINTED` leaves them without ink relief), its rings on them with them.
+- **Fed from both sides**: show mode (`show.js` `options`: `case: { outer }`, the size; the redraw key reads the `rh_*` / `bz_*` keys) and the canvas's Case view (`preview.js` `draw_bezel` → `frame({ outer })`), so the edit side's case frame wraps the tool's bezel too.
+- **The Watch pane's Insert tiles** hide while the tool's bezel is on (R16): the Bezel tab's insert rules.
+- **Tests**: `window.mjs` — in a page of its own, the diver case's dial clip at the coin edge's radius, the Insert tiles gone.
+
 ## v1.1.59 beta · 10 Nov 2026 — #582: the rehaut by angle and length; the section the dial's line and the tab's part alone
 
 Okay, 10 Nov 2026, 00:27: "Rehault and bezel drawings lovely. But let's make them all from top silhouette 3d if a section is must, remove all other items and just give them dial as a line and section shape. Rehault degree is what we need and length, not this control."

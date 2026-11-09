@@ -743,7 +743,7 @@ function silhouetteOutline(paths, L = 0) {
 function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1) {
   WEAVE = strap.endsWith("-big") ? "weavebig" : "weave"; strap = strap.replace(/-big$/, "");
   SUN_H = h; CLIPS = [];
-  const C = { ...scaleCase(CASES[key], size), key, dialOverride: dial, ...(metal ? { metal: METALS[metal] } : {}) }, span = open ? 260 : 64;
+  const C = live_case({ ...scaleCase(CASES[key], size), key, dialOverride: dial, ...(metal ? { metal: METALS[metal] } : {}) }), span = open ? 260 : 64;
   OUTL_S = []; OUTT = OUTL_S;
   const strapSVG = strap === "bracelet" ? braceletSVG(C, L, open ? C.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C, L, strap.split("-")[1], open, span) : natoSVG(C, L, strap.split("-")[1], open, span);
   // shadow: everything's silhouette shifted away from the light, flat; the case casts further than the strap
@@ -776,7 +776,8 @@ const GREYS = ["#504f4f", "#444442", "#373735"];      // light, body, dark: char
 export function frame(o) {
   const kind = o.kind in CASES ? o.kind : "dress";
   use("engineer"); NO_LINES = true; INK = "none"; DIAL_IN = false; GLINT = "off"; CLIPS = []; SUN_H = 40;
-  const C = { ...scaleCase(CASES[kind], sizeFor(kind, o.d)), key: kind, metal: GREYS }, was = INSERT;
+  LIVE = o.outer ? { outer: o.outer, dial: o.d } : null;
+  const C = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
   INSERT = { top: GREYS[2], bottom: GREYS[2] };      // a diver's insert in the dark grey too
   const body = caseSVG(C, "own", 225);
   NO_LINES = false; INSERT = was; DIAL_IN = true; use("engineer");
@@ -830,11 +831,19 @@ export function presets(style) { use(style); return { floor: STYLES[style].floor
 export const edge = (floor, view, style) => (view === "detail" ? hsl(floor, STYLES[style].ramp[2]) : floor);
 /** the size that puts a case round a dial of diameter `d` (Okay, 22 Oct 2026: "Cases snap to dials. Size of dial determines"): the
  *  published case's opening — less the rehaut on a diver — scaled to the dial */
-export const sizeFor = (key, d) => { const C = CASES[key] || CASES.dress; return d / (C.dial - (C.insert ? 2 * REHAUT : 0)); };
+export const sizeFor = (key, d, outer = null) => { const C = CASES[key] || CASES.dress; return outer ? (2 * outer + 2 * CASE_LIP) / C.od : d / (C.dial - (C.insert ? 2 * REHAUT : 0)); };      // with the tool's own case (#582): the body's rim CASE_LIP outside the tool's bezel
+// the tool's own rehaut and bezel (#582; Okay, 10 Nov 2026: "The bezel and rehault should apply to showcase as they are"): when the
+// dial side has them, they come in with the dial's items, drawn flat in their colours, and the published case gives up its own
+// insert, rehaut and bands — its opening widens to the tool's outer edge, the body's rim CASE_LIP outside it, the lugs and crown
+// as the chosen case has them. LIVE: { outer, dial } in dial mm, set by draw() and frame(); null for a dial without a case
+const CASE_LIP = 0.65;      // the 3D exercise's `inset`: the ring's outer radius this far inside the body's
+let LIVE = null;
+const live_case = (C) => (LIVE ? Object.assign(C, { opening: LIVE.outer, dial: LIVE.dial, insert: null, bands: [] }) : C);
 export const caseBox = (key, size) => { const C = scaleCase(CASES[key], size); return { h: C.l2l, w: (C.cushion ? 2 * C.cushion.a : C.rails ? Math.max(C.od, C.lugw + 2 * C.lugT) : C.od) + 2 * C.crown.h, dial: C.dial }; };
 export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 export function draw(o) {
   use(o.style || "miyazaki"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
+  LIVE = o.case ? { outer: o.case.outer, dial: o.d } : null;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
   SOFT = Boolean(o.blurs); GRADIENTS = o.gradients !== false; HEIGHTS = o.heights || {}; HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;
   // a colour that is one of the engine's own keeps that entry's three tones; any other gets three made from it

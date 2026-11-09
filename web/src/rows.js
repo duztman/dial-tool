@@ -604,7 +604,7 @@ ROWS.Watch = [
   pick("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre"], (i) => tilePicture(G.CASE_OF_BEZEL[i]), { order: [3, 2, 1, 5], shown: (S) => G.BEZEL_OF_CASE[G.CASE_OF_BEZEL[S.bezel] || "dress"] }),      // the same key the dial side's case menu writes (R9: the numbers keep their meaning); tiles, each case's silhouette (Okay, 23 Oct 2026: "Tiles with pictures")
   pick("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], (i) => SHOW.metal_picture(i)),      // tiles, as Case and Insert: each fits the column (Okay, 23 Oct 2026: "do the same as others")
   col("c_metal", "Case colour", { or: (S) => SHOW.metal_colour(S) }),
-  pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i) => SHOW.insert_picture(i), { show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" }),      // tiles, each insert a ring in its two colours
+  pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i) => SHOW.insert_picture(i), { show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" && !S.bz_on }),      // tiles, each insert a ring in its two colours      // with the tool's own bezel on, its insert is the Bezel tab's (#582)
   hdr("Strap", { folded: false }),
   seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO", "Links"], { free: true, order: [1, 3, 2, 4], offered: (S) => (G.CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3, 4] : [1, 3]), get: (S) => (S.strap === 0 ? 1 : S.strap) }),      // 0 (an older file) reads as Leather, so a pill is always lit      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
   col("c_strap", "Leather", { show: (S) => ![2, 3, 4].includes(S.strap) }),

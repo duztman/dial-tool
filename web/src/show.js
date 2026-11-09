@@ -32,7 +32,7 @@ export const insert_picture = (i) => { const [a, b] = INSERTS[i] || INSERTS[0];
   return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><path d="M-11 0A11 11 0 0 1 11 0H6.5A6.5 6.5 0 0 0 -6.5 0Z" fill="${a}"/><path d="M-11 0A11 11 0 0 0 11 0H6.5A6.5 6.5 0 0 1 -6.5 0Z" fill="${b}"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`; };
 const STYLE_NAMES = ["engineer", "miyazaki"], VIEW_NAMES = ["detail", "full", "dial"];
 const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
-const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc"].includes(role);      // what carries ink relief: a window's disc is the ground under its hole, not ink
+const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);      // the case's grounds (#582) are flat, not inks      // what carries ink relief: a window's disc is the ground under its hole, not ink
 // a hand's lume is printed too: an ink on the hand (#175), its height the ink's
 
 // one part of the scene as watch.js takes it: its role, which hand, its bevel, its path and colour, its ink height
@@ -46,7 +46,8 @@ export function options(S, items, effects) {
   const style = STYLE_NAMES[S.w_style] || "miyazaki", kind = G.CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P = WATCH.presets(style), lit = effects;
   return {
-    style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
+    style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null), view: VIEW_NAMES[S.w_view] || "detail",
+    case: S.rh_on || S.bz_on ? { outer: G.reach_mm(S) } : null,      // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
     items: items.flatMap((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && G.HANDS.includes(x.name) ? x.name : null;
       const H = hand ? S["ha_" + hand] : null;
       // a hand's boss as a part of its own over the hand (#404; Okay, 3 Nov 2026: "The boss itself, as a round disc"): the
@@ -84,7 +85,7 @@ const angles_of = (items) => { const A = {}; for (const x of items) if (x.role =
 export function draw(tool, items) {
   const S = tool.S, g = tool.watch_g;
   const shapes = items.filter((x) => x.fill && !x.stroke);
-  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), G.windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(","), G.HANDS.map((h) => `${+Boolean(S["ha_" + h].bevel)}${S["ha_" + h].bevel_look || 0}${+Boolean(S["ha_" + h].added)}`).join("")].join("|");      // a hand's Bevel and its look redraw the watch (Okay, 3 Nov 2026, 01:56: "Bevels is not working on of or edit on show mode")      // which ink each part is printed with (#545)
+  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k.startsWith("rh_") || k.startsWith("bz_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), G.windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(","), G.HANDS.map((h) => `${+Boolean(S["ha_" + h].bevel)}${S["ha_" + h].bevel_look || 0}${+Boolean(S["ha_" + h].added)}`).join("")].join("|");      // a hand's Bevel and its look redraw the watch (Okay, 3 Nov 2026, 01:56: "Bevels is not working on of or edit on show mode")      // which ink each part is printed with (#545)
   if (key !== tool.watch_key || !tool.watch_statik || tool.statik !== tool.watch_statik) {
     tool.watch_key = key; tool.watch_statik = tool.statik;
     const o = options(S, shapes, S.ui_effects), svg = at_night(S, WATCH.draw(o));
@@ -128,9 +129,9 @@ export const GRADIENTS = [["Dusk", "#3b3f58", "#b8876c"], ["Sea", "#1f4e5a", "#a
  *  as tall as the canvas less a margin, the case as wide as it allows; Whole watch — the whole drawing; Dial — as the
  *  dial side's Fit. Screen pixels per millimetre */
 export function fit_zoom(tool, w, h) {
-  const S = tool.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, cb = WATCH.caseBox(kind, WATCH.sizeFor(kind, S.dial_d));
+  const S = tool.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, size = WATCH.sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null), cb = WATCH.caseBox(kind, size);
   if (S.w_view === 2) return Math.min(w, h) / G.page_mm(S);
-  const [bw, bh] = S.w_view === 1 ? WATCH.fullBox(kind, WATCH.sizeFor(kind, S.dial_d), kind === "diver" && (S.strap === 2 || S.strap === 4)) : [cb.w, cb.h];      // the whole watch's frame is known before it is drawn
+  const [bw, bh] = S.w_view === 1 ? WATCH.fullBox(kind, size, kind === "diver" && (S.strap === 2 || S.strap === 4)) : [cb.w, cb.h];      // the whole watch's frame is known before it is drawn
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
 }
 
