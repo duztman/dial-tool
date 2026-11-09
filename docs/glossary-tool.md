@@ -18,7 +18,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Side row** | A row squeezed beside a detail box: label · slider · number box (`side`). |
 | **Heading selector** | A pane's main selector on its heading line (Labels, Complication). |
 | **Tab** | A choice of what the panes below edit, drawn as touching tabs with V-cut corners: hand tabs, window cards, Complication buttons. |
-| **Hand tabs** | Hour · Minute · Seconds, on Hands' second pinned line. |
+| **Hand tabs** | Hour · Minute · Seconds and every added hand (GMT), on Hands' second pinned line; after them the **+** that asks a new hand's function; an added hand's Show line carries its **−**. |
 | **Window cards** | Four cards on top of Windows (12 · 3 · 6 · 9), tabs choosing the window to edit. |
 | **Show box** | The thin box under the hand tabs and window cards holding the tick **Show**. |
 | **Detail box** | Left of a hand pane's rows: the chosen hand, large; **hand handles** (squares for Length, Tail, Width) on it; its **lit part** is what the pointed-at number makes. |

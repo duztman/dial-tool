@@ -659,7 +659,7 @@ export const PREVIEW = {
     const S = this.S, mm = this.to_mm(p), r = Math.hypot(mm[0], mm[1]);
     const item = node && node.dataset && node.dataset.i !== undefined ? this.items[+node.dataset.i] : null;
     const role = item ? item.role : null;
-    if (role === "hand" || role === "mark" || role === "lume") return { kind: "hand", hand: G.HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
+    if (role === "hand" || role === "mark" || role === "lume") return { kind: "hand", hand: G.HANDS.indexOf(item.name), name: G.hand_word(item.name), path: item.path, angle: item.angle };
     if (role === "cap") return { kind: "cap", name: "Cap", path: item.path, angle: 0 };
     if (role && (role.startsWith("date") || role === "cutline")) {
       const x = this.statik.windows.find((b) => b.index === item.window), kind = G.WINDOW_KINDS[x.w.kind];

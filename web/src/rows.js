@@ -332,6 +332,10 @@ export const ROWS = {
     // side: the row stands beside the box · short: the label when there is little room for it.
     custom("hand_detail", { ...H }),
     col("c", "Colour", { ...H, side: true }),      // first beside the box (Okay's notes, p. 18, #250: "Colour to the top, Cap at the end")
+    // a GMT hand's function (#577; Okay, 9 Nov 2026: "A choice on its pane: 24 h · 12 h"): how it turns and the other time's
+    // hours ahead — on the GMT tab alone; the fixed three keep their motion
+    seg("cycle", "Turns in", G.HAND_CYCLES, { ...H, side: true, short: "Turns", show: (T, S) => G.HANDS[S.ui_hand] === "gmt" }),
+    num("offset", "Hours ahead", -12, 14, 0.5, { ...H, side: true, short: "Ahead", show: (T, S) => G.HANDS[S.ui_hand] === "gmt" }),
     num("len", "Length", 0.5, 30, 0.05, { ...H, side: true, say: (T) => (G.HAND_SHAPES[T.shape] === "disc" ? ["Marker at", "Marker at"] : ["Length", "Length"]) }),      // a disc's: where its marker's outer end is, and named so (#574; Okay, 2 Nov 2026, 22:18: "The distance of that dot from the center has its own slider")
     num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
     // the marker: cut out of the disc, named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it

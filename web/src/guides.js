@@ -441,11 +441,14 @@ export const GUIDES = {
     // "seconds hand cant go below minutes and so on. Limit every value to their obvious limits"): each row's slider
     // runs between its neighbours' heights, a step clear of each (a hidden hand does not count), and a value at an
     // end flashes LIMIT (panel.js, `bounds`)
-    const STEP = 0.05, ORDER = ["cap", "second", "minute", "hour"], KEY = { cap: "sh_cap", second: "sh_second", minute: "sh_minute", hour: "sh_hour" };
-    const shown = (S, h) => h === "cap" || (S.ha_on && S["ha_" + h] && S["ha_" + h].on);
+    // The order is the hands' stack (#577; Okay, 9 Nov 2026: "a row order I choose"): the cap on top, then the hands top
+    // down as ha_stack has them; a hand's 6-dot grip, dragged, moves it in the stack — on the dial and here — and the
+    // hands trade rungs: the heights stay where they were, the hands take them in their new order
+    const STEP = 0.05, KEY = (name) => "sh_" + name, order = (S) => ["cap", ...G.hand_stack(S).slice().reverse()];
+    const shown = (S, h) => h === "cap" || (S.ha_on && G.hand_added(S, h) && S["ha_" + h] && S["ha_" + h].on);
     const bounds = (name, lo, hi) => (S) => {
-      const i = ORDER.indexOf(name), above = ORDER.slice(0, i).filter((h) => shown(S, h)).at(-1), below = ORDER.slice(i + 1).filter((h) => shown(S, h))[0];
-      return [below ? +(S[KEY[below]] + STEP).toFixed(2) : lo, above ? +(S[KEY[above]] - STEP).toFixed(2) : hi];
+      const ORDER = order(S), i = ORDER.indexOf(name), above = ORDER.slice(0, i).filter((h) => shown(S, h)).at(-1), below = ORDER.slice(i + 1).filter((h) => shown(S, h))[0];
+      return [below ? +(S[KEY(below)] + STEP).toFixed(2) : lo, above ? +(S[KEY(above)] - STEP).toFixed(2) : hi];
     };
     // the ends from a real watch: a hand stack under the crystal is 1–2.5 mm, the cap's top the highest (Okay, 25 Oct 2026,
     // 17:08: "Cap height should not be thiiiiis high")
@@ -454,11 +457,25 @@ export const GUIDES = {
     // row's line): Cap · Seconds · Minutes · Hours · Plate (the reference, nothing to size: "plate untouchable") · a row
     // per window that shows a disc, under the plate (built in sync_shadows as the windows change). The rings' ink
     // heights are show mode's Colours alone (Okay, 25 Oct 2026: "Ink heights only on show case. Remove from the tool side")
-    const heights = [part("sh_cap", "Cap", 0, CAP_MAX, STEP, "cap", { bounds: bounds("cap", 0, CAP_MAX) }), part("sh_second", "Seconds", 0, HAND_MAX, STEP, "second", { bounds: bounds("second", 0, HAND_MAX) }),
-      part("sh_minute", "Minutes", 0, HAND_MAX, STEP, "minute", { bounds: bounds("minute", 0, HAND_MAX) }), part("sh_hour", "Hours", 0, HAND_MAX, STEP, "hour", { bounds: bounds("hour", 0, HAND_MAX) })];
+    const heights = [part("sh_cap", "Cap", 0, CAP_MAX, STEP, "cap", { bounds: bounds("cap", 0, CAP_MAX) }), ...G.HANDS.map((h) => part(KEY(h), G.HAND_PLURAL[h], 0, HAND_MAX, STEP, h, { bounds: bounds(h, 0, HAND_MAX) }))];
     const plate = el("div", { className: "row side ref" }, el("label", { textContent: "Plate" }));
     const discs = el("div", { className: "shadowdiscs" });
     const rows = el("div", { className: "shaderows" }, ...heights.map((r) => r.el), plate, discs);
+    for (const r of heights) if (r.el.dataset.part !== "cap") {      // a hand's grip, before its name
+      const grip = el("span", { className: "grip", title: "Drag to change the hands' order" });
+      grip.innerHTML = icon(TOOL_ICONS.grip);
+      grip.onpointerdown = (e) => this.drag_stack(e, rows, heights);
+      r.el.prepend(grip);
+    }
+    // the rows in the stack's order, a hand not on the dial without its row (R16); called as the settings change
+    let laid = "";
+    const lay = (S) => {
+      const key = order(S).join() + "|" + G.HANDS.filter((h) => G.hand_added(S, h)).join();
+      if (key === laid) return;
+      laid = key;
+      for (const name of order(S).slice().reverse()) { const r = heights.find((x) => x.el.dataset.part === name); if (r) { rows.prepend(r.el); r.el.hidden = name !== "cap" && !G.hand_added(S, name); } }
+    };
+    lay(this.S);
     const col = el("div", { className: "shadecol" }, el("div", { className: "shadehead", textContent: "Part Heights" }), rows);
     const stack = this.stack_picture(id, rows);
     const parts = el("div", { className: "shadeparts" }, col, stack.el);
@@ -468,9 +485,51 @@ export const GUIDES = {
     // diagram must still be lighting up"); the controller's closing puts it out (value_pop_close)
     const lit = (e) => { const r = e.target.closest(".row"); this.shade_light((r && r.dataset.part && (e.type === "pointerover" || e.type === "focusin") ? r.dataset.part : null) || this.value_pop?.row?.part || null); };
     for (const kind of ["pointerover", "pointerout", "focusin", "focusout"]) rows.addEventListener(kind, lit);
-    const block = { el: parts, rows: heights, discs, disc_rows: [], stack };
+    const block = { el: parts, rows: heights, discs, disc_rows: [], stack, lay };
     (this.height_blocks ||= []).push(block);
     return block;
+  },
+
+  /** a hand's grip in a heights block dragged (#577): the hand moves in the stack — the rows in the list, the hands on the
+   *  dial — and the hands trade rungs (the heights stay, the hands take them in the new order), so the ladder holds.
+   *  Undoable, as one change. The list is the hands' rows only; the cap stays on top. */
+  drag_stack(e, list, heights) {
+    e.preventDefault();
+    const grip = e.currentTarget, row = grip.parentElement, rows = [...list.children].filter((r) => !r.hidden && r.dataset.part && r.dataset.part !== "cap" && G.HANDS.includes(r.dataset.part));
+    const from = rows.indexOf(row);
+    if (from < 0) return;
+    const line = el("div", { className: "dropline" });
+    list.append(line);
+    row.classList.add("dragged");
+    grip.setPointerCapture(e.pointerId);
+    let to = from;
+    const move = (ev) => {
+      const box = list.getBoundingClientRect(), y = ev.clientY - box.top + list.scrollTop;
+      let gap = rows.findIndex((r) => y < r.offsetTop + r.offsetHeight / 2);
+      if (gap < 0) gap = rows.length;
+      to = gap > from ? gap - 1 : gap;
+      const at = gap < rows.length ? rows[gap].offsetTop : rows[rows.length - 1].offsetTop + rows[rows.length - 1].offsetHeight;
+      line.style.top = `${Math.max(at - 1, 0)}px`;
+      line.hidden = to === from;
+    };
+    const drop = () => {
+      grip.onpointermove = grip.onpointerup = grip.onpointercancel = null;
+      line.remove();
+      row.classList.remove("dragged");
+      if (to === from) return;
+      const S = this.S, top_down = rows.map((r) => r.dataset.part), [name] = top_down.splice(from, 1);
+      top_down.splice(to, 0, name);
+      // the hands not in the list (not added) keep their place under the ones shown
+      const rest = G.hand_stack(S).filter((h) => !top_down.includes(h));
+      const stack = [...rest, ...top_down.slice().reverse()];
+      const rungs = G.hand_stack(S).map((h) => S["sh_" + h]).sort((a, b) => b - a);      // the heights as they stand, top first
+      stack.slice().reverse().forEach((h, i) => { S["sh_" + h] = rungs[i]; });
+      S.ha_stack = stack;
+      this.changed(true);
+    };
+    grip.onpointermove = move;
+    grip.onpointerup = drop;
+    grip.onpointercancel = () => { to = from; drop(); };
   },
 
   /** the shadows' switch and list show the settings. */
@@ -495,6 +554,7 @@ export const GUIDES = {
           put: (app, v) => { const W = G.windows_of(this.S)[i]; if (W) { W.depth = clamp(v, 0, 1); this.changed(); } } }), scope: "global" }));
         block.discs.replaceChildren(...block.disc_rows.map((r) => r.el));
       }
+      block.lay(this.S);
       for (const r of [...block.rows, ...block.disc_rows]) r.refresh(this.S);
       block.stack.refresh();
     }
@@ -521,7 +581,7 @@ export const GUIDES = {
     const box = el("div", { className: "stackpic", id });
     box.innerHTML = `<svg aria-hidden="true"><line class="axis"/><g class="parts"></g><g class="drop"><line class="knock"/><line class="fixed"/><line class="moving"/></g><g class="parts top"></g></svg><span class="word">Parts</span>`;      // the order: the parts, the red drop over them, the lit part over all (Okay, 25 Oct 2026, 16:59: "White indicator drawing is the topest of all")
     const svg = box.querySelector("svg"), parts = box.querySelector(".parts:not(.top)"), top = box.querySelector(".parts.top"), axis = box.querySelector(".axis"), drop = box.querySelector(".drop");
-    const LEN = { hour: 23.5, minute: 34.5, second: 46 }, TAIL = 10;      // a hand's reach right of the axis, and left (his drawing)
+    const LEN = { hour: 23.5, minute: 34.5, second: 46, gmt: 29 }, TAIL = 10;      // a hand's reach right of the axis, and left (his drawing); the GMT hand between the hour's and the minute's, as it starts
     const draw = {
       cap: (ax, y) => `<ellipse class="fill" cx="${ax}" cy="${y}" rx="6" ry="2.5"/>`,
       hand: (ax, y, h) => `<line x1="${ax - TAIL}" y1="${y}" x2="${ax + LEN[h]}" y2="${y}"/><ellipse class="fill" cx="${ax}" cy="${y}" rx="2.5" ry="1.4"/>`,
@@ -533,8 +593,8 @@ export const GUIDES = {
     // the tallest part fills the room above the plate, so the ratios are true and the exaggeration varies with the dial;
     // no leaders, a row pointed at still lights its part). The plate stays on its row's line; a disc under it, as deep
     // as the same scale lets it inside the box
-    const KEY = { cap: "sh_cap", second: "sh_second", minute: "sh_minute", hour: "sh_hour" };
-    const height = (name) => (KEY[name] ? this.S[KEY[name]] : name.startsWith("disc-") ? -this.disc_depth(G.windows_of(this.S)[+name.slice(5)]) : 0);
+    const KEY = (name) => (name === "cap" || G.HANDS.includes(name) ? "sh_" + name : null);
+    const height = (name) => (KEY(name) ? this.S[KEY(name)] : name.startsWith("disc-") ? -this.disc_depth(G.windows_of(this.S)[+name.slice(5)]) : 0);
     const AIR = 8, FOOT = 12;                        // px: air over the tallest part, room under the deepest disc
     const refresh = () => {
       const b = svg.getBoundingClientRect(), W = Math.round(b.width), H = Math.round(b.height), ax = W / 2;      // the svg's own box, inside the frame's line

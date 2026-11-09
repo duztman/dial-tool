@@ -34,7 +34,6 @@ const STYLE_NAMES = ["engineer", "miyazaki"], VIEW_NAMES = ["detail", "full", "d
 const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
 const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc"].includes(role);      // what carries ink relief: a window's disc is the ground under its hole, not ink
 // a hand's lume is printed too: an ink on the hand (#175), its height the ink's
-const HANDS = ["hour", "minute", "second"];
 
 // one part of the scene as watch.js takes it: its role, which hand, its bevel, its path and colour, its ink height
 const one = (x, hand, H, S) => {
@@ -48,21 +47,21 @@ export function options(S, items, effects) {
   const P = WATCH.presets(style), lit = effects;
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
-    items: items.flatMap((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && HANDS.includes(x.name) ? x.name : null;
+    items: items.flatMap((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && G.HANDS.includes(x.name) ? x.name : null;
       const H = hand ? S["ha_" + hand] : null;
       // a hand's boss as a part of its own over the hand (#404; Okay, 3 Nov 2026: "The boss itself, as a round disc"): the
       // hub disc with the pipe's hole, lit as a dome by watch.js (bossLight); round, so it needs no turning with the hand
       const boss = x.role === "hand" && H ? G.hand_boss(H, hand) : null;
       const part = one(x, hand, H, S);
       return boss ? [part, { role: "boss", hand: null, bevel: false, dome: false, hw: 0, r: H.hub / 2, p: boss.svg(3), f: part.f, a: part.a, ink: 0 }] : [part]; }),
-    A: Object.fromEntries(HANDS.map((h) => [h, 0])),
+    A: Object.fromEntries(G.HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 4 && diver ? "links" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,
     leather: hex(S.c_strap), natoColours: nato_colours(S),
     insert: S.c_insert ? { top: hex(S.c_insert[0]), bottom: hex(S.c_insert[1]) } : { top: INSERTS[S.w_insert][0], bottom: INSERTS[S.w_insert][1] },
     floor: hex(S.c_backdrop), floor2: S.c_backdrop2 && S.w_gradients !== false ? hex(S.c_backdrop2) : null, gradients: S.w_gradients !== false,      // Gradients off: one colour, no spotlight, a flat outline (#525)
     L: S.sh_from - 90, h: S.sh_rise, shadow: S.sh_on ? S.sh_dark / 25 : 0,
-    heights: { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second, cap: S.sh_cap },      // the hands' own heights, as the dial side's shadows use them (#519)
+    heights: { ...Object.fromEntries(G.HANDS.map((h) => [h, S["sh_" + h]])), cap: S.sh_cap },      // the hands' own heights, as the dial side's shadows use them (#519)
     lighting: S.w_lighting || S.w_gradients === false ? "flat" : "dramatic", flare: S.w_flare ? "dot" : "arc", flareOn: lit && S.sh_blur && S.w_flare_on, blurs: lit && S.sh_blur,
     fl: { size: S.w_fl_size / 100, tint: S.w_fl_tint / 100, bright: S.w_fl_bright / 100 }, glass: { fat: S.w_glass_fat / 100, len: S.w_glass_len / 100, op: lit ? S.w_glass_op / 100 : 0 },
     ink: S.w_ink, bevels: S.w_bevels ? S.sh_bevel / 100 : 0, outline: lit,      // the hands' bevels as the dial side sets them (each hand's tick, Bevels %), and Shenanigans' Bevels
@@ -78,14 +77,14 @@ export const metal_colour = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || 
 /** Night (the Light tab's Time pill): the drawing under the night filter with its lume glowing, by the Moon's Strength and Lume decay (night.js) */
 const at_night = (S, svg) => (S.w_night ? night(svg, S.w_moon, S.w_decay, Boolean(S.ui_effects && S.sh_blur)) : svg);      // Blurs on: the halo a real blur, one small filter a shape (Okay, 19:18: "blurs on makes them glow?")
 
-const angles_of = (items) => { const A = {}; for (const x of items) if (x.role === "hand" && HANDS.includes(x.name)) A[x.name] = x.angle; return A; };
+const angles_of = (items) => { const A = {}; for (const x of items) if (x.role === "hand" && G.HANDS.includes(x.name)) A[x.name] = x.angle; return A; };
 
 /** the watch for this frame. The whole drawing is made again only when something but the time changed (the shapes,
  *  a colour, the watch, the light); the hands turn in place every frame, as in the Show Case */
 export function draw(tool, items) {
   const S = tool.S, g = tool.watch_g;
   const shapes = items.filter((x) => x.fill && !x.stroke);
-  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), G.windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(","), HANDS.map((h) => `${+Boolean(S["ha_" + h].bevel)}${S["ha_" + h].bevel_look || 0}`).join("")].join("|");      // a hand's Bevel and its look redraw the watch (Okay, 3 Nov 2026, 01:56: "Bevels is not working on of or edit on show mode")      // which ink each part is printed with (#545)
+  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key, S.rings.map((r) => +Boolean(r.ink_b)).join(""), G.windows_of(S).map((w) => `${+Boolean(w.frame_b)}${w.print_h ?? ""}`).join(","), G.HANDS.map((h) => `${+Boolean(S["ha_" + h].bevel)}${S["ha_" + h].bevel_look || 0}${+Boolean(S["ha_" + h].added)}`).join(""), (S.ha_stack || []).join("")].join("|");      // a hand's Bevel and its look redraw the watch (Okay, 3 Nov 2026, 01:56: "Bevels is not working on of or edit on show mode")      // which ink each part is printed with (#545)
   if (key !== tool.watch_key || !tool.watch_statik || tool.statik !== tool.watch_statik) {
     tool.watch_key = key; tool.watch_statik = tool.statik;
     const o = options(S, shapes, S.ui_effects), svg = at_night(S, WATCH.draw(o));

@@ -328,7 +328,16 @@
     .shaderows .row.side:hover > label { color: var(--ink); }
     .shaderows .row.side:hover input[type="range"] { --ink: var(--shade-lit); }      /* under the pointer the slider's fill and knob turn the lit colour, as its part in the diagram (Okay's drawing, 25 Oct 2026) */
   }
-  .shaderows .row.ref > label { grid-column: 1 / -1; }      /* the plate: the reference, nothing to size (Okay: "plate untouchable") */
+  .shaderows .row.ref > label { grid-column: 1 / -1; }
+  /* a hand's grip (#577): the 6-dot gripper at the row's left, its name moved in by the gripper's width (--u4 is the icons' 16);
+     dragged, the row dims and a line shows where it lands, as a ring's in the Rings tab */
+  .shaderows .row.side { position: relative; }
+  .shaderows .row.side > .grip { position: absolute; left: 0; top: 0; height: 100%; display: grid; place-items: center; color: var(--night-grey); opacity: var(--dim); cursor: grab; touch-action: none; z-index: 1; }
+  .shaderows .row.side > .grip + label { padding-left: calc(16px + var(--u1)); }      /* the gripper's box (every icon is 16, R33), then half a unit of air before the name */
+  .shaderows .row.side.dragged { opacity: var(--dim); }
+  .shaderows .row.side.dragged > .grip { cursor: grabbing; }
+  .shaderows > .dropline { position: absolute; left: 0; right: 0; height: var(--triple); background: var(--shade-lit); pointer-events: none; }
+  .shaderows { position: relative; }      /* the plate: the reference, nothing to size (Okay: "plate untouchable") */
   .stackpic { position: relative; border: var(--hair) solid var(--night-rule); border-radius: var(--round); }      /* outline only, no ground (Okay, 01:46); it stands from the hairline over the heading to --shade-pad under the last row */
   .stackpic .word { position: absolute; left: var(--shade-word-x); top: 0; height: var(--line); line-height: var(--line); font-size: var(--t-s); font-weight: 600; color: var(--night-rule); pointer-events: none; }
   .stackpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }

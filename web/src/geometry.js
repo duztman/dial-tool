@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.53 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.54 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -39,7 +39,21 @@ export const FROM = ["outer", "middle", "inner"];               // the point of 
 /** how far a mark's or band's outer edge lies outside the ring's radius: nothing when the radius measures to the outer
  *  end, half its extent from the middle, all of it from the inner end (#257). extent: the mark's length or the band's width. */
 export const from_shift = (ring, extent) => extent * (ring.from || 0) / 2;
-export const HANDS = ["hour", "minute", "second"];
+// the hands: the three every dial has, then the hands of your own (#577; Okay, 3 Nov 2026: "A plus sign next to the hands
+// tabs, creates a new hand … Ask for function upfront, then add hand as normal") — each a key ha_<name>, its name its
+// function. An added hand is on the dial once `added` is set (the + on the Hands tab); hidden (on: false) it keeps its tab.
+// A new function is appended (R9: tabs and links count on the order).
+export const FIXED_HANDS = ["hour", "minute", "second"];
+export const ADDED_HANDS = ["gmt"];      // GMT (another time): 24 h a turn, or 12 h, an offset in hours (9 Nov 2026)
+export const HANDS = [...FIXED_HANDS, ...ADDED_HANDS];
+/** the word for a hand in every list: "Hour", "Seconds", "GMT"; hand_word("gmt") = "GMT hand", hand_word("hour", "lume") = "Hour lume" */
+export const HAND_WORD = { hour: "Hour", minute: "Minute", second: "Seconds", gmt: "GMT" };
+export const HAND_PLURAL = { hour: "Hours", minute: "Minutes", second: "Seconds", gmt: "GMT" };      // the Shadows pane's and show mode's Hands list's words
+export const hand_word = (name, what = "hand") => (HAND_WORD[name] || name) + (what ? " " + what : "");
+/** does this hand exist on the dial: a fixed hand always, an added one once its + was pressed */
+export const hand_added = (S, name) => FIXED_HANDS.includes(name) || Boolean(S["ha_" + name] && S["ha_" + name].added);
+/** what each added hand does, for the + menu: [name, the question's words] */
+export const HAND_FUNCTIONS = [["gmt", "GMT — another time"]];
 export const HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];      // disc: #164, 14 Oct 2026 (appended, R9)
 export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];      // only grows at its end (R9); 4 added 13 Oct 2026 (Ronda's 4H dial drawing)
 export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase", "big date"];      // big date appended (4.74, R9): two square holes, the tens and the units each on a disc of its own      // what a window shows (web version)
@@ -170,7 +184,14 @@ export const HAND_BASE = {
   // a Dot round — open (op_fill see-through, alpha 0: the dial seen through) or filled with a lume (op_fill: a lume's colour, lume.js;
   // 22:38: "they only get lume"). Off to start, as every older dial (R31); C3 the lume to start, as drawn
   op_on: false, op_shape: 0, op_count: 3, op_from: 30, op_to: 92, op_w: 0.8, op_gap: 0.4, op_fill: [0.8941, 0.9176, 0.7608, 1],
+  // a hand of your own (#577, 9 Nov 2026), read on the added hands only: added — it is on the dial (the + on the Hands
+  // tab; off, the hand has no tab and never draws, so `on` is false too) · cycle — how a GMT hand turns, a place in
+  // HAND_CYCLES: 0 once a day, read on a 24-hour ring with midnight at 12 (Okay: "Midnight at top") · 1 twice a day, a
+  // second hour hand read on the ordinary numerals · offset — the other time, hours ahead of the time shown (half hours
+  // for the half-hour zones; 0 to start)
+  added: false, cycle: 0, offset: 0,
 };
+export const HAND_CYCLES = ["24 h", "12 h"];      // a GMT hand's turn: once a day · twice a day (R9: appended only)
 export const BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];      // R9: a new look is appended; Faceted (1) is not offered (#573) and draws as a Ridge
 
 // windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
@@ -215,6 +236,8 @@ export const DEFAULTS = {
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
   rings: [],
   ha_on: true, ha_beat: 0, ha_cap: 1.6, c_cap: ACCENT, ha_hour: {}, ha_minute: {}, ha_second: {},
+  ha_gmt: {},                                      // the GMT hand (#577), not added to start; its starting look is set below with the other hands'
+  ha_stack: ["gmt", "hour", "minute", "second"],   // the hands' order on the dial, bottom first (#577; Okay, 9 Nov 2026: "a row order I choose"): the Shadows pane's grips move a hand; a hand not on the dial keeps its place
   ha_cap_top: false,                               // the cap is part of the seconds hand (#262, beta 4.43); with no seconds hand it is drawn on the topmost hand only when this is on (web only, R30)
   da_on: false, da_at: 0, da_r: 10.5, da_w: 2.6, da_h: 2.0, da_round: 0.2, da_frame: 0.15,
   da_clear: 0.25, da_day: "17", da_size: 62.0, da_ink: INK,
@@ -309,6 +332,7 @@ export const DEFAULTS = {
   sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
   sh_bevel: 100,                                   // the hands' bevels' strength, 0–100 % (Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"): a hand's own Bevel tick turns its bevel on (HAND_BASE.bevel, off to start); 100 = as 4.77 drew them
   sh_hour: 0.15, sh_minute: 0.35, sh_second: 0.6, sh_cap: 0.75, sh_disc: 0.15,
+  sh_gmt: 0.1,                                     // the GMT hand's height (#577): under the hour hand to start, a step clear of it
   gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread, a ring's guide has the ring's own colour
   // the next five keys are unread: old settings files carry them (R8). Nothing writes them any more.
   gd_c: [0.0, 0.55, 0.9, 1], gd_strength: 50.0,
@@ -499,7 +523,21 @@ export function from_beta1(old) {
 {
   const start = from_beta1({});
   for (const k of ["rings", "ha_hour", "ha_minute", "ha_second"]) DEFAULTS[k] = start[k];
+  // the GMT hand as it starts when added (#577): an arrow, as the 24-hour hands of the GMT watches, reaching between the
+  // hour and the minute hand, thinner than the hour hand, in the seconds' accent colour — not on the dial until its + is pressed
+  const hour = start.ha_hour, minute = start.ha_minute;
+  DEFAULTS.ha_gmt = { ...HAND_BASE, on: false, added: false, shape: HAND_SHAPES.indexOf("arrow"), fit: false, len: +((hour.len + minute.len) / 2).toFixed(2), w: +(hour.w * 0.7).toFixed(2), tail: hour.tail, tip: +(hour.len * 0.18).toFixed(2), feature: +(hour.w * 1.6).toFixed(2), c: ACCENT };
 }
+/** the hands' order on the dial, bottom first, made whole: every hand once, a missing one in its starting place */
+export function hand_stack(S) {
+  const given = Array.isArray(S.ha_stack) ? S.ha_stack.filter((h, i, a) => HANDS.includes(h) && a.indexOf(h) === i) : [];
+  if (given.length === HANDS.length) return given;
+  const out = [...given];
+  for (const h of DEFAULTS.ha_stack) if (!out.includes(h)) out.splice(Math.min(DEFAULTS.ha_stack.indexOf(h), out.length), 0, h);
+  return out;
+}
+/** the hands that draw, bottom first: added and on, with the hands shown at all */
+export const hands_shown = (S) => (S.ha_on ? hand_stack(S).filter((h) => hand_added(S, h) && S["ha_" + h] && S["ha_" + h].on) : []);
 const OLD_ONLY = Object.keys(BETA1_DEFAULTS).filter((k) => !(k in DEFAULTS));
 
 /** DEFAULTS + saved or partial settings. beta 1.0 settings are converted first (R8). */
@@ -519,8 +557,10 @@ export function fresh_settings(over = null) {
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
   // bevels from before a hand had its own tick: Bevels % above 0 drew them on every hand, so a hand that doesn't say gets one (a link
   // made since always says, lean())
-  if ("sh_bevel" in over && +over.sh_bevel > 0) for (const h of HANDS) { const raw = over["ha_" + h]; if (!raw || !("bevel" in raw)) S["ha_" + h] = { ...(S["ha_" + h] || {}), bevel: true }; }
+  if ("sh_bevel" in over && +over.sh_bevel > 0) for (const h of FIXED_HANDS) { const raw = over["ha_" + h]; if (!raw || !("bevel" in raw)) S["ha_" + h] = { ...(S["ha_" + h] || {}), bevel: true }; }
   for (const h of HANDS) S["ha_" + h] = complete(HAND_BASE, S["ha_" + h]);
+  for (const h of ADDED_HANDS) if (!S["ha_" + h].added) S["ha_" + h].on = false;      // a hand of your own that was not added never draws (#577)
+  S.ha_stack = hand_stack(S);
   // inks in steps, from before show mode's Inks (#545): All inks (w_ink, 6 to start) becomes the mm added to every ink,
   // and a ring's own step (ink_d) its colour's height — the first ring of a colour says it
   if (!("w_inks" in over) && ("w_ink" in over || S.rings.some((r) => r.ink_d))) {
@@ -549,7 +589,7 @@ export function fresh_settings(over = null) {
 export const LINK_SCHEME = 5;      // 5 since 4.92.18: a ring's starting font is Arimo, bundled, instead of Helvetica Neue, which isn't (#228; Okay, 24 Oct 2026: "Bundled fonts are all free to use"); 4 since 4.91: a numerals ring sits in its cap-height band (#488); 3 since 4.88: an am · pm window draws its one disc (R31)
 
 /** the topmost hand that shows: its place in HANDS, or -1 */
-export const top_hand = (S) => [2, 1, 0].find((i) => S["ha_" + HANDS[i]].on) ?? -1;
+export const top_hand = (S) => { const shown = hand_stack(S).filter((h) => hand_added(S, h) && S["ha_" + h].on); return shown.length ? HANDS.indexOf(shown.at(-1)) : -1; };      // the stack's order (#577), not the fixed three's
 /** the cap is part of the seconds hand (#262, beta 4.43): drawn with it; with no seconds hand, on the topmost hand
  *  only when asked (ha_cap_top). */
 export const cap_shows = (S) => S.ha_on && S.ha_cap > 0 && (S.ha_second.on || (S.ha_cap_top && top_hand(S) >= 0));
@@ -610,12 +650,13 @@ export const LINK_KEYS = [
   "mark_tri", "mark_stroke_w", "mark_stroke_c",      // v1.1.40 beta (#574): appended; a wedge as before and no stroke to start, as every older link
   "ink_h", "stroke_h", "frame_h",      // v1.1.44 beta: appended for the table's sake; a part's own ink height, show mode's, lean() leaves it out of a link (R7)
   "hole_as", "hole",        // v1.1.52 beta (#404): appended; no hole to start, as every older link
+  "ha_gmt", "ha_stack", "sh_gmt", "added", "cycle",      // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand and the stack as it always was to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
 const KEY_CODE = new Map(LINK_KEYS.map((k, i) => [k, code_of(i)]));
 const CODE_KEY = new Map(LINK_KEYS.map((k, i) => [code_of(i), k]));
-const SETTINGS_INSIDE = (k) => k === "rings" || k === "windows" || k === "gd_more" || k === "ha_hour" || k === "ha_minute" || k === "ha_second";
+const SETTINGS_INSIDE = (k) => k === "rings" || k === "windows" || k === "gd_more" || HANDS.some((h) => k === "ha_" + h);
 
 const is_colour = (v) => Array.isArray(v) && v.length === 4 && v.every((x) => typeof x === "number" && x >= 0 && x <= 1);
 const COLOUR_TEXT = /^#([0-9a-f]{6}|[0-9a-f]{8})$/;
@@ -716,7 +757,7 @@ export function lean(S) {
   // above (still the starting hand) is written whole against HAND_BASE here, never as `{ bevel }` alone: a hand object
   // in a link replaces the starting hand entirely, so a bare one would come back as HAND_BASE (the plain hand), not as
   // DEFAULTS' (found 25 Oct 2026)
-  if ("sh_bevel" in out) for (const h of HANDS) out["ha_" + h] = { ...differing(S["ha_" + h] || {}, HAND_BASE), bevel: Boolean(S["ha_" + h] && S["ha_" + h].bevel) };
+  if ("sh_bevel" in out) for (const h of HANDS) if (hand_added(S, h)) out["ha_" + h] = { ...differing(S["ha_" + h] || {}, HAND_BASE), bevel: Boolean(S["ha_" + h] && S["ha_" + h].bevel) };
   return out;
 }
 
@@ -2004,9 +2045,9 @@ export function thinnest(S) {
     else unmeasured.push(name);
     if (ring.knock > 0) gaps.push([`${name}'s clearance`, ring.clear]);
   }
-  if (S.ha_on) for (const [key, word] of [["ha_hour", "Hour hand"], ["ha_minute", "Minute hand"], ["ha_second", "Seconds hand"]]) {
-    const h = { ...HAND_BASE, ...(S[key] || {}) };
-    if (h.on) lines.push([word, h.w * (h.w_scale || 1)]);
+  if (S.ha_on) for (const name of hands_shown(S)) {
+    const h = S["ha_" + name];
+    lines.push([hand_word(name), h.w * (h.w_scale || 1)]);
   }
   windows_of(S).forEach((w, i) => { if (w.on && w.frame > 0) lines.push([`Window ${i + 1}'s frame`, w.frame]); });
   const by = (a, b) => a[1] - b[1];
@@ -2034,6 +2075,15 @@ export function mask_merges(statik) {
 
 const COUNTER_AT = 0.16 / 0.22;                    // counterweight centre, as a share of the tail
 
+/** one hand's clock angle at time t (seconds of the day): the fixed three from hand_angles; a GMT hand (#577) the
+ *  other time — t plus its offset — once round a day (24 h: midnight at 12, so a 24-hour ring reads as a GMT bezel
+ *  does; Okay, 9 Nov 2026: "Midnight at top") or twice (12 h: as the hour hand of the other time) */
+export function hand_angle(S, name, t) {
+  const i = FIXED_HANDS.indexOf(name);
+  if (i >= 0) return hand_angles(t, BEATS[S.ha_beat][1])[i];
+  const H = S["ha_" + name] || HAND_BASE, day = (((t + (+H.offset || 0) * 3600) % 86400) + 86400) % 86400;
+  return HAND_CYCLES[H.cycle] === "12 h" ? (day % 43200) / 43200 * 360 : day / 86400 * 360;
+}
 export function hand_angles(t, beats_per_second = 0) {
   t = ((t % 43200) + 43200) % 43200;
   let s = t % 60;
@@ -2161,9 +2211,7 @@ export const mark_stroke = (h) => (paints_mark(h) && h.mark_stroke_w > 0 && disc
 
 /** the hands that are on, bottom first: [name, colour, upright shape, clock angle]. */
 function hand_items(S, t) {
-  const angles = hand_angles(t, BEATS[S.ha_beat][1]);
-  return HANDS.map((name, i) => [name, S["ha_" + name].c, S["ha_" + name], angles[i]])
-    .filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h, name), a, h]);
+  return hands_shown(S).map((name) => { const h = S["ha_" + name]; return [name, h.c, hand_shape(h, name), hand_angle(S, name, t), h]; });      // the stack's order, bottom first (#577)
 }
 
 // ═════════════════════════════════════════════════════════════
@@ -2211,13 +2259,12 @@ export function dial_inks(S) {
  *  the parts of one ink stand together; own: the key of the part's own height (null: its ink's) */
 export function hand_prints(S) {
   if (!S.ha_on) return [];
-  const word = { hour: "Hour", minute: "Minute", second: "Seconds" }, out = [];      // short: the names' column is narrow ("Hour lume", "Minute stroke")
-  for (const h of HANDS) {
+  const out = [];      // short: the names' column is narrow ("Hour lume", "Minute stroke")
+  for (const h of hands_shown(S)) {
     const H = S["ha_" + h];
-    if (!H || !H.on) continue;
-    if (fills_openings(H)) out.push({ hand: h, kind: "lume", key: "op_fill", own: "op_ink_h", colour: H.op_fill, name: word[h] + " lume" });
-    if (paints_mark(H) && disc_mark(H)) out.push({ hand: h, kind: "mark", key: "mark_c", own: "mark_ink_h", colour: H.mark_c, name: word[h] + " mark" });
-    if (mark_stroke(H)) out.push({ hand: h, kind: "stroke", key: "mark_stroke_c", own: "mark_stroke_ink_h", colour: H.mark_stroke_c || H.c, name: word[h] + " stroke" });
+    if (fills_openings(H)) out.push({ hand: h, kind: "lume", key: "op_fill", own: "op_ink_h", colour: H.op_fill, name: hand_word(h, "lume") });
+    if (paints_mark(H) && disc_mark(H)) out.push({ hand: h, kind: "mark", key: "mark_c", own: "mark_ink_h", colour: H.mark_c, name: hand_word(h, "mark") });
+    if (mark_stroke(H)) out.push({ hand: h, kind: "stroke", key: "mark_stroke_c", own: "mark_stroke_ink_h", colour: H.mark_stroke_c || H.c, name: hand_word(h, "stroke") });
   }
   const order = [...new Set(out.map((p) => ink_hex(p.colour)))];
   return out.map((p) => ({ ...p, hex: ink_hex(p.colour) })).sort((p, q) => order.indexOf(p.hex) - order.indexOf(q.hex));

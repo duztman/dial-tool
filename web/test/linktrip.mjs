@@ -74,6 +74,21 @@ for (const [name, settings] of dials) {
   check(diff.length === 0, `Bevels % on the plain dial keeps its starting hands (hour ${back.ha_hour.len} mm long, ${back.ha_hour.w} wide)${diff.length ? " — " + diff.slice(0, 4).join(" · ") : ""}`);
 }
 
+// a hand of your own (#577): the GMT hand travels with its function — added, 12 h a turn, hours ahead — and the stack's
+// order; a dial without one writes none of it (the three fixed hands' links are as before)
+{
+  const S = G.fresh_settings({});
+  check(!("ha_gmt" in G.lean(S)) && !("ha_stack" in G.lean(S)) && !S.ha_gmt.added && !S.ha_gmt.on, "a dial without a GMT hand writes no ha_gmt and no ha_stack");
+  S.ha_gmt.added = true; S.ha_gmt.on = true; S.ha_gmt.cycle = 1; S.ha_gmt.offset = 5.5; S.ha_stack = ["hour", "minute", "gmt", "second"];
+  const back = G.fresh_settings(read(link(S)));
+  check(back.ha_gmt.added && back.ha_gmt.on && back.ha_gmt.cycle === 1 && back.ha_gmt.offset === 5.5 && back.ha_stack.join() === "hour,minute,gmt,second", `the GMT hand travels: added, ${G.HAND_CYCLES[back.ha_gmt.cycle]} a turn, ${back.ha_gmt.offset} h ahead, the stack ${back.ha_stack.join(" · ")}`);
+  const t = 10 * 3600 + 9 * 60 + 36;      // 10:09:36
+  const a24 = G.hand_angle({ ...S, ha_gmt: { ...S.ha_gmt, cycle: 0, offset: 0 } }, "gmt", t), a12 = G.hand_angle(S, "gmt", t), ahead = G.hand_angle({ ...S, ha_gmt: { ...S.ha_gmt, cycle: 0, offset: 3 } }, "gmt", t);
+  check(Math.abs(a24 - 152.4) < 1e-6 && Math.abs(a12 - 109.8) < 1e-6 && Math.abs(ahead - 197.4) < 1e-6, `the GMT hand's angle: 24 h a turn with midnight at 12 → ${a24.toFixed(1)}° at 10:09:36; 12 h a turn, 5.5 h ahead → ${a12.toFixed(1)}°; 3 h ahead on 24 h → ${ahead.toFixed(1)}°`);
+  const bad = G.fresh_settings({ ha_stack: ["second", "nothing", "second"], ha_gmt: { added: false, on: true } });
+  check(bad.ha_stack.join() === "gmt,hour,minute,second" && !bad.ha_gmt.on, `a broken stack is made whole (${bad.ha_stack.join(" · ")}); a GMT hand not added is never on`);
+}
+
 // an older scheme is recognised, not read: the page opens the First dial with a note (window.mjs checks that)
 check(G.link_kind("#1.fZLRjtsgEEV_~x")?.scheme === 1 && G.link_kind("0.abc")?.scheme === 0 && G.link_kind("#2ABC")?.scheme === 2 && G.link_kind("#3ABC")?.scheme === 3 && G.link_kind("#4ABC")?.scheme === 4 && G.link_kind("#5ABC")?.scheme === 5 && G.link_kind("#hello") === null && G.link_kind("") === null,
   "a link of scheme 0, 1 or 2 is known as one; anything else after # is not a dial");

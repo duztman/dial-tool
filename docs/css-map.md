@@ -70,7 +70,7 @@
 | `--day-handle` | `var(--triple)` | the day's ruler: its height (bar.js draws the cuts in it: 21 · 14 · 8 — taller, Okay, 30 Oct 2026, 18:38: "taller marks"), the hours' names over it, the handle's width | 7-bar ×3 |  |
 | `--day-wide` | `518px` | the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) | 7-bar |  |
 | `--details-line` · special | `17px` | the ring drawer's two lines of details, baseline to baseline (the same drawing: 16–17) | 4f-rings |  |
-| `--dim` · special | `0.45` | a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured | 4e-colour, 4f-rings ×2 |  |
+| `--dim` · special | `0.45` | a thing moved out of the way, still there: a ring row being dragged, the rings above the one pictured | 4e-colour, 4f-rings ×2, 6-preview ×2 |  |
 | `--dot` · special | `14px` | a swatch to pick from (a band's sectors); the Backdrop switch's sign is one | 4e-colour ×7, 6-preview | 1-tokens `:root` → `18px` |
 | `--dot-tiny` | `10px` | a colour inside a line of words: a folded pane's summary | 4e-colour ×2 |  |
 | `--eye` | `16px` | the toggle column | 1-tokens ×2, 4a-panel ×8, 4e-colour ×4 |  |
@@ -100,7 +100,7 @@
 | `--glow` | `#FF7300` | the outline of what the pointer is on, in the preview | 6-preview |  |
 | `--glow-line` · special | `1.5px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 4f-rings ×2, 6-preview ×3 |  |
 | `--glow-under` · special | `4px` | lines, but not one of the three: the outline of what the pointer is on, and the white line under it | 6-preview |  |
-| `--grey` | `#5C5C58` | colour | 1-tokens, 2-base ×2, 3-controls ×4, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×7, 4d-hands ×3, 4e-colour ×9, 4f-rings ×15, 4g-fonts ×12, 6-preview ×20, 8-narrow ×2 | 3-controls `.night` → `var(--bar-quiet)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)`; set by show.js |
+| `--grey` | `#5C5C58` | colour | 1-tokens, 2-base ×2, 3-controls ×4, 4a-panel ×4, 4b-lines-tabs ×3, 4c-rows ×7, 4d-hands ×3, 4e-colour ×9, 4f-rings ×15, 4g-fonts ×12, 6-preview ×20, 8-narrow ×2 | 3-controls `.night` → `var(--bar-quiet)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-grey)`; set by show.js |
 | `--grip` | `18px` | the ring list's drag handle column | 4f-rings |  |
 | `--grip-groove` | `12px` | the one line across it, as a gripper's lines are | 3-controls |  |
 | `--grip-h` | `10px` | the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it | 4f-rings ×2, 8-narrow ×2 |  |
@@ -110,7 +110,7 @@
 | `--ground-chip` · special | `calc((var(--shade-w) - 2 * var(--shade-pad) - (var(--ground-cols) - 1) * var(--pop-chip-gap)) / var(--ground-cols))` | one square: what the row leaves after its gaps | 6-preview ×2 |  |
 | `--ground-cols` · special | `8` | show mode's Backdrop: squares to a row across the Shadows pane's width; a gradient takes two (#510) | 1-tokens ×2, 6-preview |  |
 | `--guide` · the window's | `—` |  | 4f-rings ×4 | set by rings.js |
-| `--guide-circle` | `20px` | 240 plus the first column (eyes, minuses; Okay, 2 Nov 2026: "Popup gets wider: minuses get their own column before the names") | 1-tokens, 6-preview ×16 |  |
+| `--guide-circle` | `20px` | 240 plus the first column (eyes, minuses; Okay, 2 Nov 2026: "Popup gets wider: minuses get their own column before the names") | 1-tokens, 4b-lines-tabs ×3, 6-preview ×16 |  |
 | `--guide-dim` | `0.4` | a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches") | 6-preview |  |
 | `--guide-dot` · special | `7px` | a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar | 3-controls, 6-preview | 1-tokens `:root` → `11px` |
 | `--guide-edge` | `65%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 4f-rings ×2 |  |
@@ -122,7 +122,7 @@
 | `--guide-pill-pad` · special | `var(--u2)` | a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) | 6-preview |  |
 | `--guide-row` · special | `30px` | the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) | 3-controls ×2, 6-preview ×5 | 1-tokens `:root` → `38px` |
 | `--guide-tint` | `22%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 1-tokens, 4f-rings ×2 |  |
-| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×13, 4b-lines-tabs ×20, 4c-rows ×12, 4d-hands ×5, 4e-colour ×19, 4f-rings ×32, 4g-fonts ×22, 6-preview ×48, 7-bar ×21, 8-narrow ×7 |  |
+| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×13, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×5, 4e-colour ×19, 4f-rings ×32, 4g-fonts ×22, 6-preview ×48, 7-bar ×21, 8-narrow ×7 |  |
 | `--handle` · the window's | `—` |  | 4f-rings ×2, 6-preview ×3 | set by hands.js, set by preview.js, set by rings.js |
 | `--head` | `40px` | a pane's heading | 3-controls, 4a-panel ×3, 4b-lines-tabs ×2, 4e-colour, 4g-fonts ×2, 8-narrow ×2 |  |
 | `--header` | `calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair))` | the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes | 4a-panel ×2, 4g-fonts |  |
@@ -130,7 +130,7 @@
 | `--hue` · the window's | `—` |  | 4e-colour | set by colour.js |
 | `--in-l` · set in 4b-lines-tabs | `max(calc(var(--cut-l) + 0.414 * var(--hair)), var(--hair))` | the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider | 4b-lines-tabs ×4 |  |
 | `--in-r` · set in 4b-lines-tabs | `max(calc(var(--cut-r) + 0.414 * var(--hair)), var(--hair))` | the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider | 4b-lines-tabs ×4 |  |
-| `--ink` | `#111` | colour | 1-tokens, 2-base, 3-controls ×26, 4a-panel ×25, 4b-lines-tabs ×6, 4c-rows ×10, 4d-hands, 4e-colour ×15, 4f-rings ×24, 4g-fonts ×11, 4h-gallery, 5-chosen ×3, 6-preview ×49, 7-bar ×2, 8-narrow ×3 | 3-controls `.night` → `var(--bar-ink)`; 4f-rings `.numpop .row` → `var(--num-pop-disc)`; 4f-rings `.numpop.lit .row input[type="range"]` → `var(--shade-lit)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-ink)`; 6-preview `.shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"]` → `var(--shade-lit)`; 6-preview `.shaderows .row.side:hover input[type="range"]` → `var(--shade-lit)`; set by show.js |
+| `--ink` | `#111` | colour | 1-tokens, 2-base, 3-controls ×26, 4a-panel ×25, 4b-lines-tabs ×8, 4c-rows ×10, 4d-hands, 4e-colour ×15, 4f-rings ×24, 4g-fonts ×11, 4h-gallery, 5-chosen ×3, 6-preview ×49, 7-bar ×2, 8-narrow ×3 | 3-controls `.night` → `var(--bar-ink)`; 4f-rings `.numpop .row` → `var(--num-pop-disc)`; 4f-rings `.numpop.lit .row input[type="range"]` → `var(--shade-lit)`; 4g-fonts `.font-dark :is(.fontlist, .fontbox .fontrow.current)` → `var(--font-night-ink)`; 6-preview `.shaderows .row.side:is(:focus-within, :has([aria-expanded="true"])) input[type="range"]` → `var(--shade-lit)`; 6-preview `.shaderows .row.side:hover input[type="range"]` → `var(--shade-lit)`; set by show.js |
 | `--ink-dx` · the window's | `—` |  | 3-controls, 7-bar | set by bar.js, set by ink.js |
 | `--ink-dy` · the window's | `—` |  | 3-controls, 7-bar ×2 | set by bar.js, set by ink.js |
 | `--ink-hover` | `#333331` | a filled control under the pointer | 3-controls, 5-chosen | 3-controls `.night` → `var(--white)` |
@@ -171,7 +171,7 @@
 | `--night` | `#141413` |  | 3-controls ×2, 4a-panel ×4, 4e-colour ×2, 6-preview ×9 | 4c-rows `.heightsbox` → `var(--column-solid, var(--paper))`; set by show.js |
 | `--night-chip-rule` | `rgba(255, 255, 255, 0.28)` |  | 3-controls, 4e-colour |  |
 | `--night-field` | `#262624` |  | 3-controls ×2, 4a-panel ×5 | set by show.js |
-| `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview | 4c-rows `.heightsbox` → `var(--grey)` |
+| `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview ×2 | 4c-rows `.heightsbox` → `var(--grey)` |
 | `--night-hover` | `#34342F` |  | 3-controls, 4a-panel, 6-preview |  |
 | `--night-rule` | `#4A4A46` |  | 3-controls ×3, 4a-panel, 5-chosen, 6-preview ×14 | 4c-rows `.heightsbox` → `var(--rule)` |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
@@ -289,7 +289,7 @@
 | `--shade-gap` · special | `14px` | the pane's width, the drawing's — on every screen (16:55: "Keep window width same") · /* the pane's room inside its edge · its corners · from the top box to the parts' first line | 6-preview |  |
 | `--shade-knob` · special | `25px` | its fat track and the pill knob carrying the value; the thin fill inside the track, and how far in from the track's end it starts | 6-preview ×2 |  |
 | `--shade-left` · the window's | `—` |  | 6-preview | set by guides.js |
-| `--shade-lit` · special | `#F00` | the part being sized: its slider's fill and knob, and the line from the part down to the plate in the diagram; the dashes of the piece it changes | 4f-rings, 6-preview ×5 |  |
+| `--shade-lit` · special | `#F00` | the part being sized: its slider's fill and knob, and the line from the part down to the plate in the diagram; the dashes of the piece it changes | 4f-rings, 6-preview ×6 |  |
 | `--shade-named-gap` · special | `3px` | a named slider's third: the name's room from the line over it and from the left line; the slider's own room past that, at both ends; between the name and the slider | 6-preview |  |
 | `--shade-named-left` · special | `11px` | a named slider's third: the name's room from the line over it and from the left line; the slider's own room past that, at both ends; between the name and the slider | 6-preview |  |
 | `--shade-named-right` · special | `11px` | a named slider's third: the name's room from the line over it and from the left line; the slider's own room past that, at both ends; between the name and the slider | 6-preview |  |
@@ -364,7 +364,7 @@
 | `--t-xxs` · special | `10px` | a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) | 4g-fonts ×3 |  |
 | `--tab` · the window's | `—` |  | 4b-lines-tabs ×2 | set by rings.js |
 | `--tab-fill` · set in 4b-lines-tabs | `var(--field)` |  | 4b-lines-tabs | 4b-lines-tabs `.tab.hang:last-child` → `var(--hover)`; 4b-lines-tabs `.tab.on` → `var(--ink)`; 4g-fonts `.font .styles > .tab.on` → `var(--wait)` |
-| `--tab-high` | `40px` | a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe | 4b-lines-tabs |  |
+| `--tab-high` | `40px` | a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe | 4b-lines-tabs ×2 |  |
 | `--tab-line` · set in 4b-lines-tabs | `var(--rule)` |  | 4b-lines-tabs | 4b-lines-tabs `.tab.on` → `var(--ink)`; 4g-fonts `.font .styles > .tab.on` → `var(--wait)` |
 | `--tab-notch` | `var(--unit)` | how deep the notch between two tabs is cut (a V, twice as wide): one unit | 4b-lines-tabs ×2 |  |
 | `--tab-pad` | `11px` | a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe | 4b-lines-tabs |  |
@@ -396,9 +396,9 @@
 | `--track-100` | `0.1em` | tracking 100 (Okay, 04:59: "now gets 100 tracking") | 3-controls, 6-preview |  |
 | `--track-20` | `0.02em` | tracking 20: the controller's value, a little apart | 4f-rings |  |
 | `--track-50` | `0.05em` | tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") | 4a-panel, 7-bar ×4 |  |
-| `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4e-colour, 4f-rings ×2, 7-bar ×2 |  |
-| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×12, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×11, 7-bar ×2 |  |
-| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×3, 4a-panel ×4, 4c-rows ×3, 4e-colour ×15, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
+| `--triple` | `calc(3 * var(--hair))` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×3, 4a-panel, 4d-hands, 4e-colour, 4f-rings ×2, 6-preview, 7-bar ×2 |  |
+| `--u1` | `calc(var(--unit) / 2)` |  | 1-tokens, 3-controls ×11, 4a-panel ×5, 4b-lines-tabs ×3, 4c-rows ×5, 4d-hands, 4e-colour ×12, 4f-rings ×9, 4g-fonts ×6, 4h-gallery ×2, 6-preview ×12, 7-bar ×2 |  |
+| `--u2` · special | `var(--unit)` |  | 1-tokens ×2, 3-controls ×3, 4a-panel ×4, 4b-lines-tabs, 4c-rows ×3, 4e-colour ×15, 4f-rings ×7, 4g-fonts ×5, 6-preview ×19, 7-bar ×7, 8-narrow ×2 |  |
 | `--u3` | `calc(1.5 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4b-lines-tabs ×2, 4e-colour ×5, 4f-rings ×9, 4g-fonts ×7, 4h-gallery ×3, 6-preview ×9, 7-bar |  |
 | `--u4` | `calc(2 * var(--unit))` |  | 1-tokens ×3, 3-controls ×3, 4a-panel ×9, 4b-lines-tabs ×4, 4d-hands ×2, 4e-colour ×3, 4f-rings ×3, 4g-fonts ×5, 4h-gallery ×4, 6-preview ×5, 8-narrow |  |
 | `--u5` | `calc(2.5 * var(--unit))` |  | 8-narrow ×2 |  |

@@ -4,7 +4,7 @@
 import * as G from "./geometry.js";
 
 import { $, KEY, NUDGE_NEUTRAL, RING_ROWS, SNAP_DEG, clamp, el, paint } from "./ui.js";
-import { DENSE, KIND_PIC, LINE, PICS, SIGNS, TOOL_ICONS, eye, icon, round_sign } from "./icons.js";
+import { DENSE, KIND_PIC, LINE, PICS, SIGNS, TOOL_ICONS, eye, icon, round_sign, sw } from "./icons.js";
 import { STRIP_SHOWS, VALUE_PICS, chevron_box, num, radius_row, size_row } from "./rows.js";
 
 export const RINGS = {
@@ -569,9 +569,17 @@ export const RINGS = {
     box.onchange = () => this.set_value(row.scope, "on", box.checked);
     wrap.className = "showbox";
     const line = el("span", { className: "showline" }, el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box, " Show"));
+    // an added hand's − (#577): takes the hand off the dial, as the Added guides' − takes a guide; the fixed three have none
+    let minus = null;
+    if (row.scope === "hand") {
+      const sign = el("span", { className: "sign" }); sign.innerHTML = icon(`<path d="M3.25 6.25H9.25" ${sw(LINE)}/>`, 12);
+      minus = el("button", { type: "button", className: "minus", id: "hand-remove", title: "Remove this hand", ariaLabel: "Remove this hand", onclick: () => this.remove_hand(G.HANDS[this.S.ui_hand]) }, sign);
+      line.append(minus);
+    }
     wrap.append(line);
     out.refresh = (T) => {
       box.checked = Boolean(T.on);
+      if (minus) minus.hidden = !G.ADDED_HANDS.includes(G.HANDS[this.S.ui_hand]);
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);

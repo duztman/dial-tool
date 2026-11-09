@@ -1,7 +1,7 @@
 // Dial Tool, web version — files out: SVG and PDF, both vector and at true size.
 // Both draw the scene (R26) and nothing else; guides and backdrop never reach a file (R5).
 
-import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path, circle, VERSION, text_path, page_type, clock_point, kind_of, windows_of, window_place, WINDOW_KINDS, HAND_BASE } from "./geometry.js";
+import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path, circle, VERSION, text_path, page_type, clock_point, kind_of, windows_of, window_place, WINDOW_KINDS, HAND_BASE, hand_word } from "./geometry.js";
 
 // who made a file, written into every PDF, SVG and PNG (#226): which build drew it, so a file can be traced to its version
 export const MADE_BY = `Dial Tool, web version, ${VERSION}`;
@@ -18,10 +18,10 @@ export const rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Mat
 function item_name(item) {
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");      // a band with sector colours is one shape per colour
   if (item.role === "ring stroke") return (item.ring.ring.name || item.ring.kind) + " stroke";      // the outline round a ring's letters (#551)
-  if (item.role === "hand") return { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name;
-  if (item.role === "lume") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " lume";      // its openings' lume (#175)
-  if (item.role === "mark" && item.edge) return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " mark stroke";      // a painted mark's stroke (#574)
-  if (item.role === "mark") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " mark";      // a disc's painted mark (#300)
+  if (item.role === "hand") return hand_word(item.name);
+  if (item.role === "lume") return hand_word(item.name, "hand lume");      // its openings' lume (#175)
+  if (item.role === "mark" && item.edge) return hand_word(item.name, "hand mark stroke");      // a painted mark's stroke (#574)
+  if (item.role === "mark") return hand_word(item.name, "hand mark");      // a disc's painted mark (#300)
   if (item.window !== undefined) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date picture": "picture", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
   return item.role[0].toUpperCase() + item.role.slice(1);
 }

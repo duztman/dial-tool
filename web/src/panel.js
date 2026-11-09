@@ -154,7 +154,7 @@ export const PANEL = {
     // canvas's switches — black with round corners; on the panel's white, white with sharp corners
     const dark = Boolean(select.closest(".night, .guidelist, .shadelist, main, .colourpop"));
     list.classList.toggle("night", dark);
-    list.classList.toggle("flush", Boolean(select.closest(".guidehead .plus")));      // Added's +: the list's right edge on the button's
+    list.classList.toggle("flush", Boolean(select.closest(".guidehead .plus, .tabsbar .plus")));      // Added's +: the list's right edge on the button's
     list.hidden = false;
     const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));      // the stylesheet's unit: a unit off the box and the window's edges
     const box = (select.closest(".menubox, .popgroup, .casebox, .menulabel") || select.parentElement || select).getBoundingClientRect();

@@ -2,7 +2,7 @@
 // the preview while its row is under the pointer.
 
 import * as G from "./geometry.js";
-import { BEVEL, hand_detail, hand_part } from "./icons.js";
+import { BEVEL, LINE, hand_detail, hand_part, icon, sw } from "./icons.js";
 import { HANDLE_AXIS, HANDLE_REACH, SNAP_PX, clamp, el, snap, svg_el } from "./ui.js";
 import { ROWS, chevron_box } from "./rows.js";
 
@@ -78,17 +78,56 @@ export const HANDS = {
     finish();
   },
 
-  /** Hands, on top and always in view: Hour · Minute · Seconds, as tabs for the panes below. */
+  /** Hands, on top and always in view: Hour · Minute · Seconds, and the hands of your own that were added, as tabs for
+   *  the panes below; after them a + (#577; Okay, 3 Nov 2026: "A plus sign next to the hands tabs, creates a new hand …
+   *  Ask for function upfront, then add hand as normal"): the Added guides' round +, its menu the functions not yet on
+   *  the dial — GMT (another time) now, day, week and month later. Chosen, the hand gets its tab, starts shown, and the
+   *  tab is selected; the + goes when every function is added (R16). */
   row_hand_tabs(wrap, out) {
     wrap.className = "tabsbar";
+    const line = el("span", { className: "tabsline" });
     const tabs = el("span", { className: "segs", role: "tablist", ariaLabel: "Which hand" });
-    ["Hour", "Minute", "Seconds"].forEach((name, i) => {
-      const b = el("button", { type: "button", className: "tab", id: "hand-tab-" + i, textContent: name, onclick: () => this.set_value("global", "ui_hand", i) });
-      b.setAttribute("role", "tab");
-      tabs.append(b);
-    });
-    wrap.append(tabs);
-    out.refresh = (S) => [...tabs.children].forEach((b, i) => { b.classList.toggle("on", i === S.ui_hand); b.setAttribute("aria-selected", String(i === S.ui_hand)); });
+    const select = el("select", { id: "hand-add", ariaLabel: "Add a hand", className: "hiddenselect" });
+    select.onchange = () => {
+      const name = select.value;
+      if (!name || !G.ADDED_HANDS.includes(name)) return;
+      select.value = "";
+      this.add_hand(name);
+    };
+    const plus_sign = el("span", { className: "sign" }); plus_sign.innerHTML = icon(`<path d="M3.25 6.25H9.25M6.25 3.25V9.25" ${sw(LINE)}/>`, 12);      // the Added guides' + (guides.js), the same drawing
+    const plus = el("span", { className: "minus plus", id: "hand-add-plus", title: "Add a hand" }, plus_sign, select);
+    line.append(tabs, plus);
+    wrap.append(line);
+    let drawn = "";
+    out.refresh = (S) => {
+      const shown = G.HANDS.filter((h) => G.hand_added(S, h)), key = shown.join();
+      if (key !== drawn) {      // the tabs built again only when a hand was added or removed
+        drawn = key;
+        tabs.replaceChildren(...shown.map((h) => { const i = G.HANDS.indexOf(h), b = el("button", { type: "button", className: "tab", id: "hand-tab-" + i, textContent: G.HAND_WORD[h], onclick: () => this.set_value("global", "ui_hand", i) }); b.setAttribute("role", "tab"); return b; }));
+        const left = G.HAND_FUNCTIONS.filter(([h]) => !shown.includes(h));
+        select.replaceChildren(el("option", { value: "", textContent: "Add a hand", hidden: true, selected: true }), ...left.map(([h, words]) => el("option", { value: h, textContent: words })));
+        plus.hidden = !left.length;
+      }
+      [...tabs.children].forEach((b) => { const on = +b.id.slice(9) === S.ui_hand; b.classList.toggle("on", on); b.setAttribute("aria-selected", String(on)); });
+    };
+  },
+
+  /** a hand of your own put on the dial (#577): added and shown, its tab chosen; undoable */
+  add_hand(name) {
+    const H = this.S["ha_" + name];
+    if (!H || H.added) return;
+    H.added = true; H.on = true;
+    this.S.ui_hand = G.HANDS.indexOf(name);
+    this.changed(true);
+  },
+
+  /** …and taken off again (the − on its Show line): its settings kept, so adding it back brings the same hand */
+  remove_hand(name) {
+    const H = this.S["ha_" + name];
+    if (!H || !H.added) return;
+    H.added = false; H.on = false;
+    if (G.HANDS[this.S.ui_hand] === name) this.S.ui_hand = 0;
+    this.changed(true);
   },
 
   /** Hands, always in view, one line (Okay, 12 Oct 2026): the name, a tick to show the hands, how they move. */

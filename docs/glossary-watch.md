@@ -9,7 +9,9 @@ What each word means **in this project**; Turkish where it is the trade word. On
 | **Dial** | kadran | The plate under the hands: the *plate*, its rings and the windows. |
 | **Plate** | | The dial disc (`dial_d`, colour `c_plate`). |
 | **Movement** | mekanizma | The mechanism behind the dial; not chosen yet. |
-| **Hour / minute / seconds hand** | akrep / yelkovan / saniye ibresi | Each with its own shape and settings (`ha_hour`, `ha_minute`, `ha_second`). |
+| **Hour / minute / seconds hand** | akrep / yelkovan / saniye ibresi | The fixed hands, each with its own shape and settings (`ha_hour`, `ha_minute`, `ha_second`). |
+| **GMT hand** | | A hand of your own (#577) showing another time: `offset` hours ahead of the time shown, turning once a day (`cycle` 24 h — midnight at 12, read on a 24-hour ring) or twice (12 h). Key `ha_gmt`; on the dial once `added`. |
+| **Hand stack** | | The hands' order on the dial, bottom first (`ha_stack`, gmt · hour · minute · second to start); moved by the grips in the Shadows heights, where the hands trade rungs. The cap sits on the topmost shown hand. |
 | **Tail** | | The part of a hand behind the pivot, mm. |
 | **Counterweight** | | A disc on a hand's tail, centred at 73 % of it. |
 | **Cap** | | The disc over the pivot (`ha_cap`, `c_cap`); part of the seconds hand; on the topmost hand only with **Cap on this hand** (`ha_cap_top`). |

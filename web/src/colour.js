@@ -58,7 +58,7 @@ export const COLOUR = {
    *  and their sectors, hands, cap, windows), or with the page: plate, backdrop, cap, then the rest (the colour
    *  pop-out's "On this dial", in its own order). */
   dial_colours(page = true) {
-    const S = this.S, rings = S.rings.flatMap((r) => [r.c, ...Object.values(r.cs || {})]), hands = G.HANDS.map((h) => S["ha_" + h].c), windows = G.windows_of(S).filter((w) => w.on).map((w) => w.ink);
+    const S = this.S, rings = S.rings.flatMap((r) => [r.c, ...Object.values(r.cs || {})]), hands = G.HANDS.filter((h) => G.hand_added(S, h)).map((h) => S["ha_" + h].c), windows = G.windows_of(S).filter((w) => w.on).map((w) => w.ink);
     const all = page ? [S.c_plate, S.c_backdrop, S.c_cap, ...rings, ...hands, ...windows] : [...rings, ...hands, S.c_cap, ...windows];      // the pop-out's order as it was (4.38)
     const once = new Map();
     for (const c of all) if (Array.isArray(c)) { const hex = to_hex(c).toUpperCase(); if (!once.has(hex)) once.set(hex, c); }
@@ -489,7 +489,8 @@ export const COLOUR = {
       const cap = this.cap_colour();
       if (show) lines.push({ sub: true, text: "Hands", colours: [] });
       G.HANDS.forEach((h, k) => {
-        const text = ["Hour hand", "Minute hand", "Seconds hand"][k], line = { text, colours: show ? this.hand_colours(h, text) : [this.hand_colour(h, text)], mark: show ? PICS.hand : "" };
+        if (!G.hand_added(S, h)) return;      // a hand of your own not yet added has no line (#577)
+        const text = G.hand_word(h), line = { text, colours: show ? this.hand_colours(h, text) : [this.hand_colour(h, text)], mark: show ? PICS.hand : "" };
         if (show) {      // its eye, its colour and the cap's as a square beside it, on the hand the cap sits on (Okay: "A swatch on its hand's line")
           line.eye = { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => { this.S["ha_" + h].on = on; this.changed(); } };
           if (G.cap_shows(S) && k === G.top_hand(S)) { line.colours = [...line.colours, { ...cap, square: true }]; line.note = "hand · cap"; }
@@ -706,7 +707,9 @@ export const COLOUR = {
       const S = this.S, lines = [];
       const tall = (h, text) => [{ key: "height", place: "number", make: () => this.line_number(num("sh_" + h, text, 0, 3, 0.05, { scope: "global", block: true, id: `show-${h}-height` })) }];
       if (G.cap_shows(S)) lines.push({ text: "Cap", mark: PICS.cap, colours: [{ ...this.cap_colour(), id: "cap-hands", square: true }], tail: tall("cap", "Cap height") });      // squares: the hex is spelled out in Colours above (Okay: "a · square only")
-      for (const [h, text] of [["second", "Seconds"], ["minute", "Minutes"], ["hour", "Hours"]]) {      // top down, as they stand (the Shadows pane's order)
+      for (const h of G.hand_stack(S).slice().reverse()) {      // top down, as they stand (the Shadows pane's order, #577)
+        if (!G.hand_added(S, h)) continue;
+        const text = G.HAND_PLURAL[h];
         lines.push({ text, mark: PICS.hand, colours: this.hand_colours(h, text + " hand", "-hands").map((c) => ({ ...c, square: true })), tail: tall(h, text + " height"),
           eye: { title: "Show or hide this hand", read: () => this.S["ha_" + h].on, write: (on) => { this.S["ha_" + h].on = on; this.changed(); } } });
       }
@@ -717,14 +720,15 @@ export const COLOUR = {
   /** Bevels: which hands have one — a free pill each, filled when on (the hand lines' own toggles, gathered) */
   row_bevel_pills(wrap, out) {
     const group = el("span", { className: "pillswitch free", role: "group", ariaLabel: "Bevels" });
-    const buttons = [["second", "Seconds"], ["minute", "Minutes"], ["hour", "Hours"]].map(([h, text]) => {
+    const buttons = G.hand_stack(this.S).slice().reverse().map((h) => { const text = G.HAND_PLURAL[h];
       const b = el("button", { type: "button", id: `bevel-${h}`, textContent: text, onclick: () => { const H = this.S["ha_" + h]; H.bevel = !H.bevel; this.changed(); } });
       return [h, b];
     });
     group.append(...buttons.map(([, b]) => b));
     wrap.classList.add("bevels");      // its pills from the second column to the line's end, on one line
     wrap.append(el("label", { textContent: "Bevels" }), group);
-    out.refresh = (S) => { for (const [h, b] of buttons) { const on = Boolean(this.S["ha_" + h].bevel); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.hidden = !this.S["ha_" + h].on || G.HAND_SHAPES[this.S["ha_" + h].shape] === "disc"; } };      // a disc hand has no bevel (02:11)
+    out.refresh = (S) => { for (const h of G.hand_stack(S).slice().reverse()) { const b = buttons.find((x) => x[0] === h)?.[1]; if (b) group.append(b); }      // the stack's order, top first (#577)
+      for (const [h, b] of buttons) { const on = Boolean(this.S["ha_" + h].bevel); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.hidden = !G.hand_added(S, h) || !this.S["ha_" + h].on || G.HAND_SHAPES[this.S["ha_" + h].shape] === "disc"; } };      // a disc hand has no bevel (02:11)
   },
 
   /** a number box alone, for a line of show mode's Colours (#521): the row's own box and − +, its name the line's */

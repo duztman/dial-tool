@@ -1058,6 +1058,48 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   check(!panes.includes("Cap") && second.join() === "true,true,false,true" && hour.join() === "false,false,false,true" && none.join() === "false,false,true,false" && asked.join() === "true,true,true,true",
     `the cap's size and colour stand in the seconds hand's pane (no Cap pane), not in the hour hand's; with no seconds hand the minute hand's pane offers "Cap on this hand", off, and the cap is drawn only once it is ticked (${[second, hour, none, asked].map((x) => x.map(Number).join("")).join(" · ")})`);
 }
+// a hand of your own (#577; Okay, 3 Nov 2026: "A plus sign next to the hands tabs, creates a new hand … Ask for function
+// upfront, then add hand as normal. this hand is added to the stack for shadows"): the + after the tabs asks the function;
+// GMT chosen, a GMT tab, its pane with Turns in · Hours ahead on it alone, the hand on the dial at the other time's angle,
+// its row in the Shadows heights with a grip; the − on its Show line takes it off again
+{
+  const rows_seen = () => page.evaluate(() => [...document.querySelectorAll(".row")].filter((r) => !r.hidden && r.checkVisibility() && r.querySelector("label")).map((r) => { const l = r.querySelector("label"); return l.querySelector(".whole")?.textContent || l.textContent; }));      // a row with a short wording: its whole one
+  const before = await page.evaluate(() => { const plus = document.querySelector("#hand-add-plus"), tabs = [...document.querySelectorAll(".tabsbar .segs > .tab")], r = (e) => e.getBoundingClientRect(), unit = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); return { tabs: tabs.map((t) => t.textContent).join(), plus: !plus.hidden && plus.checkVisibility(), round: getComputedStyle(plus).borderRadius, after: Math.round((r(plus).left - r(tabs.at(-1)).right) / unit * 10) / 10, size: Math.round(r(plus).width), options: [...document.querySelectorAll("#hand-add option")].filter((o) => !o.hidden).map((o) => o.textContent).join(), remove: document.querySelector("#hand-remove").hidden }; });
+  await page.selectOption("#hand-add", "gmt"); await frame();
+  const rows = await rows_seen(), at = rows.indexOf("Colour");
+  const added = await page.evaluate(() => { const S = window.dial_tool.S, tabs = [...document.querySelectorAll(".tabsbar .segs > .tab")];
+    return { tabs: tabs.map((t) => t.textContent + (t.classList.contains("on") ? "*" : "")).join(), ui_hand: S.ui_hand, on: S.ha_gmt.added && S.ha_gmt.on, plus: document.querySelector("#hand-add-plus").hidden, remove: !document.querySelector("#hand-remove").hidden }; });
+  check(before.tabs === "Hour,Minute,Seconds" && before.plus && before.round === "50%" && before.after === 1 && before.size === 20 && before.options === "GMT — another time" && before.remove,
+    `after Hour · Minute · Seconds a round + (${before.size} wide, a unit after the last tab: ${before.after}) whose menu asks the function: ${before.options}; the fixed hands have no −`);
+  check(added.tabs === "Hour,Minute,Seconds,GMT*" && added.ui_hand === 3 && added.on && added.plus && added.remove && at >= 0 && rows.slice(at, at + 3).join() === "Colour,Turns in,Hours ahead",
+    `GMT chosen: a GMT tab, chosen, the hand on; the + gone (every function added, R16); the − on its Show line; its pane opens Colour · Turns in · Hours ahead (${rows.slice(at, at + 3).join(" · ")})`);
+  // on the dial: the GMT hand drawn first, under the hour hand (the stack's order, bottom first), at the other time's angle — 24 h a turn, midnight at 12
+  const on_dial = await S("[t.items.filter((x) => x.role === 'hand').map((x) => x.name + '@' + Math.round(x.angle * 10) / 10).join(), S.ha_stack.join(), S.sh_gmt, Math.round((S.t % 86400) / 86400 * 3600) / 10, S.t]");
+  const t = on_dial[4], want = `gmt@${on_dial[3]},hour@${Math.round((t % 43200) / 43200 * 3600) / 10},minute@${Math.round((t % 3600) / 3600 * 3600) / 10},second@${Math.round((t % 60) / 60 * 3600) / 10}`;
+  check(on_dial[0] === want && on_dial[1] === "gmt,hour,minute,second" && on_dial[2] === 0.1,
+    `the GMT hand is drawn first, under the hour hand, at ${on_dial[3]}° (the day's ${(t / 3600).toFixed(2)} h of 24, midnight at 12); its height 0.10 under the hour's 0.15 (${on_dial[0]})`);
+  // the fixed three keep their panes: Turns in · Hours ahead are the GMT tab's alone
+  await page.click("#hand-tab-0"); await frame();
+  const hour_rows = await rows_seen(), h_at = hour_rows.indexOf("Colour");
+  check(hour_rows.slice(h_at, h_at + 2).join() === "Colour,Length" && await S("document.querySelector('#hand-remove').hidden"), `the Hour tab has no Turns in, no Hours ahead and no − (${hour_rows.slice(h_at, h_at + 2).join(" · ")})`);
+  // the Shadows heights: a GMT row with a grip, under Hours; dragged over Seconds, the stack turns and the hands trade rungs
+  await page.evaluate(() => { const l = document.querySelector("#shadow-list"); if (!l || l.hidden) document.querySelector("#shadows-more").click(); }); await frame(); await page.waitForTimeout(300);
+  const hand_rows = () => page.evaluate(() => [...document.querySelectorAll("#shadow-list .shaderows .row")].filter((r) => !r.hidden && !(r.dataset.part || "").startsWith("disc")).map((x) => x.querySelector("label")?.textContent).join());
+  const list = await page.evaluate(() => { const rows = [...document.querySelectorAll('#shadow-list .shaderows .row')].filter((r) => !r.hidden); const g = document.querySelector('#shadow-list .shaderows .row[data-part="gmt"] .grip'), r = (e) => e.getBoundingClientRect(), unit = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); const ink = g && [...g.querySelectorAll("circle")].reduce((m, c) => Math.max(m, r(c).right), 0), l = g && g.nextElementSibling; return { grips: rows.filter((x) => x.querySelector(".grip")).map((x) => x.dataset.part).join(), air: g ? Math.round((r(l).left + parseFloat(getComputedStyle(l).paddingLeft) - ink) / unit * 10) / 10 : null }; });
+  check(await hand_rows() === "Cap,Seconds,Minutes,Hours,GMT,Plate" && list.grips === "second,minute,hour,gmt" && list.air >= 1, `the Shadows heights: Cap · Seconds · Minutes · Hours · GMT · Plate, a grip on every hand's row, ${list.air} units of air from the gripper's dots to the name`);
+  const g = await page.$('#shadow-list .shaderows .row[data-part="gmt"] .grip'), gb = await g.boundingBox(), sb = await (await page.$('#shadow-list .shaderows .row[data-part="second"]')).boundingBox();
+  await page.mouse.move(gb.x + gb.width / 2, gb.y + gb.height / 2); await page.mouse.down(); await page.mouse.move(gb.x + gb.width / 2, sb.y + 2, { steps: 6 }); await page.mouse.up(); await frame(); await page.waitForTimeout(200);
+  const moved = await S("[S.ha_stack.join(), [S.sh_gmt, S.sh_second, S.sh_minute, S.sh_hour].join(), t.items.filter((x) => x.role === 'hand').map((x) => x.name).join()]");
+  check(moved[0] === "hour,minute,second,gmt" && moved[1] === "0.6,0.35,0.15,0.1" && await hand_rows() === "Cap,GMT,Seconds,Minutes,Hours,Plate" && moved[2] === "hour,minute,second,gmt", `the GMT row dragged over Seconds: the stack ${moved[0].replaceAll(",", " · ")}, drawn last, the rungs kept and traded (GMT ${moved[1].split(",")[0]}, Hours ${moved[1].split(",")[3]}), the rows ${await hand_rows()}`);
+  await page.evaluate(() => document.querySelector("#shadows-more").click()); await frame();
+  // undo takes the move back as one step; the − takes the hand off, its tab with it, the + back
+  await page.click("#undo"); await frame();
+  check(await S("S.ha_stack.join() === 'gmt,hour,minute,second' && S.sh_gmt === 0.1"), "one undo takes the move back, heights and all");
+  await page.click("#hand-tab-3"); await frame();
+  await page.click("#hand-remove"); await frame();
+  const gone = await S("[!S.ha_gmt.added, !S.ha_gmt.on, S.ui_hand, [...document.querySelectorAll('.tabsbar .segs > .tab')].map((t) => t.textContent).join(), !document.querySelector('#hand-add-plus').hidden]");
+  check(gone.join() === "true,true,0,Hour,Minute,Seconds,true", `the − takes the GMT hand off: not added, not on, the Hour tab chosen, the tabs Hour · Minute · Seconds, the + back (${gone.join(" ")})`);
+}
 await page.click("#hand-tab-0");
 {
   const strip = await page.evaluate(() => { const tabs = [...document.querySelectorAll(".tabsbar .segs > button")], r = (e) => e.getBoundingClientRect(), p = r(document.querySelector(".pinned")), c = getComputedStyle(tabs[0]), v = (b) => getComputedStyle(b, "::before");
@@ -1138,9 +1180,9 @@ await page.click("#hand-tab-0");
   // all … Number box touches minus box"; the quiet number with its tiny ± of 4.45.1–4.63 retired): the value's box, then
   // − and + in theirs, touching, the hairline of the rule's grey; + steps it; the name opens the controller
   const len = await S("S.ha_hour.len");
-  const nb = await page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), f = box.querySelector("input"), st = [...box.querySelectorAll(".step")], r = (e) => e.getBoundingClientRect(), c = getComputedStyle(f);
+  const nb = await page.evaluate(() => { const box = document.querySelector(".form .row.side:not([hidden]) .numbox"), f = box.querySelector("input"), st = [...box.querySelectorAll(".step")], r = (e) => e.getBoundingClientRect(), c = getComputedStyle(f);
     return [st.length, Math.abs(r(f).right - r(st[0]).left) < 0.5 && Math.abs(r(st[0]).right - r(st[1]).left) < 0.5, c.borderTopWidth, c.borderTopColor, st.every((b) => b.querySelector("svg") !== null), !f.readOnly, Math.round(r(box).width)]; });
-  await page.click(".row.side .numbox .step >> nth=1");
+  await page.click(".form .row.side:not([hidden]) .numbox .step >> nth=1");      // the panel's first shown side row (the GMT hand's rows stand first, hidden on the Hour tab; the Shadows list's side rows earlier in the page once the pane has opened)
   const stepped = await S("S.ha_hour.len");
   await page.click("label[for='hand-len-Length']");
   const popped = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Length" && getComputedStyle(e.querySelector("input[type=range]")).display !== "none"; });
@@ -1172,8 +1214,9 @@ await page.click("#hand-tab-0");
   await tab("Hands");
   const l = await page.evaluate(() => { const bar = document.querySelector(".handsbar + .tabsbar"), b = bar.getBoundingClientRect(), tabs = [...bar.querySelectorAll(".tab")].map((t) => t.getBoundingClientRect()), size = getComputedStyle(bar).backgroundSize;
     const cut = parseFloat((size.match(/100% - ([\d.]+)px/) || [])[1]);
-    return { line: [+(b.left + cut).toFixed(1), +b.right.toFixed(1)], tabs: [+tabs[0].left.toFixed(1), +tabs.at(-1).right.toFixed(1)], border: getComputedStyle(bar).borderTopColor }; });
-  check(Math.abs(l.line[0] - l.tabs[0]) < 0.6 && Math.abs(l.line[1] - l.tabs[1]) < 0.6 && l.border === "rgba(0, 0, 0, 0)", `the line under All hands runs where the tabs run (${l.line.join("–")} · ${l.tabs.join("–")})`);
+    const plus = bar.querySelector(".plus"), end = plus && !plus.hidden ? plus.getBoundingClientRect().right : tabs.at(-1).right;      // the + after the tabs (#577) stands on the same line
+    return { line: [+(b.left + cut).toFixed(1), +b.right.toFixed(1)], tabs: [+tabs[0].left.toFixed(1), +end.toFixed(1)], border: getComputedStyle(bar).borderTopColor }; });
+  check(Math.abs(l.line[0] - l.tabs[0]) < 0.6 && Math.abs(l.line[1] - l.tabs[1]) < 0.6 && l.border === "rgba(0, 0, 0, 0)", `the line under All hands runs where the tabs and the + run (${l.line.join("–")} · ${l.tabs.join("–")})`);
 }
 await shot("4g-hand-tabs");
 { // the timeline has the twelve hours and nothing else (Okay, 23 Oct 2026: "10:10 was a good joke while it lasted. Let's remove it from the timeline")
@@ -3271,7 +3314,7 @@ await touch.close();
   const pane = await page.evaluate(() => { const l = document.querySelector("#shadow-list"), pic = l.querySelector("#shadows-sun"), r = pic.getBoundingClientRect(), R = (e) => e.getBoundingClientRect(), round = (x) => Math.round(x);
     const ev = (type, x, y) => pic.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: r.left + x, clientY: r.top + y, pointerId: 1, pointerType: "mouse", button: 0 }));
     ev("pointerdown", r.width * 0.85, r.height * 0.2); ev("pointerup", r.width * 0.85, r.height * 0.2);
-    const t = window.dial_tool, named = [...l.querySelectorAll(".row.named")], three = l.querySelector(".three"), top = l.querySelector(".suntop"), rows = [...l.querySelectorAll(".shaderows .row")], stack = l.querySelector("#shadows-stack"), sr = R(stack), tr = R(top), lr = R(l), head = l.querySelector(".shadehead");
+    const t = window.dial_tool, named = [...l.querySelectorAll(".row.named")], three = l.querySelector(".three"), top = l.querySelector(".suntop"), rows = [...l.querySelectorAll(".shaderows .row")].filter((x) => !x.hidden), stack = l.querySelector("#shadows-stack"), sr = R(stack), tr = R(top), lr = R(l), head = l.querySelector(".shadehead");
     const row = l.querySelector('.row[data-part="second"]'); row.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
     const parts = [...stack.querySelectorAll(".parts > g")], lit = parts.filter((g) => g.classList.contains("lit")).map((g) => g.dataset.part), drop = stack.querySelector(".drop"), dash = drop.querySelector(".moving"), solid = drop.querySelector(".fixed");
     const minutes_y = R(stack.querySelector('.parts > g[data-part="minute"] line')).top, plate_y = R(stack.querySelector('.parts > g[data-part="plate"] ellipse')).top + R(stack.querySelector('.parts > g[data-part="plate"] ellipse')).height / 2;
