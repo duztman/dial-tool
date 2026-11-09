@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.61 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.62 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -574,6 +574,10 @@
   .settingsbox > .row { grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: var(--u2); }
   .settingsbox > .row > label:first-child { grid-column: 1; justify-self: end; text-align: right; color: var(--ink); }
   .settingsbox > .row > :not(label) { grid-column: 2; }
+  /* Page margin (Okay, 10 Nov 2026: "Page margin and color move under settings from dial"): the slider and its value share
+     the pills' column — the value at the column's end, the slider's track stopping a gap before it — so the box keeps the pills' width */
+  .settingsbox > .row.num > input[type="range"] { grid-column: 2; grid-row: 1; width: 0; min-width: calc(100% - var(--box-value) - var(--box-steps) - var(--u2)); }      /* width 0, then a min-width: the slider asks no width of its own; it takes what the pills leave, less the value's box and a gap */
+  .settingsbox > .row.num > .numbox { grid-column: 2; grid-row: 1; justify-self: end; }
   .settingsbox > .row.note[data-after] > .quiet { grid-column: 2; margin-top: calc((var(--control) - var(--line)) / 2 + var(--settings-note-drop)); padding-bottom: var(--settings-note-end); font-size: var(--t-xs); }      /* the words just under the pill (the canon's note under a field, 4c-rows.css), the next line as near under them */
   /* the way to the Gallery: a small pill right after Help, as far from it as Help from the version, at Help's size and
      on the title's baseline (placed by level_title), as high as the unit box; darker than the unit box, lighter than
@@ -8762,7 +8766,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.61 beta";
+var VERSION = "v1.1.62 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -13362,7 +13366,7 @@ var TAB_NAMES = { Date: "Windows", "Show dial": "Dial", "Show export": "Export" 
 var H = { scope: "hand" };
 var cap_rows = (S) => S.ui_hand === top_hand(S) && (S.ha_second.on || S.ha_cap_top);
 var DIAL_ROWS = [
-  // Okay, 13 Oct 2026: Dial and Page stay in view (pinned); the list of colours scrolls under them.
+  // Okay, 13 Oct 2026: Dial stays in view (pinned); the list of colours scrolls under it. The page around the dial (margin, backdrop) is the Settings box's (Okay, 10 Nov 2026: "Page margin and color move under settings from dial").
   hdr("Dial", { pin: true }),
   // the plate: how big, what colour, what is on it
   num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),
@@ -13378,10 +13382,6 @@ var DIAL_ROWS = [
   col("c_plate", "Plate", { head: true }),
   // the plate's colour on the Dial heading line, no row of its own (Okay, 24 Oct 2026: his drawing, the pill up on "Dial", "Row gone")
   custom("background"),
-  hdr("Page", { folded: true }),
-  // around the dial: preview and page only. Under the pinned part, with what scrolls (Okay, 20 Oct 2026, 03:41: "Page moves to gray area")
-  num2("margin", "Page margin", 0, 10, 0.5),
-  col("c_backdrop", "Backdrop"),
   // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
   // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
   // fit in that line as tiny swatches. Default: compacted")
@@ -18472,8 +18472,14 @@ var PANEL = {
         app.S.ui_snap_guides = v;
         shown();
       } },
-      { kind: "note", text: "\u2026and on the added guide circles" }
-    ].map((row) => this.build_row(row));
+      { kind: "note", text: "\u2026and on the added guide circles" },
+      // the page around the dial: preview and export page only, so not the dial's own pane (Okay, 10 Nov 2026: "Page
+      // margin and color move under settings from dial"). These two are dial settings (in a link, undo steps): no put.
+      { kind: "num", key: "margin", text: "Page margin", lo: 0, hi: 10, step: 0.5, scope: "global", id: "settings-margin" },
+      { kind: "note", text: "Around the dial, on the page" },
+      { kind: "col", key: "c_backdrop", text: "Backdrop", scope: "global", id: "settings-backdrop" },
+      { kind: "note", text: "The page\u2019s colour, behind the dial" }
+    ].map((row) => this.build_row(name_row(row)));
     for (const r of rows) {
       box3.append(r.el);
       if (r.row.kind === "note") {
@@ -27945,7 +27951,7 @@ var DialTool = class _DialTool {
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
     if (this.history_open && !$("#history-list").hidden && !on(".undopair")) this.history_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
-    if (this.settings_open && !$("#settings-box").hidden && !on(".unit")) this.settings_open(false);
+    if (this.settings_open && !$("#settings-box").hidden && !on(".unit, #colour-pop, #value-pop")) this.settings_open(false);
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
