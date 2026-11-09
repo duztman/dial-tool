@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.59 beta · 10 Nov 2026 — #582: the rehaut by angle and length; the section the dial's line and the tab's part alone
+
+Okay, 10 Nov 2026, 00:27: "Rehault and bezel drawings lovely. But let's make them all from top silhouette 3d if a section is must, remove all other items and just give them dial as a line and section shape. Rehault degree is what we need and length, not this control."
+
+- **The rehaut** (`rh_deg`, `rh_len`; `rehaut_w`, `rehaut_h`): a wall leaning `rh_deg` from upright, `rh_len` long — Angle ° and Length rows; in plan it reaches length · sin(angle) from the dial's edge (24°, 1.5 mm → 0.61 mm, the 3D exercise's wall), rising length · cos(angle); the note under the rows says both. `rh_w` is dead (R8). Presets: Diver 24° · 1.5, Dress 10° · 1.0.
+- **The section** (`case.js`): the dial as a line (its face, 1.5 mm in from the rim, in ink) and the tab's part alone — the Rehaut tab its slab, the Bezel tab the ring with its insert and coin edge; the crystal and the plate are gone from it. The view from 1.5 mm inside the rim to the part's edge.
+- **Tests**: `window.mjs` — the section's parts per tab, the rehaut's lean in plan; `linktrip.mjs` reaches by `rehaut_w`.
+
 ## v1.1.58 beta · 10 Nov 2026 — #582: the case in 2D — rehaut and bezel under the Dial tab, the section diagram, rings on surfaces
 
 Okay, 9 Nov 2026, 23:33: "we should be adding bezel and rehault and its editable parts. Under dial. A paralel project worked on a parametric system to add bezels. Implement its rules in 2d and add a diagram next to sliders like we have in hands. Rings on rehault and bezel addable, stackable. All under dial. Maybe as a tab?"; asked: "Tab under dial. What we have now is a tab, bezel and rehault are tabs." · the radius "Both, and a 'fit' option. If i am doing bands etc." · the grounds flat in their colours · export later.

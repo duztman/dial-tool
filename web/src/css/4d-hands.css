@@ -46,6 +46,7 @@
   .casedetail .section { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
   .casedetail .section path { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .casedetail .section path.focus { stroke: var(--ink); stroke-width: var(--thick); }
+  .casedetail .section path.line { stroke: var(--ink); stroke-width: var(--thick); }      /* the dial, as a line */
   .casedetail .section .axis { stroke: var(--rule); stroke-width: var(--hair); stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
   /* a side row, at every width: the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250); the
      number box. Narrow, the rows go under the box (8-narrow) and keep this line (Okay, 18 Oct 2026, 22:35, on the iPad: "Hands sliders squeezed, use all row width") */

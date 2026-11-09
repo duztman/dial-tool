@@ -676,9 +676,11 @@ ROWS.Dial = [
     hdr("Rehaut", { headless: true }),
     chk("rh_on", "Rehaut", {}),
     custom("case_detail", {}),
-    num("rh_w", "Width", 0.2, 8, 0.05, { ...CS, show: (T, S) => S.rh_on }),
+    // the wall by its lean and its length (Okay, 10 Nov 2026, 00:27: "Rehault degree is what we need and length, not this control"): in plan it reaches length · sin(angle)
+    num("rh_deg", "Angle °", 0, 85, 1, { ...CS, whole: true, short: "Angle", show: (T, S) => S.rh_on }),
+    num("rh_len", "Length", 0.2, 8, 0.05, { ...CS, show: (T, S) => S.rh_on }),
     col("rh_c", "Colour", { ...CS, show: (T, S) => S.rh_on }),
-    info("The rehaut starts at the dial’s edge and rises to the bezel; its height is the bezel’s, on the Bezel tab. Rings go on it: a ring’s Surface, in Rings.", { show: (T, S) => S.rh_on }),
+    info((S) => `The wall leans ${S.rh_deg}° from upright, so in plan it reaches ${G.rehaut_w(S).toFixed(2)} mm out from the dial’s edge and rises ${G.rehaut_h(S).toFixed(2)} mm. Rings go on it: a ring’s Surface, in Rings.`, { show: (T, S) => S.rh_on }),
   ]),
   ...on_tab(2)([
     // the BEZEL stack (the 3D exercise's named numbers, in 2D): the ring, its insert and coin edge in plan; the heights in the section

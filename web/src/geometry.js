@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.58 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.59 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -277,13 +277,13 @@ export const DEFAULTS = {
   // ── the case round the dial (#582, 10 Nov 2026; Okay: "bezel and rehault and its editable parts … Implement its rules in
   // 2d") — the 3D exercise's bezel stack (try/relight, round 34) by its named numbers, in dial millimetres (the spec's at
   // its opening of Ø 29.2; here for Ø 30, scaled with the dial by Scale everything). Off to start: an older link draws
-  // as before (R31). In plan: the REHAUT a ring of rh_w from the dial's edge; the BEZEL ring bz_w wide outside it, its
+  // as before (R31). In plan: the REHAUT a wall rising from the dial's edge, rh_len long at rh_deg from the vertical (Okay, 10 Nov 2026: "Rehault degree is what we need and length") — its plan width rh_len · sin(rh_deg), its height rh_len · cos(rh_deg); the BEZEL ring bz_w wide outside it, its
   // top chamfer bz_chamfer in from its outer edge; a rotating bezel's INSERT bz_in_in / bz_in_out in from the ring's
   // inner / outer edge, and its COIN EDGE outside — bz_teeth_n scallops a turn, bz_teeth_depth deep, bz_teeth_fill of the
   // pitch wide, chamfered bz_teeth_chamfer. The heights (bz_dial_up the dial's face over the band's top · bz_seat the ring's
   // seat · bz_h its height · bz_lip the recess · bz_rim · bz_up · bz_dome the crystal's) show in the section diagram and
   // in show mode; the plan does not see them
-  rh_on: false, rh_w: 1.7, rh_c: [0.78, 0.78, 0.76, 1],
+  rh_on: false, rh_deg: 24, rh_len: 1.5, rh_c: [0.78, 0.78, 0.76, 1],      // 24° and 1.5 mm: the 3D exercise's wall, 0.6 out over 1.35 up. rh_w is dead (R8): nothing reads it
   bz_on: false, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_c: [0.80, 0.80, 0.78, 1], bz_insert_c: [0.17, 0.17, 0.19, 1],
   bz_teeth_n: 60, bz_teeth_depth: 0.5, bz_teeth_fill: 0.62, bz_teeth_chamfer: 0.45,
   bz_dial_up: 0.7, bz_seat: 0.3, bz_h: 2.3, bz_lip: 0.55, bz_rim: 0.4, bz_up: 0.65, bz_dome: 1.35,
@@ -723,7 +723,8 @@ export const LINK_KEYS = [
   "hole_as", "hole",        // v1.1.52 beta (#404): appended; no hole to start, as every older link
   "ha_gmt", "ha_stack", "sh_gmt", "added", "cycle",      // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand to start, as every older link. ha_stack is dead since v1.1.55 (the stack is the movement's, hand_stack): kept, nothing reads it (R8)
   "ha_date", "ha_day", "ha_month", "sh_date", "sh_day", "sh_month", "fn",      // v1.1.56 beta (#577): appended; the calendar hands and the ring key `fn` (which hand a ring serves); none to start, as every older link
-  "rh_on", "rh_w", "rh_c", "bz_on", "bz_kind", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_c", "bz_insert_c", "bz_teeth_n", "bz_teeth_depth", "bz_teeth_fill", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome", "surface", "r_from",      // v1.1.58 beta (#582): appended; the case off to start, every ring on the dial, as every older link
+  "rh_on", "rh_w", "rh_c", "bz_on", "bz_kind", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_c", "bz_insert_c", "bz_teeth_n", "bz_teeth_depth", "bz_teeth_fill", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome", "surface", "r_from",      // v1.1.58 beta (#582): appended; the case off to start, every ring on the dial, as every older link; rh_w dead since v1.1.59 (the rehaut by angle and length, R8)
+  "rh_deg", "rh_len",      // v1.1.59 beta (#582): appended
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1611,11 +1612,14 @@ export function ring_edges(ring) {
 // ── the case: surfaces (#582) ────────────────────────────────
 export const SURFACES = ["dial", "rehaut", "bezel"], R_FROM = ["Centre", "Edge", "Fit"];      // R9: appended only
 export const BEZEL_KINDS = ["Rotating", "Fixed"];      // rotating: a turning ring with an insert and a coin edge · fixed: a plain pressed ring
+/** the rehaut's reach in plan and its rise: a wall rh_len long leaning rh_deg from the vertical */
+export const rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);
+export const rehaut_h = (S) => +(S.rh_len * cos(S.rh_deg * PI / 180)).toFixed(4);
 /** the case's grounds in plan, from the dial's edge out: [inner, outer] radii of each that is on, and the insert's and the
  *  coin edge's reach. The rehaut starts at the dial's edge (Okay, 5 Nov 2026: the dial's size does not include it); the
  *  bezel starts where the rehaut ends (at the dial's edge without one). */
 export function case_spans(S) {
-  const R = S.dial_d / 2, rh = S.rh_on ? [R, R + S.rh_w] : null, b0 = rh ? rh[1] : R;
+  const R = S.dial_d / 2, rh = S.rh_on ? [R, R + rehaut_w(S)] : null, b0 = rh ? rh[1] : R;
   const bz = S.bz_on ? [b0, b0 + S.bz_w] : null;
   const rotating = bz && S.bz_kind === 0;
   const insert = rotating ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
@@ -2624,7 +2628,7 @@ export const turned = (path, angle) => path.copy().rotate(-angle);
 export const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
 export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub", "hole"];
 export const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
-export const CASE_MM = ["rh_w", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_teeth_depth", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome"];      // the case's measures (#582); the teeth's count and fill are not mm
+export const CASE_MM = ["rh_len", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_teeth_depth", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome"];      // the case's measures (#582); the teeth's count and fill are not mm
 function each_measure(S, visit, keys = null) {
   if (keys) {                                      // a chosen set: Weight's widths (#88)
     for (const ring of S.rings) for (const key of keys.ring) visit(ring, key);
