@@ -27,7 +27,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Pill switch** | A choice of a few words as pills in one rounded outline, the chosen one ink (`.pillswitch`); **free pills** are single pills wrapping (`free`). |
 | **Toggle** | A small track with a travelling dot standing for on and off without words (`seg` with `bool`). |
 | **Tick** (control) | A box with its name beside it; what it does goes in a note under it (design canon §6). |
-| **Settings** · **Unit** | The cog at the title line's right opens **Settings**: **Unit** (mm, points, inches, lignes, thou — every length the app shows and reads; settings stay mm) and **Colours** (the mode the colour pop-out opens in). **Ligne** 2.2558 mm, **thou** 0.0254 mm. |
+| **Settings** · **Unit** | The cog at the title line's right opens **Settings**: **Unit** (mm, points, inches, lignes, thou — every length the app shows and reads; settings stay mm) and **Colours** (the mode the colour pop-out opens in), **Snap** and **Snap to guides**, then the page around the dial: **Page margin** (`margin`, mm from the dial's reach to the page's edge; the export page is `2 × reach + 2 × margin`) and **Backdrop** (Okay, 10 Nov 2026: "Page margin and color move under settings from dial"). **Ligne** 2.2558 mm, **thou** 0.0254 mm. |
 | **Mark · bio** | Okay's logo left of the title; opens the **bio**. |
 | **Tag** | The small label a wordless button shows on hover (`.tag`). |
 | **Reach** | The unseen touch area round a small control (R32). |
@@ -74,7 +74,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | Term | Meaning |
 |---|---|
 | **Guides** | Construction lines, never exported: the dial's kinds, a ring's or a window's guide (two solid circles at the edges, dotted in the middle), **added guides**; the **Guides switch** at the top right, its arrow the **guide list** (one column, four groups, a foot). |
-| **Backdrop** | The preview's background colour (`c_backdrop`, `c_backdrop2`); the **backdrop switch** at the bottom left opens its colours. Never exported. |
+| **Backdrop** | The preview's background colour (`c_backdrop`, `c_backdrop2`); the **backdrop switch** at the bottom left opens its colours, and its pill is in **Settings** with *Page margin*. Never exported. |
 | **X-ray** | Switch under Case: every window's disc whole, stacked, each layer fainter. Never exported. |
 | **Switch's word** | A canvas switch's name beside its sign, folded to the sign; out for 3 s at load and under the pointer. |
 | **Eye switch** | Square switch at the bottom right, drawn as an eye: the **dial alone**; under it show mode's switch (the **rays**), over it the Tiny Preview's iris. |

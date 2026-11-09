@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.62 beta · 10 Nov 2026 — the page's margin and backdrop move to the Settings box; rings on the bezel noted
+
+Okay, 10 Nov 2026, 05:30: "Page margin and color move under settings from dial. Adding a ring of dots etc on bezel is also allowed. It can be on an insert or carved into metal."
+
+- **Settings box** (`panel.js` `settings_box`): two rows after Snap to guides — *Page margin* (`margin`, a slider with its value) and *Backdrop* (`c_backdrop`, a colour pill); both are dial settings as before (in a link, undo steps named by the row — `name_row`), unlike the box's window settings. The Dial tab has no Page pane: Dial, Colours, Reset. A click in the Backdrop's pop-out or the margin's value pop no longer closes the box (`app.js` `pressed`).
+- **The box's layout** (`4a-panel.css` *Settings*): the margin's slider and its value share the pills' column — the value at the column's end, the slider before it with a `--u2` gap (its width `0`, a `min-width` of what the pills leave) — so the box stays as wide as the pills make it, 337 px at 2× measured.
+- **Rings on the bezel** (#582, noted): allowed as they are — a Bezel ring fits a rotating bezel's insert, a fixed bezel's metal (read as carved); open: a ring on a rotating bezel's metal as a choice, and a carved look.
+- **Docs**: canon §6 *The Settings box* lists its rows; glossary *Settings*, *Backdrop*; sectors *Header*.
+- **Tests**: `window.mjs` — `backdrop_hex` opens the box to type the backdrop; the Dial tab's panes `["Colours","Reset"]` under the pinned Dial; the two rows' places, a typed margin saved with the box kept open, undo taking it back.
+
 ## v1.1.61 beta · 10 Nov 2026 — #582: the bezel is case material, linked and locked; the rehaut shaded by the sun
 
 Okay, 10 Nov 2026, 01:05: "now bezel is always case material for now.link and lock. Rehault might need shadows hightilghts to sell it."

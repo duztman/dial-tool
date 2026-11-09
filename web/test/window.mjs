@@ -50,6 +50,8 @@ const enter_value = async (id, v) => {
 };
 /** set a colour the way a person does: open its pill's pop-out, type the hex there, close it. */
 const type_hex = async (id, hex) => { await page.click("#" + id); await page.click("#pop-as-HEX"); await enter_value("#pop-hex", hex); await page.click("#pop-close"); };
+/** the backdrop's colour: its pill is in the Settings box (Okay, 10 Nov 2026: "Page margin and color move under settings from dial"), so open the box, type there, close the box. */
+const backdrop_hex = async (hex) => { if (await page.isHidden("#settings-box")) await page.click("#settings"); await type_hex("settings-backdrop", hex); await page.click("#settings"); };
 const frame = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 const tab = async (name) => { await page.click(`button[data-tab="${name}"]`); await frame(); };
 const shot = async (name) => { await frame(); await page.screenshot({ path: path.join(OUT, name + ".png") }); };
@@ -880,16 +882,16 @@ check(await S("Math.round(S.c_backdrop[0] * 255) === 128") && (await page.$eval(
 await shot("4c6-backdrop-switch");
 await page.click("#backdrop");
 check(await page.isHidden("#colour-pop"), "pressed again, it closes");
-await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
+await backdrop_hex("#CCCCC7");
 // its colour follows the backdrop
-await type_hex("global-c-backdrop-Backdrop", "#1A1A1F");
+await backdrop_hex("#1A1A1F");
 await frame();
 check(await page.evaluate(`(() => [...document.querySelectorAll("#guides, #backdrop")].every((e) => { const c = getComputedStyle(e); return c.backgroundColor === ${FILL} && c.color === "rgb(255, 255, 255)"; }))()`), "on a dark backdrop both switches are white outlines on the backdrop's own colour");
-for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC381A"]) { await type_hex("global-c-backdrop-Backdrop", grey); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-on-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(640, 30); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-off-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.screenshot({ path: path.join(OUT, `4c5-backdrop-${grey.slice(1)}.png`), clip: { x: 460, y: 790, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(640, 30); }
+for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC381A"]) { await backdrop_hex(grey); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-on-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(640, 30); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-off-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.screenshot({ path: path.join(OUT, `4c5-backdrop-${grey.slice(1)}.png`), clip: { x: 460, y: 790, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(640, 30); }
 await shot("4c4-guides-dark");
-await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
-// the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
-check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Page","Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has four panes (Reset last since 4.41.25): Dial stays in view, Page and Colours scroll under it (Okay, 20 Oct 2026, 03:41: 'Page moves to gray area'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
+await backdrop_hex("#CCCCC7");
+// the Dial section: Dial (diameter, plate, background), then Colours and Reset; no Page pane (margin and backdrop are the Settings box's) and no Guides pane
+check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has three panes (Reset last since 4.41.25): Dial stays in view, Colours scrolls under it; no Page pane (Okay, 10 Nov 2026: 'Page margin and color move under settings from dial'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
 // Settings (#554; Okay, 31 Oct 2026, 01:49: "a settings icon. In place of mm … Inside two settings: unit … Colors";
 // approved 02:24): a cog at the panel's top right, never boxed; pressed, a box with Unit and Colours. Lengths are shown
 // and typed in the unit, kept in mm (R1)
@@ -909,6 +911,15 @@ const set_box = await page.evaluate(() => { const b = document.querySelector("#s
     right: Math.round(cog.right - r.right), ground: c.backgroundColor, line: getComputedStyle(rows[0]).boxShadow.startsWith("rgb(255, 255, 255)"), pad: [c.paddingTop, c.paddingLeft] }; });
 check(JSON.stringify(set_box.units) === '["mm","pt","in","lig","thou"]' && JSON.stringify(set_box.modes) === '["RGB","HEX","CMYK","RAL"]' && set_box.names.every(([, c]) => c === "rgb(17, 17, 17)") && set_box.notes.every(([, f]) => f === "11px") && set_box.notes[0][0] === "Every length in the app" && set_box.right >= -1 && set_box.right <= 4 && set_box.ground === "rgb(236, 236, 232)" && set_box.line && set_box.pad[0] === "11px" && set_box.pad[1] === "24px",
   `the box: Unit lists the app's own five units, thou with them (Okay, 02:32: "Do not change its system"), Colours RGB · HEX · CMYK · RAL; the names in ink, the notes at 11 ("Bump down one size colors and unit titles get black"); hung from the cog's right; on the grey with white lines; padding 11, the left 24 ("2x its inner padding") (${JSON.stringify(set_box)})`);
+// the page around the dial lives here too (Okay, 10 Nov 2026: "Page margin and color move under settings from dial"): a slider
+// with its value on the pills' column, the Backdrop pill under it; the box no wider for them
+const page_rows = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), $ = (x) => document.querySelector(x); const pills = r($("#settings-colours-0").parentElement), box = r($("#settings-box")), num = r($("#settings-margin").closest(".numbox")), slide = r($("#settings-margin-slider"));
+  return { names: [...document.querySelectorAll("#settings-box .row > label")].slice(-2).map((l) => l.textContent), end: Math.round(pills.right - num.right), gap: num.left - slide.right, wide: Math.round(box.width), inside: slide.left >= pills.left - 1 }; });
+check(JSON.stringify(page_rows.names) === '["Page margin","Backdrop"]' && Math.abs(page_rows.end) <= 1 && page_rows.gap >= 4 && page_rows.inside && page_rows.wide < 360, `Page margin and Backdrop are the Settings box's last two rows; the margin's value ends with the pills, its slider before it with a gap, the box no wider than the pills make it (${JSON.stringify(page_rows)})`);
+await page.fill("#settings-margin", "5"); await page.press("#settings-margin", "Enter"); await frame();
+check(await S("S.margin") === 5 && await page.isVisible("#settings-box"), "a margin typed there is the dial's (saved, in a link), and the box stays open");
+await page.keyboard.press("Meta+z"); await frame();
+check(await S("S.margin") === 3 && await page.inputValue("#settings-margin") === "3.0", "undo takes the margin back and the box's row follows");
 await page.click("#settings-unit-2");
 check(await page.inputValue("#global-dial-d-Diameter") === "1.181" && await S("S.dial_d") === 30 && await S("S.ui_unit") === 2, "Unit: Inches — a 30 mm diameter shows as 1.181; the setting is still 30");
 await enter_value("#global-dial-d-Diameter", "1.5");
@@ -946,7 +957,7 @@ await shot("4d-scaled");
 for (const d of ["41.3", "22", "30"]) { await enter_value("#global-dial-d-Diameter", d); }
 check(JSON.stringify(await measures()) === JSON.stringify(at_30), "36 → 41.3 → 22 → 30: everything is back exactly where it was");
 await page.uncheck("#global-ui-scale-Scale-everything-with-it");
-check(await page.evaluate(() => Math.round(document.querySelector(".row.nest .check").getBoundingClientRect().left) === Math.round(document.querySelector(".row.num input[type=range]").getBoundingClientRect().left)), "a nested question starts on the controls' column");
+check(await page.evaluate(() => Math.round(document.querySelector(".row.nest .check").getBoundingClientRect().left) === Math.round(document.querySelector(".pane .row.num input[type=range]").getBoundingClientRect().left)), "a nested question starts on the controls' column");      // .pane: the Settings box's margin slider comes first in the document
 check(await S("!('ui_scale' in G_lean(S))".replace("G_lean(S)", "JSON.parse(JSON.stringify(S, (k, v) => (k.startsWith('ui_') ? undefined : v)))")), "the tick is the window's state, not the dial's");
 // Colours: every coloured part in one list
 const listed = await page.$$eval(".colourlist .row label", (l) => l.map((x) => x.textContent));
@@ -1002,7 +1013,7 @@ check(row_line.split("rgb(255, 255, 255)").length === 3, "every row has a white 
 const half_line = await page.$eval(".row:has(+ .row.nest)", (e) => { const c = getComputedStyle(e); return [c.boxShadow.split("rgb").length - 1, c.backgroundSize, c.backgroundPosition, e.querySelector("label").textContent]; });
 check(half_line[0] === 1 && half_line[1].startsWith("calc(66.6667% - 4px)") && half_line[2] === "100% 100%" && half_line[3] === "Diameter", "before a nested row stands a half line, from the controls' column to the right edge: Diameter draws it, over Scale everything with it");
 await page.click('.pinned .fold:has-text("Dial")', { position: { x: 60, y: 12 } });      // on its word: the plate's pill stands on the heading's middle (#533)
-check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible("#global-margin-Page-margin"), "a heading folds its own group only");
+check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible(".form .colourlist .row"), "a heading folds its own group only");
 check((await page.textContent('.pinned .fold:has-text("Dial") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
 await page.click('.pinned .fold:has-text("Dial") .eye');
 check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.pinned .fold:has-text("Dial") .summary')) === "", "its eye opens it again, and the summary goes");

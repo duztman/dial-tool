@@ -203,6 +203,11 @@ alignment to these rules as well."*
   `--ink` edge; padding `--u4`, and `2 × --gap` on the left. Rows on two columns: the names in ink, right-aligned,
   `--u2` from their pills; each pill's note under it in `--t-xs` grey; line → pill = pill → note's words = words →
   next line = 4 px, measured on the ink. In `4a-panel.css` (*Settings*), the cog in `icons.js` (`COG`); its specials `--settings-note-drop`, `--settings-note-end`.
+  Its rows: Unit, Colours, Snap, Snap to guides — the window's, not the dial's, never in a link — then Page margin and Backdrop
+  (Okay, 10 Nov 2026: "Page margin and color move under settings from dial"): the page around the dial is the preview's and the
+  export's, not the plate's, so it is not a pane of the Dial tab; these two are dial settings (in a link, undo steps). The margin's
+  slider and its value share the pills' column — the value at the column's end, the slider before it, a `--u2` gap between — so the
+  box stays as wide as the pills make it.
 
 ## 7 · Writing
 

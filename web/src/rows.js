@@ -162,7 +162,7 @@ export const H = { scope: "hand" };
 export const cap_rows = (S) => S.ui_hand === G.top_hand(S) && (S.ha_second.on || S.ha_cap_top);      // the cap's size and colour: under the hand it belongs to (#262)
 
 const DIAL_ROWS = [
-    // Okay, 13 Oct 2026: Dial and Page stay in view (pinned); the list of colours scrolls under them.
+    // Okay, 13 Oct 2026: Dial stays in view (pinned); the list of colours scrolls under it. The page around the dial (margin, backdrop) is the Settings box's (Okay, 10 Nov 2026: "Page margin and color move under settings from dial").
     hdr("Dial", { pin: true }),                    // the plate: how big, what colour, what is on it
     num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
     chk("ui_scale", "Scale everything with it", { nest: true }),
@@ -174,9 +174,6 @@ const DIAL_ROWS = [
     num("dial_hole", "Centre hole", 0, 6, 0.1),      // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
     col("c_plate", "Plate", { head: true }),      // the plate's colour on the Dial heading line, no row of its own (Okay, 24 Oct 2026: his drawing, the pill up on "Dial", "Row gone")
     custom("background"),
-    hdr("Page", { folded: true }),                 // around the dial: preview and page only. Under the pinned part, with what scrolls (Okay, 20 Oct 2026, 03:41: "Page moves to gray area")
-    num("margin", "Page margin", 0, 10, 0.5),
-    col("c_backdrop", "Backdrop"),
     // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
     // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
     // fit in that line as tiny swatches. Default: compacted")

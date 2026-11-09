@@ -8,7 +8,7 @@ Notation: **Region** `selector` — the one rule · levers → where the full wo
 
 The grid: a toggle column (`--eye`) and six columns (`--col`, `--gap`) between two margins (`--margin`); every line runs margin to margin, over the eyes · canon §3; the figures in `1-tokens.css` under *the panel's columns*.
 
-- **Header** `.panel > header`, `.mast`: mark, title, version, Help, Gallery pill, Settings' cog `#settings` and its box `#settings-box` (`.unit`; canon §6 *The Settings box*) — the title keeps its place · glossary-tool *Settings · Unit*, *Mark · bio*.
+- **Header** `.panel > header`, `.mast`: mark, title, version, Help, Gallery pill, Settings' cog `#settings` and its box `#settings-box` (`.unit`; canon §6 *The Settings box*: Unit, Colours, Snap, Snap to guides, Page margin, Backdrop — the page around the dial is set here, not in the Dial tab) — the title keeps its place · glossary-tool *Settings · Unit*, *Mark · bio*.
 - **Section tabs** `.tabs`: five round signs; the chosen one fills ink (`5-chosen.css`) · R33, canon §9.
 - **Pinned part** `.pinned`: lines always in view (hand tabs `.handsbar`, window cards `.windowcards`, the Rings pane) · glossary-tool *Pinned line*; a `.tab` draws itself in two clipped layers (R32) · `4b-lines-tabs.css`.
   - **Dial tabs** (#582): `.tabsbar.casetabs` on the Dial tab's pinned line, Dial · Rehaut · Bezel; the pin grip hidden while no pane is pinned (`panel.js` sync). **The section** `.detail.casedetail > svg.section` (`4d-hands.css`: the box starts on the line after the pane's full rows, `gridRow` set by `case.js`; parts stroked `--rule`, the tab's `--ink` at `--thick`; the axis dashed at the dial's edge) · glossary-watch *Section*.

@@ -89,6 +89,10 @@
   .settingsbox > .row { grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: var(--u2); }
   .settingsbox > .row > label:first-child { grid-column: 1; justify-self: end; text-align: right; color: var(--ink); }
   .settingsbox > .row > :not(label) { grid-column: 2; }
+  /* Page margin (Okay, 10 Nov 2026: "Page margin and color move under settings from dial"): the slider and its value share
+     the pills' column — the value at the column's end, the slider's track stopping a gap before it — so the box keeps the pills' width */
+  .settingsbox > .row.num > input[type="range"] { grid-column: 2; grid-row: 1; width: 0; min-width: calc(100% - var(--box-value) - var(--box-steps) - var(--u2)); }      /* width 0, then a min-width: the slider asks no width of its own; it takes what the pills leave, less the value's box and a gap */
+  .settingsbox > .row.num > .numbox { grid-column: 2; grid-row: 1; justify-self: end; }
   .settingsbox > .row.note[data-after] > .quiet { grid-column: 2; margin-top: calc((var(--control) - var(--line)) / 2 + var(--settings-note-drop)); padding-bottom: var(--settings-note-end); font-size: var(--t-xs); }      /* the words just under the pill (the canon's note under a field, 4c-rows.css), the next line as near under them */
   /* the way to the Gallery: a small pill right after Help, as far from it as Help from the version, at Help's size and
      on the title's baseline (placed by level_title), as high as the unit box; darker than the unit box, lighter than

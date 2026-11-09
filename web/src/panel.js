@@ -7,7 +7,7 @@ import * as G from "./geometry.js";
 import { OPENER } from "./opener.js";
 import { BIG, COG, SIGNS, STEP, TOOL_ICONS, eye, icon, pic } from "./icons.js";
 import { $, HOLE_LIVE_MS, KEY, POP_FADE_MS, POP_LINGER_MS, SHEET, WORDS_MS, clamp, css_colour, decimals, el, filled, fmt, is_length, label_of, paint, parse_number, round_step, to_hex, token } from "./ui.js";
-import { ROWS, SECTIONS, SVG_LATER, TILE_WORDS, chevron_box, menu_arrow } from "./rows.js";
+import { ROWS, SECTIONS, SVG_LATER, TILE_WORDS, chevron_box, menu_arrow, name_row } from "./rows.js";
 
 export const PANEL = {
   /** how to zoom, beside the zoom buttons: words, then a faint magnifier, nothing to press (Okay, 14 Oct 2026,
@@ -206,7 +206,13 @@ export const PANEL = {
       { kind: "note", text: "Dragged handles land on rings’ edges" },
       { kind: "seg", bool: true, key: "ui_snap_guides", text: "Snap to guides", id: "settings-snap-guides", put: (app, v) => { app.S.ui_snap_guides = v; shown(); } },
       { kind: "note", text: "…and on the added guide circles" },
-    ].map((row) => this.build_row(row));
+      // the page around the dial: preview and export page only, so not the dial's own pane (Okay, 10 Nov 2026: "Page
+      // margin and color move under settings from dial"). These two are dial settings (in a link, undo steps): no put.
+      { kind: "num", key: "margin", text: "Page margin", lo: 0, hi: 10, step: 0.5, scope: "global", id: "settings-margin" },
+      { kind: "note", text: "Around the dial, on the page" },
+      { kind: "col", key: "c_backdrop", text: "Backdrop", scope: "global", id: "settings-backdrop" },
+      { kind: "note", text: "The page’s colour, behind the dial" },
+    ].map((row) => this.build_row(name_row(row)));      // name_row: an undo step says "Page margin", not "margin"
     for (const r of rows) {      // a row and its note are one box, the note just below the pill (sync_rows does this for the panel's rows)
       box.append(r.el);
       if (r.row.kind === "note") { r.el.previousElementSibling.classList.add("noted"); r.el.dataset.after = "field"; }
@@ -296,7 +302,7 @@ export const PANEL = {
     if (this.shen_rows) for (const r of this.shen_rows) r.refresh(this.S);
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop); this.backdrop_dot.style.background = this.S.ui_show && this.S.c_backdrop2 ? `linear-gradient(135deg, ${css_colour(this.S.c_backdrop)}, ${css_colour(this.S.c_backdrop2)})` : "";      // a gradient shows as one
-    if (this.settings_rows) for (const r of this.settings_rows) r.refresh(this.S);      // Settings' two pills follow a reload or another window
+    if (this.settings_rows) for (const r of this.settings_rows) r.refresh(this.S);      // Settings' pills follow a reload, an undo or another window
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T, this.S, this)) : true;      // a row's show sees its own settings and the dial's (a hand's Bevel needs Bevels %)
