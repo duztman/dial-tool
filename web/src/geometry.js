@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.57 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.58 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -124,6 +124,7 @@ export const ACCENT = [0.80, 0.22, 0.10, 1];
 // every ring carries every key, so changing its kind keeps everything (R7)
 export const RING_BASE = {
   kind: 0, name: "", on: true, c: INK,
+  surface: 0, r_from: 0,                           // the case (#582): which ground the ring lies on, a place in SURFACES (dial · rehaut · bezel); how its radius reads there, a place in R_FROM — from the centre, as on the dial; from the surface's inner edge; Fit (a band as wide as the surface, marks as long, words on its middle). On the dial both are 0
   fn: "",                                          // the hand this ring is the scale of (#577: "gmt", "date", …; "" for a ring of its own): added and removed with that hand
   r: 13.0, count: 12, start: 0.0, span: 360.0, every: 1, offset: 0, invert: false,
   skip: 0, knock: 0, clear: 0.25,
@@ -273,6 +274,20 @@ export const DEFAULTS = {
   dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
   rings: [],
+  // ── the case round the dial (#582, 10 Nov 2026; Okay: "bezel and rehault and its editable parts … Implement its rules in
+  // 2d") — the 3D exercise's bezel stack (try/relight, round 34) by its named numbers, in dial millimetres (the spec's at
+  // its opening of Ø 29.2; here for Ø 30, scaled with the dial by Scale everything). Off to start: an older link draws
+  // as before (R31). In plan: the REHAUT a ring of rh_w from the dial's edge; the BEZEL ring bz_w wide outside it, its
+  // top chamfer bz_chamfer in from its outer edge; a rotating bezel's INSERT bz_in_in / bz_in_out in from the ring's
+  // inner / outer edge, and its COIN EDGE outside — bz_teeth_n scallops a turn, bz_teeth_depth deep, bz_teeth_fill of the
+  // pitch wide, chamfered bz_teeth_chamfer. The heights (bz_dial_up the dial's face over the band's top · bz_seat the ring's
+  // seat · bz_h its height · bz_lip the recess · bz_rim · bz_up · bz_dome the crystal's) show in the section diagram and
+  // in show mode; the plan does not see them
+  rh_on: false, rh_w: 1.7, rh_c: [0.78, 0.78, 0.76, 1],
+  bz_on: false, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_c: [0.80, 0.80, 0.78, 1], bz_insert_c: [0.17, 0.17, 0.19, 1],
+  bz_teeth_n: 60, bz_teeth_depth: 0.5, bz_teeth_fill: 0.62, bz_teeth_chamfer: 0.45,
+  bz_dial_up: 0.7, bz_seat: 0.3, bz_h: 2.3, bz_lip: 0.55, bz_rim: 0.4, bz_up: 0.65, bz_dome: 1.35,
+  ui_dial_tab: 0,                                  // the Dial tab's own tabs: Dial · Rehaut · Bezel (#582; ui_case is the canvas's Case view)
   ha_on: true, ha_beat: 0, ha_cap: 1.6, c_cap: ACCENT, ha_hour: {}, ha_minute: {}, ha_second: {},
   ha_gmt: {}, ha_date: {}, ha_day: {}, ha_month: {},      // the hands of your own (#577), none added to start; their starting looks are set below with the other hands'
   ha_cap_top: false,                               // the cap is part of the seconds hand (#262, beta 4.43); with no seconds hand it is drawn on the topmost hand only when this is on (web only, R30)
@@ -708,6 +723,7 @@ export const LINK_KEYS = [
   "hole_as", "hole",        // v1.1.52 beta (#404): appended; no hole to start, as every older link
   "ha_gmt", "ha_stack", "sh_gmt", "added", "cycle",      // v1.1.54 beta (#577): appended (a hand's `offset` shares the markers' code above); no GMT hand to start, as every older link. ha_stack is dead since v1.1.55 (the stack is the movement's, hand_stack): kept, nothing reads it (R8)
   "ha_date", "ha_day", "ha_month", "sh_date", "sh_day", "sh_month", "fn",      // v1.1.56 beta (#577): appended; the calendar hands and the ring key `fn` (which hand a ring serves); none to start, as every older link
+  "rh_on", "rh_w", "rh_c", "bz_on", "bz_kind", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_c", "bz_insert_c", "bz_teeth_n", "bz_teeth_depth", "bz_teeth_fill", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome", "surface", "r_from",      // v1.1.58 beta (#582): appended; the case off to start, every ring on the dial, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1592,10 +1608,59 @@ export function ring_edges(ring) {
 
 /** the radii a dragged length or radius snaps to (#184; Okay, 14 Oct 2026: lengths and radii "snap to rings' edges
  *  while dragged"): every edge of every ring shown, but the ring being dragged (`except`, its index). Sorted, no doubles. */
+// ── the case: surfaces (#582) ────────────────────────────────
+export const SURFACES = ["dial", "rehaut", "bezel"], R_FROM = ["Centre", "Edge", "Fit"];      // R9: appended only
+export const BEZEL_KINDS = ["Rotating", "Fixed"];      // rotating: a turning ring with an insert and a coin edge · fixed: a plain pressed ring
+/** the case's grounds in plan, from the dial's edge out: [inner, outer] radii of each that is on, and the insert's and the
+ *  coin edge's reach. The rehaut starts at the dial's edge (Okay, 5 Nov 2026: the dial's size does not include it); the
+ *  bezel starts where the rehaut ends (at the dial's edge without one). */
+export function case_spans(S) {
+  const R = S.dial_d / 2, rh = S.rh_on ? [R, R + S.rh_w] : null, b0 = rh ? rh[1] : R;
+  const bz = S.bz_on ? [b0, b0 + S.bz_w] : null;
+  const rotating = bz && S.bz_kind === 0;
+  const insert = rotating ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
+  const teeth = rotating && S.bz_teeth_depth > 0 ? bz[1] + S.bz_teeth_depth : bz ? bz[1] : null;
+  return { dial: [0, R], rehaut: rh, bezel: bz, insert, outer: teeth ?? (rh ? rh[1] : R), chamfer: bz ? [bz[1] - S.bz_chamfer, bz[1]] : null };
+}
+/** the radius the drawing reaches, mm: the dial's, or the case's outer edge (the page and the view fit it) */
+export const reach_mm = (S) => case_spans(S).outer;
+/** a ring as the geometry draws it: on the dial it is itself; on the rehaut or the bezel its radius reads from that
+ *  surface's inner edge (Edge) or it fills the surface (Fit: a band as wide as the surface and centred on it, marks as
+ *  long as it is wide from its outer edge, words on its middle). A surface that is off puts the ring back on the dial. */
+export function placed(S, ring) {
+  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? (case_spans(S).insert || case_spans(S).bezel) : null;
+  if (!span || !ring.r_from) return ring;
+  const [a, b] = span, kind = kind_of(ring);
+  if (R_FROM[ring.r_from] === "Edge") return { ...ring, r: a + ring.r };
+  if (kind === "band") return { ...ring, r: (a + b) / 2, width: b - a, from: 1 };      // Fit: the radius its middle
+  if (kind === "ticks" || kind === "markers") return { ...ring, r: b, len: b - a, from: 0 };
+  return { ...ring, r: (a + b) / 2 };
+}
+/** the case's grounds in plan: [role, path, colour], bottom first. The coin edge is the bezel ring's own outline —
+ *  the radius a law of the angle, full on the lands, a round scallop in each pitch (the 3D exercise's rule, round 28) */
+export function case_grounds(S) {
+  const sp = case_spans(S), out = [], ring_shape = (a, b) => circle(2 * b).difference(circle(2 * a));
+  const lighter = (c, k) => [...c.slice(0, 3).map((v) => min(1, v + (1 - v) * k)), c[3]], darker = (c, k) => [...c.slice(0, 3).map((v) => v * (1 - k)), c[3]];
+  if (sp.bezel) {
+    const [b0, b1] = sp.bezel, T = { n: max(3, round(S.bz_teeth_n) || 60), depth: S.bz_kind === 0 ? max(0, S.bz_teeth_depth) : 0, fill: min(max(S.bz_teeth_fill, 0.05), 0.95) };
+    let outer;
+    if (T.depth > 0) {      // the scalloped outline, 28 points a pitch, as the 3D wall's stations
+      const R = b1 + T.depth, pitch = 2 * PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth), per = 28, N = T.n * per, pts = [];
+      for (let k = 0; k < N; k++) { const th = k / N * 2 * PI, x = R * (((th % pitch) + pitch) % pitch - pitch / 2), r = abs(x) < a ? R - (Math.sqrt(rd * rd - x * x) - (rd - T.depth)) : R; pts.push([r * sin(th), r * cos(th)]); }
+      outer = new Path().polygon(...pts).difference(circle(2 * b0));
+    } else outer = ring_shape(b0, b1);
+    out.push(["bezel", outer, S.bz_c]);
+    if (sp.chamfer && sp.chamfer[0] > b0) out.push(["bezel chamfer", ring_shape(sp.chamfer[0], sp.chamfer[1]), lighter(S.bz_c, 0.35)]);      // the top chamfer catches the light
+    if (sp.insert && sp.insert[1] > sp.insert[0]) out.push(["insert", ring_shape(sp.insert[0], sp.insert[1]), S.bz_insert_c]);
+  }
+  if (sp.rehaut) out.push(["rehaut", ring_shape(sp.rehaut[0], sp.rehaut[1]), S.rh_c]);
+  return out;
+}
 export function snap_radii(S, except = -1) {
   if (!S.ui_snap) return [];                       // Settings: Snap off (the start) — nothing to land on
   const out = new Set();
-  S.rings.forEach((ring, i) => { if (ring.on && i !== except) for (const r of ring_edges(ring)) if (r > 0) out.add(+r.toFixed(3)); });
+  S.rings.forEach((ring, i) => { if (ring.on && i !== except) for (const r of ring_edges(placed(S, ring))) if (r > 0) out.add(+r.toFixed(3)); });
+  for (const span of [case_spans(S).rehaut, case_spans(S).bezel, case_spans(S).insert]) if (span) for (const r of span) out.add(+r.toFixed(3));      // the case's edges too
   if (S.ui_snap_guides) for (const g of S.gd_more || []) if (g.k >= 0 && GUIDE_MORE[g.kind] === "circle" && g.r > 0) out.add(+g.r.toFixed(3));      // Snap to guides: the added guide circles too (Settings; the Guides list)
   return [...out].sort((a, b) => a - b);
 }
@@ -1779,7 +1844,8 @@ export const window_place = (w) => {
  *  cut       — the date window's clear zone; markers and numerals also leave its position empty. */
 function build_rings(S, cut = null) {
   const holes = windows_of(S).filter((w) => w.on).map(window_angle), done = [];
-  for (const ring of S.rings) {
+  for (const raw of S.rings) {
+    const ring = placed(S, raw);      // on the rehaut or the bezel: its radius there (#582)
     // a hidden ring is left out, unless hidden rings still cut (#221, Export › Print): then it skips and knocks out
     // the rings under it as if it were there, and is not drawn (a ghost) — so a film made by hiding rings keeps its holes
     if (!ring.on && !S.out_hidden_cut) continue;
@@ -1802,7 +1868,7 @@ function build_rings(S, cut = null) {
       return out;
     };
     const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d) => [key_of(d.ring), d.keep]), cut ? date_key(S) : null]);
-    const d = { ring, kind, keep, taken, shape, at, parts, path: memo(key, final), ghost: !ring.on };
+    const d = { ring, raw, kind, keep, taken, shape, at, parts, path: memo(key, final), ghost: !ring.on };      // raw: the ring as the settings hold it (the list's identity); ring: as drawn, placed on its surface (#582)
     // a stroke round the letters (#551) or the marks (#556): a grown outline of the ring's final shape, drawn over it in its own colour
     if (has_stroke(ring)) d.stroke = memo("stroke" + key, () => stroke_outline(d.path, ring.stroke_w, STROKE_SIDES[ring.stroke_side] || "Outside", STROKE_JOINS[ring.stroke_join] || "Miter"));
     // a band whose sectors have colours of their own is drawn as one shape per colour: the sectors of that
@@ -2406,7 +2472,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
   const set_now = windows_of(S), now_w = new Map();
   const wc = (x) => { if (!now_w.has(x.index)) now_w.set(x.index, set_now[x.index] ? shown_window(S, set_now[x.index]) : x.w); return now_w.get(x.index); };
   const rings = statik.rings.slice().reverse();    // bottom ring first, top ring last
-  const index = (d) => S.rings.indexOf(d.ring);
+  const index = (d) => S.rings.indexOf(d.raw || d.ring);
 
   if (S.out_production) {                          // mono mask, no plate, no hands
     const black = [0, 0, 0, 1], cuts = S.out_cutlines !== false;      // #222: the cut lines only while asked for (they are on to start)
@@ -2435,6 +2501,9 @@ export function scene(S, statik, t, preview = true, selected = null) {
     // white dotted outline, below gets -15 opacity gradually"). Preview only (R5, R26). The stack, top down: the
     // selected window's disc · the hands · the face (plate, rings, what the holes show) · the other discs, the
     // biggest deepest, as a movement stacks them. Each layer under the top one is 15 % fainter than the one above.
+    // the case's grounds (#582), preview only until the surfaces export as parts of their own (R5 for now): the bezel ring
+    // with its coin edge, its top chamfer as a lighter band, the insert, the rehaut — under everything, out from the dial
+    if (preview) for (const [role, path, fill] of case_grounds(S)) add(role, path, fill);
     const discs = preview && S.xray ? windows.map((x) => ({ x, d: window_disc(S, x) })).filter((v) => v.d) : [];
     const xray = discs.length > 0, chosen = xray ? discs.find((v) => v.x.index === (S.ui_window ?? 0)) || null : null;
     const under = discs.filter((v) => v !== chosen).sort((p, q) => q.d.outer - p.d.outer);      // the biggest first: the deepest
@@ -2511,7 +2580,8 @@ export function scene(S, statik, t, preview = true, selected = null) {
     // window, those out of focus faded, as Blender fades what one isn't editing.
     const focus = { 1: "rings", 3: "windows" }[S.ui_section];      // ui_section: the tab's place (app.js SECTIONS; R9)
     const faded = (focused) => (focused ? 1 : GUIDE_FADE);
-    S.rings.forEach((ring, i) => {
+    S.rings.forEach((raw, i) => {
+      const ring = placed(S, raw);      // its guides where it is drawn (#582)
       const focused = focus === "rings" && i === selected, chosen = focused && S.gd_sel, k = ring_guide(S, i);
       if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
       const kind = kind_of(ring);
@@ -2554,6 +2624,7 @@ export const turned = (path, angle) => path.copy().rotate(-angle);
 export const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
 export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub", "hole"];
 export const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
+export const CASE_MM = ["rh_w", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_teeth_depth", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome"];      // the case's measures (#582); the teeth's count and fill are not mm
 function each_measure(S, visit, keys = null) {
   if (keys) {                                      // a chosen set: Weight's widths (#88)
     for (const ring of S.rings) for (const key of keys.ring) visit(ring, key);
@@ -2568,6 +2639,7 @@ function each_measure(S, visit, keys = null) {
   for (const h of HANDS) for (const key of HAND_MM) visit(S["ha_" + h], key);
   for (const w of windows_of(S)) for (const key of WINDOW_MM) visit(w, key);
   visit(S, "ha_cap");
+  for (const key of CASE_MM) visit(S, key);      // the case scales with the dial (#582)
 }
 /** every width on the dial — how thick a thing is, never how long or where (#88, Weight; atlas 6.19): a mark's width
  *  and a hollow one's wall, a band's width; a hand's width, its wall and its disc's mark; a window's frame. Numerals
@@ -2584,4 +2656,4 @@ export function set_measures(S, values, keys = null) {
 }
 
 /** the page's side in mm: the dial and its margins. */
-export const page_mm = (S) => S.dial_d + 2 * S.margin;
+export const page_mm = (S) => 2 * reach_mm(S) + 2 * S.margin;      // the page round the dial, or round the case when one is on (#582)

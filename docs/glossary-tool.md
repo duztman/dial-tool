@@ -18,6 +18,7 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Side row** | A row squeezed beside a detail box: label · slider · number box (`side`). |
 | **Heading selector** | A pane's main selector on its heading line (Labels, Complication). |
 | **Tab** | A choice of what the panes below edit, drawn as touching tabs with V-cut corners: hand tabs, window cards, Complication buttons. |
+| **Dial tabs** | Dial · Rehaut · Bezel on the Dial tab's pinned line (`ui_dial_tab`, #582): which rows show below. |
 | **Hand tabs** | Hour · Minute · Seconds and every added hand (GMT), on Hands' second pinned line; after them the **+** that asks a new hand's function (GMT · Date · Day · Month), adding the hand with its scale ring; an added hand's Show line carries its **−**. |
 | **Window cards** | Four cards on top of Windows (12 · 3 · 6 · 9), tabs choosing the window to edit. |
 | **Show box** | The thin box under the hand tabs and window cards holding the tick **Show**. |

@@ -41,6 +41,12 @@
     .body > .detail { grid-column: 2 / span 2; grid-row: 2 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; }      /* beside the box */
   }
+  /* the case's section (#582): the right half of the case cut through its middle, the parts in their colours, the tab's
+     part outlined in ink; the axis a hairline up the middle */
+  .casedetail .section { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
+  .casedetail .section path { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  .casedetail .section path.focus { stroke: var(--ink); stroke-width: var(--thick); }
+  .casedetail .section .axis { stroke: var(--rule); stroke-width: var(--hair); stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
   /* a side row, at every width: the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250); the
      number box. Narrow, the rows go under the box (8-narrow) and keep this line (Okay, 18 Oct 2026, 22:35, on the iPad: "Hands sliders squeezed, use all row width") */
   .body > .row.side { grid-template-columns: var(--side-columns); column-gap: 0; }

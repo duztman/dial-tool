@@ -12,7 +12,7 @@ export const RINGS = {
    *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
   draw_picked() {
     const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Edit one numeral");
-    const d = !S.ui_show && !this.unselected && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => x.ring === R) : null;
+    const d = !S.ui_show && !this.unselected && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => (x.raw || x.ring) === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part = k >= 0 && d.parts ? d.parts[k] : null;
     // a box touching it, not its outline (Okay, 04:52: "selected number on dial too aggressive. This may be a rectangular tangent box around number")
     const b = part ? part.bounds() : null, f = (v) => v.toFixed(3);
@@ -629,7 +629,7 @@ export const RINGS = {
       // word, a mark by the time it stands at (1:00, 1:12 …), with no running number before it ("horrible number confusion")
       const at = (a) => { const m = Math.round((((a % 360) + 360) % 360) * 2), h = Math.floor(m / 60) % 12 || 12; return `${h}:${String(m % 60).padStart(2, "0")}`; };
       const labels = text ? G.ring_labels(R) : G.ring_angles(R).map(at);
-      const built = this.statik && this.statik.rings.find((x) => x.ring === R);
+      const built = this.statik && this.statik.rings.find((x) => (x.raw || x.ring) === R);
       const drawn = built ? built.at.filter((i) => i < labels.length) : labels.map((_, i) => i);
       if (drawn.length && !drawn.includes(+this.nudge_at)) this.nudge_at = String(drawn[0]);
       const name = (i) => `${labels[i] || "—"}${R.nudge[String(i)] ? "  •" : ""}`;
@@ -713,7 +713,7 @@ export const RINGS = {
     const show = () => STRIP_SHOWS[this.S.ui_strip] || STRIP_SHOWS[0];
     // the marks the dial draws: what Every and Offset keep, less those that give way to the rings above (as Edit one
     // mark lists them, so a press never chooses one that isn't there)
-    const drawn_of = (R) => { const built = this.statik && this.statik.rings.find((x) => x.ring === R); return new Set(built ? built.at : G.positions_of(R)); };
+    const drawn_of = (R) => { const built = this.statik && this.statik.rings.find((x) => (x.raw || x.ring) === R); return new Set(built ? built.at : G.positions_of(R)); };
     const value = (R, i) => { const n = R.nudge[String(i)] || {}, k = show().key; return k === "s" ? G.mark_length(R, i) * (n.s ?? 1) : n[k] ?? 0; };
     // the scale: Length from 0 to twice the longest mark as it stands without its own scale; the others ± round 0.
     // Kept while a line is drawn, so the strip does not move under the finger

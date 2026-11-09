@@ -92,6 +92,12 @@ for (const [name, settings] of dials) {
   const [ring] = G.function_rings(cal, "day"); cal.rings.unshift(ring);
   const back2 = G.fresh_settings(read(link(cal)));
   check(back2.rings[0].fn === "day" && back2.rings[0].count === 7 && back2.rings[0].custom === "MON, TUE, WED, THU, FRI, SAT, SUN" && back2.ha_month.added, `a function's ring travels with its fn (${back2.rings[0].fn}, ${back2.rings[0].count} places: ${back2.rings[0].custom})`);
+  // the case (#582): its numbers and a ring's surface travel; a dial without one writes none of it
+  const plain = G.lean(G.fresh_settings({}));
+  check(!Object.keys(plain).some((k) => k.startsWith("bz_") || k.startsWith("rh_")) && !("surface" in (plain.rings?.[0] || {})), "a dial without a case writes no case keys and no surface");
+  const cased = G.fresh_settings({}); cased.bz_on = true; cased.rh_on = true; cased.bz_kind = 1; cased.bz_w = 2.2; cased.rings[0].surface = 1; cased.rings[0].r_from = 2;
+  const back3 = G.fresh_settings(read(link(cased)));
+  check(back3.bz_on && back3.rh_on && back3.bz_kind === 1 && back3.bz_w === 2.2 && back3.rings[0].surface === 1 && back3.rings[0].r_from === 2 && G.reach_mm(back3) === 15 + 1.7 + 2.2, `the case travels: a fixed bezel ${back3.bz_w} wide, the rehaut, a ring on the rehaut fitted; the drawing reaches ${G.reach_mm(back3)} mm`);
   const bad = G.fresh_settings({ ha_stack: ["second", "nothing", "second"], ha_gmt: { added: false, on: true } });
   check(!("ha_stack" in bad) && !bad.ha_gmt.on, "an old link's ha_stack is dead and dropped (R8); a GMT hand not added is never on");
 }

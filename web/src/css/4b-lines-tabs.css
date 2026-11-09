@@ -17,6 +17,7 @@
   .handsbar + .tabsbar { border-top: var(--hair) solid transparent; background: linear-gradient(var(--rule) 0 0) 100% 0 / calc(100% - var(--lead)) var(--hair) no-repeat border-box; }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: var(--u3); border-top: var(--thick) solid var(--ink); }
+  .tabsbar > .segs { grid-column: 2 / -1; }      /* tabs alone on the line (the Dial tab's Dial · Rehaut · Bezel, #582) */
   .tabsbar > .tabsline { grid-column: 2 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--u2); align-items: end; }      /* the tabs, then the + that adds a hand (#577) */
   /* the + after the hand tabs and the − on an added hand's Show line (#577): the Added guides' round buttons — a circle in
      the grey, its sign inside, the hidden select over the + that the tool's own list opens from (6-preview.css) */

@@ -679,7 +679,7 @@ export const PREVIEW = {
       }
     }
     if (!d) return r <= S.dial_d / 2 && !S.out_production ? { kind: "plate", name: "Plate", path: this.statik.plate, angle: 0 } : null;
-    const piece = { kind: "ring", ring: S.rings.indexOf(d.ring), name: d.ring.name || G.kind_of(d.ring), path: d.path, angle: 0 };
+    const piece = { kind: "ring", ring: S.rings.indexOf(d.raw || d.ring), name: d.ring.name || G.kind_of(d.ring), path: d.path, angle: 0 };
     if (d.kind !== "band" && d.parts) {            // which numeral or mark? the nearest one's centre (marks too, #349)
       let best = Infinity;
       d.parts.forEach((part, k) => {

@@ -316,6 +316,9 @@ export const PANEL = {
     for (const r of this.rows) if (r.fold) r.empty = true;
     for (const r of this.rows) if (r.group && r.applies) r.group.empty = false;
     for (const r of this.rows) if (r.fold && r.empty && this.rows.some((x) => x.group === r)) r.el.hidden = true;
+    // the pinned part's grip resizes its panes: with none shown (the Dial tab's Rehaut and Bezel tabs, #582) it goes, so the tabs under it can be pressed
+    const pin_grip = this.pinned.querySelector("#pin-grip");
+    if (pin_grip) pin_grip.hidden = ![...this.pinned.querySelectorAll(".pane")].some((p) => !p.hidden);
     // a note belongs to the row it stands under, however many hidden rows lie between (design canon §6): that row draws
     // no line under itself (noted), and the note knows what it stands under (after: a tick, tiles, or a field), so its
     // words start where they should (Okay, 20 Oct 2026, 01:16: "why the follows.. line stuck up there?")
@@ -594,7 +597,7 @@ export const PANEL = {
       group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
       const name = el("label", { textContent: row.text });
       wrap.append(name, group);
-      out.refresh = (T) => { const at = row.get ? row.get(T) : T[row.key]; buttons.forEach((b, i) => { b.classList.toggle("on", i === at); if (row.offered) b.hidden = !row.offered(T).includes(i); }); if (row.say) name.textContent = label_of(row, T); };      // offered: which choices can be used now (R16)
+      out.refresh = (T) => { const at = row.get ? row.get(T) : T[row.key]; buttons.forEach((b, i) => { b.classList.toggle("on", i === at); if (row.offered) b.hidden = !row.offered(T, this.S).includes(i); }); if (row.say) name.textContent = label_of(row, T); };      // offered: which choices can be used now (R16)
     }
 
     if (row.kind === "chk") {

@@ -889,7 +889,7 @@ for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC3
 await shot("4c4-guides-dark");
 await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
-check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Page","Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has four panes (Reset last since 4.41.25): Dial stays in view, Page and Colours scroll under it (Okay, 20 Oct 2026, 03:41: 'Page moves to gray area'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
+check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Page","Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has four panes (Reset last since 4.41.25): Dial stays in view, Page and Colours scroll under it (Okay, 20 Oct 2026, 03:41: 'Page moves to gray area'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
 // Settings (#554; Okay, 31 Oct 2026, 01:49: "a settings icon. In place of mm … Inside two settings: unit … Colors";
 // approved 02:24): a cog at the panel's top right, never boxed; pressed, a box with Unit and Colours. Lengths are shown
 // and typed in the unit, kept in mm (R1)
@@ -1111,6 +1111,42 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   const gone = await S("[!S.ha_gmt.added, !S.ha_gmt.on, S.ui_hand, [...document.querySelectorAll('.tabsbar .segs > .tab')].map((t) => t.textContent).join(), !document.querySelector('#hand-add-plus').hidden]");
   check(gone.join() === "true,true,0,Hour,Minute,Seconds,true" && await S("!S.rings.some((r) => r.fn)"), `the − takes the GMT hand off with its ring: not added, not on, the Hour tab chosen, the tabs Hour · Minute · Seconds, the + stays (${gone.join(" ")})`);
 }
+// the case (#582; Okay, 9 Nov 2026: "we should be adding bezel and rehault and its editable parts. Under dial … Implement its
+// rules in 2d and add a diagram next to sliders like we have in hands. Rings on rehault and bezel addable, stackable"; asked:
+// "Tab under dial … bezel and rehault are tabs"; the radius "Both, and a 'fit' option"; the grounds flat in their colours)
+{
+  await tab("Dial");
+  const tabs0 = await page.evaluate(() => { const bar = document.querySelector(".casetabs"), r = (e) => e.getBoundingClientRect(); const tabs = [...bar.querySelectorAll(".tab")]; return { names: tabs.map((t) => t.textContent + (t.classList.contains("on") ? "*" : "")).join(), wide: tabs.every((t) => r(t).width > 80), pinned: Boolean(bar.closest(".pinned")), grounds: window.dial_tool.items.filter((x) => ["rehaut", "bezel", "insert", "bezel chamfer"].includes(x.role)).length, dial_rows: [...document.querySelectorAll(".row")].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector("label")).map((x) => x.querySelector("label").textContent).slice(0, 2).join() }; });
+  check(tabs0.names === "Dial*,Rehaut,Bezel" && tabs0.wide && tabs0.pinned && tabs0.grounds === 0 && tabs0.dial_rows === "Diameter,Scale everything with it", `the Dial tab has its own tabs, pinned: ${tabs0.names}; the case off to start, no grounds drawn; the Dial rows as before (${tabs0.dial_rows})`);
+  await page.click("#case-tab-2"); await frame();
+  await page.click("#global-bz-on-Bezel"); await frame();
+  const bz = await page.evaluate(() => { const t = window.dial_tool, S = t.S, rows = [...document.querySelectorAll(".row")].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector("label")).map((x) => { const l = x.querySelector("label"); return l.querySelector(".whole")?.textContent || l.textContent; });
+    const box = [...document.querySelectorAll(".casedetail")].find((x) => !x.hidden), svg = box && box.querySelector("svg.section"), r = (e) => e.getBoundingClientRect();
+    const side = [...document.querySelectorAll(".row.side")].filter((x) => !x.hidden && x.checkVisibility());
+    return { on: S.bz_on, rows: rows.slice(0, 9).join(), parts: svg ? [...svg.querySelectorAll("path")].map((p) => p.className.baseVal.replace(" focus", "")).join() : null, focus: svg ? [...svg.querySelectorAll("path.focus")].length : 0, beside: Boolean(box && side.length && Math.abs(r(box).top - r(side[0]).top) < 2 && r(side[0]).left > r(box).right), grounds: t.items.filter((x) => ["bezel", "insert", "bezel chamfer"].includes(x.role)).map((x) => x.role).join(), page: Math.round(t.constructor.G ? 0 : 0), reach: +(t.S.dial_d / 2 + t.S.bz_w + t.S.bz_teeth_depth).toFixed(2) }; });
+  check(bz.on && bz.rows === "Bezel,Preset,Kind,Width,Chamfer,Metal,Insert in,Insert out,Insert" && bz.parts === "dial,bezel,insert,teeth,crystal" && bz.focus === 3 && bz.beside && bz.grounds === "bezel,bezel chamfer,insert",
+    `Bezel ticked: the rows Bezel · Preset · Kind, then Width · Chamfer · Metal · Insert in · out · Insert beside the section (${bz.rows}); the section draws ${bz.parts}, the bezel's parts in ink (${bz.focus}); the plan gets the ring, its chamfer and the insert (${bz.grounds}), the page out to ${bz.reach} mm`);
+  // the scene reaches the coin edge: the bezel ground's outer edge is the ring's width plus the scallops' depth
+  const edge = await S("(() => { const b = t.items.find((x) => x.role === 'bezel').path.bounds(); return [+(b[2]).toFixed(2), +(S.dial_d / 2 + S.bz_w + S.bz_teeth_depth).toFixed(2), +G_page().toFixed(1)]; })()".replace("G_page()", "(2 * (S.dial_d / 2 + S.bz_w + S.bz_teeth_depth) + 2 * S.margin)"));
+  check(Math.abs(edge[0] - edge[1]) < 0.02, `the bezel's outline reaches the coin edge, ${edge[0]} mm (ring ${await S("S.bz_w")} + scallops ${await S("S.bz_teeth_depth")}); the page is ${edge[2]} mm`);
+  await page.click("#case-tab-1"); await frame();
+  await page.evaluate(() => document.querySelector("#global-rh-on-Rehaut").click()); await frame();      // the first line under the pinned part, where the pin grip's reach lies (as the hands' Show box)
+  const rh = await S("[S.rh_on, t.items.filter((x) => x.role === 'rehaut').length, [...[...document.querySelectorAll('.casedetail')].find((b) => !b.hidden).querySelectorAll('svg path.focus')].map((p) => p.className.baseVal).join()]");
+  check(rh[0] && rh[1] === 1 && rh[2] === "rehaut focus", `Rehaut ticked: its ground between the dial and the bezel; the section's rehaut in ink (${rh[2]})`);
+  // a ring on a surface: Surface and Radius from in the Rings tab; Fit puts a band across the whole insert, Edge measures from the surface's inner edge
+  await tab("Rings");
+  await page.evaluate(() => { const t = window.dial_tool, S = t.S; const i = S.rings.findIndex((r) => r.name === "Markers"); S.ui_ring = i; const R = S.rings[i]; R.surface = 2; R.r_from = 2; t.static_dirty = true; t.sync_rows(); t.render(); });
+  await frame(); await frame();
+  const placed = await page.evaluate(() => { const t = window.dial_tool, S = t.S, R = S.rings[S.ui_ring];
+    const built = t.statik.rings.find((x) => (x.raw || x.ring) === R); const b = built.path.bounds(); const ins = [S.dial_d / 2 + S.rh_w + S.bz_in_in, S.dial_d / 2 + S.rh_w + S.bz_w - S.bz_in_out];
+    const rows = [...document.querySelectorAll(".row")].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector("label")).map((x) => x.querySelector("label").textContent);
+    return { outer: +b[3].toFixed(2), ins_out: +ins[1].toFixed(2), len: +(built.ring.len).toFixed(2), ins_w: +(ins[1] - ins[0]).toFixed(2), rows: rows.filter((x) => /Surface|Radius from/.test(x)).join(), raw_r: R.r, drawn_r: built.ring.r }; });
+  check(placed.rows === "Surface,Radius from" && Math.abs(placed.outer - placed.ins_out) < 0.02 && Math.abs(placed.len - placed.ins_w) < 0.02 && placed.raw_r !== placed.drawn_r,
+    `Markers put on the bezel, Fit: Surface and Radius from show; the marks reach the insert's outer edge (${placed.outer} = ${placed.ins_out}) and are as long as it is wide (${placed.len}); the ring's own radius is untouched (${placed.raw_r} → drawn at ${placed.drawn_r})`);
+  await page.evaluate(() => { const t = window.dial_tool, S = t.S; const R = S.rings[S.ui_ring]; R.surface = 0; R.r_from = 0; S.bz_on = false; S.rh_on = false; S.ui_dial_tab = 0; t.static_dirty = true; t.sync_rows(); t.render(); });      // the window as it was found: the case off, the Dial tab on Dial
+  await frame();
+}
+await tab("Hands");
 await page.click("#hand-tab-0");
 {
   const strip = await page.evaluate(() => { const tabs = [...document.querySelectorAll(".tabsbar .segs > button")], r = (e) => e.getBoundingClientRect(), p = r(document.querySelector(".pinned")), c = getComputedStyle(tabs[0]), v = (b) => getComputedStyle(b, "::before");
@@ -1422,7 +1458,7 @@ await page.mouse.click(60, 200);      // on the Diameter label: a plain spot out
 check(await page.isHidden("#colour-pop"), "a press outside the pop-out puts it away");
 await page.evaluate(() => window.dial_tool.value_pop_close());      // that press was on Diameter's name, which opens its controller: put it away (since 4.52 the controller is larger and stood over the swatch)
 await page.click("#global-c-plate-Plate");
-await page.mouse.click(200, 800);
+await page.mouse.click(60, 200); await page.evaluate(() => window.dial_tool.value_pop_close());      // the same plain spot as above (a point lower down lands on the Colours list since the Dial tab got its tabs, #582 — a window's eye there turned the date window off)
 await page.click("#global-c-plate-Plate-hex");
 check(await page.isVisible("#colour-pop") && await page.textContent("#colour-pop h2") === "Plate", "a click on the hex in the pill opens the pop-out too");
 check(await page.$$eval("#pop-used button", (b) => b.length) >= 3 && await page.$$eval("#pop-palette button[data-colour]", (b) => b.length) === 10 && await page.isVisible('#pop-palette [data-colour="#0E2A47"]'), "first row: this dial's colours; second row: a palette of ten");
@@ -2311,7 +2347,7 @@ check(opener[0] === 34 && opener[1] === "Numerals · Markers · Minute ticks", `
   await other.evaluate(() => { const t = window.dial_tool; t.set_value("global", "dial_d", 25); });
   await other.waitForTimeout(700);
   await other.click('button[data-tab="Dial"]'); await other.waitForTimeout(300);
-  const r = await other.evaluate(() => { const b = document.getElementById("reset"), panes = [...document.querySelectorAll(".form .pane")], last = panes.at(-1), before = panes.at(-2);
+  const r = await other.evaluate(() => { const b = document.getElementById("reset"), panes = [...document.querySelectorAll(".form .pane")].filter((p) => !p.hidden), last = panes.at(-1), before = panes.at(-2);      // the shown panes: the Rehaut and Bezel tabs' panes stand hidden after Reset (#582)
     return { inPreview: !!document.querySelector("main #reset"), lastPane: last && last.contains(b), afterColours: before && before.textContent.trim().startsWith("Colours"), warn: (document.getElementById("reset-warning") || {}).textContent || "", described: b.getAttribute("aria-describedby") === "reset-warning" }; });
   await other.click("#reset"); await other.waitForTimeout(500);
   const back = await other.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((x) => x.name).join(" · ")]);

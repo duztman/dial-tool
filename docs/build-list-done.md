@@ -6,6 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
+| 582 | The case in 2D: Rehaut and Bezel tabs under Dial, the stack's rules in plan and in a section diagram, rings on the rehaut and the bezel (Centre · Edge · Fit) — the export of the surfaces and show mode's reading of the stack stay in the build list | **built** v1.1.58 beta, to verify |
 | 577 | Hands of your own: the + after the hand tabs offers GMT (24 h · 12 h, hours ahead) · Date · Day · Month, each a hand with its scale ring in condensed capitals (the GMT pair with the zones' codes, calendar names in five languages), under the hour hand in the movement's stack — the later functions stay in the build list | **built** v1.1.54–57 beta, to verify |
 
 ## 3 Nov 2026, 22:10 — built, for Okay to verify

@@ -161,8 +161,7 @@ export const H = { scope: "hand" };
 
 export const cap_rows = (S) => S.ui_hand === G.top_hand(S) && (S.ha_second.on || S.ha_cap_top);      // the cap's size and colour: under the hand it belongs to (#262)
 
-export const ROWS = {
-  Dial: [
+const DIAL_ROWS = [
     // Okay, 13 Oct 2026: Dial and Page stay in view (pinned); the list of colours scrolls under them.
     hdr("Dial", { pin: true }),                    // the plate: how big, what colour, what is on it
     num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
@@ -191,7 +190,10 @@ export const ROWS = {
     custom("reset_go", { head: true }),
     custom("reset"),
     custom("reset_blank"),                         // a blank face: for whoever wants to start from nothing (Okay, 18 Oct 2026, notes 2)
-  ],
+  
+];
+export const ROWS = {
+  Dial: [],      // filled below: the Dial tab's own tabs (#582), the Dial rows, then the Rehaut and Bezel rows
   Rings: [                                         // one list; rows that don't apply hide (R16)
     // one pinned pane (Okay's drawings, 13 Oct 2026). Its heading line carries the list's tools: a plus that opens
     // the four kinds, and move up · move down · duplicate · delete. Then the list. Then the selected ring in one
@@ -220,6 +222,11 @@ export const ROWS = {
     // is normal text on second column before dropdown. Dropdown here stretches all in-between")
     hdr("Resize Ring", { folded: true }),
     custom("resize_from", { head: true, text: "Resize ring from" }),
+    // the ring's ground (#582; Okay, 9 Nov 2026: "Rings on rehault and bezel addable, stackable"; the radius "Both, and a
+    // 'fit' option. If i am doing bands etc."): Dial · Rehaut · Bezel, the two shown once the case has them; on a surface
+    // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
+    seg("surface", "Surface", ["Dial", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...(S.rh_on ? [1] : []), ...(S.bz_on ? [2] : [])] }),
+    seg("r_from", "Radius from", G.R_FROM, { show: (R, S) => R.surface > 0 && ((R.surface === 1 && S.rh_on) || (R.surface === 2 && S.bz_on)) }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Ø", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),      // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
@@ -655,5 +662,52 @@ export const SHOW_SECTIONS = ["Show dial", "Watch", "Light", "Show export"];
 export const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 
 export const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right. Guides is a switch on the preview (Okay, 12 Oct 2026)
+
+
+// ── the Dial tab (#582): its own tabs — Dial · Rehaut · Bezel (Okay, 9 Nov 2026: "Tab under dial. What we have now is a tab,
+// bezel and rehault are tabs") — every row shows on its tab alone; the case's rows beside the section diagram, as a hand's
+const on_tab = (n) => (rows) => rows.map((r) => (r.pin ? r : { ...r, show: (T, S, app) => (S.ui_dial_tab || 0) === n && (!r.show || r.show(T, S, app)) }));
+const CS = { side: true };
+ROWS.Dial = [
+  custom("case_tabs", { pin: true, bar: true }),
+  ...on_tab(0)(DIAL_ROWS),
+  ...on_tab(1)([
+    // the REHAUT: the ring between the dial's edge and the bezel (the dial's size does not include it; Okay, 5 Nov 2026)
+    hdr("Rehaut", { headless: true }),
+    chk("rh_on", "Rehaut", {}),
+    custom("case_detail", {}),
+    num("rh_w", "Width", 0.2, 8, 0.05, { ...CS, show: (T, S) => S.rh_on }),
+    col("rh_c", "Colour", { ...CS, show: (T, S) => S.rh_on }),
+    info("The rehaut starts at the dial’s edge and rises to the bezel; its height is the bezel’s, on the Bezel tab. Rings go on it: a ring’s Surface, in Rings.", { show: (T, S) => S.rh_on }),
+  ]),
+  ...on_tab(2)([
+    // the BEZEL stack (the 3D exercise's named numbers, in 2D): the ring, its insert and coin edge in plan; the heights in the section
+    hdr("Bezel", { headless: true }),
+    chk("bz_on", "Bezel", {}),
+    custom("case_preset", { show: (T, S) => S.bz_on }),
+    seg("bz_kind", "Kind", G.BEZEL_KINDS, { show: (T, S) => S.bz_on }),
+    custom("case_detail", { show: (T, S) => S.bz_on }),
+    num("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
+    num("bz_chamfer", "Chamfer", 0, 2, 0.05, { ...CS, show: (T, S) => S.bz_on }),
+    col("bz_c", "Metal", { ...CS, show: (T, S) => S.bz_on }),
+    num("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    col("bz_insert_c", "Insert", { ...CS, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    hdr("Coin edge", { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num("bz_teeth_n", "Scallops", 12, 180, 1, { whole: true, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num("bz_teeth_depth", "Depth", 0, 2, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num("bz_teeth_fill", "Fill", 0.1, 0.95, 0.01, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num("bz_teeth_chamfer", "Chamfer", 0, 1, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    hdr("Heights", { folded: true, show: (T, S) => S.bz_on }),
+    info("Seen in the section and in show mode, not in the plan.", { show: (T, S) => S.bz_on }),
+    num("bz_dial_up", "Dial over band", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
+    num("bz_seat", "Seat", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
+    num("bz_h", "Ring height", 0.3, 6, 0.05, { show: (T, S) => S.bz_on }),
+    num("bz_lip", "Lip", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
+    num("bz_rim", "Crystal rim", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
+    num("bz_up", "Crystal up", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
+    num("bz_dome", "Dome", 0, 5, 0.05, { show: (T, S) => S.bz_on }),
+  ]),
+];
 
 for (const name of SECTIONS) for (const row of ROWS[name]) { row.scope ??= name === "Rings" ? "ring" : "global"; name_row(row); }
