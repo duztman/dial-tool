@@ -16,40 +16,84 @@
     "d": 27.4,
     "casing_d": 29.36,
     "h": 5.32,
-    "h_to_seconds_tip": 7.55,
+    "h_to_seconds_tip": 7.587,
     "stem_oclock": [
      3,
      3.8,
      4.1
-    ]
+    ],
+    "second_tip_over_plate": 2.267,
+    "type_L_second_tip_over_plate": 2.667,
+    "stem_axis_below_plate_top": 1.92,
+    "weight_sweep_d": 26.8
    },
    "dial": {
     "d": 28.5,
     "thickness": 0.4,
     "thickness_max": 0.6,
-    "hole": null,
-    "feet": "two of four, Seiko standard"
+    "hole": 2.05,
+    "feet": "two, r 13.0 at 1:36 and 7:33 (crown at 3)",
+    "feet_xy_mm": {
+     "F1": [
+      9.672,
+      8.667
+     ],
+     "F2": [
+      -9.466,
+      -8.93
+     ]
+    },
+    "feet_polar": {
+     "F1": [
+      12.99,
+      48.1
+     ],
+     "F2": [
+      13.01,
+      226.7
+     ]
+    },
+    "foot": {
+     "head_d": 1.0,
+     "pin_d": 0.64,
+     "length": 2.15
+    }
    },
    "hands": {
     "seconds": "central",
     "holes": {
      "hour": 1.5,
-     "minute": 0.89,
-     "second": 0.21
+     "minute": 0.88,
+     "second": 0.198
     },
     "heights": {
      "type": "M",
-     "pipe_tops_over_main_plate": {
+     "pipe_tops_over_plate": {
       "hour_wheel": 1.18,
       "cannon_pinion": 1.77,
-      "second_pivot": 2.24
+      "second_pivot": 2.267
      },
-     "type_L": {
-      "hour_wheel": 1.58,
-      "cannon_pinion": 2.17,
-      "second_pivot": 2.64
+     "hands_over_dial_top": {
+      "hour": [
+       0.6,
+       0.78
+      ],
+      "minute": [
+       1.19,
+       1.37
+      ],
+      "second": [
+       1.81,
+       1.91
+      ]
      },
-     "_source": "TMI product page, Hand Height Options drawing (D); seconds figure 'for reference only'"
+     "type_L": "every figure +0.40",
+     "blade_thickness": {
+      "hour": 0.18,
+      "minute": 0.18,
+      "second": 0.1
+     },
+     "_source": "TMI NH35A spec sheet, Hand Fitting page (D)"
     }
    },
    "functions": {
@@ -63,14 +107,18 @@
      "positions": [
       3,
       6,
-      4.5
+      9
      ],
      "default": 3,
      "numeral_r": null,
-     "aperture": null,
+     "aperture": [
+      2.9,
+      2.0
+     ],
      "disc_d": 23,
-     "numeral_r_inferred": 11.2,
-     "disc_hole_d": 15
+     "disc_hole_d": 15,
+     "window_r": 10.55,
+     "_aperture": "radial × tangential, at the window's centre r 10.55 — D, TMI Dial-1"
     },
     "day": "nh36: over the date at 3",
     "ampm": false,
@@ -80,13 +128,16 @@
     "d": "D",
     "h": "D",
     "h_to_seconds_tip": "T",
-    "holes": "T",
-    "dial_d": "T",
-    "date_positions": "D/T",
+    "holes": "D",
+    "dial_d": "D",
+    "date_positions": "D (3H · 6H · 9H drawings)",
     "numeral_r": null,
     "numeral_r_inferred": "I",
     "heights": "D",
-    "disc": "T (overlay discs)"
+    "disc": "T (overlay discs)",
+    "feet": "D (polar I)",
+    "window_r": "D",
+    "aperture": "D"
    },
    "shown": true
   },

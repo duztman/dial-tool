@@ -46,23 +46,28 @@ Legend — **D** documented by the maker's sheet or a drawing of it; **T** trade
 
 ### 4.1 Seiko/TMI NH35A (NH36 · NH38 · NH34 share the footprint)
 
-| | Value | Tag · source |
+Read from TMI's own *Watch Movement Specification and Drawing* NH35A (11 pages, version 1, revised 16 Nov 2022; timemodule.com/upload/category/24/spec_sheet/NH35_SS.pdf), screenshotted by Okay on 10 Nov 2026. The drawings are in 1/100 mm; below in mm. Everything in this table is **D** unless tagged.
+
+| | Value | Where on the sheet |
 |---|---|---|
-| Outside Ø · casing Ø | 27.40 · 29.36 (with dial holding spacer) | D — TMI NH35A spec sheet |
-| Height | 5.32 | D |
-| Height to the seconds pivot tip | 7.55 (Type M hands) · ≈ 8.0 (Type L, +0.4) | T — Crystaltimes "height with cannon pinion 7.55"; calibercorner "about 7.6 (M) / 8 (L)" |
-| Hand holes H · M · S | 1.50 · 0.89 · 0.21 (sheets say 0.88–0.90 and 0.20–0.21) | T — calibercorner, Lucius, hewore |
-| NH34's 24 h hand hole | 2.20; dial centre hole 2.7 | T — Lucius Atelier |
-| Hand heights above the main plate (= the dial seat) | **Type M: hour wheel top 1.18 · cannon pinion top 1.77 · seconds pivot tip 2.24** (drawn as 118 · +59 · +(46.7) in 1/100 mm; the seconds figure "for reference only"). **Type L: 1.58 · 2.17 · 2.64**. Checks: 5.32 + 2.24 = 7.56 (dealers' 7.55); + 2.64 = 7.96 (Lucius' 7.99) | D — TMI product page, "Hand Height Options" drawing for the NH35 (read in the browser pane, 10 Nov 2026) |
-| Dial Ø | 28.5 (28.4–28.5) | T — every mod shop |
-| Dial feet | two, used of four on mod dials, for a 3 or 4 o'clock crown; "roughly 12 and 6 with the crown right" | T — nomods; TMI: "fixed by two dial leg holes of dial holding spacer" (D) |
-| Stem | 3 o'clock (3.8 / 4.1 cases turn the movement) | D/T |
-| Date window | at 3 (D: "Date 3H", dial drawing NH35 Dial-1); 6H special order (T: Lucius); 4–4:30 by turning | D/T |
-| Date disc numeral radius, aperture | ? — the drawing "NH35 Dial-1" is not online in text; mod-shop aperture figure "~2.0 × 1.0" is a guess, treat as ? | ? |
-| Date disc Ø · its hole | ≈ 23 outer · ≈ 15 inner (the overlay discs cut to cover it) — so the numerals sit between r 7.5 and 11.5, their centre line near r 10–11 | T — accio/relaxwatches DWO guides; the radius inferred (I) |
-| Date aperture, as the trade cuts it | "2.8 × 1.6 oblong" (one guide) · "6 × 4" (a blank's listing — a frame, not the aperture): no two agree; treat as ? | T, conflicting |
-| NH36 | day over date at 3; crown position fixed (day wheel aligned); height "~6.0" per one dealer, 5.32 per TMI | D/T, conflicting |
-| Minimum case height | ? — build from 7.55 + dial 0.40 + hand clearance + crystal; no published floor | I |
+| Outside Ø · casing Ø | 27.40 ±0.03 (main plate) · 29.36 +0.10/−0.03 (case fitting Ø, with the dial holding spacer); spacer outer 29.255; assembly plan "casing diameter" 29.30 ±0.03 | Casing, Assembly Plan |
+| Height | 5.32; oscillating weight sweep Ø 26.80, back-side clearance Ø 23.94; weight sits 0.304 off the floor, boss recess 0.40 deep, 0.15 step | Casing |
+| Seconds pivot tip above the main plate (H1) | **Type M 2.267 · Type L 2.667**; total with the movement (H2) 7.587 · 7.987 | Casing, "Center post" table |
+| Stem | axis 1.92 below the main plate's top face; thread S0.90 × P0.225; pull strokes 0.399 and 0.400; stem Ø 1.10, part 0351 200 (A 11.00 · B 21.48) | Casing, Hand Setting Stem |
+| Hand-fitting pipes | hour wheel Ø 1.506 (+0.006), pipe H1 0.88 (M) / 1.28 (L) + 0.30 flange = 1.18 / 1.58 top; cannon pinion Ø 0.891 ±0.005, H2 0.61 above the hour wheel (top 1.77 / 2.17); fourth wheel Ø 0.215 ±0.005, H3 0.42 above the cannon pinion, tip 0.13 at 90°, taper 4°36' | Hand Fitting |
+| Hand holes (the hands' own drawing) | second Ø 0.198 +0.004/−0.005 · minute Ø 0.88 +0.005/−0.003 · hour Ø 1.50 +0.005/−0.003 | Hands |
+| Hands' hubs | second: pipe Ø 0.35 (max 0.37), 0.60 tall (max 0.64, min 0.50 engaged), blade 0.10 ±0.02 thick · minute: hub Ø 1.05 (max 1.08), 0.30 tall (max 0.33), blade 0.18 (max 0.21) · hour: hub Ø 1.76 (max 1.79), 0.60 tall (max 0.70), blade 0.18 (max 0.21) | Hands |
+| **The hand stack above the dial's top** (dial 0.40, Type M) | hour hand 0.60 → 0.78 · gap 0.41 · minute 1.19 → 1.37 · gap 0.44 · second 1.81 → 1.91 · 0.45 to the drawn limit. Type L: hour 1.00 → 1.18, minute 1.59 → 1.77, second 2.21 → 2.31 (every hand +0.40). Letters: A B C the hands' tops over the dial top (78 · 137 · 191), D the dial 40, E 45, F 44, G 41, H the hour hand's underside over the dial top (60 / 100), t1 t2 t3 the blades 18 · 18 · 10 | Hand Fitting, stack table |
+| Dial Ø · thickness | 28.50 ±0.05 · 0.40 ±0.04 | Dial-1 |
+| Centre hole | Ø 2.05 ±0.05 | Dial-1 |
+| **Date window** | at **3H**: centre **10.55 from the dial centre** on the 3-o'clock axis, aperture **2.90 (radial) × 2.00 (tangential)**. The same sheet draws the movement turned for a **6H** window (crown at 6) and a **9H** window (crown at 9): same radius, same aperture, the feet turned with it | Dial-1 (3H, 6H), Dial-2 (9H) |
+| **Dial feet** (3H, crown at 3) | F1 at (+9.672, +8.667), F2 at (−9.466, −8.930) from the centre, x toward 3, y toward 12 — **radius 12.99 / 13.01, at 1:36 and 7:33** (48.1° and 226.7° from 12, clockwise; 178.6° apart, not quite opposite). Foot: Ø 1.00 at the dial, pin Ø 0.64 +0.015/−0.01, 2.15 ±0.10 long, 0.15 tip chamfered at 25° | Dial-1 (coordinates D, polar I) |
+| Dial leg holes on the spacer | the spacer takes two legs; a mod dial carries four for the 3 and 3.8/4 crowns | Casing; trade |
+| Hands' unbalance limits | hour ≤ 1.50 µN·m · minute ≤ 1.25 · second ≤ 0.60 | Specification |
+| Casing notes | screw-type case back required; not for diver's watches (TMI's words) | Specification |
+| Date disc numeral size · disc Ø | not on this sheet (the disc is a part, drawn elsewhere); the window 2.90 × 2.00 at r 10.55 is what a dial needs | — |
+| NH36 (day-date) · NH34 (GMT) | same footprint; the NH34's 24 h hand hole 2.20 and dial centre hole 2.7 (T, Lucius); the NH36's day disc window is on its own sheet (NH36_SS.pdf, /category/25/) | T |
+| Minimum case height | floor from the sheet: 5.32 + 0.40 dial + 1.91 (second hand's top, M) + crystal clearance + crystal + case back; TMI's own limit line sits 0.45 over the second hand | I from D |
 
 ### 4.2 Miyota 9015 (9039 · 9075)
 
@@ -167,7 +172,7 @@ The **date radius** is the distance from the dial's centre to the middle of the 
 |---|---|---|---|
 | Sellita SW200-1 / ETA 2824-2 | 10.40 (the window's centre on the drawing); the disc's numeral radius itself likely 11.55 — the two differ because the numeral sits inboard of the disc's edge and the window is drawn around it | ≈ 2.7 × 3.3, turned 8° (likely reading) | D / unmapped |
 | Miyota 9015 | "the same distance as a 2824" — so ≈ 10.4 | ? | T (WUS) |
-| NH35 | ? — the overlay discs say the numeral band lies between r 7.5 and 11.5 (Ø 23 / Ø 15), so the numerals' centre line is near r 10–11 | ? | I from T |
+| NH35 | **10.55** (the window's centre on TMI's Dial-1) | 2.90 radial × 2.00 tangential | D |
 | Ronda 715 | ? — an 11½''' quartz; its disc is small (the battery takes the room): the radius is likely *inside* the Swiss automatics' | ? | I |
 | SW100 | ? — on a 17.2 mm movement the disc is tiny; the numeral radius is about 6.5–7.5 (I, from the movement's Ø) and the numerals are 1.2–1.4 mm tall, so a window at 3 sits well inside a 19–20 mm dial | ? | I |
 
@@ -176,7 +181,7 @@ Rule for the build: a calibre whose radius is **?** offers its window at the tra
 ## 5 · What this means for the build
 
 - **The three 11½''' movements share one dial** in the tool's terms (Ø 28–29, date centre ≈ 10.4 mm from the centre at 3); they differ in hand holes, heights and the GMT/day options. One geometry record with three overlays.
-- **NH35 is the odd 12'''**: 28.5 dial, 7.55 to the seconds tip, its own date radius (unknown — measure one).
+- **NH35 is the odd 12'''**: 28.5 dial, 2.27 to the seconds tip over the plate, date window at r 10.55 (2.90 × 2.00), feet at r 13.0 at 1:36 and 7:33 — all from TMI's sheet now.
 - **SW100 is the second dial size** (≈ 19–20): the same window logic at a smaller radius — its dial drawing is the one to read next. The 6497 (a third size, with a subdial) is a spare; Sellita's SW260-1 shows how a subdial is specified ("small second at 9 o'clock, pivot point distance 6.4 mm").
 - **Hand heights are per-calibre choices, not constants**: Sellita sells eight, Seiko two (M, L), Ronda seven (0–6), Miyota one per calibre (two for the 2035 family). Above the dial's top the standard stacks agree to a tenth — SW200-1 0.55 · 0.95 · 1.35 (tip 2.10), 9015 0.45 · 0.90 · 2.10, SW100 0.65 · 0.95 · 1.30 — so one default stack with per-calibre overrides is honest. The movement record should carry the *standard* height and name the alternatives; #584's `data-over` then has a source.
 - **Minimum case height** is not published by anyone; it is a sum: movement height + 0.40 dial + hand stack to the seconds tip + hand thickness + crystal clearance (Miyota: 0.40 min) + crystal + case back. Give the Show Case the sum from the record and say which terms are the maker's.
@@ -187,5 +192,5 @@ Rule for the build: a calibre whose radius is **?** offers its window at the tra
 
 3D files and templates others made from these drawings, catalogued for reuse: `movements-3d.md`.
 
-- The maker drawings (TMI "NH35 Dial-1" and "Casing" in timemodule.com/upload/category/24/spec_sheet/NH35_SS.pdf — the drawings are pictures, no text to extract; Miyota 9015 drawing; Sellita SW200-1 p. 21–24 and SW100 "Indications pour cadran"; ETA 6497 dial drawing; Ronda casing ring) are PDFs; the workspace cannot download them and the browser pane does not paint PDFs (tried three ways, 10 Nov 2026). Second-hand sources were tried the same night (mod shops, dealers, Thingiverse/Printables, Reddit): they gave hand heights, feet clock positions and disc sizes, never a date radius — nobody publishes it; dial makers cut to the drawing. **On a Mac**: open the PDFs in Chrome, screenshot the dial and hand-height pages, and read the numbers off — 20 minutes; this closes every ? above except a measured NH35 date radius.
+- **NH35: done** — Okay screenshotted TMI's sheet (10 Nov 2026, 23:17); the pictures are on his iPad/Mac (R36), the numbers in §4.1. Still to read the same way: Miyota 9015 drawing; Sellita SW200-1 p. 21–24 and SW100 "Indications pour cadran"; ETA 6497 dial drawing; Ronda casing ring) are PDFs; the workspace cannot download them and the browser pane does not paint PDFs (tried three ways, 10 Nov 2026). Second-hand sources were tried the same night (mod shops, dealers, Thingiverse/Printables, Reddit): they gave hand heights, feet clock positions and disc sizes, never a date radius — nobody publishes it; dial makers cut to the drawing. **On a Mac**: open the PDFs in Chrome, screenshot the dial and hand-height pages, and read the numbers off — 20 minutes; this closes the remaining ? cells (Miyota 9015, Sellita SW100 dial page, Ronda 715).
 - Sellita SW200-1: https://www.sellita.ch/scripts/calibres/images/DocTec_SW200-1_7.pdf (p. 22 dial, p. 23 heights). TMI NH35A sheet: okta.ua/files/pdf/1482851267NH35A.PDF. Miyota: miyotamovement.com/product/9015/ → Documents. Ronda: gleave.london/content/TECH/Ronda 715 - Specification.pdf (links the two hand-fitting drawings).
