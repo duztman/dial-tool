@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 1 Nov 2026 (the docs' audit: §5–§8 brought in line with the build list; v1 is behind us — a beta counts as v1).*
+*Started 3 Oct 2026. Last updated 10 Nov 2026 (§5.1: #585, the movement choice);  1 Nov 2026 (the docs' audit: §5–§8 brought in line with the build list; v1 is behind us — a beta counts as v1).*
 
 ## 1 · Goal
 
@@ -45,7 +45,7 @@ The dated record of decisions and their reasons is `docs/decisions.md`. Read it 
 
 Numbers are never reused; a settled question is deleted here and its decision stands in `docs/decisions.md`.
 
-1. **Movement** — which one? It fixes the real dial diameter, hand lengths, the date window's position and size (date wheel), and the feet positions (#89 waits on it).
+1. **Movement** — which one? It fixes the real dial diameter, hand lengths, the date window's position and size (date wheel), and the feet positions (#89 waits on it). Since 10 Nov 2026 the tool is to offer five calibres and an imaginary Any (#586): the numbers are `docs/movements.json`, the research `docs/research-movements.md`.
 8. **Imported shapes with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours — to settle when import is built (#173).
 14. **Okay's Mac clone** (`~/Desktop/dial-maker/dial-tool-github-repo/`): his; he pulls it himself when he wants it (Okay, 17 Oct 2026: "if you can reach mc do clone if not never bother anymore") — **not to be raised again**.
 
