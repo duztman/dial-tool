@@ -13,7 +13,7 @@ What the 3D exercise of 4–5 Nov 2026 learnt about drawing a watch photographic
 ## Where things are
 
 - **The model**: `web/try/relight/watch3d.html` (the page; three.js from jsdelivr), `scene.js` (the opener dial's parts, written by `dump.mjs`), `build.mjs` (one-file page for the private preview), `shot3d.mjs` (a crop from Chromium).
-- **The preview**: the artifact *Watch 3D trial*, https://claude.ai/artifact/81kwePNdWKxqEPTMoCBCi9 — republished every round (round 84 on 10 Nov 2026). The artifact was ahead of this branch from round 48 to 75; round 76 brought the page back into the repo from the artifact (`system.md`, One file).
+- **The preview**: the artifact *Watch 3D trial*, https://claude.ai/artifact/81kwePNdWKxqEPTMoCBCi9 — republished every round (round 85 on 10 Nov 2026). The artifact was ahead of this branch from round 48 to 75; round 76 brought the page back into the repo from the artifact (`system.md`, One file).
 - **The photographs**: not in the repo (R36). `ref-01…34` in `~/Desktop/dial-maker/screenshots/2026-11-05-3d-refs/` on Okay's Mac (01–28 sent as `3d-refs.zip`, 29–34 the strap, sent in the chat); `refs.md` is their index. Round screenshots: `screenshots/2026-11-05-3d-rounds/` (the round-30 set sent as a zip).
 - **The earlier trial**: `relight.html` — the height-field relighting of round 1, kept as a record; superseded by the 3D build.
 
