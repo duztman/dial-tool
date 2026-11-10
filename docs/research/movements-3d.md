@@ -18,6 +18,19 @@ Tag: **D** built from the maker's drawing (says so) · **T** built from a measur
 | Miyota 2035 | Holder for NH35 cases (see row 1) and the "Trolex" printed watch built round a 2035 | Thingiverse 6789735 (Ken's STL 2035 movement — a model of the movement itself); MakerWorld 463323 | the 2035's body as a solid | T | — |
 | NH35/4R35, NH36 | Movement holders for work (dial-up, rotor free) | Thingiverse 3471154 (AG875), MakerWorld 668644, 1645845 | outside Ø 27.40, rotor clearance | T | — |
 
+## The maker PDFs, fetched (10 Nov 2026)
+
+Through the desktop PDF tools (`fetch_pdf_from_url` on the Mac, then `render_pdf_page` to read a page as a picture) — the way around the research container's network. Saved in `~/Documents/` on Okay's Mac; to move to `~/Desktop/dial-maker/research/movements/` (R36):
+
+| File | Source | Pages read |
+|---|---|---|
+| `Sellita_SW200-1_DocTec_rev07.pdf` | sellita.ch DocTec_SW200-1_7.pdf | 21 (dial, rev A) · 22 (dial, rev B) · 23 (hand heights) |
+| `Sellita_SW100_DocTec.pdf` | cousinsuk 9264_sellita 100.pdf | 19 (dial) · 21 (stem) |
+| `Miyota_9015-20A_dial_drawing.pdf` · `Miyota_9015_drawing.pdf` | miyotamovement.com/product/9015 → Dial Drawing, Drawing | 1 · 1 (Frame for Case) |
+| `Ronda_715_spec.pdf` | gleave.london | 1–2 (links to the drawings) |
+| `Ronda_714_715_complete_technical_documentation.pdf` | cousinsuk 9886 | 4 (dial 5010.377) · 11 (hand heights, 2-hand) · 12 (stem) |
+| NH35: Okay's screenshots of timemodule.com NH35_SS.pdf | — | all 11 |
+
 ## How to fetch on a Mac
 
 1. Open the link, download the model files (prefer the source: `.scad` over `.stl`).

@@ -71,18 +71,21 @@ Read from TMI's own *Watch Movement Specification and Drawing* NH35A (11 pages, 
 
 ### 4.2 Miyota 9015 (9039 · 9075)
 
-| | Value | Tag · source |
+Read from Miyota's own drawings (fetched to Okay's Mac through the PDF tools, 10 Nov 2026): *Indications for Dial* 901500D0 for Cal. 9015-20A (date 3H, crown 3H; 2023-03-06) and *Frame for Case* 901500C0 (2023-03-17); the 9015-20Y (date 6H) drawing is on the same product page. Everything in this table is **D** unless tagged.
+
+| | Value | Where |
 |---|---|---|
-| Ø · casing Ø | 26.00 · 25.60 | D — Miyota spec; Horotec |
-| Height | 3.90 (9039 3.90 · 9075 4.92) | D |
-| Height to the seconds pivot tip | 5.98 | T — Horotec "total height" |
-| Hand stack (dial top → hour hand · hour → minute · minute → seconds tip) | 9015: 0.45 · 0.45 · 1.20 = 2.10 · 9039: 0.45 · 0.40 · 0.90 = 1.75 | D — Miyota catalogue diagram (450µ/450µ/1200µ); the order of the three is Claude's reading (I) |
-| Hand holes H · M · S | 1.52 · 1.00 · 0.17 (Horotec: 152-100-17) | D/T — Horotec, calibercorner |
-| Minimum clearance | hand 0.40 min · movement 0.40 min | D — Miyota spec "Clearance" |
-| Minimum case thickness | 9015 8.6 · 9039 8.25 | T — calibercorner, from a Miyota hand-stack comparison |
-| Dial feet | "near 2:00 and 8:00" (8215: "5:30 and 11:00"); same on 9039 | T — WUS reading of Miyota's downloads drawing |
-| Date window | at 3 (9015-20A) · at 6 (9015-20Y, crown 3) · at 6 with crown at 2 (2ZZ); "same distance as a 2824" | D (grail-watch list of variants) · T (WUS) |
-| Date disc numeral radius, aperture | ? | ? |
+| Ø · casing Ø | 26.00 ±0.02 · 25.60 js8 (±0.0165); back-side Ø 25.50 max, Ø 23.90 max | Frame for Case |
+| Height | 3.90 (9039 3.90 · 9075 4.92) | Miyota spec |
+| Date disc Ø | 23.40 | Frame for Case |
+| Hand-fitting pipes | hour wheel Ø 1.52 (−0.001/−0.009) · cannon pinion Ø 1.00 (+0.003/−0.005) · seconds Ø 0.17 ±0.004; hour hand seat 0.45 (~0.41) over the dial, seconds tip 2.10 (~2.06) — the catalogue's 0.45 · 0.45 · 1.20 stack | Frame for Case; catalogue |
+| Minimum clearance | hand 0.40 min · movement 0.40 min | Miyota spec "Clearance" |
+| Minimum case thickness | 9015 8.6 · 9039 8.25 | T — calibercorner |
+| Dial Ø · thickness | 25.60 drawn (the bare 11½''' dial; the trade fits 28–29 over a dial ring) · 0.40 ±0.04 | Indications for Dial |
+| Centre hole | Ø 2.00 ±0.04 | Indications for Dial |
+| **Date window** (20A, 3H) | **from r 8.85 to r 11.55 (2.70 radial) × 2.00 tangential, centre r 10.20** on the 3-o'clock axis — the same cut as the ETA 2824 / Sellita SW200-1 rev A | Indications for Dial |
+| **Dial feet** | DH11 at (+11.85, +2.83), DH12 at (−11.60, −3.76) — **r 12.18 at 2:33 and r 12.19 at 8:24** (not opposite: 175.4° apart); foot Ø 0.70 ±0.01, 1.50–1.70 long, chamfer C0.10 | Indications for Dial (coordinates D, polar I) |
+| Stem | at 3H; axis 1.53 below the dial ring's top; thread S0.9 | Frame for Case |
 | 9075 GMT | 24 h hand central; date at 3; 24 h hand hole ? | D/? |
 
 ### 4.3 Sellita SW200-1 (= ETA 2824-2; SW220-1 day-date, SW330 GMT)
@@ -91,17 +94,17 @@ Read from TMI's own *Watch Movement Specification and Drawing* NH35A (11 pages, 
 |---|---|---|
 | Ø · casing Ø | 26.00 · 25.60 | D — Sellita DocTec SW200-1 rev 07 (2 Sep 2024) p. 3 |
 | Height | 4.60 | D |
-| Height to the seconds pivot tip | 4.60 + 2.50 = 7.10 (I); Horotec lists a "total height" 6.56 for hand-fitting 2 — a different datum, not used | I / T |
+| Height to the seconds pivot tip | Horotec's "total height" 6.56 for hand-fitting 2 (= 4.60 + 1.96, the pinion's tip a little over the 1.75 pipe top) | T |
 | Hand holes H · M · S | 1.50 · 0.90 · 0.25 | D — DocTec p. 23 (0.25 cylindrical, −4/+6 µm; conicity 3 %) |
-| Hand fitting heights, above the dial seat (height 2, standard) | **the hands sit at hour 0.95 · minute 1.35 · second 1.75**; the pipe tops they press onto: hour wheel 1.25 · cannon pinion 2.20 · seconds pivot 2.50; stem axis 1.80 | D — Sellita catalogue 2019/2024 "standard hand fitting height" diagram (0,95 · 1,35 · 1,75 · 1,80) read against DocTec p. 23 columns F · E · G and B · A · D; the pipe names from the ETA/Sellita parts catalogues (Ofrei: "height 2 cannon pinion 2.20, hour wheel 1.25") |
-| The eight heights | the whole stack steps 0.25 a row: row 1 hands at 0.70 · 1.10 · 1.50 (pipes 1.00 · 1.95 · 2.50) … row 8 hands at 2.45 · 2.85 · 3.25 (pipes 2.75 · 3.70); rows 3–8 at extra cost; the seconds pivot stays 2.50 through rows 1–7 (3.50 at row 8) | D — DocTec p. 23; the seconds column (D) is the one reading still to confirm on the drawing |
-| Above the dial's top (0.40 dial) | hands at 0.55 · 0.95 · 1.35; seconds tip 2.10 — the same stack as the Miyota 9015's (0.45 · 0.90 · 2.10) | I |
+| Hand fitting heights — the pipe tops above the dial seat ("dépassement"), height 2 (standard) | **hour wheel 0.95 · cannon pinion 1.35 · seconds pinion 1.75** (columns F · E · G); the parts' lengths (A · B · C · D): cannon pinion 2.20, hour wheel 1.25, seconds pinion 5.07, centre tube 2.50; column H 0.95 (a hub datum, unlabelled) | D — DocTec p. 23, drawing SW106769 A, read on the page itself (10 Nov 2026) |
+| The eight heights | the pipe tops step 0.25 a row: row 1 hour 0.70 · minute 1.10 · second 1.50 … row 8 hour 2.45 · minute 2.85 · second 3.25; rows 3–8 at extra cost; the centre tube 2.50 (3.50 at row 8) | D — the same table |
+| Above the dial's top (0.40 dial) | hour 0.55 · minute 0.95 · second 1.35 — the Miyota 9015 sits 0.45 · 0.90 · 2.10 (its 2.10 is the tip, not the pipe top) | I |
 | Without seconds (SW210-type use) | same hour and minute heights, no fourth wheel | D — p. 24 |
 | Dial thickness assumed | 0.40 | D — "appui de cadran 0,40" |
 | Centre hole | 2.00 (−0/+60 µm) | D — p. 22 |
-| Date window | centre 10.40 from the centre (rev B, 2024); the window ("Guichet") figures on the SW330 copy of the same drawing: 2.3 · 2.7 · 2.4 · 3.3 · 8°2' — an aperture about 2.7 wide × 3.3 high turned 8° to the radius is the likely reading, unmapped | D — p. 22, drawing SW108592 B; cousinsuk's SW330-1 sheet (same dial drawing) |
-| Date disc | 31 teeth; figures 23.35 (its Ø, likely) · 17.9 / 17.5 · 11.55 (the numerals' radius, likely — 10.40 is the window's) · numeral strokes 0.26 / 0.67 / 0.18; font "Sellita standard"; disc to dial 0.16 | D — SW330-1 sheet, unmapped except 0.16 |
-| Dial feet | two, opposite each other, ≈ 25.1 apart (TimeZone) · feet Ø 0.75, length 2.40 (DocTec "fixation par verrous" 2,40 / 0,75) · drawing figures 11.60 / 3.78 (a radius and an offset? not mapped) | T · D · ? |
+| **Date window** | rev A (SW106765 A, p. 21): **from r 8.85 to r 11.55 (2.70 radial) × 2.00 tangential at 3H, centre r 10.20**, with dashed alternatives at 12, 9 and 6; rev B (SW108592 B, p. 22, 2021): a **round Ø 2.30 window at r 10.40** drawn on the 6-o'clock axis ("rectification of the window Ø to 2.300 and centre distance to 10.400"). Both pages are in the 2024 document; the rectangle is the classic cut, the round one the newer drawing | D — read on the pages (10 Nov 2026) |
+| Date disc | 0.16 thick, under the dial; 31 teeth; the SW330-1 sheet's figures 23.35 (Ø, likely) and 11.55 (= the window's outer edge) | D (0.16, teeth) · unmapped (the rest) |
+| **Dial feet** | at (+11.60, +3.78) and (−11.60, −3.78) — **r 12.20 at 2:24 and 8:24**, exactly opposite; foot Ø 0.75 (−0.014), 1.55 long under the dial, held by bolts 2.40 deep | D — p. 21/22 (coordinates D, polar I) |
 | Stem | 3 o'clock; stem axis 1.80 above the dial underside (2824-2; 2836-2 2.25; 2892 1.50) | T — WUS quoting ETA |
 | Minimum case height | ? | I |
 
@@ -118,7 +121,9 @@ Read from TMI's own *Watch Movement Specification and Drawing* NH35A (11 pages, 
 | Hands | 3 hands, or **2 hands (no seconds)** | D — "available as 2 or 3 hands version" |
 | Date window | at 3 (715) · at 6 (715 D6) · at 4 (715 D4); the 2-hand version shows the date too | D/T |
 | Dial feet | 2:30 and 8:30 (calibercorner, jewelerssupplies, uswatchparts) · "2 & 8" (watchpartsdirect) | T, three dealers agree |
-| Date disc numeral radius, aperture | ? (Ronda's casing-ring and hand-fitting drawings are PDFs, not reached) | ? |
+| **Dial drawing** (Ronda 5010.377, shared by 515 · 515S · 714 · 715 · 715Li) | bare dial Ø 25.5; centre hole Ø 1.7 (+0.06); **date window from r 8.85 to r 11.55 (2.70 radial) × 2.00 tangential, centre r 10.20** — drawn at 4H (30° below 3) on this sheet, the 3H sheet (5010.417) and 6H (5010.534) the same cut turned; the "round" variants (5010.477, R 10.2) put a round window at r 10.2; **feet at (+11.6, +3.78) and (−11.6, −3.78), r 12.20 at 2:24 / 8:24** — the ETA 2824's; foot Ø 0.75 (−0.014), 2.0 long, 0.3 × 30° chamfer; dial 0.5 max | D — cousinsuk's bundle "datasheet 714 complete technical documentation", read on the page (10 Nov 2026) |
+| Hand fitting, the two-hand sibling 714 (sheet 3316.120) | heights 1 · 2 · 3: cannon pinion top over the dial seat 1.08 · 1.28 · 1.63, hour wheel 0.75 · 0.95 · 1.23; max dial under the minute hand 0.70 · 0.85 · 1.10, under the hour hand 0.40 · 0.60 · 0.90; hands ≤ 0.15 thick; hand holes 1.20 (+4/−2) · 0.70 (+6/−4) | D — same bundle |
+| Hand fitting, the 715 (three hands, heights 0–5) | the 715's own sheet, not in the 714 bundle (ronda.ch 5030.xxx); the trade's hour-wheel heights above stand | ? / T |
 
 ### 4.5 Sellita SW100 a (= ETA 2671; SW100 b no date)
 
@@ -127,14 +132,14 @@ Read from TMI's own *Watch Movement Specification and Drawing* NH35A (11 pages, 
 | Ø · casing Ø | 17.50 · 17.20 | D — Sellita catalogue 2024, DocTec SW100 rev 03 (19 Mar 2021) |
 | Height | 4.80 | D |
 | Hand holes H · M · S | 1.20 · 0.70 · 0.20 | D — catalogue diagram "Ø1,20 Ø0,70 Ø0,20" |
-| Hands above the dial seat (height 2, the standard) | **hour 1.05 · minute 1.35 · second 1.70**; pipe tops: hour wheel 1.31 · cannon pinion 2.13 · seconds pivot 2.01; stem axis 1.75 | D — DocTec SW100 p. "Aiguillages" SW104205 A, columns F · E · G and B · A · D, the same layout as the SW200-1's; the catalogue diagram (1,05 · 1,35 · 1,70 · 1,75) confirms the row |
-| The five heights | rows 1–5, the stack stepping 0.25: hands at 0.80 · 1.10 · 1.45 (row 1) … 1.80 · 2.10 · 2.45 (row 5); the seconds pivot 2.01 in every row | D — same table |
+| Pipe tops above the dial seat (height 2, the standard) | **hour wheel 1.05 · cannon pinion 1.35 · seconds pinion 1.70** (columns F · E · G); parts' lengths: cannon pinion 2.13, hour wheel 1.31, centre tube 2.01; stem axis 1.75 | D — DocTec SW100 "Aiguillages" SW104205 A, the SW200-1's column layout; the catalogue diagram (1,05 · 1,35 · 1,70 · 1,75) matches |
+| The five heights | rows 1–5 stepping 0.25: hour 0.80 · minute 1.10 · second 1.45 (row 1) … 1.80 · 2.10 · 2.45 (row 5) | D — same table |
 | Above the dial's top (0.40 dial; the sheet's dial seat reference 0.30) | hands at 0.65 · 0.95 · 1.30; seconds tip 1.61 | I |
 | Date window | at 3 (SW100 a); SW100 b has no date wheel | D |
-| Dial feet | 2:30 and 8:30 (the ETA 2671's; the SW100 is its copy) | T — uswatchparts, jewelerssupplies |
+| **Dial feet** | at (+7.75, +2.35) and (−7.75, −2.35) — **r 8.10 at 2:26 / 8:26**, opposite; foot Ø 0.65 (−0.014), 1.60 long under the dial, bolts 2.00 deep | D — DocTec SW100 p. 19, drawing SW103202 A, read on the page (10 Nov 2026) |
 | Height to the seconds pivot tip | 6.29 (ETA 2671, hand-fitting 1) | T — Horotec |
-| Date disc numeral radius, aperture · centre hole | ? — the dial drawing SW103202 A is in the DocTec (cousinsuk.com/pdf/products/9264_sellita 100.pdf) but its numbers do not survive text extraction; the drawing says the dial is held by bolts set at 45°; read on a Mac | ? |
-| Dial Ø used | ≈ 19–20 (I; the ETA 2671's cases run 20–28 mm with a spacer) | I |
+| **Date window** · centre hole | **from r 5.97 to r 8.22 (2.25 radial) × 2.00 tangential, centre r 7.10**; the numeral 1.40 tall, the window's print frame 1.65 wide; alternatives dashed at 6H and at 4:30 (45°); the window's edge chamfered 45° × 0.30; date disc 0.16, 0.10 under the dial · centre hole **Ø 1.70 (+0.06)** | D — same drawing |
+| Dial Ø | the drawing's disc is the bare 7¾''' dial (≈ 17.5); the trade fits 19–20 over a ring | D / I |
 | Minimum case height | ? | I |
 
 ### 4.6 Spare — ETA/Unitas 6497-1 (6498-1; Sea-Gull ST3600/ST3620)
@@ -170,19 +175,19 @@ The **date radius** is the distance from the dial's centre to the middle of the 
 
 | Calibre | Date radius | Window | Tag |
 |---|---|---|---|
-| Sellita SW200-1 / ETA 2824-2 | 10.40 (the window's centre on the drawing); the disc's numeral radius itself likely 11.55 — the two differ because the numeral sits inboard of the disc's edge and the window is drawn around it | ≈ 2.7 × 3.3, turned 8° (likely reading) | D / unmapped |
-| Miyota 9015 | "the same distance as a 2824" — so ≈ 10.4 | ? | T (WUS) |
+| Sellita SW200-1 / ETA 2824-2 | **10.20** (rev A rectangle, r 8.85–11.55); rev B draws a round Ø 2.30 at 10.40 | 2.70 radial × 2.00 | D |
+| Miyota 9015 | **10.20** (r 8.85–11.55) — the 2824's cut to the hundredth | 2.70 × 2.00 | D |
 | NH35 | **10.55** (the window's centre on TMI's Dial-1) | 2.90 radial × 2.00 tangential | D |
-| Ronda 715 | ? — an 11½''' quartz; its disc is small (the battery takes the room): the radius is likely *inside* the Swiss automatics' | ? | I |
-| SW100 | ? — on a 17.2 mm movement the disc is tiny; the numeral radius is about 6.5–7.5 (I, from the movement's Ø) and the numerals are 1.2–1.4 mm tall, so a window at 3 sits well inside a 19–20 mm dial | ? | I |
+| Ronda 715 | **10.20** (r 8.85–11.55), at 3H · 4H · 6H by sheet; round variants R 10.2 | 2.70 × 2.00 (round: Ø ≈ 2) | D |
+| SW100 | **7.10** (r 5.97–8.22); numeral 1.40 tall | 2.25 × 2.00 | D |
 
-Rule for the build: a calibre whose radius is **?** offers its window at the trade's position (3; 6 by variant) with the disc guide at the inferred radius and the cell marked "unverified" in the record — never a made-up aperture.
+Every shown calibre's window is documented now. One cut serves the three 11½''' movements and the Ronda: r 8.85–11.55 × 2.00; the NH35's is r 9.10–12.00 × 2.00 (centre 10.55); the SW100's r 5.97–8.22 × 2.00. The rule stands for any calibre added later: no made-up aperture.
 
 ## 5 · What this means for the build
 
-- **The three 11½''' movements share one dial** in the tool's terms (Ø 28–29, date centre ≈ 10.4 mm from the centre at 3); they differ in hand holes, heights and the GMT/day options. One geometry record with three overlays.
+- **The three 11½''' movements and the Ronda share one dial** in the tool's terms: window r 8.85–11.55 × 2.00 at 3 (and 4 · 6 · 9 · 12 by variant), centre hole 1.7–2.0, feet r 12.2 at 2:24/8:24 (Miyota's a touch off at 2:33/8:24). They differ in hand holes, heights and the GMT/day options. One geometry record with overlays.
 - **NH35 is the odd 12'''**: 28.5 dial, 2.27 to the seconds tip over the plate, date window at r 10.55 (2.90 × 2.00), feet at r 13.0 at 1:36 and 7:33 — all from TMI's sheet now.
-- **SW100 is the second dial size** (≈ 19–20): the same window logic at a smaller radius — its dial drawing is the one to read next. The 6497 (a third size, with a subdial) is a spare; Sellita's SW260-1 shows how a subdial is specified ("small second at 9 o'clock, pivot point distance 6.4 mm").
+- **SW100 is the second dial size** (bare 17.5, fitted 19–20): window r 5.97–8.22 × 2.00, feet r 8.10 at 2:26/8:26 — documented. The 6497 (a third size, with a subdial) is a spare; Sellita's SW260-1 shows how a subdial is specified ("small second at 9 o'clock, pivot point distance 6.4 mm").
 - **Hand heights are per-calibre choices, not constants**: Sellita sells eight, Seiko two (M, L), Ronda seven (0–6), Miyota one per calibre (two for the 2035 family). Above the dial's top the standard stacks agree to a tenth — SW200-1 0.55 · 0.95 · 1.35 (tip 2.10), 9015 0.45 · 0.90 · 2.10, SW100 0.65 · 0.95 · 1.30 — so one default stack with per-calibre overrides is honest. The movement record should carry the *standard* height and name the alternatives; #584's `data-over` then has a source.
 - **Minimum case height** is not published by anyone; it is a sum: movement height + 0.40 dial + hand stack to the seconds tip + hand thickness + crystal clearance (Miyota: 0.40 min) + crystal + case back. Give the Show Case the sum from the record and say which terms are the maker's.
 
@@ -192,5 +197,5 @@ Rule for the build: a calibre whose radius is **?** offers its window at the tra
 
 3D files and templates others made from these drawings, catalogued for reuse: `movements-3d.md`.
 
-- **NH35: done** — Okay screenshotted TMI's sheet (10 Nov 2026, 23:17); the pictures are on his iPad/Mac (R36), the numbers in §4.1. Still to read the same way: Miyota 9015 drawing; Sellita SW200-1 p. 21–24 and SW100 "Indications pour cadran"; ETA 6497 dial drawing; Ronda casing ring) are PDFs; the workspace cannot download them and the browser pane does not paint PDFs (tried three ways, 10 Nov 2026). Second-hand sources were tried the same night (mod shops, dealers, Thingiverse/Printables, Reddit): they gave hand heights, feet clock positions and disc sizes, never a date radius — nobody publishes it; dial makers cut to the drawing. **On a Mac**: open the PDFs in Chrome, screenshot the dial and hand-height pages, and read the numbers off — 20 minutes; this closes the remaining ? cells (Miyota 9015, Sellita SW100 dial page, Ronda 715).
+- **All five read (10 Nov 2026, 23:17–23:40)**: the NH35 from Okay's screenshots of TMI's sheet; the SW200-1, SW100, Miyota 9015 and Ronda 714/715 drawings fetched to his Mac with the desktop PDF tools (`fetch_pdf_from_url` → `render_pdf_page`) — the way to read any maker PDF from now on; the files are in `~/Documents/` on the Mac (to move to `dial-maker/research/movements/`, R36): `Sellita_SW200-1_DocTec_rev07.pdf`, `Sellita_SW100_DocTec.pdf`, `Miyota_9015_drawing.pdf`, `Miyota_9015-20A_dial_drawing.pdf`, `Ronda_715_spec.pdf`, `Ronda_714_715_complete_technical_documentation.pdf`. Still open: Miyota 9015 drawing; Sellita SW200-1 p. 21–24 and SW100 "Indications pour cadran"; ETA 6497 dial drawing; Ronda casing ring) are PDFs; the research container cannot download them and the browser pane does not paint PDFs — but the **desktop PDF tools can** (see above). Second-hand sources were tried the same night (mod shops, dealers, Thingiverse/Printables, Reddit): they gave hand heights, feet clock positions and disc sizes, never a date radius — nobody publishes it; dial makers cut to the drawing. **On a Mac**: open the PDFs in Chrome, screenshot the dial and hand-height pages, and read the numbers off — 20 minutes; the 715's own three-hand height sheet (ronda.ch 5030.xxx) and the NH36 day window (NH36_SS.pdf) are the two drawings not yet opened.
 - Sellita SW200-1: https://www.sellita.ch/scripts/calibres/images/DocTec_SW200-1_7.pdf (p. 22 dial, p. 23 heights). TMI NH35A sheet: okta.ua/files/pdf/1482851267NH35A.PDF. Miyota: miyotamovement.com/product/9015/ → Documents. Ronda: gleave.london/content/TECH/Ronda 715 - Specification.pdf (links the two hand-fitting drawings).
