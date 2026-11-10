@@ -121,6 +121,13 @@
      "_aperture": "radial × tangential, at the window's centre r 10.55 — D, TMI Dial-1"
     },
     "day": "nh36: over the date at 3",
+    "nh36_day_date_window": {
+     "window_r": 8.45,
+     "window_r_range": [4.95, 11.95],
+     "aperture": [7.0, 2.0],
+     "positions": ["3H", "6H"],
+     "_note": "one aperture for day and date; feet and centre hole as NH35 — D, TMI NH36 Dial page"
+    },
     "ampm": false,
     "moon": false
    },
@@ -500,13 +507,22 @@
     },
     "heights": {
      "standard": 1,
-     "hour_wheel_top_over_dial_seat_by_height": {
+     "three_hand_715_pipe_tops_over_dial_seat": {
+      "6": {
+       "hour": 1.58,
+       "minute": 1.98,
+       "second": 2.29
+      },
+      "_note": "the 715's only height (sheet 3316.077); max dial+paint under S/M/H 1.75/1.55/0.40; hands <= 0.15 — D"
+     },
+     "family_hour_wheel_heights_T": {
       "0": 0.6,
       "1": 0.75,
       "2": 0.95,
       "3": 1.23,
       "4": 1.58,
-      "5": 3.24
+      "5": 3.24,
+      "_note": "Ronda 700-family catalogue (trade), not a 715 choice"
      },
      "two_hand_714_pipe_tops_over_dial_seat": {
       "1": {

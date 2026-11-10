@@ -29,6 +29,9 @@ Through the desktop PDF tools (`fetch_pdf_from_url` on the Mac, then `render_pdf
 | `Miyota_9015-20A_dial_drawing.pdf` · `Miyota_9015_drawing.pdf` | miyotamovement.com/product/9015 → Dial Drawing, Drawing | 1 · 1 (Frame for Case) |
 | `Ronda_715_spec.pdf` | gleave.london | 1–2 (links to the drawings) |
 | `Ronda_714_715_complete_technical_documentation.pdf` | cousinsuk 9886 | 4 (dial 5010.377) · 11 (hand heights, 2-hand) · 12 (stem) |
+| `Ronda_705_715_bundle_beco.pdf` | cousinsuk (beco bundle, 18 p) | 11 (hand heights, 3-hand 715 — sheet 3316.077) |
+| `TMI_NH36_spec_sheet.pdf` | TMI /category/25/ (10 p) | 8 (dial: day-date window 3H · 6H, feet) |
+| `TMI_NH35_spec_sheet.pdf` | TMI (NH35A) | dial, hand fitting, casing — the sheet Okay screenshotted |
 | NH35: Okay's screenshots of timemodule.com NH35_SS.pdf | — | all 11 |
 
 ## How to fetch on a Mac
