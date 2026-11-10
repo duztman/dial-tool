@@ -23,3 +23,4 @@ Numbered now → later, easier → harder. Each: what, why, where in the code.
 13. **The sheet in Illustrator**: write `CASES.<key>` profiles out as an SVG (one named path per part, mm) and read them back — the drawing becomes the spec.
 14. **A true cut** for holes and engravings (three-bvh-csg) — only if the photo look ever needs it.
 - ~~The Dress case has no room for a hand stack~~ — done, round 88: the dial sinks until the crystal clears the stack. Left: the date ring's depth could come from the record (`disc_under_face`, 0.56 on the Sellitas) — Okay chose the tool's own number for now; movements without heights (Ronda 715, 6497, 2035) are not in the switch.
+- **A phone's width** (found round 89): under about 450 px the panel covers the canvas — the page has no narrow layout; the Background button and the canvas switches are then out of reach.
