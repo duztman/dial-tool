@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.62 beta · built 2026-11-09 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.63 beta · built 2026-11-10 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -8766,7 +8766,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.62 beta";
+var VERSION = "v1.1.63 beta";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -12061,6 +12061,21 @@ var PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut",
 var one = (x2, hand, H2, S) => {
   return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0 };
 };
+var svg_facts = (S) => (x2) => {
+  const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null, H2 = hand ? S["ha_" + hand] : null, p = one(x2, hand, H2, S);
+  const says = [["role", x2.role]], mm = (v) => +(+v).toFixed(3);
+  if (PRINTED(x2.role) || x2.role === "mark") says.push(["ink", mm(ink_mm(S, x2))]);
+  if (hand) says.push(["hand", hand]);
+  if (x2.role === "hand" && hand) {
+    says.push(["over", mm(S["sh_" + hand] ?? S.sh_hour)], ["hw", mm(p.hw)]);
+    if (p.bevel) says.push(["bevel", 1]);
+    if (p.dome) says.push(["dome", 1]);
+    if (hand_boss(H2, hand)) says.push(["boss", mm(H2.hub / 2)]);
+  }
+  if (x2.role === "cap") says.push(["over", mm(S.sh_cap)]);
+  if (x2.role === "date disc") says.push(["under", mm(windows_of(S)[x2.window]?.depth ?? S.sh_disc)]);
+  return says.map(([k, v]) => ` data-${k}="${v}"`).join("");
+};
 function options(S, items, effects) {
   const style = STYLE_NAMES2[S.w_style] || "miyazaki", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P2 = presets(style), lit = effects;
@@ -12589,7 +12604,8 @@ function svg_text(x2) {
   const css = [features && `font-feature-settings:${features}`, axes && `font-variation-settings:${axes}`].filter(Boolean).join(";");
   return `<text transform="${steps}" x="${num(x2.at[0])}" y="${num(-x2.at[1])}" font-family="${escaped(font.family)}" data-font="${escaped(font.ps)}" font-size="${num(x2.size)}"` + (weight !== 400 ? ` font-weight="${weight}"` : "") + (/italic|oblique/.test(style) ? ` font-style="italic"` : "") + (t.tracking ? ` letter-spacing="${num(t.tracking / 1e3 * x2.size)}"` : "") + (css ? ` style="${css}"` : "") + ` fill="${rgb(x2.fill)}"${x2.fill[3] < 1 ? ` fill-opacity="${num(x2.fill[3])}"` : ""}>${escaped(x2.txt)}</text>`;
 }
-function svg_document(S, statik, t, { preview = false, selected = null, live = false } = {}) {
+function svg_document(S, statik, t, { preview = false, selected = null, live = false, facts = null } = {}) {
+  if (preview || S.out_production) facts = null;
   live = live && !preview && !S.out_production;
   const size = page_mm(S), flip = S.out_mirror ? -1 : 1;
   const out = [
@@ -12604,9 +12620,9 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
     return ` id="${/^[a-z]/.test(slug) ? "" : "ring-"}${slug}${ids.get(slug) > 1 ? "-" + ids.get(slug) : ""}"`;
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
-  out.push(`<g id="dial" transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
+  out.push(`<g id="dial"${facts ? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
   for (const item of drawn(S, statik, t, preview, selected)) {
-    const id = named(item);
+    const id = named(item) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
     if (text && text.texts.length) {
       let clip = "";
@@ -27394,7 +27410,7 @@ var EXPORT = {
       }
       if (kind === "svg") {
         const live = S.out_live_text && !S.out_production;
-        save_file(name, svg_document(S, statik, S.t, { live }), "image/svg+xml");
+        save_file(name, svg_document(S, statik, S.t, { live, facts: svg_facts(S) }), "image/svg+xml");
         if (live) return this.log(`exported ${name} \xB7 ${page_mm(S).toFixed(2)} mm square \xB7 numerals are text: ${[...new Set(S.rings.filter((r) => r.on && has_text(r)).map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
       if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
