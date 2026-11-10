@@ -98,9 +98,18 @@ The hand-over is **Dial Tool's SVG export** (Export → SVG; `svg_document` in `
 
 **A file from before v1.1.63** has no such attributes: its parts are told by `id` (the table above), a part enclosing over a tenth of the plate is taken as flat print, the rest stand 0.30 mm and 0.02 more each, the hands 0.08 over the highest and 0.32 apart. The pane says "heights guessed". Either way: the hands arrive turned to their time (angle 0); the Ø is `data-dial-d`, else the title's, else the plate's reach; paths must be absolute M L Q C Z; live text and a print mask are refused.
 
+## A link (round 84)
+
+A link is the dial's settings; shapes need the tool's engine and fonts. An artifact may not load code or fetch from the tool's site (the probe, 10 Nov 2026: github.io blocked; WebAssembly and the artifact's own files allowed), so the engine travels with the page:
+
+- **Build**: `node web/try/relight/engine-build.mjs <a checkout of dev>/web <out>` → `<out>/engine.js` and `<out>/fonts/`. It bundles the tool's own `geometry.js`, `output.js`, `show.js` with PathKit and HarfBuzz (as `web/build.mjs` does), a map from a font's name to its file (`font_list.js` without its samples), and exports `svgFromLink(text, fontsFolder)` → `{ svg, version, d, missing }`: the link read as the page reads it (`session.js` `unpack`), the dial's fonts fetched from the folder, the SVG written as Export writes it with its facts.
+- **Page**: `dialFromLink` imports `engine.js` from beside the page at the first link, then hands the SVG to `dialFromText` — one reader for a file and a link. The pane names the engine's version, and any font not with the page (a stand-in is drawn).
+- **Publish**: the artifact is `index.html` (the page with `scene.js` inlined), `engine.js`, `fonts/*`. `engine.js` and `fonts/` are built, not committed.
+- **When the tool changes**: a link's keys only grow (R31); a link with keys the engine does not know needs the engine built again from the newer `dev` and published. A link of another scheme, a set of dials, a link cut short: said in the pane.
+
 ## One file
 
-`watch3d.html` holds the page, imagetracerjs and the drawing's core (the module that was `svg3d-core.mjs`) inline; only `scene.js` is apart. The artifact's page is `watch3d.html` with `scene.js` inlined in place of its tag.
+`watch3d.html` holds the page, imagetracerjs and the drawing's core (the module that was `svg3d-core.mjs`) inline; only `scene.js` is apart. The artifact's page is `watch3d.html` with `scene.js` inlined in place of its tag; beside it, for links, `engine.js` and `fonts/` (A link, above).
 
 ## Shooting and publishing
 
