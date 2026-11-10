@@ -83,6 +83,19 @@ The Show Case's system (`show-case/app/src/main.js` on `show-case-app`; Okay, 10
 
 Dial Tool's canvas switches (`.onview`, `web/src/css/6-preview.css` on `dev`: 32 high, a hairline at 35 % of the canvas ink, the ink white on a ground darker than 0.55 and black otherwise, the ground's colour behind the words, corners 10) — Okay: "On canvas buttons come from the app itself". Top left: **Camera · Sun**, what a drag moves (`S.drag`: `orbit` · `sun` · `none`), each joined to its **lock** (`S.lockCam`, `S.lockSun`). Locked = frozen to the hand: it can't be chosen or dragged; the views and the sliders still move it. Locking the chosen one hands the drag to the other if that is free. Bottom left: Background.
 
+## The dial from Dial Tool (round 82)
+
+The hand-over is **Dial Tool's SVG export** (Export → SVG; `svg_document` in `web/src/output.js`): inside `<g id="dial">` every part is a filled outline in mm, text already outlines, its `id` what it is. `svgToScene(text)` makes the same object `dump.mjs` writes (`window.SCENE`); `setDial(scene, name)` puts it in the watch; **Default** puts the opener back. Nothing of the tool's engine or fonts is in the page.
+
+| The SVG's `id` | Becomes |
+|---|---|
+| `plate` | the plate (its picture) |
+| `window-N-disc`, `window-N-…` but the frame | flat, in the plate's picture |
+| `…-hand` (`hour-`, `minute-`, `seconds-`; any other is a function's hand), `cap` | hands, the cap |
+| anything else | a mark in relief — unless a contour of it encloses over a tenth of the plate (a band, a sector, a circle line): then flat print |
+
+What the SVG does not say, and what stands in: **heights** — relief marks 0.30 mm, each next one 0.02 higher (the file's order), hands from 0.08 over the highest mark, 0.32 apart (function hands, hour, minute, seconds), the cap on top; **hand angles** — the hands arrive turned to their time, their angle is 0; **the dial's Ø** — from the title ("34 mm dial"), else the plate's reach. Parts reaching past the plate (a bezel or rehaut the tool draws) are left out and named in the pane: the case is this page's own (Okay, 10 Nov 2026: dial only first). Paths must be absolute M L Q C Z (what the tool writes); a print mask has no plate and is refused. To carry true heights, the tool's export would add them to each path as `data-` attributes — not done.
+
 ## One file
 
 `watch3d.html` holds the page, imagetracerjs and the drawing's core (the module that was `svg3d-core.mjs`) inline; only `scene.js` is apart. The artifact's page is `watch3d.html` with `scene.js` inlined in place of its tag.
