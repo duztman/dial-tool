@@ -39,10 +39,17 @@
     },
     "heights": {
      "type": "M",
-     "alt": "L (+0.4)",
-     "hour": null,
-     "minute": null,
-     "second_tip_over_movement": 2.23
+     "pipe_tops_over_main_plate": {
+      "hour_wheel": 1.18,
+      "cannon_pinion": 1.77,
+      "second_pivot": 2.24
+     },
+     "type_L": {
+      "hour_wheel": 1.58,
+      "cannon_pinion": 2.17,
+      "second_pivot": 2.64
+     },
+     "_source": "TMI product page, Hand Height Options drawing (D); seconds figure 'for reference only'"
     }
    },
    "functions": {
@@ -61,8 +68,9 @@
      "default": 3,
      "numeral_r": null,
      "aperture": null,
-     "disc_d": 22,
-     "numeral_r_inferred": 11.2
+     "disc_d": 23,
+     "numeral_r_inferred": 11.2,
+     "disc_hole_d": 15
     },
     "day": "nh36: over the date at 3",
     "ampm": false,
@@ -76,7 +84,9 @@
     "dial_d": "T",
     "date_positions": "D/T",
     "numeral_r": null,
-    "numeral_r_inferred": "I"
+    "numeral_r_inferred": "I",
+    "heights": "D",
+    "disc": "T (overlay discs)"
    },
    "shown": true
   },
@@ -335,8 +345,15 @@
      "second": 0.2
     },
     "heights": {
-     "options": "0–6",
-     "standard": 1
+     "standard": 1,
+     "hour_wheel_top_over_dial_seat_by_height": {
+      "0": 0.6,
+      "1": 0.75,
+      "2": 0.95,
+      "3": 1.23,
+      "4": 1.58,
+      "5": 3.24
+     }
     }
    },
    "functions": {
@@ -365,7 +382,8 @@
     "h": "D",
     "holes": "D/T",
     "h_to_seconds_tip": "T",
-    "feet": "T"
+    "feet": "T",
+    "heights": "T (watchmakingtools)"
    },
    "shown": true
   },
@@ -388,7 +406,8 @@
     "stem_oclock": [
      3
     ],
-    "stem_axis_over_dial_underside": 1.75
+    "stem_axis_over_dial_underside": 1.75,
+    "h_to_seconds_tip_eta2671_hh1": 6.29
    },
    "dial": {
     "d": 19.5,
@@ -398,7 +417,7 @@
     ],
     "thickness": 0.4,
     "hole": null,
-    "feet": null
+    "feet": "2:30 and 8:30 (ETA 2671 dealers)"
    },
    "hands": {
     "seconds": "central",
@@ -480,7 +499,7 @@
     "holes": "D",
     "heights": "D (DocTec SW100 table + catalogue diagram)",
     "dial_d": "I",
-    "feet": null,
+    "feet": "T",
     "numeral_r_inferred": "I"
    }
   },
