@@ -522,29 +522,22 @@
      "second": 0.2
     },
     "heights": {
-     "standard": 6,
+     "standard": 1,
      "pipe_tops_over_dial_seat": {
-      "hour": 1.58,
-      "minute": 1.98,
-      "second": 2.29,
-      "_note": "the 715's one height, No. 6 (sheet 3316.077) — D"
+      "hour": 0.75,
+      "minute": 1.05,
+      "second": 1.42,
+      "_note": "hand fitting height No. 1, Ronda's standard (sheet 3316.030) — D"
      },
-     "three_hand_715_pipe_tops_over_dial_seat": {
-      "6": {
-       "hour": 1.58,
-       "minute": 1.98,
-       "second": 2.29
-      },
-      "_note": "the 715's only height (sheet 3316.077); max dial+paint under S/M/H 1.75/1.55/0.40; hands <= 0.15 — D"
-     },
-     "family_hour_wheel_heights_T": {
-      "0": 0.6,
-      "1": 0.75,
-      "2": 0.95,
-      "3": 1.23,
-      "4": 1.58,
-      "5": 3.24,
-      "_note": "Ronda 700-family catalogue (trade), not a 715 choice"
+     "three_hand_pipe_tops_by_height": {
+      "0": {"hour": 0.6, "minute": 0.85, "second": 1.17},
+      "1": {"hour": 0.75, "minute": 1.05, "second": 1.42},
+      "2": {"hour": 0.95, "minute": 1.25, "second": 1.62},
+      "3": {"hour": 1.23, "minute": 1.53, "second": 1.94},
+      "4": {"hour": 1.58, "minute": 1.88, "second": 2.29},
+      "5": {"hour": 3.24, "minute": 3.55, "second": 3.95},
+      "6": {"hour": 1.58, "minute": 1.98, "second": 2.29},
+      "_note": "sheets 3316.030 (0-5) and 3316.077 (6); max dial+paint under S/M/H per height in movements.md; hands <= 0.15 — D"
      },
      "two_hand_714_pipe_tops_over_dial_seat": {
       "1": {

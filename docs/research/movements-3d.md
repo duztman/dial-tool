@@ -1,6 +1,6 @@
 # Movements — 3D files, templates and generators found on the way
 
-*10 Nov 2026. Okay: "record a copy of 3d files for all movements that pass through your hands under research today for others to use." The files themselves could not be copied from the research container (the hosts refuse it and the files are binaries); this is the catalogue — what each is, where, what it encodes, and how to fetch it. Copies, once fetched on a Mac, go to `~/Desktop/dial-maker/research/movements-3d/` (R36: pictures and binaries stay on the Mac, not in the repo); add the file name to the row.*
+*10 Nov 2026. Okay: "record a copy of 3d files for all movements that pass through your hands under research today for others to use." The files themselves could not be copied from the research container (the hosts refuse it and the files are binaries); this is the catalogue — what each is, where, what it encodes, and how to fetch it. Copies, once fetched on a Mac, go to `~/Desktop/dial-maker/research/movements/3d/` (R36: pictures and binaries stay on the Mac, not in the repo); add the file name to the row.*
 
 Tag: **D** built from the maker's drawing (says so) · **T** built from a measured part · **?** origin not stated. Licences are the sites' defaults (Thingiverse/Printables: usually CC BY; MakerWorld: per model) — check before reuse.
 
@@ -20,7 +20,7 @@ Tag: **D** built from the maker's drawing (says so) · **T** built from a measur
 
 ## The maker PDFs, fetched (10 Nov 2026)
 
-Through the desktop PDF tools (`fetch_pdf_from_url` on the Mac, then `render_pdf_page` to read a page as a picture) — the way around the research container's network. Saved in `~/Documents/` on Okay's Mac; to move to `~/Desktop/dial-maker/research/movements/` (R36):
+Through the desktop PDF tools (`fetch_pdf_from_url` on the Mac, then `render_pdf_page` to read a page as a picture) — the way around the research container's network. Archived 11 Nov 2026 in `~/Desktop/dial-maker/research/movements/pdf/` on Okay's Mac (re-fetched there with `fetch_pdf_from_url`'s `destination_dir`; the first copies of 10 Nov sit in `~/Documents/`). Models go in `~/Desktop/dial-maker/research/movements/3d/` (README there says how):
 
 | File | Source | Pages read |
 |---|---|---|
@@ -29,7 +29,9 @@ Through the desktop PDF tools (`fetch_pdf_from_url` on the Mac, then `render_pdf
 | `Miyota_9015-20A_dial_drawing.pdf` · `Miyota_9015_drawing.pdf` | miyotamovement.com/product/9015 → Dial Drawing, Drawing | 1 · 1 (Frame for Case) |
 | `Ronda_715_spec.pdf` | gleave.london | 1–2 (links to the drawings) |
 | `Ronda_714_715_complete_technical_documentation.pdf` | cousinsuk 9886 | 4 (dial 5010.377) · 11 (hand heights, 2-hand) · 12 (stem) |
-| `Ronda_705_715_bundle_beco.pdf` | cousinsuk (beco bundle, 18 p) | 11 (hand heights, 3-hand 715 — sheet 3316.077) |
+| `Ronda_705_715_bundle_beco.pdf` (in ~/Documents only) | cousinsuk (beco bundle, 18 p) | 11 (hand heights, 3-hand 715 — sheet 3316.077, height 6) |
+| `Ronda_3316.030_hand_heights_0-5_705_715.pdf` | beco-technic.com ronda_HF0-5_712-715 | 1 (hand heights 0–5, 3-hand) |
+| `Miyota_8215_drawing.pdf` · `Miyota_9015_spec.pdf` | miyotamovement.com | — (the 8215 drawing is §4.9's source) |
 | `TMI_NH36_spec_sheet.pdf` | TMI /category/25/ (10 p) | 8 (dial: day-date window 3H · 6H, feet) |
 | `TMI_NH35_spec_sheet.pdf` | TMI (NH35A) | dial, hand fitting, casing — the sheet Okay screenshotted |
 | NH35: Okay's screenshots of timemodule.com NH35_SS.pdf | — | all 11 |

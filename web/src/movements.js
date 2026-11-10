@@ -137,14 +137,14 @@ export const MOVEMENTS = [
   },
   "heights": {
    "from": "posts",
-   "hour": 0.5,
-   "minute": 1.3,
-   "second": 1.65,
-   "cap": 1.89,
+   "hour": 0.1,
+   "minute": 0.45,
+   "second": 0.75,
+   "cap": 1.02,
    "room": [
-    1.18,
-    1.58,
-    1.89
+    0.35,
+    0.65,
+    1.02
    ]
   },
   "hand_t": null,
