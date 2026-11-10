@@ -522,7 +522,13 @@
      "second": 0.2
     },
     "heights": {
-     "standard": 1,
+     "standard": 6,
+     "pipe_tops_over_dial_seat": {
+      "hour": 1.58,
+      "minute": 1.98,
+      "second": 2.29,
+      "_note": "the 715's one height, No. 6 (sheet 3316.077) — D"
+     },
      "three_hand_715_pipe_tops_over_dial_seat": {
       "6": {
        "hour": 1.58,

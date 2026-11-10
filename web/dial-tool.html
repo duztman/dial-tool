@@ -2487,9 +2487,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// ../../dial-tool/web/node_modules/pathkit-wasm/bin/pathkit.js
+// node_modules/pathkit-wasm/bin/pathkit.js
 var require_pathkit = __commonJS({
-  "../../dial-tool/web/node_modules/pathkit-wasm/bin/pathkit.js"(exports2, module) {
+  "node_modules/pathkit-wasm/bin/pathkit.js"(exports2, module) {
     var PathKitInit2 = (() => {
       var _scriptDir = typeof document !== "undefined" && document.currentScript ? document.currentScript.src : void 0;
       if (typeof __filename !== "undefined") _scriptDir = _scriptDir || __filename;
@@ -3968,9 +3968,9 @@ var require_pathkit = __commonJS({
   }
 });
 
-// ../../dial-tool/web/node_modules/gifenc/dist/gifenc.js
+// node_modules/gifenc/dist/gifenc.js
 var require_gifenc = __commonJS({
-  "../../dial-tool/web/node_modules/gifenc/dist/gifenc.js"(exports2) {
+  "node_modules/gifenc/dist/gifenc.js"(exports2) {
     var __defProp2 = Object.defineProperty;
     var __markAsModule = (target) => __defProp2(target, "__esModule", { value: true });
     var __export2 = (target, all) => {
@@ -4783,7 +4783,7 @@ var require_gifenc = __commonJS({
 // src/main.js
 var import_pathkit = __toESM(require_pathkit(), 1);
 
-// ../../dial-tool/web/node_modules/harfbuzzjs/dist/index.mjs
+// node_modules/harfbuzzjs/dist/index.mjs
 var dist_exports = {};
 __export(dist_exports, {
   AxisFlags: () => AxisFlags,
@@ -4817,7 +4817,7 @@ __export(dist_exports, {
   versionString: () => versionString
 });
 
-// ../../dial-tool/web/node_modules/harfbuzzjs/dist/harfbuzz.js
+// node_modules/harfbuzzjs/dist/harfbuzz.js
 async function createHarfBuzz(moduleArg = {}) {
   var moduleRtn;
   var Module2 = moduleArg;
@@ -5456,7 +5456,7 @@ async function createHarfBuzz(moduleArg = {}) {
 }
 var harfbuzz_default = createHarfBuzz;
 
-// ../../dial-tool/web/node_modules/harfbuzzjs/dist/index.mjs
+// node_modules/harfbuzzjs/dist/index.mjs
 var Module;
 var exports;
 var freeFuncPtr;
@@ -8822,7 +8822,18 @@ var MOVEMENTS = [
       "thickness": 0.4,
       "hole": 1.7
     },
-    "heights": null,
+    "heights": {
+      "from": "posts",
+      "hour": 0.5,
+      "minute": 1.3,
+      "second": 1.65,
+      "cap": 1.89,
+      "room": [
+        1.18,
+        1.58,
+        1.89
+      ]
+    },
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": null,
@@ -25507,7 +25518,7 @@ async function build_signed_wearos_apk(watchfaceXml, drawables = {}, metadata = 
   return await sign_apk_v2_v3(alignedApk);
 }
 
-// ../../dial-tool/web/node_modules/mp4-muxer/build/mp4-muxer.mjs
+// node_modules/mp4-muxer/build/mp4-muxer.mjs
 var __accessCheck = (obj, member, msg) => {
   if (!member.has(obj))
     throw TypeError("Cannot " + msg);

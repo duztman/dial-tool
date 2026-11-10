@@ -135,7 +135,18 @@ export const MOVEMENTS = [
    "thickness": 0.4,
    "hole": 1.7
   },
-  "heights": null,
+  "heights": {
+   "from": "posts",
+   "hour": 0.5,
+   "minute": 1.3,
+   "second": 1.65,
+   "cap": 1.89,
+   "room": [
+    1.18,
+    1.58,
+    1.89
+   ]
+  },
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": null,
