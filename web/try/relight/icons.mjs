@@ -12,7 +12,7 @@ const box = (x, y, w, h, r, side = LINE, corner = CURVE) => { const X = x + w, Y
 const icon = (inside, size = 16, high = size) => `<svg viewBox="0 0 ${size} ${high}" width="${size}" height="${high}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
 const fill = 'fill="currentColor" stroke="none"', ball = `<circle cx="12.25" cy="12.25" r="9" ${sw(CURVE)}/>`;
 const IN = {
-  camera: [`${box(1.75, 4.75, 12.5, 8.5, 1.5)}<path d="M5.5 4.75L6.5 2.75H10L11 4.75" ${sw(SLANT)}/><circle cx="8.25" cy="9.25" r="2.5" ${sw(CURVE)}/>`, 16],
+  camera: [`<path d="M3.25 4.75H5.25L6.5 2.75H10L11.25 4.75H13.25A1.5 1.5 0 0 1 14.75 6.25V11.75A1.5 1.5 0 0 1 13.25 13.25H3.25A1.5 1.5 0 0 1 1.75 11.75V6.25A1.5 1.5 0 0 1 3.25 4.75Z" ${sw(SLANT)}/><circle cx="8.25" cy="9.25" r="2.5" ${sw(CURVE)}/>`, 16],      // round 94 (Okay: "Have one outline, a detailed outline and a ring for lens inside"): the body and its hump one line; look.py: both lines within 1.4 %
   sun: [`<circle cx="8.25" cy="8.25" r="2.5" ${sw(CURVE)}/><path d="M8.25 1.25V3.25M8.25 13.25V15.25M1.25 8.25H3.25M13.25 8.25H15.25M3.25 3.25L4.75 4.75M11.75 11.75L13.25 13.25M3.25 13.25L4.75 11.75M11.75 4.75L13.25 3.25" ${sw(CURVE)}/>`, 16],
   photo: [`${ball}<path d="M7.75 10.75A5 5 0 0 1 10.75 7.75" ${sw(CURVE)}/><path d="M18.75 12.75A6.5 6.5 0 0 1 12.75 18.75"/>`, 24],
   toon: [`${ball}<path d="M20 7.5A9 9 0 0 1 7.5 20A11.5 11.5 0 0 0 20 7.5Z" ${fill}/>`, 24],
