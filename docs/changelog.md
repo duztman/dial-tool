@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.65 beta · 11 Nov 2026 — #587: one record of the movements, read by the tool and the 3D exercise
+
+Okay, 10 Nov 2026, 22:49: "i imagine you have slots, or a system for values about various movement types. If one was to find them and list them, you can adjust, ring gap hands, whatever. Right?"; 23:05: "there's new research on docs/research/README.md use that while you plan. Then build."; his answers: "Record + 3D first", "Hidden (R16 as is)", "Any; call it Imaginary Movement", the case makes room "From the movement".
+
+- **The record** is `docs/research/movements.json`. `web/movements.mjs` writes `web/src/movements.js` from it (`MOVEMENTS`, `movement(id)`); `npm test` and `npm run small` fail on a stale one. `geometry.js` exports it; v1.1.64's `MOVEMENT_HEIGHTS` is gone into it. Nothing on screen changes: a new dial's hands still start at the Miyota 8215's heights, now read from the record.
+- **One rule for hand heights** (`movements.mjs` `heights`): where the maker prints the hands' places, those (NH35: 0.60 · 1.19 · 1.81, hands 0.18 · 0.18 · 0.10 thick); where it prints the posts' tops over the dial's seat, a 0.15 mm hand in the middle of its space, to 0.05 (8215, 9015, SW200-1, SW100); else none.
+- **Read from the makers' drawings and written into the record and the study**: the NH35's hand fitting and dial sheet (TMI), the 9015's and 8215's sections and dial sheets (Miyota), the SW200-1's dial and hand-fitting pages (Sellita). Corrected: the 9015's stack is 1.20 · +0.45 · +0.45 from the dial's seat, and the SW200-1's 0.95 · 1.35 · 1.75 are post tops — neither is where a hand sits.
+- **The Imaginary Movement** is the record's name for no limits ("Any" before).
+- **Tests**: `labels.mjs` — the start is the 8215's heights; every worked-out hand lies in its space; the NH35's are the maker's; a movement without printed heights has none.
+
 ## v1.1.64 beta · 10 Nov 2026 — #585: a new dial's hands stand at the Miyota 8215's heights
 
 Okay, 10 Nov 2026, 22:31, on the hand heights read from Miyota's drawings: "Amazing. Implement." — both movements as a switch in the 3D exercise, and the tool's own starting heights changed.

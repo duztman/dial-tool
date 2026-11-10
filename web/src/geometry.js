@@ -12,10 +12,12 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.64 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.65 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
+import { movement as MOVEMENT_OF } from "./movements.js";      // the movements' record (#587): a new dial's hand heights are the Miyota 8215's
+const START_HEIGHTS = MOVEMENT_OF("miyota-8215").heights;
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
 const { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 const radians = (a) => a * PI / 180;
@@ -381,10 +383,10 @@ export const DEFAULTS = {
   // keeps only the part that falls on it — so a shadow steps where it crosses a hand or a window's edge.
   // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). The light's starting values are Okay's (14 Oct
   // 2026, 23:05, a picture of the list: "these in the image are the default values"). The hands' starting HEIGHTS are
-  // the Miyota 8215's (Okay, 10 Nov 2026: "Amazing. Implement."; `MOVEMENT_HEIGHTS` below says where each number is from).
+  // the Miyota 8215's, read from the movements' record (Okay, 10 Nov 2026: "Amazing. Implement."; `MOVEMENTS` below).
   sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
   sh_bevel: 100,                                   // the hands' bevels' strength, 0–100 % (Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"): a hand's own Bevel tick turns its bevel on (HAND_BASE.bevel, off to start); 100 = as 4.77 drew them
-  sh_hour: 0.3, sh_minute: 0.85, sh_second: 1.2, sh_cap: 1.45, sh_disc: 0.15,
+  sh_hour: START_HEIGHTS.hour, sh_minute: START_HEIGHTS.minute, sh_second: START_HEIGHTS.second, sh_cap: START_HEIGHTS.cap, sh_disc: 0.15,      // 0.30 · 0.85 · 1.20 · 1.45
   sh_gmt: 0.1, sh_date: 0.1, sh_day: 0.1, sh_month: 0.1,      // the added hands' heights (#577): under the hour hand to start, a step clear of it; the same for all four until the movement says (one shows on most dials)
   gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread, a ring's guide has the ring's own colour
   // the next five keys are unread: old settings files carry them (R8). Nothing writes them any more.
@@ -392,16 +394,9 @@ export const DEFAULTS = {
   gd_sel_c: [1.0, 0.45, 0.0, 1], gd_sel_strength: 95.0, gd_sel_w: 1.5,
 };
 
-/** A movement's hand heights, mm over the dial's face (#585). Miyota's "Frame for Case" drawing gives the top of each post over
- *  the dial's seat — 8215: hour wheel 1.13, minutes +0.35, seconds +0.37 (1.85 in all); 9015: 1.20, +0.45, +0.45 (2.10) — and
- *  its "Indications for Dial" sheet a dial 0.40 thick. So over the dial's face the hour hand has 0–0.73 (9015: 0–0.80), the
- *  minute hand 0.73–1.08 (0.80–1.25), the seconds hand 1.08–1.45 (1.25–1.70). A height here is the hand's underside with a
- *  0.15 mm hand in the middle of its space, to the pane's 0.05 step; the cap's top is the seconds post's tip. Where on its
- *  post a hand sits, and how thick a hand is, Miyota does not print: those two are this table's own. */
-export const MOVEMENT_HEIGHTS = {
-  "Miyota 8215": { hour: 0.3, minute: 0.85, second: 1.2, cap: 1.45 },
-  "Miyota 9015": { hour: 0.35, minute: 0.95, second: 1.4, cap: 1.7 },
-};
+/** The movements (#587): `MOVEMENTS` is written from the record, docs/research/movements.json, by web/movements.mjs — the
+ *  one place a movement's numbers live; each has its hand heights worked out there by one rule. */
+export { MOVEMENTS, movement, HAND_T } from "./movements.js";
 
 /** units a length can be shown and typed in: [short name, name, how many make a millimetre, extra decimals].
  *  Only for the window: every setting, link and file stays in mm (R1). The list only grows at its end (R9).

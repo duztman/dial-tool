@@ -62,10 +62,13 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
     `"height and thickness values as well": the minute hand says its height (${of("minute-hand").over} mm), the cap its own, the first ring its ink's thickness (0.07 mm, ${first}), the dial its Ø`);
   S.out_production = true; check(!/data-role/.test(O.svg_document(S, G.build_static(S), 0, { facts: SHOW.svg_facts(S) })), "a print mask carries no facts");
 }
-// #585: the hands start at a real movement's heights
-{ const M = G.MOVEMENT_HEIGHTS, D = G.DEFAULTS, T = 0.15, ROOM = { "Miyota 8215": [0.73, 1.08, 1.45], "Miyota 9015": [0.8, 1.25, 1.7] };      // each hand's space over the dial's face: post tops less a 0.40 dial (Miyota's drawings)
-  const own = ["hour", "minute", "second"].every((h) => D["sh_" + h] === M["Miyota 8215"][h]) && D.sh_cap === M["Miyota 8215"].cap;
-  const fit = Object.entries(M).every(([name, m]) => { const [a, b, c] = ROOM[name]; return m.hour >= 0 && m.hour + T <= a && m.minute >= a && m.minute + T <= b && m.second >= b && m.second + T <= c && m.cap === c; });
-  check(own && fit, `"Amazing. Implement.": a new dial's hands stand at the Miyota 8215's heights (${D.sh_hour} · ${D.sh_minute} · ${D.sh_second}, cap ${D.sh_cap}); in both movements' tables a 0.15 mm hand lies inside its own space on the post and the cap's top is the seconds post's tip`);
+// #585, #587: the hands start at a real movement's heights, and every movement's heights come from the one record
+{ const D = G.DEFAULTS, by = (id) => G.movement(id), m8 = by("miyota-8215").heights, T = G.HAND_T;
+  const own = ["hour", "minute", "second"].every((h) => D["sh_" + h] === m8[h]) && D.sh_cap === m8.cap;
+  const worked = G.MOVEMENTS.filter((m) => m.heights?.from === "posts"), fit = worked.every((m) => { const [a, b, c] = m.heights.room, h = m.heights; return h.hour >= 0 && h.hour + T <= a + 1e-9 && h.minute >= a - 1e-9 && h.minute + T <= b + 1e-9 && h.second >= b - 1e-9 && h.second + T <= c + 1e-9 && h.cap === c; });
+  check(own && fit && worked.length >= 4, `"Amazing. Implement.": a new dial's hands stand at the Miyota 8215's heights (${D.sh_hour} · ${D.sh_minute} · ${D.sh_second}, cap ${D.sh_cap}); in each of the ${worked.length} movements worked out from its posts a ${T} mm hand lies inside its own space and the cap's top is the seconds post's tip`);
+  const nh = by("nh35");
+  check(nh.heights.from === "maker" && nh.heights.hour === 0.6 && nh.heights.cap === 1.91 && nh.hand_t.second === 0.1 && by("any").name === "Imaginary Movement" && by("any").heights === null && by("ronda-715").heights === null,
+    `"a system for values about various movement types": the NH35's hands stand where TMI's sheet puts them (${nh.heights.hour} · ${nh.heights.minute} · ${nh.heights.second}, hands ${nh.hand_t.hour} · ${nh.hand_t.minute} · ${nh.hand_t.second} thick); a movement without printed heights has none; "call it Imaginary Movement"`);
 }
 process.exit(bad ? 1 : 0);
