@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.65 beta · built 2026-11-10 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.66 beta · built 2026-11-10 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -8710,6 +8710,18 @@ var MOVEMENTS = [
       "second": 1.81,
       "cap": 1.91
     },
+    "posts": {
+      "d": {
+        "hour": 1.5,
+        "minute": 0.88,
+        "second": 0.198
+      },
+      "top": {
+        "hour": 0.78,
+        "minute": 1.37,
+        "second": 1.91
+      }
+    },
     "hand_t": {
       "hour": 0.18,
       "minute": 0.18,
@@ -8754,6 +8766,18 @@ var MOVEMENTS = [
         1.7
       ]
     },
+    "posts": {
+      "d": {
+        "hour": 1.52,
+        "minute": 1,
+        "second": 0.17
+      },
+      "top": {
+        "hour": 0.8,
+        "minute": 1.25,
+        "second": 1.7
+      }
+    },
     "hand_t": null,
     "crystal_clearance": 0.4,
     "disc_under_face": null,
@@ -8793,6 +8817,18 @@ var MOVEMENTS = [
         1.35
       ]
     },
+    "posts": {
+      "d": {
+        "hour": 1.5,
+        "minute": 0.9,
+        "second": 0.25
+      },
+      "top": {
+        "hour": 0.55,
+        "minute": 0.95,
+        "second": 1.35
+      }
+    },
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": 0.56,
@@ -8822,7 +8858,30 @@ var MOVEMENTS = [
       "thickness": 0.4,
       "hole": 1.7
     },
-    "heights": null,
+    "heights": {
+      "from": "posts",
+      "hour": 0.1,
+      "minute": 0.45,
+      "second": 0.75,
+      "cap": 1.02,
+      "room": [
+        0.35,
+        0.65,
+        1.02
+      ]
+    },
+    "posts": {
+      "d": {
+        "hour": 1.2,
+        "minute": 0.7,
+        "second": 0.2
+      },
+      "top": {
+        "hour": 0.35,
+        "minute": 0.65,
+        "second": 1.02
+      }
+    },
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": null,
@@ -8863,6 +8922,18 @@ var MOVEMENTS = [
         1.3
       ]
     },
+    "posts": {
+      "d": {
+        "hour": 1.2,
+        "minute": 0.7,
+        "second": 0.2
+      },
+      "top": {
+        "hour": 0.65,
+        "minute": 0.95,
+        "second": 1.3
+      }
+    },
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": 0.56,
@@ -8892,6 +8963,14 @@ var MOVEMENTS = [
       "hole": null
     },
     "heights": null,
+    "posts": {
+      "d": {
+        "hour": 2,
+        "minute": 1.15,
+        "second": 0.27
+      },
+      "top": null
+    },
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": null,
@@ -8909,6 +8988,14 @@ var MOVEMENTS = [
       "hole": null
     },
     "heights": null,
+    "posts": {
+      "d": {
+        "hour": 1.2,
+        "minute": 0.7,
+        "second": 0.17
+      },
+      "top": null
+    },
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": null,
@@ -8937,6 +9024,18 @@ var MOVEMENTS = [
         1.45
       ]
     },
+    "posts": {
+      "d": {
+        "hour": 1.52,
+        "minute": 1,
+        "second": 0.17
+      },
+      "top": {
+        "hour": 0.73,
+        "minute": 1.08,
+        "second": 1.45
+      }
+    },
     "hand_t": null,
     "crystal_clearance": 0.4,
     "disc_under_face": null,
@@ -8960,6 +9059,7 @@ var MOVEMENTS = [
     "shown": true,
     "dial": null,
     "heights": null,
+    "posts": null,
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": null,
@@ -9044,7 +9144,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.65 beta";
+var VERSION = "v1.1.66 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
