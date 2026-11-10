@@ -98,6 +98,8 @@ The hand-over is **Dial Tool's SVG export** (Export → SVG; `svg_document` in `
 
 **A file from before v1.1.63** has no such attributes: its parts are told by `id` (the table above), a part enclosing over a tenth of the plate is taken as flat print, the rest stand 0.30 mm and 0.02 more each, the hands 0.08 over the highest and 0.32 apart. The pane says "heights guessed". Either way: the hands arrive turned to their time (angle 0); the Ø is `data-dial-d`, else the title's, else the plate's reach; paths must be absolute M L Q C Z; live text and a print mask are refused.
 
+**The movement** (round 87): `HAND.move` — "dial" (the file's heights) or "8215" / "9015" (`MOVES`: the hour, minute and seconds hands and the cap at that Miyota's heights, the numbers of Dial Tool's `MOVEMENT_HEIGHTS`, where each one's source is written). A hand's height is its underside; the cap's is its top. The crystal's underside must stay over the cap's top: 1.805 mm over the dial in the Diver, 0.757 in the Dress (too low for either movement — `open.md`).
+
 ## A link (round 84)
 
 A link is the dial's settings; shapes need the tool's engine and fonts. An artifact may not load code or fetch from the tool's site (the probe, 10 Nov 2026: github.io blocked; WebAssembly and the artifact's own files allowed), so the engine travels with the page:

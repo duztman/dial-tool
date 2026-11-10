@@ -22,3 +22,4 @@ Numbered now → later, easier → harder. Each: what, why, where in the code.
 12. **Integration**: show mode's Photo style = this scene fed by the app's `S` (sun keys, colours, bezel/strap choices); the two SVG paints untouched. A spec per `CASE_OF_BEZEL` kind: dress and field cases need rows in `CASES` (dress = Calatrava: thin band, stepped bezel, no teeth; field = the 1939 cushion with sharp corners).
 13. **The sheet in Illustrator**: write `CASES.<key>` profiles out as an SVG (one named path per part, mm) and read them back — the drawing becomes the spec.
 14. **A true cut** for holes and engravings (three-bvh-csg) — only if the photo look ever needs it.
+- **The Dress case has no room for a hand stack** (measured, round 87): its crystal's underside is 0.757 mm over the dial; the 8215's stack tops at 1.45, the 9015's at 1.70. Okay's to choose how the case makes room (the dial deeper, the ring taller, or the crystal higher).
