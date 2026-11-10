@@ -41,6 +41,26 @@ const one = (x, hand, H, S) => {
   return { role: x.role, hand, bevel: Boolean(H && x.role === "hand" && H.bevel && G.HAND_SHAPES[H.shape] !== "disc"), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) || x.role === "mark" ? G.ink_mm(S, x) / G.INK_STEP_MM : 0 };
 };      // a disc's painted mark is printed on it: an ink (02:11)      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
 
+/** what a saved SVG says of each part, beyond its shape and colour (#584; Okay, 10 Nov 2026: "i need you to get height and thickness
+ *  values as well, this preview depends on it") — so a 3D view built from the file stands every part where this dial puts it, with
+ *  nothing guessed. → a function: a scene's part → its attributes, as text. They are `data-` attributes: a drawing program ignores them.
+ *    data-role   what the part is, in the engine's word (plate, ring, ring stroke, date disc, date number, date frame, hand, lume, cap …)
+ *    data-ink    a printed part's thickness, mm (its ink's height, as the Inks rows set it)
+ *    data-hand   the hand a hand, its lume or its painted mark belongs to (hour, minute, second, gmt …)
+ *    data-over   how high a hand or the cap stands over the plate's face, mm (the Shadows pane's heights)
+ *    data-under  how deep a window's disc lies under the plate's face, mm
+ *    data-bevel, data-dome   a bevelled hand, a domed one;  data-hw  half the hand's width, mm;  data-boss  its boss's radius, mm */
+export const svg_facts = (S) => (x) => {
+  const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && G.HANDS.includes(x.name) ? x.name : null, H = hand ? S["ha_" + hand] : null, p = one(x, hand, H, S);
+  const says = [["role", x.role]], mm = (v) => +(+v).toFixed(3);
+  if (PRINTED(x.role) || x.role === "mark") says.push(["ink", mm(G.ink_mm(S, x))]);
+  if (hand) says.push(["hand", hand]);
+  if (x.role === "hand" && hand) { says.push(["over", mm(S["sh_" + hand] ?? S.sh_hour)], ["hw", mm(p.hw)]); if (p.bevel) says.push(["bevel", 1]); if (p.dome) says.push(["dome", 1]); if (G.hand_boss(H, hand)) says.push(["boss", mm(H.hub / 2)]); }
+  if (x.role === "cap") says.push(["over", mm(S.sh_cap)]);
+  if (x.role === "date disc") says.push(["under", mm(G.windows_of(S)[x.window]?.depth ?? S.sh_disc)]);
+  return says.map(([k, v]) => ` data-${k}="${v}"`).join("");
+};
+
 /** what watch.js draws for this dial and these settings — the Show Case's `options()` */
 export function options(S, items, effects) {
   const style = STYLE_NAMES[S.w_style] || "miyazaki", kind = G.CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";

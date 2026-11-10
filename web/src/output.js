@@ -63,8 +63,11 @@ function svg_text(x) {
 }
 
 /** an SVG file's text. The page is the dial plus its margins, in millimetres.
- *  live: numerals and window text stay text (export option, as in dial.py); masks stay outlines. */
-export function svg_document(S, statik, t, { preview = false, selected = null, live = false } = {}) {
+ *  live: numerals and window text stay text (export option, as in dial.py); masks stay outlines.
+ *  facts: a part → its `data-` attributes (show.js `svg_facts`, #584): what the part is and how high it stands, for a 3D view of the file;
+ *  the dial's group then says its Ø. A print mask carries none. */
+export function svg_document(S, statik, t, { preview = false, selected = null, live = false, facts = null } = {}) {
+  if (preview || S.out_production) facts = null;
   live = live && !preview && !S.out_production;
   const size = page_mm(S), flip = S.out_mirror ? -1 : 1;
   const out = [
@@ -79,9 +82,9 @@ export function svg_document(S, statik, t, { preview = false, selected = null, l
     return ` id="${/^[a-z]/.test(slug) ? "" : "ring-"}${slug}${ids.get(slug) > 1 ? "-" + ids.get(slug) : ""}"`;
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
-  out.push(`<g id="dial" transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
+  out.push(`<g id="dial"${facts ? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
   for (const item of drawn(S, statik, t, preview, selected)) {
-    const id = named(item);
+    const id = named(item) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
     if (text && text.texts.length) {
       let clip = "";

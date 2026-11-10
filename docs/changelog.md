@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.63 beta · 10 Nov 2026 — #584: a saved SVG says each part's ink thickness and each hand's height
+
+Okay, 10 Nov 2026, 18:32, on the Watch 3D trial reading a dial from the tool's SVG with guessed heights: "i need you to get height and thickness values as well, this preview depends on it."
+
+- **The facts** (`show.js` `svg_facts`, `output.js` `svg_document({ facts })`, `export.js`): Export → SVG writes on every part, as `data-` attributes a drawing program ignores, what the part is and how high it stands — `data-role` (the engine's word), `data-ink` (a printed part's thickness, mm: `ink_mm`, the Inks rows), `data-hand`, `data-over` (a hand's or the cap's height over the plate, mm: the Shadows pane's heights), `data-under` (a window's disc under the plate), `data-bevel`, `data-dome`, `data-hw`, `data-boss`; the dial's group says its Ø (`data-dial-d`). The shapes and colours are untouched: without the attributes the file is the plain one, letter for letter. A print mask and the previews carry none.
+- **Who reads them**: the 3D exercise's page (`try/relight`, round 83) stands every part where the dial puts it; a file from before this version is read there with guessed heights, and says so.
+- **Tests**: `labels.mjs` — the facts are attributes only; a hand's height, the cap's, a ring's own ink thickness and the Ø are the dial's numbers; a mask has none.
+
 ## v1.1.62 beta · 10 Nov 2026 — the page's margin and backdrop move to the Settings box; rings on the bezel noted
 
 Okay, 10 Nov 2026, 05:30: "Page margin and color move under settings from dial. Adding a ring of dots etc on bezel is also allowed. It can be on an insert or carved into metal."

@@ -49,4 +49,17 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   const body = G.stroke_outline(nine, 0.1, "Inside", "Round"), kept = nine.difference(body).contours().length;      // the 9 less its inside stroke: its body remains
   check(thick === 4 && thin === 6 && kept >= 1, `the stroke round an 8: at 0.28 outside the counters close whole, filled by the stroke (${thick} contours: outside, against the letter, the two counters — six with the folds that were); at 0.06 the counters stay open (${thin}); an inside stroke of 0.1 leaves the 9's body (${kept}) (#563)`);
 }
+// a saved SVG says each part's heights (#584; Okay, 10 Nov 2026: "i need you to get height and thickness values as well, this preview
+// depends on it"): the facts are there, they are the dial's own numbers, and without them the file is as it was, letter for letter
+{
+  const O = await import("../src/output.js"), SHOW = await import("../src/show.js"), { OPENER } = await import("../src/opener.js");
+  const S = G.fresh_settings(OPENER); S.sh_minute = 0.42; S.rings[0].ink_h = 0.07;
+  const st = G.build_static(S), plain = O.svg_document(S, st, 0, {}), told = O.svg_document(S, st, 0, { facts: SHOW.svg_facts(S) });
+  const of = (id) => Object.fromEntries([...(told.match(new RegExp(`<path id="${id}"([^>]*?) d="`))?.[1] ?? "").matchAll(/ data-([a-z-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
+  const first = told.match(/<path id="([^"]+)" data-role="ring" data-ink="0\.07"/)?.[1];
+  check(told.replace(/ data-[a-z-]+="[^"]*"/g, "") === plain, "a saved SVG's facts are attributes only: without them the file is the plain one, letter for letter");
+  check(of("minute-hand").over === "0.42" && of("minute-hand").hand === "minute" && of("cap").over === String(S.sh_cap) && of("plate").role === "plate" && Boolean(first) && /data-dial-d="34"/.test(told),
+    `"height and thickness values as well": the minute hand says its height (${of("minute-hand").over} mm), the cap its own, the first ring its ink's thickness (0.07 mm, ${first}), the dial its Ø`);
+  S.out_production = true; check(!/data-role/.test(O.svg_document(S, G.build_static(S), 0, { facts: SHOW.svg_facts(S) })), "a print mask carries no facts");
+}
 process.exit(bad ? 1 : 0);

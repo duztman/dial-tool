@@ -268,7 +268,7 @@ export const EXPORT = {
       }
       if (kind === "svg") {
         const live = S.out_live_text && !S.out_production;
-        save_file(name, svg_document(S, statik, S.t, { live }), "image/svg+xml");
+        save_file(name, svg_document(S, statik, S.t, { live, facts: SHOW.svg_facts(S) }), "image/svg+xml");      // the saved file says each part's heights too (#584)
         if (live) return this.log(`exported ${name} · ${G.page_mm(S).toFixed(2)} mm square · numerals are text: ${[...new Set(S.rings.filter((r) => r.on && G.has_text(r)).map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
       if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
