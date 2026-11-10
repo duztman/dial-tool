@@ -4,9 +4,9 @@
 
 ## 1 · What the feature is (Okay, 10 Nov 2026)
 
-"Choose your movement. 5 most popular movements, their capabilities are available as defaults … and we'll have one imaginary movement that can do any and all." Answers the same night: popular for **microbrands and modders**; a real movement **sets defaults and greys out what the calibre can't drive** ("Any" is the escape hatch); the data is **capabilities and deep geometry — minimum case height, hand heights and their possibilities**. Then (22:53): "Movement wise let the last two give variety. A quartz? Small movement?" — so the two non-standard slots are a quartz and a small calibre; the large small-seconds 6497 becomes a spare.
+"Choose your movement. 5 most popular movements, their capabilities are available as defaults … and we'll have one imaginary movement that can do any and all." Answers the same night: popular for **microbrands and modders**; a real movement **sets defaults and removes what the calibre can't drive** ("Any" is the escape hatch); the data is **capabilities and deep geometry — minimum case height, hand heights and their possibilities**. Then (22:53): "Movement wise let the last two give variety. A quartz? Small movement?" — so the two non-standard slots are a quartz and a small calibre; the large small-seconds 6497 becomes a spare.
 
-Conflict to settle before building: R16 says what can't be used is *hidden*, not disabled. Okay said "greys out". Ask once; the rule page or the decision changes.
+Settled (23:04): "Not greys out, removes them" — a real movement **removes** what the calibre can't drive, as R16 says (hidden, not disabled); Any shows everything.
 
 ## 2 · The five, and why
 
@@ -120,9 +120,11 @@ Legend — **D** documented by the maker's sheet or a drawing of it; **T** trade
 | Ø · casing Ø | 17.50 · 17.20 | D — Sellita catalogue 2024, DocTec SW100 rev 03 (19 Mar 2021) |
 | Height | 4.80 | D |
 | Hand holes H · M · S | 1.20 · 0.70 · 0.20 | D — catalogue diagram "Ø1,20 Ø0,70 Ø0,20" |
-| Hands above the dial seat (standard height) | hour 1.05 · minute 1.35 · second 1.70; stem axis 1.75 | D — catalogue "standard hand fitting height" diagram (1,05 · 1,35 · 1,70 · 1,75); the order read as on the SW200 diagram (I) |
+| Hands above the dial seat (height 2, the standard) | **hour 1.05 · minute 1.35 · second 1.70**; pipe tops: hour wheel 1.31 · cannon pinion 2.13 · seconds pivot 2.01; stem axis 1.75 | D — DocTec SW100 p. "Aiguillages" SW104205 A, columns F · E · G and B · A · D, the same layout as the SW200-1's; the catalogue diagram (1,05 · 1,35 · 1,70 · 1,75) confirms the row |
+| The five heights | rows 1–5, the stack stepping 0.25: hands at 0.80 · 1.10 · 1.45 (row 1) … 1.80 · 2.10 · 2.45 (row 5); the seconds pivot 2.01 in every row | D — same table |
+| Above the dial's top (0.40 dial; the sheet's dial seat reference 0.30) | hands at 0.65 · 0.95 · 1.30; seconds tip 1.61 | I |
 | Date window | at 3 (SW100 a); SW100 b has no date wheel | D |
-| Date disc numeral radius, aperture · dial feet · centre hole | ? — DocTec SW100 pages 21–24 not reached (cousinsuk hosts a copy: cousinsuk.com/pdf/products/9264_sellita 100.pdf) | ? |
+| Date disc numeral radius, aperture · dial feet · centre hole | ? — the dial drawing SW103202 A is in the DocTec (cousinsuk.com/pdf/products/9264_sellita 100.pdf) but its numbers do not survive text extraction; the drawing says the dial is held by bolts set at 45°; read on a Mac | ? |
 | Dial Ø used | ≈ 19–20 (I; the ETA 2671's cases run 20–28 mm with a spacer) | I |
 | Minimum case height | ? | I |
 
@@ -152,6 +154,20 @@ Legend — **D** documented by the maker's sheet or a drawing of it; **T** trade
 | Hands | 3 (2035) or 2 (2025); no date (the 2036-family date calibres are 4.15 high) | D |
 | Dial feet | ~7:00 and ~11:30 | T — two dealers; calibercorner "needs confirmed" |
 | Why a spare | the smallest footprint, an oblong one: the natural movement for non-round dials (#363) and the tool's two-hand case | — |
+
+## 4.8 The date radius — what it is and why it decides the window
+
+The **date radius** is the distance from the dial's centre to the middle of the numeral printed on the date disc — the one number that puts a window in the right place. A window drawn elsewhere shows half a numeral, or the gap between two. The tool's Windows have the disc's edges as guides and a Physics tick; with the radius per calibre those guides become real. What is known:
+
+| Calibre | Date radius | Window | Tag |
+|---|---|---|---|
+| Sellita SW200-1 / ETA 2824-2 | 10.40 (the window's centre on the drawing); the disc's numeral radius itself likely 11.55 — the two differ because the numeral sits inboard of the disc's edge and the window is drawn around it | ≈ 2.7 × 3.3, turned 8° (likely reading) | D / unmapped |
+| Miyota 9015 | "the same distance as a 2824" — so ≈ 10.4 | ? | T (WUS) |
+| NH35 | ? — the 12''' disc is bigger (Ø ≈ 21–23), so the radius is larger than the 11½''' ones: likely 10.9–11.5 | ? | I |
+| Ronda 715 | ? — an 11½''' quartz; its disc is small (the battery takes the room): the radius is likely *inside* the Swiss automatics' | ? | I |
+| SW100 | ? — on a 17.2 mm movement the disc is tiny; the numeral radius is about 6.5–7.5 (I, from the movement's Ø) and the numerals are 1.2–1.4 mm tall, so a window at 3 sits well inside a 19–20 mm dial | ? | I |
+
+Rule for the build: a calibre whose radius is **?** offers its window at the trade's position (3; 6 by variant) with the disc guide at the inferred radius and the cell marked "unverified" in the record — never a made-up aperture.
 
 ## 5 · What this means for the build
 
