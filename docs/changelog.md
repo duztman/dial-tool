@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.66 beta · 11 Nov 2026 — #588: a movement says its posts
+
+Okay, 11 Nov 2026, 00:18, on Show Case 3D's hands seen from the side: "gaps between hands seem filled with shapes. is that real life accurate?"; 00:25: "do the accurate hand pipes."
+
+- **`posts`** on each movement of `web/src/movements.js` (`web/movements.mjs` `posts`): each post's Ø — the hand holes' — and its top over the dial's face: the maker's post tops less the dial, or, where the maker prints the hands' places (NH35), each hand's top. `HOLE_FIT` beside it: the posts' Ø where no movement is chosen, the tool's common hand holes. The record itself (`docs/research/movements.json`) is read, not changed.
+- **Who reads it**: Show Case 3D (`try/relight`, round 91) stands the hands on the stepped post with a short pipe under each blade. Nothing on the tool's screen changes.
+- **Tests**: `labels.mjs` — the NH35's and the 8215's posts; `HOLE_FIT` equal to `geometry.js`'s.
+
 ## v1.1.65 beta · 11 Nov 2026 — #587: one record of the movements, read by the tool and the 3D exercise
 
 Okay, 10 Nov 2026, 22:49: "i imagine you have slots, or a system for values about various movement types. If one was to find them and list them, you can adjust, ring gap hands, whatever. Right?"; 23:05: "there's new research on docs/research/README.md use that while you plan. Then build."; his answers: "Record + 3D first", "Hidden (R16 as is)", "Any; call it Imaginary Movement", the case makes room "From the movement".

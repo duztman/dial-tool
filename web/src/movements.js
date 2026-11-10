@@ -3,7 +3,10 @@
 // dial's face (`from` "maker": printed by the maker · "posts": worked out from the posts' tops, see movements.mjs); null where
 // the record has neither. `hand_t`: each hand's thickness where the maker prints it. `crystal_clearance`: from the top of
 // the stack to the crystal. `disc_under_face`: the date disc's top under the dial's face.
+// `posts`: each post's Ø (`d`) and its top over the dial's face (`top`). `HOLE_FIT`: the posts' Ø where no movement is chosen —
+// the tool's common hand holes (geometry.js HOLE_FIT; labels.mjs holds the two equal).
 export const HAND_T = 0.15;
+export const HOLE_FIT = { hour: 1.5, minute: 0.9, second: 0.2 };
 export const MOVEMENTS = [
  {
   "id": "nh35",
@@ -22,6 +25,18 @@ export const MOVEMENTS = [
    "minute": 1.19,
    "second": 1.81,
    "cap": 1.91
+  },
+  "posts": {
+   "d": {
+    "hour": 1.5,
+    "minute": 0.88,
+    "second": 0.198
+   },
+   "top": {
+    "hour": 0.78,
+    "minute": 1.37,
+    "second": 1.91
+   }
   },
   "hand_t": {
    "hour": 0.18,
@@ -67,6 +82,18 @@ export const MOVEMENTS = [
     1.7
    ]
   },
+  "posts": {
+   "d": {
+    "hour": 1.52,
+    "minute": 1,
+    "second": 0.17
+   },
+   "top": {
+    "hour": 0.8,
+    "minute": 1.25,
+    "second": 1.7
+   }
+  },
   "hand_t": null,
   "crystal_clearance": 0.4,
   "disc_under_face": null,
@@ -105,6 +132,18 @@ export const MOVEMENTS = [
     0.95,
     1.35
    ]
+  },
+  "posts": {
+   "d": {
+    "hour": 1.5,
+    "minute": 0.9,
+    "second": 0.25
+   },
+   "top": {
+    "hour": 0.55,
+    "minute": 0.95,
+    "second": 1.35
+   }
   },
   "hand_t": null,
   "crystal_clearance": null,
@@ -147,6 +186,18 @@ export const MOVEMENTS = [
     1.02
    ]
   },
+  "posts": {
+   "d": {
+    "hour": 1.2,
+    "minute": 0.7,
+    "second": 0.2
+   },
+   "top": {
+    "hour": 0.35,
+    "minute": 0.65,
+    "second": 1.02
+   }
+  },
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": null,
@@ -187,6 +238,18 @@ export const MOVEMENTS = [
     1.3
    ]
   },
+  "posts": {
+   "d": {
+    "hour": 1.2,
+    "minute": 0.7,
+    "second": 0.2
+   },
+   "top": {
+    "hour": 0.65,
+    "minute": 0.95,
+    "second": 1.3
+   }
+  },
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": 0.56,
@@ -216,6 +279,14 @@ export const MOVEMENTS = [
    "hole": null
   },
   "heights": null,
+  "posts": {
+   "d": {
+    "hour": 2,
+    "minute": 1.15,
+    "second": 0.27
+   },
+   "top": null
+  },
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": null,
@@ -233,6 +304,14 @@ export const MOVEMENTS = [
    "hole": null
   },
   "heights": null,
+  "posts": {
+   "d": {
+    "hour": 1.2,
+    "minute": 0.7,
+    "second": 0.17
+   },
+   "top": null
+  },
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": null,
@@ -261,6 +340,18 @@ export const MOVEMENTS = [
     1.45
    ]
   },
+  "posts": {
+   "d": {
+    "hour": 1.52,
+    "minute": 1,
+    "second": 0.17
+   },
+   "top": {
+    "hour": 0.73,
+    "minute": 1.08,
+    "second": 1.45
+   }
+  },
   "hand_t": null,
   "crystal_clearance": 0.4,
   "disc_under_face": null,
@@ -284,6 +375,7 @@ export const MOVEMENTS = [
   "shown": true,
   "dial": null,
   "heights": null,
+  "posts": null,
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": null,

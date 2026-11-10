@@ -71,4 +71,9 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(nh.heights.from === "maker" && nh.heights.hour === 0.6 && nh.heights.cap === 1.91 && nh.hand_t.second === 0.1 && by("any").name === "Imaginary Movement" && by("any").heights === null && by("ronda-715").heights === null,
     `"a system for values about various movement types": the NH35's hands stand where TMI's sheet puts them (${nh.heights.hour} · ${nh.heights.minute} · ${nh.heights.second}, hands ${nh.hand_t.hour} · ${nh.hand_t.minute} · ${nh.hand_t.second} thick); a movement without printed heights has none; "call it Imaginary Movement"`);
 }
+// #588: the posts, for the 3D view's side
+{ const M = await import("../src/movements.js"), nh = M.movement("nh35"), my = M.movement("miyota-8215");
+  check(JSON.stringify(M.HOLE_FIT) === JSON.stringify(G.HOLE_FIT) && nh.posts.top.hour === 0.78 && nh.posts.d.hour === 1.5 && my.posts.top.hour === 0.73 && my.posts.top.second === 1.45 && M.movement("any").posts === null,
+    `"do the accurate hand pipes": a movement says its posts — the NH35's hour wheel Ø ${nh.posts.d.hour} to ${nh.posts.top.hour} over the dial, flush with its hand's top; the 8215's to ${my.posts.top.hour}, the seconds tip at ${my.posts.top.second}; without a movement the tool's own hand holes`);
+}
 process.exit(bad ? 1 : 0);
