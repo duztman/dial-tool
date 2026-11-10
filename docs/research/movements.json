@@ -1,5 +1,5 @@
 {
- "_about": "Movement records for #586 (Choose your movement). Draft data, 10 Nov 2026, from docs/research/movements.md (tags and sources there). mm throughout (R1). tag: D documented by the maker, T trade figure, I inferred, null not found. A real movement removes what it can't drive (R16). A limit set to null means unknown, not unlimited; 'any' has no limits. shown: the five the tool offers; spare: in the record, offered only on Okay's word.",
+ "_about": "Movement records (#586, #587). The ONE record the tool and the 3D exercise read: `web/movements.mjs` writes `web/src/movements.js` from this file — after a change here, `cd web && node movements.mjs && node build.mjs`. From docs/research/movements.md (tags and sources there). mm throughout (R1). tag: D documented by the maker, T trade figure, I inferred, null not found. A real movement removes what it can't drive (R16). A limit set to null means unknown, not unlimited; the Imaginary Movement ('any') has no limits. shown: the five the tool offers; spare: in the record, offered only on Okay's word. Hand heights, the keys the tool reads: `hands_over_dial_top` ([underside, top] of each hand over the dial's face, where the maker prints it) with `blade_thickness`; else `pipe_tops_over_dial_seat` (each post's top over the dial's back); `case.crystal_clearance` (from the stack's top to the crystal).",
  "movements": [
   {
    "id": "nh35",
@@ -139,7 +139,11 @@
     "window_r": "D",
     "aperture": "D"
    },
-   "shown": true
+   "shown": true,
+   "case": {
+    "crystal_clearance": 0.45,
+    "_source": "TMI Hand Fitting page: E 45, from the seconds hand's top up (D)"
+   }
   },
   {
    "id": "miyota-9015",
@@ -206,13 +210,24 @@
      "second": 0.17
     },
     "heights": {
-     "stack_over_dial": [
-      0.45,
-      0.45,
-      1.2
-     ],
      "stack_total": 2.1,
-     "clearance_min": 0.4
+     "clearance_min": 0.4,
+     "pipe_tops_over_dial_seat": {
+      "hour": 1.2,
+      "minute": 1.65,
+      "second": 2.1
+     },
+     "pipe_steps_from_dial_seat": [
+      1.2,
+      0.45,
+      0.45
+     ],
+     "over_dial_top": {
+      "hour": 0.8,
+      "minute": 1.25,
+      "second": 1.7
+     },
+     "_source": "Miyota 9015 drawing, Frame for Case (unit 1/1000 mm): 1200 · 450(~410) · 450, 2100(~2060) in all — each measured from the dial's seat, the 1200 first (D)"
     }
    },
    "functions": {
@@ -245,7 +260,8 @@
    },
    "case": {
     "min_thickness": 8.6,
-    "min_thickness_9039": 8.25
+    "min_thickness_9039": 8.25,
+    "crystal_clearance": 0.4
    },
    "tags": {
     "d": "D",
@@ -848,8 +864,114 @@
    }
   },
   {
+   "id": "miyota-8215",
+   "name": "Miyota 8215",
+   "maker": "Citizen Miyota",
+   "kind": "automatic",
+   "ligne": "11.5",
+   "shown": false,
+   "movement": {
+    "d": 26.0,
+    "casing_d": 25.6,
+    "h": 5.67,
+    "h_to_seconds_tip": 7.52,
+    "stem_oclock": [
+     3
+    ]
+   },
+   "dial": {
+    "d": 25.6,
+    "_d": "bare dial drawn; the trade fits 28–29",
+    "thickness": 0.4,
+    "hole": 2.0,
+    "feet": "r 12.05 at 5:39 and 10:48",
+    "feet_xy_mm": {
+     "DH1": [
+      2.165,
+      -11.855
+     ],
+     "DH2": [
+      -7.065,
+      9.8
+     ]
+    },
+    "foot": {
+     "d": 0.725
+    }
+   },
+   "hands": {
+    "seconds": "central",
+    "holes": {
+     "hour": 1.52,
+     "minute": 1.0,
+     "second": 0.17
+    },
+    "heights": {
+     "pipe_tops_over_dial_seat": {
+      "hour": 1.13,
+      "minute": 1.48,
+      "second": 1.85
+     },
+     "pipe_steps_from_dial_seat": [
+      1.13,
+      0.35,
+      0.37
+     ],
+     "over_dial_top": {
+      "hour": 0.73,
+      "minute": 1.08,
+      "second": 1.45
+     },
+     "stack_total": 1.85,
+     "_source": "Miyota 8215 drawing, Frame for Case: 1130(~1080) · 350 · 370, 1850 in all, from the dial's seat (D)"
+    }
+   },
+   "functions": {
+    "gmt": false,
+    "date_hand": false,
+    "day_hand": false,
+    "month_hand": false
+   },
+   "windows": {
+    "date": {
+     "positions": [
+      3
+     ],
+     "default": 3,
+     "window_r": 10.125,
+     "window_r_range": [
+      8.95,
+      11.3
+     ],
+     "aperture": [
+      2.35,
+      1.9
+     ],
+     "disc_d": 23.0
+    },
+    "day": false,
+    "ampm": false,
+    "moon": false
+   },
+   "case": {
+    "crystal_clearance": 0.4
+   },
+   "tags": {
+    "d": "D",
+    "h": "D",
+    "h_to_seconds_tip": "I (5.67 + 1.85)",
+    "holes": "D (post Ø on the drawing)",
+    "heights": "D",
+    "dial_hole": "D",
+    "feet": "D",
+    "aperture": "D",
+    "window_r": "I (the range's middle)",
+    "crystal_clearance": "I (the 9015 spec's 0.40, same maker)"
+   }
+  },
+  {
    "id": "any",
-   "name": "Any (imaginary)",
+   "name": "Imaginary Movement",
    "kind": "imaginary",
    "limits": null,
    "_note": "No limits; the tool's starting values stand (R7).",

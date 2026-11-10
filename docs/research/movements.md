@@ -1,6 +1,6 @@
 # Movements — the numbers a dial inherits from its calibre
 
-*10 Nov 2026. Research for #586 (Choose your movement). Written for the agent that builds it. Nothing here is built. Index of all research: `README.md` beside this file.*
+*11 Nov 2026. Research for #586 (Choose your movement) and #587 (the record the tool reads, built). Written for the agent that builds it. Built: the record and its generator (#587) and the 3D exercise's Movement switch; #586's choice in the tool is not. Index of all research: `README.md` beside this file.*
 
 ## 1 · What the feature is (Okay, 10 Nov 2026)
 
@@ -78,7 +78,7 @@ Read from Miyota's own drawings (fetched to Okay's Mac through the PDF tools, 10
 | Ø · casing Ø | 26.00 ±0.02 · 25.60 js8 (±0.0165); back-side Ø 25.50 max, Ø 23.90 max | Frame for Case |
 | Height | 3.90 (9039 3.90 · 9075 4.92) | Miyota spec |
 | Date disc Ø | 23.40 | Frame for Case |
-| Hand-fitting pipes | hour wheel Ø 1.52 (−0.001/−0.009) · cannon pinion Ø 1.00 (+0.003/−0.005) · seconds Ø 0.17 ±0.004; hour hand seat 0.45 (~0.41) over the dial, seconds tip 2.10 (~2.06) — the catalogue's 0.45 · 0.45 · 1.20 stack | Frame for Case; catalogue |
+| Hand-fitting pipes | hour wheel Ø 1.52 (−0.001/−0.009) · cannon pinion Ø 1.00 (+0.003/−0.005) · seconds Ø 0.17 ±0.004; **post tops over the dial's seat: hour wheel 1.20 · cannon pinion +0.45 (~0.41) → 1.65 · seconds tip +0.45 → 2.10 (~2.06)**; over the face (0.40 dial) the hour hand has 0–0.80, the minute hand 0.80–1.25, the seconds hand 1.25–1.70. The catalogue's 0.45 · 0.45 · 1.20 is these three steps, the 1.20 first: no hand sits 0.45 over the dial | Frame for Case section (1200 · 450(~410) · 450, 2100(~2060), each from the dial's seat) |
 | Minimum clearance | hand 0.40 min · movement 0.40 min | Miyota spec "Clearance" |
 | Minimum case thickness | 9015 8.6 · 9039 8.25 | T — calibercorner |
 | Dial Ø · thickness | 25.60 drawn (the bare 11½''' dial; the trade fits 28–29 over a dial ring) · 0.40 ±0.04 | Indications for Dial |
@@ -183,6 +183,20 @@ The **date radius** is the distance from the dial's centre to the middle of the 
 
 Every shown calibre's window is documented now. One cut serves the three 11½''' movements and the Ronda: r 8.85–11.55 × 2.00; the NH35's is r 9.10–12.00 × 2.00 (centre 10.55); the SW100's r 5.97–8.22 × 2.00. The rule stands for any calibre added later: no made-up aperture.
 
+## 4.9 Spare — Miyota 8215
+
+| | Value | Source |
+|---|---|---|
+| Ø · casing Ø · height | 26.00 ±0.02 · 25.60 · 5.67 | D — Miyota 8215 drawing, "Frame for Case" |
+| Post tops over the dial's seat | hour wheel 1.13 (~1.08) · cannon pinion +0.35 → 1.48 · seconds tip +0.37 → 1.85; over the face 0–0.73 · 0.73–1.08 · 1.08–1.45 | D — the same section (1130(~1080) · 350 · 370, 1850) |
+| Posts Ø H · M · S | 1.52 · 1.00 · 0.17 | D — the same section |
+| Dial | thickness 0.40 ±0.04, centre hole 2.00 ±0.04 | D — "Indications for Dial" (8215-33E) |
+| Dial feet | DH1 at x +2.165, y −11.855 · DH2 at x −7.065, y +9.80 (x toward 3H, y toward 12H); Ø 0.725 ±0.01 | D — the same sheet |
+| Date window (at 3) | 8.95 to 11.30 along the radius (2.35) × 1.90 across; date dial Ø 23.0 | D |
+| Not printed | a hand's thickness, where a hand sits on its post, the date disc's depth | ? |
+
+Read in a session's browser pane (10 Nov 2026): the maker's site open, pdf.js loaded from cdnjs in the page, a PDF page of the same site rendered to a canvas with `intent: "print"`, crops of it drawn on a fixed canvas and screenshotted — a second way to a maker PDF when no Mac is linked. Also read this way: the NH35 sheet's clearance from the seconds hand's top to the glass, **0.45** (E on the Hand Fitting page).
+
 ## 5 · What this means for the build
 
 - **The three 11½''' movements and the Ronda share one dial** in the tool's terms: window r 8.85–11.55 × 2.00 at 3 (and 4 · 6 · 9 · 12 by variant), centre hole 1.7–2.0, feet r 12.2 at 2:24/8:24 (Miyota's a touch off at 2:33/8:24). They differ in hand holes, heights and the GMT/day options. One geometry record with overlays.
@@ -191,7 +205,7 @@ Every shown calibre's window is documented now. One cut serves the three 11½'''
 - **Hand heights are per-calibre choices, not constants**: Sellita sells eight, Seiko two (M, L), Ronda seven (0–6), Miyota one per calibre (two for the 2035 family). Above the dial's top the standard stacks agree to a tenth — SW200-1 0.55 · 0.95 · 1.35 (tip 2.10), 9015 0.45 · 0.90 · 2.10, SW100 0.65 · 0.95 · 1.30 — so one default stack with per-calibre overrides is honest. The movement record should carry the *standard* height and name the alternatives; #584's `data-over` then has a source.
 - **Minimum case height** is not published by anyone; it is a sum: movement height + 0.40 dial + hand stack to the seconds tip + hand thickness + crystal clearance (Miyota: 0.40 min) + crystal + case back. Give the Show Case the sum from the record and say which terms are the maker's.
 
-- **Already in the code, the same night**: v1.1.64 (#585) set a new dial's hand heights to the Miyota 8215's (`MOVEMENT_HEIGHTS` in `geometry.js`: 0.30 · 0.85 · 1.20, cap 1.45) with the 9015's beside them. That is a second movement record; #586 should absorb it (R34, one mechanism), and the 8215 is then the sixth real calibre or the alternate of §2.
+- **In the code** (#587, v1.1.65): `movements.json` is the one record; `web/movements.mjs` writes `web/src/movements.js` from it (`MOVEMENTS`, each with its `heights` worked out by one rule: the maker's hand places where printed — NH35 — else a 0.15 mm hand in the middle of its space on the post, to 0.05); a new dial's hands start on the 8215's; the 3D exercise's Movement switch and its crystal clearance read the same file. The 8215 is a spare with its row (§4.9).
 
 ## 6 · Not reached, and how to get it
 

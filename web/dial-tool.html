@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.64 beta · built 2026-11-10 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.65 beta · built 2026-11-10 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -8690,6 +8690,284 @@ function draw(o) {
   return ground(make("off"), two ? "none" : o.floor).replace("__VB__", vb(...box3));
 }
 
+// src/movements.js
+var MOVEMENTS = [
+  {
+    "id": "nh35",
+    "name": "Seiko NH35",
+    "short": "NH35",
+    "kind": "automatic",
+    "shown": true,
+    "dial": {
+      "d": 28.5,
+      "thickness": 0.4,
+      "hole": 2.05
+    },
+    "heights": {
+      "from": "maker",
+      "hour": 0.6,
+      "minute": 1.19,
+      "second": 1.81,
+      "cap": 1.91
+    },
+    "hand_t": {
+      "hour": 0.18,
+      "minute": 0.18,
+      "second": 0.1
+    },
+    "crystal_clearance": 0.45,
+    "disc_under_face": null,
+    "date": {
+      "positions": [
+        3,
+        6,
+        9
+      ],
+      "r": 10.55,
+      "aperture": [
+        2.9,
+        2
+      ],
+      "disc_d": 23
+    }
+  },
+  {
+    "id": "miyota-9015",
+    "name": "Miyota 9015",
+    "short": "9015",
+    "kind": "automatic",
+    "shown": true,
+    "dial": {
+      "d": 25.6,
+      "thickness": 0.4,
+      "hole": 2
+    },
+    "heights": {
+      "from": "posts",
+      "hour": 0.35,
+      "minute": 0.95,
+      "second": 1.4,
+      "cap": 1.7,
+      "room": [
+        0.8,
+        1.25,
+        1.7
+      ]
+    },
+    "hand_t": null,
+    "crystal_clearance": 0.4,
+    "disc_under_face": null,
+    "date": {
+      "positions": [
+        3,
+        6
+      ],
+      "r": 10.2,
+      "aperture": [
+        2.7,
+        2
+      ],
+      "disc_d": 23.4
+    }
+  },
+  {
+    "id": "sw200-1",
+    "name": "Sellita SW200-1 (ETA 2824-2)",
+    "short": "SW200",
+    "kind": "automatic",
+    "shown": true,
+    "dial": {
+      "d": 25.6,
+      "thickness": 0.4,
+      "hole": 2
+    },
+    "heights": {
+      "from": "posts",
+      "hour": 0.2,
+      "minute": 0.7,
+      "second": 1.1,
+      "cap": 1.35,
+      "room": [
+        0.55,
+        0.95,
+        1.35
+      ]
+    },
+    "hand_t": null,
+    "crystal_clearance": null,
+    "disc_under_face": 0.56,
+    "date": {
+      "positions": [
+        3,
+        12,
+        9,
+        6
+      ],
+      "r": 10.2,
+      "aperture": [
+        2.7,
+        2
+      ],
+      "disc_d": null
+    }
+  },
+  {
+    "id": "ronda-715",
+    "name": "Ronda 715",
+    "short": "715",
+    "kind": "quartz",
+    "shown": true,
+    "dial": {
+      "d": 25.5,
+      "thickness": 0.4,
+      "hole": 1.7
+    },
+    "heights": null,
+    "hand_t": null,
+    "crystal_clearance": null,
+    "disc_under_face": null,
+    "date": {
+      "positions": [
+        3,
+        4,
+        6
+      ],
+      "r": 10.2,
+      "aperture": [
+        2.7,
+        2
+      ],
+      "disc_d": null
+    }
+  },
+  {
+    "id": "sw100",
+    "name": "Sellita SW100 a (ETA 2671)",
+    "short": "SW100",
+    "kind": "automatic",
+    "shown": true,
+    "dial": {
+      "d": 17.5,
+      "thickness": 0.4,
+      "hole": 1.7
+    },
+    "heights": {
+      "from": "posts",
+      "hour": 0.25,
+      "minute": 0.75,
+      "second": 1.05,
+      "cap": 1.3,
+      "room": [
+        0.65,
+        0.95,
+        1.3
+      ]
+    },
+    "hand_t": null,
+    "crystal_clearance": null,
+    "disc_under_face": 0.56,
+    "date": {
+      "positions": [
+        3,
+        6,
+        4.5
+      ],
+      "r": 7.1,
+      "aperture": [
+        2.25,
+        2
+      ],
+      "disc_d": null
+    }
+  },
+  {
+    "id": "eta-6497-1",
+    "name": "ETA/Unitas 6497-1 (Sea-Gull ST3600)",
+    "short": "6497",
+    "kind": "hand-wound",
+    "shown": false,
+    "dial": {
+      "d": 36,
+      "thickness": 0.4,
+      "hole": null
+    },
+    "heights": null,
+    "hand_t": null,
+    "crystal_clearance": null,
+    "disc_under_face": null,
+    "date": null
+  },
+  {
+    "id": "miyota-2035",
+    "name": "Miyota 2035",
+    "short": "2035",
+    "kind": "quartz",
+    "shown": false,
+    "dial": {
+      "d": null,
+      "thickness": 0.4,
+      "hole": null
+    },
+    "heights": null,
+    "hand_t": null,
+    "crystal_clearance": null,
+    "disc_under_face": null,
+    "date": null
+  },
+  {
+    "id": "miyota-8215",
+    "name": "Miyota 8215",
+    "short": "8215",
+    "kind": "automatic",
+    "shown": false,
+    "dial": {
+      "d": 25.6,
+      "thickness": 0.4,
+      "hole": 2
+    },
+    "heights": {
+      "from": "posts",
+      "hour": 0.3,
+      "minute": 0.85,
+      "second": 1.2,
+      "cap": 1.45,
+      "room": [
+        0.73,
+        1.08,
+        1.45
+      ]
+    },
+    "hand_t": null,
+    "crystal_clearance": 0.4,
+    "disc_under_face": null,
+    "date": {
+      "positions": [
+        3
+      ],
+      "r": 10.125,
+      "aperture": [
+        2.35,
+        1.9
+      ],
+      "disc_d": 23
+    }
+  },
+  {
+    "id": "any",
+    "name": "Imaginary Movement",
+    "short": "Imaginary",
+    "kind": "imaginary",
+    "shown": true,
+    "dial": null,
+    "heights": null,
+    "hand_t": null,
+    "crystal_clearance": null,
+    "disc_under_face": null,
+    "date": null
+  }
+];
+var movement = (id) => MOVEMENTS.find((m) => m.id === id) ?? null;
+
 // src/moment.js
 var LANGS = ["en", "tr", "de", "fr", "it"];
 var NAMES = {
@@ -8766,8 +9044,9 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.64 beta";
+var VERSION = "v1.1.65 beta";
 var MM = 72 / 25.4;
+var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
 var degrees = (a) => a * 180 / PI;
@@ -9419,7 +9698,7 @@ var DEFAULTS = {
   // keeps only the part that falls on it — so a shadow steps where it crosses a hand or a window's edge.
   // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). The light's starting values are Okay's (14 Oct
   // 2026, 23:05, a picture of the list: "these in the image are the default values"). The hands' starting HEIGHTS are
-  // the Miyota 8215's (Okay, 10 Nov 2026: "Amazing. Implement."; `MOVEMENT_HEIGHTS` below says where each number is from).
+  // the Miyota 8215's, read from the movements' record (Okay, 10 Nov 2026: "Amazing. Implement."; `MOVEMENTS` below).
   sh_on: true,
   sh_from: 270,
   sh_rise: 35,
@@ -9427,11 +9706,12 @@ var DEFAULTS = {
   sh_blur: false,
   sh_bevel: 100,
   // the hands' bevels' strength, 0–100 % (Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"): a hand's own Bevel tick turns its bevel on (HAND_BASE.bevel, off to start); 100 = as 4.77 drew them
-  sh_hour: 0.3,
-  sh_minute: 0.85,
-  sh_second: 1.2,
-  sh_cap: 1.45,
+  sh_hour: START_HEIGHTS.hour,
+  sh_minute: START_HEIGHTS.minute,
+  sh_second: START_HEIGHTS.second,
+  sh_cap: START_HEIGHTS.cap,
   sh_disc: 0.15,
+  // 0.30 · 0.85 · 1.20 · 1.45
   sh_gmt: 0.1,
   sh_date: 0.1,
   sh_day: 0.1,
