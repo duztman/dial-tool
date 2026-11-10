@@ -8,7 +8,7 @@
 //   cd web && node fonts.mjs          (downloads only what is missing)
 //
 // To add a family: add a line to FAMILIES, run this, run build.mjs. The list: Okay's
-// own 21, the top tier of the font research (docs/font-tiers-2026-10-16.md, build list #313; Okay: "incorporate it …
+// own 21, the top tier of the font research (docs/research/font-tiers.md, build list #313; Okay: "incorporate it …
 // Add just font list to defaults"), and its middle tier and non-Latin numeral fonts (#501).
 // Sources: google — github.com/google/fonts, ofl/; routed — github.com/dse/routed-gothic; wiegel — a zip on peter-wiegel.de
 // (the fonts and their licence are taken out of it); datto — D-DIN from a GitHub mirror of Datto's own archive (Datto's page
@@ -66,7 +66,7 @@ const FAMILIES = [
   ["Cormorant", "light Garamond-like serif", "google", "cormorant", ["Cormorant[wght].ttf", "Regular"]],
   ["Poiret One", "art deco, hairline", "google", "poiretone", ["PoiretOne-Regular.ttf", "Regular"]],
   ["Allerta Stencil", "stencil", "google", "allertastencil", ["AllertaStencil-Regular.ttf", "Regular"]],
-  // the top tier of the font research, 17 Oct 2026 (docs/font-tiers-2026-10-16.md, #313): what the twenty lacked, a voice or two each
+  // the top tier of the font research, 17 Oct 2026 (docs/research/font-tiers.md, #313): what the twenty lacked, a voice or two each
   ["Anybody", "grotesque with width (50 to 150) and weight axes", "google", "anybody", ["Anybody[wdth,wght].ttf", "Regular"]],
   ["Bebas Neue", "poster condensed, tabular digits", "google", "bebasneue", ["BebasNeue-Regular.ttf", "Regular"]],
   ["Cinzel", "Trajan-like capitals, for Roman numerals", "google", "cinzel", ["Cinzel[wght].ttf", "Regular"]],
@@ -307,14 +307,14 @@ which allows passing them on with their licence — but one: GL-Nummernschild is
 ("unlimited permission is granted to use, copy, and distribute it, with or without modification"; its licence is only in
 the font's own name table, copied into \`licences/\`). Each family's own licence file, with its copyright line, is in \`licences/\`.
 Taken from github.com/google/fonts (folder \`ofl/\`) and github.com/dse/routed-gothic on 11 Oct 2026, and on 17 Oct 2026
-(the font research's top tier, \`docs/font-tiers-2026-10-16.md\`) from google/fonts again, from Peter Wiegel's zips at
+(the font research's top tier, \`docs/research/font-tiers.md\`) from google/fonts again, from Peter Wiegel's zips at
 peter-wiegel.de, and — D-DIN — from github.com/amcchord/datto-d-din, a copy of Datto's own \`D-DIN_complete.zip\` (Datto's
 page is not reachable from a session); unchanged, only renamed (\`Jost[wght].ttf\` → \`Jost-wght.ttf\`, spaces to dashes).
 On 24 Oct 2026 (#501) the middle tier's and the non-Latin numeral fonts that are on google/fonts joined (\`apache/\` for
 Syncopate). On 25 Oct 2026 six of Wiegel's middle tier joined from Okay's own download of his CAT Fonts zip
 (kept by hand, source \`catfonts\`), and on 1 Nov 2026 the other 24 of his middle tier from Okay's Wiegel Archive
 (the same source; every licence taken as free on Okay's word of 1 Nov 2026, the OFL that 21 of the files name in their own
-name table written beside each) with Railway Sans from github.com/googlefonts/railway-sans. Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
+name table written beside each) with Railway Sans from github.com/googlefonts/railway-sans. Most carry Reserved Font Names: a file is passed on whole, never subset (docs/research/fonts.md §4)
 — but one: Noto Serif SC (25 MB whole, OFL with no Reserved Font Name) is cut to the characters a dial uses (\`SUBSET\` in
 \`web/fonts.mjs\`: Latin, digits, Chinese numerals and the date's words).
 Inter, the page's stand-in font, is packed inside the page itself (also OFL). The list is written by \`web/fonts.mjs\`.

@@ -1,6 +1,6 @@
 # Font tiers, second draft: the locked collections
 
-16 Oct 2026. Wiegel locked at 46 (passed Compare, survived Finals). Font Picks: all 49 yeses kept, of which 10 are non-Latin numeral fonts, parked below. **Top 21 · Middle 50 · Bottom 14** across 85 fonts, beside the 21 already shipped (20 families in `web/fonts.mjs` and Inter, packed in the page). A draft for Okay to correct; background in [`font-research-2026-10-16.md`](font-research-2026-10-16.md).
+16 Oct 2026. Wiegel locked at 46 (passed Compare, survived Finals). Font Picks: all 49 yeses kept, of which 10 are non-Latin numeral fonts, parked below. **Top 21 · Middle 50 · Bottom 14** across 85 fonts, beside the 21 already shipped (20 families in `web/fonts.mjs` and Inter, packed in the page). A draft for Okay to correct; background in [`research/fonts.md`](research/fonts.md).
 
 ## What the tiers mean (Okay, 16 Oct: "tiers, top ~20 in the picker")
 

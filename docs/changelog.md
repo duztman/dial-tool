@@ -1846,7 +1846,7 @@ Phase G's first push: the panes' order and *resize from*.
 
 ## beta 4.46.7 (web version) · 17 Oct 2026
 
-- **Twenty-one fonts join the list** (#313; the font research of 16 Oct, `docs/font-tiers-2026-10-16.md`, its top tier; Okay, 17 Oct: "incorporate it, push the design ui stuff for later. Add just font list to defaults in these versions nothing else"). The font sheet lists 42 families (21 before). Nothing else changes: the sheet's design (phase H, #273–#276) waits.
+- **Twenty-one fonts join the list** (#313; the font research of 16 Oct, `docs/research/font-tiers.md`, its top tier; Okay, 17 Oct: "incorporate it, push the design ui stuff for later. Add just font list to defaults in these versions nothing else"). The font sheet lists 42 families (21 before). Nothing else changes: the sheet's design (phase H, #273–#276) waits.
   - From Google Fonts (OFL): Anybody · Bebas Neue · Cinzel · Italiana · Marcellus · Public Sans · Sometype Mono · Space Grotesk · Tourney · Unica One.
   - D-DIN (Datto, OFL), in four cuts: Regular · Bold · Condensed · Expanded — from a GitHub copy of Datto's own archive, since Datto's page is not reachable from a session.
   - From Peter Wiegel's zips (OFL): Alte DIN 1451 Mittelschrift · Apollo · Bernardo Moda Contrast · CAT DyFa · CAT Kurier · Erika Type (Regular, Bold) · Immermann · Koch-Fraktur · TGL 0-16 (Regular; DIN 17 as its Slanted style). And GL-Nummernschild (Mittelschrift, Engschrift), Gutenberg Labo's free-software font: its licence lives only in the font's own name table, so that text is kept by hand in `web/fonts/licences/`.

@@ -1,6 +1,6 @@
 # Font research, 16 Oct 2026
 
-*Written 16 Oct 2026, night, by the Claude session that did the research with Okay. For the next agent. Nothing in `web/` was changed by it. The draft tiers are in [`font-tiers-2026-10-16.md`](font-tiers-2026-10-16.md).*
+*Written 16 Oct 2026, night, by the Claude session that did the research with Okay. For the next agent. Nothing in `web/` was changed by it. The draft tiers are in [`research/font-tiers.md`](research/font-tiers.md).*
 
 ## 1 · Where it stands
 
