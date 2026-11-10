@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.63 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.64 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -379,17 +379,28 @@ export const DEFAULTS = {
   // plate (mm); the cap's top is the top of the stack; the date discs lie sh_disc mm under the plate's face. A thing
   // of height z casts its shape shifted by z / tan(rise), away from the light, onto everything lower; each surface
   // keeps only the part that falls on it — so a shadow steps where it crosses a hand or a window's edge.
-  // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). The starting values are Okay's (14 Oct
-  // 2026, 23:05, a picture of the list: "these in the image are the default values"); the movement, not chosen yet,
-  // will fix the real heights.
+  // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). The light's starting values are Okay's (14 Oct
+  // 2026, 23:05, a picture of the list: "these in the image are the default values"). The hands' starting HEIGHTS are
+  // the Miyota 8215's (Okay, 10 Nov 2026: "Amazing. Implement."; `MOVEMENT_HEIGHTS` below says where each number is from).
   sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
   sh_bevel: 100,                                   // the hands' bevels' strength, 0–100 % (Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"): a hand's own Bevel tick turns its bevel on (HAND_BASE.bevel, off to start); 100 = as 4.77 drew them
-  sh_hour: 0.15, sh_minute: 0.35, sh_second: 0.6, sh_cap: 0.75, sh_disc: 0.15,
+  sh_hour: 0.3, sh_minute: 0.85, sh_second: 1.2, sh_cap: 1.45, sh_disc: 0.15,
   sh_gmt: 0.1, sh_date: 0.1, sh_day: 0.1, sh_month: 0.1,      // the added hands' heights (#577): under the hour hand to start, a step clear of it; the same for all four until the movement says (one shows on most dials)
   gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread, a ring's guide has the ring's own colour
   // the next five keys are unread: old settings files carry them (R8). Nothing writes them any more.
   gd_c: [0.0, 0.55, 0.9, 1], gd_strength: 50.0,
   gd_sel_c: [1.0, 0.45, 0.0, 1], gd_sel_strength: 95.0, gd_sel_w: 1.5,
+};
+
+/** A movement's hand heights, mm over the dial's face (#585). Miyota's "Frame for Case" drawing gives the top of each post over
+ *  the dial's seat — 8215: hour wheel 1.13, minutes +0.35, seconds +0.37 (1.85 in all); 9015: 1.20, +0.45, +0.45 (2.10) — and
+ *  its "Indications for Dial" sheet a dial 0.40 thick. So over the dial's face the hour hand has 0–0.73 (9015: 0–0.80), the
+ *  minute hand 0.73–1.08 (0.80–1.25), the seconds hand 1.08–1.45 (1.25–1.70). A height here is the hand's underside with a
+ *  0.15 mm hand in the middle of its space, to the pane's 0.05 step; the cap's top is the seconds post's tip. Where on its
+ *  post a hand sits, and how thick a hand is, Miyota does not print: those two are this table's own. */
+export const MOVEMENT_HEIGHTS = {
+  "Miyota 8215": { hour: 0.3, minute: 0.85, second: 1.2, cap: 1.45 },
+  "Miyota 9015": { hour: 0.35, minute: 0.95, second: 1.4, cap: 1.7 },
 };
 
 /** units a length can be shown and typed in: [short name, name, how many make a millimetre, extra decimals].

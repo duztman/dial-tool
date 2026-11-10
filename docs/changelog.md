@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.64 beta · 10 Nov 2026 — #585: a new dial's hands stand at the Miyota 8215's heights
+
+Okay, 10 Nov 2026, 22:31, on the hand heights read from Miyota's drawings: "Amazing. Implement." — both movements as a switch in the 3D exercise, and the tool's own starting heights changed.
+
+- **The starting heights** (`geometry.js` `DEFAULTS`): hour 0.30, minute 0.85, seconds 1.20, the cap 1.45 mm over the dial's face (they were 0.15 · 0.35 · 0.60 · 0.75). A dial or a link that never moved a height takes the new ones — a link leaves out what equals the start — so its shadows in show mode are longer; a height set by hand stays.
+- **Where the numbers are from** (`geometry.js` `MOVEMENT_HEIGHTS`, the 8215 and the 9015): Miyota's "Frame for Case" drawing gives each post's top over the dial's seat (8215: 1.13 · +0.35 · +0.37; 9015: 1.20 · +0.45 · +0.45), its "Indications for Dial" sheet a 0.40 dial. A height is a 0.15 mm hand's underside in the middle of its space, to the pane's 0.05 step; the cap's top is the seconds post's tip. Where a hand sits on its post and how thick it is Miyota does not print: those are ours.
+- **Tests**: `labels.mjs` — the start is the 8215's row; in both rows each hand lies inside its space.
+
 ## v1.1.63 beta · 10 Nov 2026 — #584: a saved SVG says each part's ink thickness and each hand's height
 
 Okay, 10 Nov 2026, 18:32, on the Watch 3D trial reading a dial from the tool's SVG with guessed heights: "i need you to get height and thickness values as well, this preview depends on it."
