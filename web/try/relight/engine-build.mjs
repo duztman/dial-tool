@@ -4,7 +4,8 @@
 //
 // A link is the dial's SETTINGS; its shapes are made by the tool's engine (geometry.js on PathKit and HarfBuzz, both WebAssembly)
 // with the dial's fonts. An artifact may not load code or files from the tool's site, so the engine travels with the page:
-// <out>/engine.js (this bundle, the two engines packed inside) and <out>/fonts/ (the tool's font files). The engine is the tool's
+// <out>/engine.js (this bundle, the two engines packed inside), <out>/fonts/ (the tool's font files) and <out>/movements.js
+// (the tool's movement record as the tool reads it). The engine is the tool's
 // own code at the checkout's version — build it again when the tool's link grows new keys. It reads a link exactly as the page
 // does (session.js `unpack`) and writes exactly what Export → SVG writes (`svg_document` with `svg_facts`), so the 3D page reads
 // a link through the same reader as a saved file.
@@ -55,4 +56,7 @@ const head = `// Dial Tool's drawing engine for the Watch 3D page — built by w
 fs.mkdirSync(path.join(out, "fonts"), { recursive: true }); fs.writeFileSync(path.join(out, "engine.js"), head + code);
 const need = [...new Set([STAND_IN, ...Object.values(files)])]; let bytes = 0; for (const f of need) { fs.copyFileSync(path.join(web, "fonts", f), path.join(out, "fonts", f)); bytes += fs.statSync(path.join(out, "fonts", f)).size; }
 fs.writeFileSync(path.join(out, "fonts.json"), JSON.stringify(need));
+// the movements (round 88): the tool's own generated file (web/src/movements.js, written from docs/research/movements.json by
+// web/movements.mjs), copied as it is — the page's Movement switch reads it, so no movement's number is written in the page
+fs.copyFileSync(path.join(web, "src/movements.js"), path.join(out, "movements.js"));
 console.log(`engine.js ${((head.length + code.length) / 1e6).toFixed(2)} MB · ${need.length} font files, ${(bytes / 1e6).toFixed(1)} MB`);
