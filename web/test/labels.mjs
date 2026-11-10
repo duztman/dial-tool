@@ -68,7 +68,7 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   const worked = G.MOVEMENTS.filter((m) => m.heights?.from === "posts"), fit = worked.every((m) => { const [a, b, c] = m.heights.room, h = m.heights; return h.hour >= 0 && h.hour + T <= a + 1e-9 && h.minute >= a - 1e-9 && h.minute + T <= b + 1e-9 && h.second >= b - 1e-9 && h.second + T <= c + 1e-9 && h.cap === c; });
   check(own && fit && worked.length >= 4, `"Amazing. Implement.": a new dial's hands stand at the Miyota 8215's heights (${D.sh_hour} · ${D.sh_minute} · ${D.sh_second}, cap ${D.sh_cap}); in each of the ${worked.length} movements worked out from its posts a ${T} mm hand lies inside its own space and the cap's top is the seconds post's tip`);
   const nh = by("nh35");
-  check(nh.heights.from === "maker" && nh.heights.hour === 0.6 && nh.heights.cap === 1.91 && nh.hand_t.second === 0.1 && by("any").name === "Imaginary Movement" && by("any").heights === null && by("ronda-715").heights === null,
+  check(nh.heights.from === "maker" && nh.heights.hour === 0.6 && nh.heights.cap === 1.91 && nh.hand_t.second === 0.1 && by("any").name === "Imaginary Movement" && by("any").heights === null && by("eta-6497-1").heights === null,
     `"a system for values about various movement types": the NH35's hands stand where TMI's sheet puts them (${nh.heights.hour} · ${nh.heights.minute} · ${nh.heights.second}, hands ${nh.hand_t.hour} · ${nh.hand_t.minute} · ${nh.hand_t.second} thick); a movement without printed heights has none; "call it Imaginary Movement"`);
 }
 // #588: the posts, for the 3D view's side
