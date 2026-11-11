@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.74 beta · 11 Nov 2026 — a saved SVG says the case, for 3D
+
+Okay, 11 Nov 2026, 16:18: "Now i need transparencies on 3d, add bezel and rehaut there at the same time, go"
+
+- **`data-case`** on the dial group (`show.js` `case_record`, `parts.js` `case_attrs` / `read_case`): the rehaut (reach, rise, colour) and the bezel (kind, width, chamfer, insert in · out and its colour, the coin edge, the dial's rise, seat, height, lip, the crystal's rim, rise and dome), mm; none when both are off. Read by Show Case 3D (Pro), which builds them with the rings on them. Nothing on the screen changes.
+- **Tests**: `labels.mjs` — the file says the case, none without one.
+
 ## v1.1.73 beta · 11 Nov 2026 — a disc hand to the dial's edge; rings on the rehaut and the bezel
 
 Okay, 11 Nov 2026, 16:00: "Why is the disc hands radius limited, i should be able to reach the edges. Bezel ring allows up to three rings, build a ring system under there as well. Rehaut gets one ring only" — and "Full editing in the tab", the Rings tab "No, only dial rings".
