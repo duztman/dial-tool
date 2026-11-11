@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.80 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.81 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9546,7 +9546,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.80 beta";
+var VERSION = "v1.1.81 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9974,7 +9974,7 @@ var DEFAULTS = {
   bz_marks: 0,
   // bz_c is dead (R8): the bezel is case material (case_metal)
   bz_melt: false,
-  // a fixed bezel melted into the case (#599; Okay, 11 Nov 2026: "a bezel that melts into the case, seemlessly, on off style"): one piece with the body — no seat, no step, no line. Read through bezel_melted()
+  // a bezel melted into the case (#599; Okay, 11 Nov 2026: "a bezel that melts into the case, seemlessly, on off style"): one piece with the body — no seat, no step, no line. Read through bezel_melted()
   bz_teeth_n: 60,
   bz_teeth_depth: 0.5,
   bz_teeth_fill: 0.62,
@@ -11950,7 +11950,7 @@ var disc_span = (S, name) => {
 };
 var rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
 var FINISHES = ["Paint", "Engrave"];
-var bezel_marks_on_metal = (S) => S.bz_on && (BEZEL_KINDS[S.bz_kind] === "Fixed" || BEZEL_MARKS[S.bz_marks] === "Metal");
+var bezel_marks_on_metal = (S) => S.bz_on && !bezel_insert(S);
 var ring_engraved = (S, ring) => {
   const s = ring_surface(S, ring);
   return s === 0 ? S.paint === false && FINISHES[S.engrave] === "Engrave" : s === 1 ? FINISHES[S.rh_engrave] === "Engrave" : s === 2 ? bezel_marks_on_metal(S) && FINISHES[S.bz_engrave] === "Engrave" : false;
@@ -11960,7 +11960,10 @@ var engraved_colour = (S, ring) => {
   return [...g.slice(0, 3).map((v) => v * 0.55), 1];
 };
 var BEZEL_MARKS = ["Insert", "Metal"];
-var bezel_melted = (S) => !!(S.bz_on && S.bz_melt && BEZEL_KINDS[S.bz_kind] === "Fixed");
+var bezel_melted = (S) => !!(S.bz_on && S.bz_melt);
+var bezel_coin = (S) => S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && !S.bz_melt ? max(0, +S.bz_teeth_depth || 0) : 0;
+var bezel_insert = (S) => !!(S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && BEZEL_MARKS[S.bz_marks] !== "Metal" && !S.bz_melt);
+var COIN_DEPTH = 0.5;
 var bezel_seat = (S) => bezel_melted(S) ? 0 : S.bz_seat;
 var BEZEL_KINDS = ["Rotating", "Fixed"];
 var rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);
@@ -11968,10 +11971,9 @@ var rehaut_h = (S) => +(S.rh_len * cos(S.rh_deg * PI / 180)).toFixed(4);
 function case_spans(S) {
   const R = S.dial_d / 2, rh = S.rh_on ? [R, R + rehaut_w(S)] : null, b0 = rh ? rh[1] : R;
   const bz = S.bz_on ? [b0, b0 + S.bz_w] : null;
-  const rotating = bz && S.bz_kind === 0;
-  const insert = rotating && S.bz_marks !== 1 ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
+  const insert = bezel_insert(S) ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
   const marks = insert ?? (bz ? [b0, bz[1] - S.bz_chamfer] : null);
-  const teeth2 = rotating && S.bz_teeth_depth > 0 ? bz[1] + S.bz_teeth_depth : bz ? bz[1] : null;
+  const teeth2 = bz ? bz[1] + bezel_coin(S) : null;
   return { dial: [0, R], rehaut: rh, bezel: bz, insert, outer: teeth2 ?? (rh ? rh[1] : R), chamfer: bz ? [bz[1] - S.bz_chamfer, bz[1]] : null, marks };
 }
 var reach_mm = (S) => case_spans(S).outer;
@@ -12009,7 +12011,7 @@ function build_case_grounds(S) {
   const sp = case_spans(S), out = [], ring_shape = (a, b) => circle2(2 * b).difference(circle2(2 * a));
   const lighter = (c, k) => [...c.slice(0, 3).map((v) => min(1, v + (1 - v) * k)), c[3]], darker = (c, k) => [...c.slice(0, 3).map((v) => v * (1 - k)), c[3]];
   if (sp.bezel) {
-    const [b0, b1] = sp.bezel, T = { n: max(3, round(S.bz_teeth_n) || 60), depth: S.bz_kind === 0 ? max(0, S.bz_teeth_depth) : 0, fill: min(max(S.bz_teeth_fill, 0.05), 0.95) };
+    const [b0, b1] = sp.bezel, T = { n: max(3, round(S.bz_teeth_n) || 60), depth: bezel_coin(S), fill: min(max(S.bz_teeth_fill, 0.05), 0.95) };
     let outer;
     if (T.depth > 0) {
       const R = b1 + T.depth, pitch = 2 * PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth), per = 28, N = T.n * per, pts = [];
@@ -12609,7 +12611,17 @@ var INK_MOST = 0.5;
 var ink_of = (S, hex3) => {
   const e = (S.w_inks || {})[hex3] || {};
   const h = e.h ?? INK_MM;
-  return { h, two: Boolean(e.two), b: e.b ?? h };
+  return { h, two: Boolean(e.two), b: e.b ?? h, applied: Boolean(e.ap), mat: e.mat | 0, edge: e.edge | 0 };
+};
+var APPLIED_MOST = 2;
+var INK_MATERIALS = ["Colour", "Brass", "Bronze", "Steel", "Silver", "Gold", "Lume"];
+var INK_EDGES = ["Sharp", "Chamfer", "Round"];
+var INK_MATERIAL_COLOURS = [null, ...PLATE_METAL_COLOURS, [0.83, 0.69, 0.34, 1], null];
+var DIAL_INK_ROLES = ["ring", "ring stroke", "date frame"];
+var ink_made = (S, x2) => DIAL_INK_ROLES.includes(x2.role) && Array.isArray(x2.fill) ? ink_of(S, ink_hex(x2.fill)) : null;
+var ink_shown = (S, x2) => {
+  const m = ink_made(S, x2);
+  return m?.applied && INK_MATERIAL_COLOURS[m.mat] || x2.fill;
 };
 function dial_inks(S) {
   const inks = /* @__PURE__ */ new Map(), put = (c, part2) => {
@@ -12661,7 +12673,7 @@ function ink_mm(S, x2) {
     const H2 = S["ha_" + x2.name] || {}, own = x2.role === "lume" ? H2.op_ink_h : x2.edge ? H2.mark_stroke_ink_h : H2.mark_ink_h;
     h = own ?? ink_of(S, ink_hex(x2.fill)).h;
   }
-  return Math.max(0, Math.min(INK_MOST, h + (+S.w_ink_all || 0)));
+  return Math.max(0, Math.min(ink_made(S, x2)?.applied ? APPLIED_MOST : INK_MOST, h + (+S.w_ink_all || 0)));
 }
 function inks_of(S) {
   const out = [];
@@ -12999,7 +13011,7 @@ function part_attrs(p) {
   if (p.make === "printed" || p.make === "on hand" && p.ink != null) says.push(["ink", mm(p.ink)]);
   if (p.hand) says.push(["hand", p.hand]);
   if (p.make === "plate" && p.metal) says.push(["metal", p.metal]);
-  if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section]);
+  if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section], ["edge", p.edge || "sharp"], ["material", p.material || "colour"]);
   if (p.make === "hand") {
     says.push(["over", mm(p.over)], ["t", mm(p.t)], ["section", p.section], ["hw", mm(p.hw)]);
     if (p.section !== "flat") says.push(["bevel", 1]);
@@ -13036,7 +13048,7 @@ var VIEW_NAMES = ["detail", "full", "dial"];
 var hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
 var PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);
 var one = (x2, hand, H2, S) => {
-  return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0, metal: Boolean(x2.metal) };
+  return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(ink_shown(S, x2)), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0, metal: Boolean(x2.metal) };
 };
 var part_record = (S, x2) => {
   const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null, H2 = hand ? S["ha_" + hand] : null, p = one(x2, hand, H2, S);
@@ -13047,6 +13059,8 @@ var part_record = (S, x2) => {
     return r;
   }
   if (PRINTED(x2.role) || x2.role === "mark") r.ink = ink_mm(S, x2);
+  const made = ink_made(S, x2);
+  if (made?.applied) Object.assign(r, { make: "applied", height: r.ink, section: "flat", edge: INK_EDGES[made.edge].toLowerCase(), material: INK_MATERIALS[made.mat].toLowerCase() });
   if (r.make === "hand" && hand) Object.assign(r, {
     over: S["sh_" + hand] ?? S.sh_hour,
     t: STACK.hand_t,
@@ -13062,14 +13076,14 @@ var part_record = (S, x2) => {
 var case_record = (S) => ({
   rehaut: S.rh_on ? { w: rehaut_w(S), h: rehaut_h(S), c: hex(S.rh_c) } : null,
   bezel: S.bz_on ? {
-    kind: BEZEL_KINDS[S.bz_kind] === "Fixed" ? "fixed" : "rotating",
-    marks: BEZEL_KINDS[S.bz_kind] === "Fixed" || BEZEL_MARKS[S.bz_marks] === "Metal" ? "metal" : "insert",
+    kind: BEZEL_KINDS[S.bz_kind] === "Fixed" || bezel_melted(S) ? "fixed" : "rotating",
+    marks: bezel_insert(S) ? "insert" : "metal",
     w: S.bz_w,
     chamfer: S.bz_chamfer,
     in_in: S.bz_in_in,
     in_out: S.bz_in_out,
     insert: hex(S.bz_insert_c),
-    teeth: { n: S.bz_teeth_n, depth: S.bz_teeth_depth, fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer },
+    teeth: { n: S.bz_teeth_n, depth: bezel_coin(S), fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer },
     dial_up: S.bz_dial_up,
     seat: bezel_seat(S),
     melt: bezel_melted(S) || void 0,
@@ -14911,6 +14925,13 @@ ROWS["Show dial"] = [
   // Colours by what a part is, Inks by what a printer sees, Hands with their heights; a swatch in any of them is the
   // same colour ("All colors editable … via different places, through inks and colors"; "colors also editable on hands
   // pane everywhere")
+  // the plate itself, as the Base tab's (#601; Okay, 11 Nov 2026: "Dial itself, material color etc. if showcase 2d does not have this, add there"):
+  // the same three settings, shown here too — its Material, its Paint (No colour leaves the metal bare), a bare plate's Finish
+  hdr("Material", { id: "show-material-head" }),
+  seg("material", "Material", PLATE_METALS, { id: "show-material", free: true }),
+  // free pills: four words are wider than the column
+  col("c_plate", "Paint", { none: "paint", id: "show-paint" }),
+  seg("engrave", "Finish", FINISHES, { id: "show-engrave", show: (S) => S.paint === false }),
   hdr("Colours", { summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
   // not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
@@ -15059,29 +15080,36 @@ ROWS.Dial = [
     chk("bz_on", "Bezel", {}),
     // starts flat (G.BEZEL_START, set in app.js set_value)
     custom("case_preset", { show: (T, S) => S.bz_on }),
-    seg("bz_kind", "Kind", BEZEL_KINDS, { show: (T, S) => S.bz_on }),
-    seg("bz_marks", "Markings", BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    chk("bz_melt", "Melt into case", { show: (T, S) => S.bz_on && BEZEL_KINDS[S.bz_kind] === "Fixed" }),
-    // #599: one piece with the body; a rotating ring is a part of its own (R16)
+    // THE BEZEL'S ROWS, in one order and by one set of names here and in Show Case 3D (Okay, 12 Nov 2026: "sync names and setting all
+    // places"): Kind · Markings · Melt · Finish, then the ring — Width · Height · Chamfer — its insert, its coin edge, then the
+    // heights round it. What a state rules out is not offered (R16): a melted bezel has no markings' choice, insert, coin edge or
+    // seat; a bezel with a coin edge is not offered Melt ("Teethed bezels cant melt melted bezels cant teeth")
+    seg("bz_kind", "Kind", BEZEL_KINDS, { show: (T, S) => S.bz_on && !bezel_melted(S) }),
+    seg("bz_marks", "Markings", BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 && !bezel_melted(S) }),
+    chk("bz_melt", "Melt into case", { show: (T, S) => S.bz_on && (bezel_melted(S) || !bezel_coin(S)) }),
+    // #599: one piece with the body, the case's own metal
     seg("bz_engrave", "Finish", FINISHES, { show: (T, S) => bezel_marks_on_metal(S) }),
-    // markings on the metal painted on or cut in (Okay, 11 Nov 2026)      // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
+    // markings on the metal painted on or cut in (Okay, 11 Nov 2026)
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num2("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
+    num2("bz_h", "Height", 0.3, 6, 0.05, { ...CS, show: (T, S) => S.bz_on }),
+    // the ring's own height over its seat (Okay, 12 Nov 2026: "i could not find a bezel height")
     num2("bz_chamfer", "Chamfer", 0, 2, 0.05, { ...CS, show: (T, S) => S.bz_on }),
-    num2("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
-    num2("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
-    col("bz_insert_c", "Insert", { ...CS, show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
-    hdr("Coin edge", { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num2("bz_teeth_n", "Scallops", 12, 180, 1, { whole: true, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num2("bz_teeth_depth", "Depth", 0, 2, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num2("bz_teeth_fill", "Fill", 0.1, 0.95, 0.01, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num2("bz_teeth_chamfer", "Chamfer", 0, 1, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num2("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => bezel_insert(S) }),
+    num2("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => bezel_insert(S) }),
+    col("bz_insert_c", "Insert", { ...CS, show: (T, S) => bezel_insert(S) }),
+    // the coin edge, a tick that brings its numbers in (Okay, 11 Nov 2026: "toothles bezel is an option teeth on brings in the sliders"):
+    // ticked, the depth starts at COIN_DEPTH; unticked, it is 0 — the depth is the one setting, the tick its reading
+    chk("bz_teeth_depth", "Coin edge", { id: "global-bz-coin", show: (T, S) => S.bz_on && S.bz_kind === 0 && !bezel_melted(S), get: (S) => bezel_coin(S) > 0, put: (tool2, v) => tool2.set_value("global", "bz_teeth_depth", v ? COIN_DEPTH : 0) }),
+    num2("bz_teeth_n", "Scallops", 12, 180, 1, { whole: true, show: (T, S) => bezel_coin(S) > 0 }),
+    num2("bz_teeth_depth", "Depth", 0.05, 2, 0.05, { show: (T, S) => bezel_coin(S) > 0 }),
+    num2("bz_teeth_fill", "Fill", 0.1, 0.95, 0.01, { show: (T, S) => bezel_coin(S) > 0 }),
+    num2("bz_teeth_chamfer", "Chamfer", 0, 1, 0.05, { show: (T, S) => bezel_coin(S) > 0 }),
     hdr("Heights", { folded: true, show: (T, S) => S.bz_on }),
     info("Seen in the section and in show mode, not in the plan.", { show: (T, S) => S.bz_on }),
     num2("bz_dial_up", "Dial over band", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
     num2("bz_seat", "Seat", 0, 2, 0.05, { show: (T, S) => S.bz_on && !bezel_melted(S) }),
     // a melted bezel has no seat (R16)
-    num2("bz_h", "Ring height", 0.3, 6, 0.05, { show: (T, S) => S.bz_on }),
     num2("bz_lip", "Lip", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
     num2("bz_rim", "Crystal rim", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
     num2("bz_up", "Crystal up", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
@@ -18107,6 +18135,17 @@ var COLOUR = {
     const S = () => this.S;
     let rows = [];
     const sub = (text) => this.list_head(text, "group:" + text);
+    const pills = (id, label, words, get, put) => {
+      const group = el("span", { className: "pillswitch" + (words.length > 3 ? " free" : ""), role: "radiogroup", ariaLabel: label, id });
+      const bs = words.map((w, i2) => el("button", { type: "button", textContent: w, onclick: () => {
+        put(i2);
+        wrap.dataset.list = "";
+        this.changed(true);
+      } }));
+      group.append(...bs);
+      rows.push({ refresh: () => bs.forEach((b, i2) => b.classList.toggle("on", i2 === get())) });
+      return el("div", { className: "row inkmade" }, el("label", { textContent: label }), group);
+    };
     const height = (id, text, get, put, lo = 0, hi = INK_MOST) => {
       const made = this.line_number(num2(id, text, lo, hi, 0.01, { block: true, id, get, put: (app, v) => {
         put(clamp(v, lo, hi));
@@ -18170,7 +18209,7 @@ var COLOUR = {
             const h = +(v - all()).toFixed(3);
             if (own() != null) this.part_own(p, h);
             else entry(now().hex).h = h;
-          });
+          }, 0, ink_of(S(), ink.hex).applied ? APPLIED_MOST : INK_MOST);
           const kind = p.kind === "frame" ? PICS.window_mark : PICS.kind(S().rings[p.i].kind);
           const pill = swatch(`ink-${n}-${m}`, `${name}: its ink, every part of it`, () => now().colour, write, true);
           const line = el("div", { className: "row showline inkline part" + (above ? " haslink" : "") }, el("i"), mark(kind), el("label", { textContent: name }), pill, place2(box3));
@@ -18182,6 +18221,17 @@ var COLOUR = {
           kids.push(line);
           above = line;
         });
+        const made = () => ink_of(S(), now().hex);
+        kids.push(pills(`ink-${n}-made`, "Made", ["Printed", "Applied"], () => +made().applied, (i2) => {
+          const e = entry(now().hex);
+          e.ap = Boolean(i2);
+          if (!i2) e.h = Math.min(e.h ?? INK_MM, INK_MOST);
+        }));
+        if (made().applied) kids.push(pills(`ink-${n}-mat`, "Material", INK_MATERIALS, () => made().mat, (i2) => {
+          entry(now().hex).mat = i2;
+        }), pills(`ink-${n}-edge`, "Edge", INK_EDGES, () => made().edge, (i2) => {
+          entry(now().hex).edge = i2;
+        }));
       });
       const prints = hand_prints(S());
       if (prints.length) kids.push(sub("On the hands"));
@@ -21974,12 +22024,13 @@ function case_section(S) {
   }
   if (sp.bezel) {
     const [r0, r1] = sp.bezel;
-    if (S.bz_kind === 0 && S.bz_marks !== 1) {
+    const coin = bezel_coin(S);
+    if (bezel_insert(S)) {
       const ri = r0 + S.bz_in_in, ro = r1 - S.bz_in_out, top = z1 + lip;
       out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, top], [ro, top], [ro, z1], [ri, z1], [ri, top - 0.05], [ri - 0.2, top], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]], fill: case_metal(S) });
       out.push({ part: "insert", pts: [[ri, z1], [ro, z1], [ro, z1 + 0.5], [ri, z1 + 0.5]], fill: S.bz_insert_c });
-      if (S.bz_teeth_depth > 0) {
-        const d = S.bz_teeth_depth, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
+      if (coin > 0) {
+        const d = coin, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
         out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: case_metal(S) });
       }
     } else if (bezel_melted(S)) {
@@ -21988,8 +22039,8 @@ function case_section(S) {
     } else {
       const rim2 = r0 - S.bz_rim;
       out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim2 + 0.3, z1 + lip], [rim2, z1 + lip - 0.15], [rim2, z1 - 0.3], [r0, z1 - 0.3]], fill: case_metal(S) });
-      if (S.bz_kind === 0 && S.bz_teeth_depth > 0) {
-        const d = S.bz_teeth_depth, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
+      if (coin > 0) {
+        const d = coin, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
         out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: case_metal(S) });
       }
     }
