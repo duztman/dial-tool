@@ -76,4 +76,5 @@
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > .menubox { grid-column: 6 / span 2; }
+  .movebar > .menubox { grid-column: 4 / span 4; }      /* Movement (#586): a movement's full name, from the third column to the edge */
 }

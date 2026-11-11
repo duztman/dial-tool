@@ -184,13 +184,15 @@ export const WINDOWS = {
     wrap.className = "row windowat";
     const at = (name) => G.DATE_AT.findIndex((d) => d[0] === name);
     const press = (i) => { const w = this.window(); w.at = i; w.at_deg = null; this.changed(true); };
-    const quarters = ["3", "6", "9", "12", "4"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));      // and 4 (Okay, on 4.46.1: "Add 4 to the circles before …")
+    const quarters = ["3", "6", "9", "12", "4", "4:30"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));      // and 4 (Okay, on 4.46.1: "Add 4 to the circles before …")
     const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "···", title: "Every place, or any time: 2:15, 7:40…" });
     more.setAttribute("aria-expanded", "false");
     more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Position" });
     wrap.append(el("label", { textContent: "Position" }), el("span", { className: "circles" }, ...quarters, more));
     out.refresh = (T) => {
-      for (const b of quarters) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
+      const can = G.window_places_can(this.S, T.kind);      // a movement's places only (#586, R16); 4:30 a circle only where one allows it (the SW100)
+      for (const b of quarters) { b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at); const name = G.DATE_AT[+b.id.slice(19)]?.[0]; b.hidden = can ? !can.includes(name) : name === "4:30"; }
+      more.hidden = Boolean(can);
       const elsewhere = T.at_deg != null || !["3", "6", "9", "12", "4"].includes(G.DATE_AT[T.at]?.[0]);
       more.classList.toggle("on", elsewhere);
       more.textContent = elsewhere ? G.window_place(T) : "···";

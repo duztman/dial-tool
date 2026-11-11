@@ -5,6 +5,7 @@
 import * as G from "./geometry.js";
 import { el } from "./ui.js";
 import { to_hex } from "./ui.js";
+import { chevron_box } from "./rows.js";
 
 // the two cases the 3D exercise specified (its CASES table; the diver after the SPB143 and Submariner photographs, the
 // dress Claude's first draft "from turning the diver's sliders"), in dial millimetres for the default Ø 30: the spec's
@@ -45,6 +46,32 @@ export function case_section(S) {
 }
 
 export const CASE = {
+  /** Movement, always in view on the Dial tab, between the section tabs and Dial · Rehaut · Bezel (#586; Okay, 11 Nov 2026:
+   *  "Section tabs ↔ Dial·Rehaut·Bezel", "Build by house rules"): one line as the Hands tab's All hands — the name and a
+   *  dropdown of the movements. A movement chosen writes its defaults and takes off what it can't drive (R16); one undo step */
+  row_movement_bar(wrap, out) {
+    wrap.className = "handsbar movebar";
+    const select = el("select", { id: "global-movement", title: "The movement this dial is for: its sizes and what it can drive", ariaLabel: "Movement" });
+    for (const m of G.MOVEMENT_CHOICES()) select.append(el("option", { value: m.id, textContent: m.name }));
+    select.onchange = () => this.set_movement(select.value);
+    const box = chevron_box(select);
+    wrap.append(el("h2", { textContent: "Movement" }), box.box);
+    out.refresh = (S) => { select.value = S.movement || "any"; box.sync(); };
+  },
+
+  /** a movement chosen (#586): the dial scaled with its new Ø if Scale everything is on, then its defaults written and what
+   *  it can't drive taken off (geometry.js apply_movement); the preview's note says what went */
+  set_movement(id) {
+    const S = this.S, M = G.movement(id), d = M?.dial?.d;
+    this.take_step();      // the dial before it, the undo step's start
+    if (S.ui_scale && d > 0 && S.dial_d > 0 && d !== S.dial_d) this.scale_with(S.dial_d, d);
+    const gone = G.apply_movement(S, id);
+    if (gone.length) this.say(`${M.name} can't drive it, so it was taken off: ${gone.join(", ")}. Undo brings it back.`);
+    this.static_dirty = true;
+    this.steady(() => { this.fill_ring_list(); this.sync_rows(); });
+    this.render();
+  },
+
   /** the Dial tab's own tabs, always in view: Dial · Rehaut · Bezel (Okay, 9 Nov 2026: "Tab under dial. What we have now
    *  is a tab, bezel and rehault are tabs"), as the hand tabs are */
   row_case_tabs(wrap, out) {

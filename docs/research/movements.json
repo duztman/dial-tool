@@ -1,5 +1,5 @@
 {
- "_about": "Movement records (#586, #587). The ONE record the tool and the 3D exercise read: `web/movements.mjs` writes `web/src/movements.js` from this file — after a change here, `cd web && node movements.mjs && node build.mjs`. From docs/research/movements.md (tags and sources there). mm throughout (R1). tag: D documented by the maker, T trade figure, I inferred, null not found. A real movement removes what it can't drive (R16). A limit set to null means unknown, not unlimited; the Imaginary Movement ('any') has no limits. shown: the five the tool offers; spare: in the record, offered only on Okay's word. Hand heights, the keys the tool reads: `hands_over_dial_top` ([underside, top] of each hand over the dial's face, where the maker prints it) with `blade_thickness`; else `pipe_tops_over_dial_seat` (each post's top over the dial's back); `case.crystal_clearance` (from the stack's top to the crystal).",
+ "_about": "Movement records (#586, #587). The ONE record the tool and the 3D exercise read: `web/movements.mjs` writes `web/src/movements.js` from this file — after a change here, `cd web && node movements.mjs && node build.mjs`. From docs/research/movements.md (tags and sources there). mm throughout (R1). tag: D documented by the maker, T trade figure, I inferred, null not found. A real movement removes what it can't drive (R16). A limit set to null means unknown, not unlimited; the Imaginary Movement ('any') has no limits. shown: the five the tool offers; spare: in the record, offered only on Okay's word. Hand heights, the keys the tool reads: `hands_over_dial_top` ([underside, top] of each hand over the dial's face, where the maker prints it) with `blade_thickness`; else `pipe_tops_over_dial_seat` (each post's top over the dial's back); `case.crystal_clearance` (from the stack's top to the crystal). A row with `of` is a sibling: the named movement's record with `set` applied (dotted paths), worked out by web/movements.mjs.",
  "movements": [
   {
    "id": "nh35",
@@ -123,9 +123,18 @@
     "day": "nh36: over the date at 3",
     "nh36_day_date_window": {
      "window_r": 8.45,
-     "window_r_range": [4.95, 11.95],
-     "aperture": [7.0, 2.0],
-     "positions": ["3H", "6H"],
+     "window_r_range": [
+      4.95,
+      11.95
+     ],
+     "aperture": [
+      7.0,
+      2.0
+     ],
+     "positions": [
+      "3H",
+      "6H"
+     ],
      "_note": "one aperture for day and date; feet and centre hole as NH35 — D, TMI NH36 Dial page"
     },
     "ampm": false,
@@ -150,6 +159,60 @@
    "case": {
     "crystal_clearance": 0.45,
     "_source": "TMI Hand Fitting page: E 45, from the seconds hand's top up (D)"
+   }
+  },
+  {
+   "id": "nh34",
+   "of": "nh35",
+   "name": "Seiko NH34 (GMT)",
+   "shown": true,
+   "_note": "The NH35 with a 24-hour hand: the NH35's numbers, its family line in this record ('GMT (24 h hand hole 2.20, centre hole 2.7)', T). The GMT hand's height is not in the record (null): the dial keeps its own.",
+   "set": {
+    "dial.hole": 2.7,
+    "functions.gmt": true,
+    "hands.holes.gmt": 2.2
+   },
+   "tags": {
+    "dial_hole": "T",
+    "gmt": "T"
+   }
+  },
+  {
+   "id": "nh36",
+   "of": "nh35",
+   "name": "Seiko NH36 (day-date)",
+   "shown": true,
+   "_note": "The NH35 with a day disc: one aperture for day and date (TMI NH36 Dial page, D: window centre r 8.45, 7.00 × 2.00, at 3H or 6H). The tool draws it as its date window (the NH35's) and a day window beside it toward the centre: their split of the one aperture is inferred (I).",
+   "set": {
+    "windows.day": {
+     "positions": [
+      3,
+      6
+     ],
+     "window_r": 8.45,
+     "aperture": [
+      7.0,
+      2.0
+     ],
+     "date_part": 2.9
+    }
+   },
+   "tags": {
+    "day_window": "D",
+    "split": "I"
+   }
+  },
+  {
+   "id": "nh38",
+   "of": "nh35",
+   "name": "Seiko NH38 (no date)",
+   "shown": true,
+   "_note": "The NH35 without its date (the family line in this record).",
+   "set": {
+    "windows.date": false
+   },
+   "tags": {
+    "no_date": "T"
    }
   },
   {
@@ -530,13 +593,41 @@
       "_note": "hand fitting height No. 1, Ronda's standard (sheet 3316.030) — D"
      },
      "three_hand_pipe_tops_by_height": {
-      "0": {"hour": 0.6, "minute": 0.85, "second": 1.17},
-      "1": {"hour": 0.75, "minute": 1.05, "second": 1.42},
-      "2": {"hour": 0.95, "minute": 1.25, "second": 1.62},
-      "3": {"hour": 1.23, "minute": 1.53, "second": 1.94},
-      "4": {"hour": 1.58, "minute": 1.88, "second": 2.29},
-      "5": {"hour": 3.24, "minute": 3.55, "second": 3.95},
-      "6": {"hour": 1.58, "minute": 1.98, "second": 2.29},
+      "0": {
+       "hour": 0.6,
+       "minute": 0.85,
+       "second": 1.17
+      },
+      "1": {
+       "hour": 0.75,
+       "minute": 1.05,
+       "second": 1.42
+      },
+      "2": {
+       "hour": 0.95,
+       "minute": 1.25,
+       "second": 1.62
+      },
+      "3": {
+       "hour": 1.23,
+       "minute": 1.53,
+       "second": 1.94
+      },
+      "4": {
+       "hour": 1.58,
+       "minute": 1.88,
+       "second": 2.29
+      },
+      "5": {
+       "hour": 3.24,
+       "minute": 3.55,
+       "second": 3.95
+      },
+      "6": {
+       "hour": 1.58,
+       "minute": 1.98,
+       "second": 2.29
+      },
       "_note": "sheets 3316.030 (0-5) and 3316.077 (6); max dial+paint under S/M/H per height in movements.md; hands <= 0.15 — D"
      },
      "two_hand_714_pipe_tops_over_dial_seat": {

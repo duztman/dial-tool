@@ -45,7 +45,7 @@ The dated record of decisions and their reasons is `docs/decisions.md`. Read it 
 
 Numbers are never reused; a settled question is deleted here and its decision stands in `docs/decisions.md`.
 
-1. **Movement** — which one? It fixes the real dial diameter, hand lengths, the date window's position and size (date wheel), and the feet positions (#89 waits on it). Since 10 Nov 2026 the tool is to offer five calibres and an imaginary Any (#586): the numbers are `docs/research/movements.json`, the research `docs/research/movements.md`.
+1. **Movement** — which one? It fixes the real dial diameter, hand lengths, the date window's position and size (date wheel), and the feet positions (#89 waits on it). Since 11 Nov 2026 the tool offers the Movement choice (#586): five calibres, the NH35's three siblings and the Imaginary Movement: the numbers are `docs/research/movements.json`, the research `docs/research/movements.md`.
 8. **Imported shapes with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours — to settle when import is built (#173).
 15. **Show Case 3D in the tool** — it is Dial Tool Pro's (with Dial Tool; an iPad app considered), and when it comes in, the 3D scene replaces show mode's look; everything up to v1.2 is open source (decisions, 11 Nov 2026). Pro's work is in the private repo duztman/dial-tool-pro. Open: where this public repo's work stops after v1.2.
 14. **Okay's Mac clone** (`~/Desktop/dial-maker/dial-tool-github-repo/`): his; he pulls it himself when he wants it (Okay, 17 Oct 2026: "if you can reach mc do clone if not never bother anymore") — **not to be raised again**.

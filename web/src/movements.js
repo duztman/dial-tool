@@ -2,7 +2,8 @@
 // A movement: what the tool and the 3D exercise read of it. `heights`: each hand's underside and the cap's top, mm over the
 // dial's face (`from` "maker": printed by the maker · "posts": worked out from the posts' tops, see movements.mjs); null where
 // the record has neither. `hand_t`: each hand's thickness where the maker prints it. `crystal_clearance`: from the top of
-// the stack to the crystal. `disc_under_face`: the date disc's top under the dial's face.
+// the stack to the crystal. `disc_under_face`: the date disc's top under the dial's face. `can`: what it drives (null: no limits,
+// the Imaginary Movement). `holes`: its hand holes' Ø. `of`: the movement a sibling is made from.
 // `posts`: each post's Ø (`d`) and its top over the dial's face (`top`). `HOLE_FIT`: the posts' Ø where no movement is chosen —
 // the tool's common hand holes (geometry.js HOLE_FIT; labels.mjs holds the two equal).
 export const HAND_T = 0.15;
@@ -57,6 +58,243 @@ export const MOVEMENTS = [
     2
    ],
    "disc_d": 23
+  },
+  "of": null,
+  "can": {
+   "seconds": "central",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [
+    3,
+    6,
+    9
+   ],
+   "date_default": 3,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.5,
+   "minute": 0.88,
+   "second": 0.198
+  }
+ },
+ {
+  "id": "nh34",
+  "name": "Seiko NH34 (GMT)",
+  "short": "NH34",
+  "kind": "automatic",
+  "shown": true,
+  "dial": {
+   "d": 28.5,
+   "thickness": 0.4,
+   "hole": 2.7
+  },
+  "heights": {
+   "from": "maker",
+   "hour": 0.6,
+   "minute": 1.19,
+   "second": 1.81,
+   "cap": 1.91
+  },
+  "posts": {
+   "d": {
+    "hour": 1.5,
+    "minute": 0.88,
+    "second": 0.198
+   },
+   "top": {
+    "hour": 0.78,
+    "minute": 1.37,
+    "second": 1.91
+   }
+  },
+  "hand_t": {
+   "hour": 0.18,
+   "minute": 0.18,
+   "second": 0.1
+  },
+  "crystal_clearance": 0.45,
+  "disc_under_face": null,
+  "date": {
+   "positions": [
+    3,
+    6,
+    9
+   ],
+   "r": 10.55,
+   "aperture": [
+    2.9,
+    2
+   ],
+   "disc_d": 23
+  },
+  "of": "nh35",
+  "can": {
+   "seconds": "central",
+   "gmt": true,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [
+    3,
+    6,
+    9
+   ],
+   "date_default": 3,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.5,
+   "minute": 0.88,
+   "second": 0.198,
+   "gmt": 2.2
+  }
+ },
+ {
+  "id": "nh36",
+  "name": "Seiko NH36 (day-date)",
+  "short": "NH36",
+  "kind": "automatic",
+  "shown": true,
+  "dial": {
+   "d": 28.5,
+   "thickness": 0.4,
+   "hole": 2.05
+  },
+  "heights": {
+   "from": "maker",
+   "hour": 0.6,
+   "minute": 1.19,
+   "second": 1.81,
+   "cap": 1.91
+  },
+  "posts": {
+   "d": {
+    "hour": 1.5,
+    "minute": 0.88,
+    "second": 0.198
+   },
+   "top": {
+    "hour": 0.78,
+    "minute": 1.37,
+    "second": 1.91
+   }
+  },
+  "hand_t": {
+   "hour": 0.18,
+   "minute": 0.18,
+   "second": 0.1
+  },
+  "crystal_clearance": 0.45,
+  "disc_under_face": null,
+  "date": {
+   "positions": [
+    3,
+    6,
+    9
+   ],
+   "r": 10.55,
+   "aperture": [
+    2.9,
+    2
+   ],
+   "disc_d": 23
+  },
+  "of": "nh35",
+  "can": {
+   "seconds": "central",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [
+    3,
+    6,
+    9
+   ],
+   "date_default": 3,
+   "day": {
+    "positions": [
+     3,
+     6
+    ],
+    "r": 8.45,
+    "aperture": [
+     7,
+     2
+    ],
+    "date_part": 2.9
+   },
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.5,
+   "minute": 0.88,
+   "second": 0.198
+  }
+ },
+ {
+  "id": "nh38",
+  "name": "Seiko NH38 (no date)",
+  "short": "NH38",
+  "kind": "automatic",
+  "shown": true,
+  "dial": {
+   "d": 28.5,
+   "thickness": 0.4,
+   "hole": 2.05
+  },
+  "heights": {
+   "from": "maker",
+   "hour": 0.6,
+   "minute": 1.19,
+   "second": 1.81,
+   "cap": 1.91
+  },
+  "posts": {
+   "d": {
+    "hour": 1.5,
+    "minute": 0.88,
+    "second": 0.198
+   },
+   "top": {
+    "hour": 0.78,
+    "minute": 1.37,
+    "second": 1.91
+   }
+  },
+  "hand_t": {
+   "hour": 0.18,
+   "minute": 0.18,
+   "second": 0.1
+  },
+  "crystal_clearance": 0.45,
+  "disc_under_face": null,
+  "date": null,
+  "of": "nh35",
+  "can": {
+   "seconds": "central",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [],
+   "date_default": null,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.5,
+   "minute": 0.88,
+   "second": 0.198
   }
  },
  {
@@ -108,6 +346,27 @@ export const MOVEMENTS = [
     2
    ],
    "disc_d": 23.4
+  },
+  "of": null,
+  "can": {
+   "seconds": "central",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [
+    3,
+    6
+   ],
+   "date_default": 3,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.52,
+   "minute": 1,
+   "second": 0.17
   }
  },
  {
@@ -161,6 +420,29 @@ export const MOVEMENTS = [
     2
    ],
    "disc_d": null
+  },
+  "of": null,
+  "can": {
+   "seconds": "central",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [
+    3,
+    12,
+    9,
+    6
+   ],
+   "date_default": 3,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.5,
+   "minute": 0.9,
+   "second": 0.25
   }
  },
  {
@@ -213,6 +495,28 @@ export const MOVEMENTS = [
     2
    ],
    "disc_d": null
+  },
+  "of": null,
+  "can": {
+   "seconds": "central or none",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [
+    3,
+    4,
+    6
+   ],
+   "date_default": 3,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.2,
+   "minute": 0.7,
+   "second": 0.2
   }
  },
  {
@@ -265,6 +569,28 @@ export const MOVEMENTS = [
     2
    ],
    "disc_d": null
+  },
+  "of": null,
+  "can": {
+   "seconds": "central",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [
+    3,
+    6,
+    4.5
+   ],
+   "date_default": 3,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.2,
+   "minute": 0.7,
+   "second": 0.2
   }
  },
  {
@@ -290,7 +616,25 @@ export const MOVEMENTS = [
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": null,
-  "date": null
+  "date": null,
+  "of": null,
+  "can": {
+   "seconds": "small",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [],
+   "date_default": null,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 2,
+   "minute": 1.15,
+   "second": 0.27
+  }
  },
  {
   "id": "miyota-2035",
@@ -315,7 +659,25 @@ export const MOVEMENTS = [
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": null,
-  "date": null
+  "date": null,
+  "of": null,
+  "can": {
+   "seconds": "central or none",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [],
+   "date_default": null,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.2,
+   "minute": 0.7,
+   "second": 0.17
+  }
  },
  {
   "id": "miyota-8215",
@@ -365,6 +727,26 @@ export const MOVEMENTS = [
     1.9
    ],
    "disc_d": 23
+  },
+  "of": null,
+  "can": {
+   "seconds": "central",
+   "gmt": false,
+   "date_hand": false,
+   "day_hand": false,
+   "month_hand": false,
+   "date": [
+    3
+   ],
+   "date_default": 3,
+   "day": null,
+   "ampm": false,
+   "moon": false
+  },
+  "holes": {
+   "hour": 1.52,
+   "minute": 1,
+   "second": 0.17
   }
  },
  {
@@ -379,7 +761,10 @@ export const MOVEMENTS = [
   "hand_t": null,
   "crystal_clearance": null,
   "disc_under_face": null,
-  "date": null
+  "date": null,
+  "of": null,
+  "can": null,
+  "holes": null
  }
 ];
 export const movement = (id) => MOVEMENTS.find((m) => m.id === id) ?? null;

@@ -100,11 +100,11 @@ export const HANDS = {
     wrap.append(line);
     let drawn = "";
     out.refresh = (S) => {
-      const shown = G.HANDS.filter((h) => G.hand_added(S, h)), key = shown.join();
+      const shown = G.HANDS.filter((h) => G.hand_added(S, h)), key = shown.join() + "|" + (S.movement || "any");
       if (key !== drawn) {      // the tabs built again only when a hand was added or removed
         drawn = key;
         tabs.replaceChildren(...shown.map((h) => { const i = G.HANDS.indexOf(h), b = el("button", { type: "button", className: "tab", id: "hand-tab-" + i, textContent: G.HAND_WORD[h], onclick: () => this.set_value("global", "ui_hand", i) }); b.setAttribute("role", "tab"); return b; }));
-        const left = G.HAND_FUNCTIONS.filter(([h]) => !shown.includes(h));
+        const left = G.HAND_FUNCTIONS.filter(([h]) => !shown.includes(h) && G.can_hand(S, h));      // only what the movement can drive (#586, R16)
         select.replaceChildren(el("option", { value: "", textContent: "Add a hand", hidden: true, selected: true }), ...left.map(([h, words]) => el("option", { value: h, textContent: words })));
         plus.hidden = !left.length;
       }

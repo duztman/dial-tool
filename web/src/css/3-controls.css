@@ -56,6 +56,7 @@
      4.46.2: "add 4… scale up circles"): from the controls' column to the end, a unit between them as between tiles,
      each as large as its share of the line allows. A time in the dots (2:15) is set a size smaller to fit */
   .circles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .circles > button[hidden] { display: none; }      /* a place a movement can't drive (#586, R16), and 4:30 where none asks for it */
   .circles > button { display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--field); }
   @media (hover: hover) { .circles > button:hover { background: var(--hover); } }
   .circles > .atmore.on { font-size: var(--t-xs); }

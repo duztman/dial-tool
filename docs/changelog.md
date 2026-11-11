@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## v1.1.70 beta · 11 Nov 2026 — #586: choose your movement
+
+Okay, 11 Nov 2026, 14:11: "Do choose your movement next"; his answers: "All its defaults", "Yes, remove (R16)", the NH35's siblings "Yes, as their own rows", "Build by house rules".
+
+- **Movement** (`case.js` `row_movement_bar`, `set_movement`): a line of its own on the Dial tab, under the section tabs, over Dial · Rehaut · Bezel — the name and a dropdown, as All hands on the Hands tab. The **Imaginary Movement** first (no limits; a new dial starts there), then the record's shown calibres with the NH35's siblings as rows of their own: NH35 · NH34 (GMT) · NH36 (day-date) · NH38 (no date) · Miyota 9015 · Sellita SW200-1 · Ronda 715 · Sellita SW100.
+- **A calibre chosen** (`geometry.js` `apply_movement`, one undo step): the dial's Ø and centre hole; the hands' heights (the cap's top) and holes (a hand's `fit_d`, read by Hole · Fit); every date window to an allowed place (its own if allowed, else the calibre's default), the record's radius, and its aperture as width × height; a day window beside the date on the NH36. Scale everything on: the dial scaled to the new Ø first.
+- **What it can't drive is taken off** (R16): added hands (GMT but on the NH34; Date, Day and Month on all five), window kinds it doesn't drive; the preview's note says what went. While chosen, the + offers only what it drives, the Complication tiles only its kinds, the Position circles only its places (4:30 a circle on the SW100; the ··· for any time hidden).
+- **The record** (`docs/research/movements.json`): siblings as rows with `of` and `set` (NH34: centre hole 2.7, a 24-hour hand hole 2.20, T; NH36: one day-date aperture r 8.45, 7.00 × 2.00, D — its split between day and date I; NH38: no date); `web/movements.mjs` resolves them and writes each movement's `can` (seconds, GMT, the date's places, a day window, the calendar hands) and `holes`.
+- **Also**: a calendar hand's Motion (v1.1.69) now travels in links by its code (`motion`, with `movement` and `fit_d`, appended to `LINK_KEYS`).
+- **Tests**: `labels.mjs` — the NH35's defaults and what it takes off; the list's order; NH34's GMT, NH38's date, the Imaginary Movement's freedom. `window.mjs` — the line's place, the NH35 taking the GMT hand off with a note, the + then empty, undo bringing both back.
+
 ## v1.1.69 beta · 11 Nov 2026 — #590: a calendar hand jumps or sweeps
 
 Okay, 11 Nov 2026, 14:11: "Also weekday and stuff need to sweep or jump, with a selector."

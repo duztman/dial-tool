@@ -418,7 +418,7 @@ export const ROWS = {
     hdr("Window", { ...W, title: (T) => `Window at ${G.window_place(T)}` }),      // off, its rows don't apply, so the pane goes (R16): the tab is empty below its Show (#416)      // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     // four complications: a big date is the Date tile with its tick below (4.89; Okay, 19 Oct 2026: "Big date function is an under selection of date function"); its kind, 4, stays what is stored (R9)
-    pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, across: 4, skip: [4], shown: (T) => (G.WINDOW_KINDS[T.kind] === "big date" ? 0 : T.kind), show: win_on }),
+    pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, across: 4, skip: [4], offered: (T, S) => G.window_kinds_can(S), shown: (T) => (G.WINDOW_KINDS[T.kind] === "big date" ? 0 : T.kind), show: win_on }),
     chk("big", "Big date", { ...W, nest: true, show: win_is("date", "big date"), get: (T) => G.WINDOW_KINDS[T.kind] === "big date", put: (tool, on) => tool.set_value("window", "kind", G.WINDOW_KINDS.indexOf(on ? "big date" : "date")) }),      // all on one line (4.79: the fifth, big date, fell to a line of its own)
     info("Two holes: the tens and the units, each on a disc.", { ...W, show: win_is("date", "big date") }),      // a tick says its name; what it means, a note under it (design canon §6, #420)
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
@@ -667,6 +667,7 @@ export const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // l
 const on_tab = (n) => (rows) => rows.map((r) => (r.pin ? r : { ...r, show: (T, S, app) => (S.ui_dial_tab || 0) === n && (!r.show || r.show(T, S, app)) }));
 const CS = { side: true };
 ROWS.Dial = [
+  custom("movement_bar", { pin: true, bar: true }),      // Movement (#586), between the section tabs and Dial · Rehaut · Bezel (Okay, 11 Nov 2026)
   custom("case_tabs", { pin: true, bar: true }),
   ...on_tab(0)(DIAL_ROWS),
   ...on_tab(1)([

@@ -75,6 +75,19 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
     && old.make === "hand" && old.section === "ridge" && old.t === P.STACK.hand_t && stack.cap_t === P.STACK.cap_t && /data-parts="1"/.test(svg),
     `"caps for hands, hand thicknesses … decided from dial tool": the hour hand reads back domed, ${hour.t} mm thick at ${hour.over}; the cap ${cap.t} thick; a ring printed ${ring.ink} mm; a file from before the record reads as a ridge hand of the stack's thickness; the dial says the stack (${Object.keys(stack).length} rules)`);
 }
+// #586, choose your movement (Okay, 11 Nov 2026: "All its defaults", "Yes, remove (R16)", siblings "as their own rows"): a real
+// movement writes its defaults and takes off what it can't drive; the Imaginary Movement lifts every limit
+{
+  const S = G.fresh_settings({}); S.da_on = true; S.da_at = G.DATE_AT.findIndex((d) => d[0] === "4:30"); S.ha_gmt.added = S.ha_gmt.on = true; S.ha_day.added = S.ha_day.on = true;
+  const gone = G.apply_movement(S, "nh35"), names = G.MOVEMENT_CHOICES().map((m) => m.id);
+  check(S.movement === "nh35" && S.dial_d === 28.5 && S.dial_hole === 2.05 && G.DATE_AT[S.da_at][0] === "3" && S.da_r === 10.55 && S.da_w === 2.9 && S.da_h === 2 && S.sh_hour === 0.6 && S.sh_cap === 1.91 && S.ha_hour.fit_d === 1.5 && S.ha_minute.fit_d === 0.88
+    && !S.ha_gmt.added && !S.ha_day.added && gone.join() === "GMT hand,Day hand" && !G.can_hand(S, "gmt") && G.window_places_can(S, 0).join() === "3,6,9" && G.window_kinds_can(S).join() === "0",
+    `"All its defaults": the NH35 sets the dial Ø 28.5, its hole 2.05, the date at 3 (moved from 4:30) at r 10.55, 2.9 × 2, the hands at 0.6 … cap 1.91, their holes; "remove (R16)": ${gone.join(" · ")} taken off, the date at 3 · 6 · 9 only`);
+  G.apply_movement(S, "nh34"); const gmt = G.can_hand(S, "gmt"), hole = S.dial_hole; G.apply_movement(S, "nh38"); const nodate = !S.da_on && G.window_kinds_can(S).length === 0;
+  G.apply_movement(S, "any"); const free = G.can_hand(S, "month") && G.window_places_can(S, 0) === null && S.ha_hour.fit_d === null;
+  check(names[0] === "any" && names.includes("nh34") && names.includes("nh36") && names.includes("nh38") && !names.includes("eta-6497-1") && gmt && hole === 2.7 && nodate && free,
+    `the list: Imaginary first, the NH35's siblings as rows (${names.join(", ")}); NH34 drives a GMT hand (centre hole ${hole}); NH38 takes the date off; the Imaginary Movement lifts every limit`);
+}
 // #585, #587: the hands start at a real movement's heights, and every movement's heights come from the one record
 { const D = G.DEFAULTS, by = (id) => G.movement(id), m8 = by("miyota-8215").heights, T = G.HAND_T;
   const own = ["hour", "minute", "second"].every((h) => D["sh_" + h] === m8[h]) && D.sh_cap === m8.cap;

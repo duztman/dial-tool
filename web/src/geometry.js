@@ -12,11 +12,11 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.69 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.70 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
-import { movement as MOVEMENT_OF } from "./movements.js";      // the movements' record (#587): a new dial's hand heights are the Miyota 8215's
+import { movement as MOVEMENT_OF, MOVEMENTS as MOVEMENTS_LIST } from "./movements.js";      // the movements' record (#587): a new dial's hand heights are the Miyota 8215's
 const START_HEIGHTS = MOVEMENT_OF("miyota-8215").heights;
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
 const { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -231,6 +231,7 @@ export const HAND_BASE = {
   // second hour hand read on the ordinary numerals · offset — the other time, hours ahead of the time shown (half hours
   // for the half-hour zones; 0 to start)
   added: false, cycle: 0, offset: 0,
+  fit_d: null,  // the hole's Ø when Hole is Fit (#586): the chosen movement's post for this hand; null = the common fit, HOLE_FIT
   motion: 0,    // a calendar hand's motion, a place in HAND_MOTIONS: 0 jumps at midnight as a date wheel does · 1 sweeps through the day (Okay, 11 Nov 2026: "weekday and stuff need to sweep or jump, with a selector")
   lang: 0,      // a calendar hand's names on its ring, a place in MOMENT_LANGS (EN · TR · DE · FR · IT); the Names pill
 };
@@ -276,6 +277,7 @@ const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: 
 export const DEFAULTS = {
   version: 2,
   dial_d: 30.0, margin: 3.0, guides: false,      // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
+  movement: "any",                                 // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
   rings: [],
@@ -399,6 +401,52 @@ export const DEFAULTS = {
 /** The movements (#587): `MOVEMENTS` is written from the record, docs/research/movements.json, by web/movements.mjs — the
  *  one place a movement's numbers live; each has its hand heights worked out there by one rule. */
 export { MOVEMENTS, movement, HAND_T } from "./movements.js";
+
+// ── CHOOSE YOUR MOVEMENT (#586; Okay, 10 Nov 2026: "5 most popular movements, their capabilities are available as defaults …
+// we'll have one imaginary movement that can do any and all"; 11 Nov 2026: "All its defaults", "Yes, remove (R16)", the NH35's
+// siblings "as their own rows"). A real movement says what it drives (`can`, from the record): what it can't is removed (R16:
+// hidden, not greyed) — from the dial when chosen, and from the menus while it stays chosen. The Imaginary Movement ("any")
+// lifts every limit.
+/** the movements offered on the Dial tab, in order: the Imaginary Movement first, then the record's shown ones */
+export const MOVEMENT_CHOICES = () => [MOVEMENT_OF("any"), ...MOVEMENTS_LIST.filter((m) => m.shown && m.id !== "any")];
+const can_of = (S) => MOVEMENT_OF(S.movement)?.can ?? null;
+const PLACE_OF = { 3: "3", 4: "4", 4.5: "4:30", 6: "6", 9: "9", 12: "12" };      // the record's date places (o'clock) → DATE_AT's names
+/** can this dial's movement drive this hand? */
+export const can_hand = (S, name) => { const c = can_of(S); if (!c) return true;
+  return name === "hour" || name === "minute" ? true : name === "second" ? c.seconds !== "none" && c.seconds !== "small" : name === "gmt" ? c.gmt : name === "date" ? c.date_hand : name === "day" ? c.day_hand : name === "month" ? c.month_hand : false; };
+/** the window kinds this dial's movement drives (places in WINDOW_KINDS) */
+export const window_kinds_can = (S) => { const c = can_of(S); if (!c) return WINDOW_KINDS.map((_, i) => i);
+  return WINDOW_KINDS.map((k, i) => (k === "date" ? (c.date.length ? i : -1) : k === "day" ? (c.day ? i : -1) : k === "am · pm" ? (c.ampm ? i : -1) : k === "moon phase" ? (c.moon ? i : -1) : -1)).filter((i) => i >= 0); };
+/** the places (DATE_AT names) a window of this kind can stand at with this dial's movement; null: anywhere */
+export const window_places_can = (S, kind) => { const c = can_of(S); if (!c) return null;
+  const k = WINDOW_KINDS[kind]; return k === "date" ? c.date.map((p) => PLACE_OF[p]).filter(Boolean) : k === "day" && c.day ? c.day.positions.map((p) => PLACE_OF[p]).filter(Boolean) : []; };
+/** a movement chosen: its defaults written into the settings, and what it can't drive taken off (one undo step for the
+ *  caller). The dial's Ø and centre hole, the hands' heights and holes, the date window's place, radius and size (the
+ *  record's aperture read as the window's width × height); a day window beside the date on a day-date calibre. → the
+ *  names of what was taken off, for the panel to say */
+export function apply_movement(S, id) {
+  const M = MOVEMENT_OF(id); S.movement = M ? id : "any"; const c = M?.can, gone = [];
+  for (const name of FIXED_HANDS) S["ha_" + name] = { ...S["ha_" + name], fit_d: M?.holes?.[name] ?? null };
+  if (S.ha_gmt) S.ha_gmt = { ...S.ha_gmt, fit_d: M?.holes?.gmt ?? null };
+  if (!c) return gone;
+  if (M.dial?.d) S.dial_d = M.dial.d;
+  if (M.dial?.hole) S.dial_hole = M.dial.hole;
+  if (M.heights) for (const k of ["hour", "minute", "second", "cap"]) if (M.heights[k] != null) S["sh_" + k] = M.heights[k];
+  for (const name of ADDED_HANDS) { const H = S["ha_" + name]; if (H && H.added && !can_hand(S, name)) { S["ha_" + name] = { ...H, added: false, on: false }; S.rings = S.rings.filter((r) => r.fn !== name).length ? S.rings.filter((r) => r.fn !== name) : S.rings; gone.push(HAND_WORD[name] + " hand"); } }
+  if (!can_hand(S, "second") && S.ha_second.on) { S.ha_second = { ...S.ha_second, on: false }; gone.push("Seconds hand"); }
+  const kinds = window_kinds_can(S);
+  windows_of(S).forEach((w, i) => {
+    if (!w.on) return;
+    const put = (o) => { if (i === 0) for (const [k, v] of Object.entries(o)) S[FIRST_WINDOW[k]] = v; else S.windows[i - 1] = { ...S.windows[i - 1], ...o }; };
+    if (!kinds.includes(w.kind)) { put({ on: false }); gone.push(WINDOW_KINDS[w.kind] + " window"); return; }
+    const places = window_places_can(S, w.kind), here = DATE_AT[w.at]?.[0], at = places.includes(here) && w.at_deg == null ? w.at : DATE_AT.findIndex((d) => d[0] === (PLACE_OF[c.date_default] ?? places[0]));
+    if (WINDOW_KINDS[w.kind] === "date" && M.date) put({ at, at_deg: null, r: M.date.r ?? w.r, w: M.date.aperture?.[0] ?? w.w, h: M.date.aperture?.[1] ?? w.h });
+    if (WINDOW_KINDS[w.kind] === "day" && c.day) {      // one aperture for day and date (NH36): the day takes the inner part, the date the outer (I)
+      const inner = c.day.r - c.day.aperture[0] / 2, day_w = c.day.aperture[0] - (c.day.date_part ?? 0);
+      put({ at, at_deg: null, r: +(inner + day_w / 2).toFixed(3), w: +(day_w - 0.2).toFixed(3), h: c.day.aperture[1] }); }
+  });
+  return gone;
+}
 
 /** units a length can be shown and typed in: [short name, name, how many make a millimetre, extra decimals].
  *  Only for the window: every setting, link and file stays in mm (R1). The list only grows at its end (R9).
@@ -734,6 +782,7 @@ export const LINK_KEYS = [
   "ha_date", "ha_day", "ha_month", "sh_date", "sh_day", "sh_month", "fn",      // v1.1.56 beta (#577): appended; the calendar hands and the ring key `fn` (which hand a ring serves); none to start, as every older link
   "rh_on", "rh_w", "rh_c", "bz_on", "bz_kind", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_c", "bz_insert_c", "bz_teeth_n", "bz_teeth_depth", "bz_teeth_fill", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome", "surface", "r_from",      // v1.1.58 beta (#582): appended; the case off to start, every ring on the dial, as every older link; rh_w dead since v1.1.59 (the rehaut by angle and length, R8)
   "rh_deg", "rh_len",      // v1.1.59 beta (#582): appended
+  "motion", "movement", "fit_d",      // v1.1.69–70 beta (#590, #586): appended; Jump, the Imaginary Movement and the common fit to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2297,7 +2346,7 @@ function hand_outline(shape, L, W, T, tip, F, at, R = 0, bulge = 37.5) {
  *  the parts houses sell most (Esslinger's 0.90/1.50 hands; the second's collet 0.20). #89 would add real movements. */
 export const HOLE_FIT = { hour: 1.5, minute: 0.9, second: 0.2 };
 /** the Ø of the pipe's hole through a hand's hub (#404): 0 when the hand has no hub or Hole is None. */
-export const hole_of = (h, name = "") => (!(h.hub > 0) || HAND_SHAPES[h.shape] === "disc" ? 0 : h.hole_as === 1 ? HOLE_FIT[name] || 0 : h.hole_as === 2 ? max(+h.hole || 0, 0) : 0);
+export const hole_of = (h, name = "") => (!(h.hub > 0) || HAND_SHAPES[h.shape] === "disc" ? 0 : h.hole_as === 1 ? (h.fit_d ?? HOLE_FIT[name]) || 0 : h.hole_as === 2 ? max(+h.hole || 0, 0) : 0);
 /** a hand's boss as a part of its own — the hub disc with the hole through it, upright — for show mode's lit picture
  *  (#404: "the boss itself, as a round disc"); null when the hand has no hub. The dial side keeps it in the hand's shape. */
 export function hand_boss(h, name = "") {

@@ -1327,7 +1327,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   { // a window's place (#264, 4.46.1): on its pane's heading line, round buttons 3 · 6 · 9 · 12 · ··· spread from the
     // controls' column to the end, as the shapes on the Shape line are; the heading says Position under its title;
     // the dots open every place as a button and a field for any time
-    const line = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), b = [...document.querySelectorAll(".pane > .circles button")], s = [...document.querySelectorAll(".pane > .btnline.shapes button")], w = b.map((x) => r(x).width), pane = b[0].closest(".pane"), sub = pane.querySelector(".fold .sub"), h2 = pane.querySelector(".fold h2"), eye = pane.querySelector(".fold .eye");
+    const line = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), b = [...document.querySelectorAll(".pane > .circles button")].filter((x) => !x.hidden), s = [...document.querySelectorAll(".pane > .btnline.shapes button")], w = b.map((x) => r(x).width), pane = b[0].closest(".pane"), sub = pane.querySelector(".fold .sub"), h2 = pane.querySelector(".fold h2"), eye = pane.querySelector(".fold .eye");
       const unit = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")), gaps = b.slice(1).map((x, i) => r(x).left - r(b[i]).right);
       return [b.map((x) => x.textContent).join(" "), w.every((v) => Math.abs(v - w[0]) < 0.5 && Math.abs(v - r(b[0]).height) < 0.5) && getComputedStyle(b[0]).borderTopLeftRadius === "50%" && gaps.every((g) => Math.abs(g - unit) < 0.5), Math.round(r(b[0]).left - r(s[0]).left) + " " + Math.round(r(b.at(-1)).right - r(s.at(-1)).right), s[0].closest(".pane").querySelector("h2").textContent, Math.round(r(b[0]).height),
         String(!sub) + " " + (Math.abs((r(eye).top + r(eye).bottom) / 2 - (r(h2).top + r(h2).bottom) / 2) < 2), Math.abs(r(s[0]).height - r(b[0]).height) < 0.5]; });
@@ -2671,6 +2671,19 @@ await shot("10-bar");
     `"They don't move with time": two minutes past 23:59 the date is the 12th and the Date hand jumps a place (${r[1].toFixed(1)}° → ${r[4].toFixed(1)}°); ⇧← back over midnight the 11th again (${r[5]}, ${r[6]} s); Play at 720× past midnight the 12th (${r[7]})`);
   check(Math.abs(r[9] - 2 / 7 * 360) < 1e-6 && Math.abs(r[10] - 10 / 12 * 360) < 1e-6 && Math.abs(r[11] - 2.5 / 7 * 360) < 1e-6 && Math.abs(r[12] - (10 + 10.5 / 30) / 12 * 360) < 1e-6 && Math.abs(r[13] - 10.5 / 31 * 360) < 1e-6,
     `"sweep or jump, with a selector": Wednesday noon the Day hand jumps to Wed (${r[9].toFixed(1)}°), swept half a day on (${r[11].toFixed(1)}°); the Month hand on November (${r[10].toFixed(1)}°) swept 10½ days into it (${r[12].toFixed(1)}°); the Date hand half a place past the 11th (${r[13].toFixed(1)}°)`);
+}
+{ // Movement (#586): a line between the section tabs and Dial · Rehaut · Bezel; a calibre chosen takes off what it can't drive, the + and the places follow, undo brings it back
+  const r = await page.evaluate(async () => { const t = window.dial_tool, S = t.S, F = () => new Promise((f) => requestAnimationFrame(() => requestAnimationFrame(f)));
+    S.ui_section = 0; t.show_section(); t.sync_rows(); await F();
+    const bar = document.querySelector(".movebar"), cases = document.querySelector(".casetabs"), tabs = document.querySelector("nav.tabs"), follows = (x, y) => Boolean(x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING), order = bar && tabs && cases ? follows(tabs, bar) && follows(bar, cases) : false;      // in the page's order: the section tabs, Movement, Dial · Rehaut · Bezel
+    S.ha_gmt.added = S.ha_gmt.on = true; t.render(); await F(); t.take_step();
+    const sel = document.querySelector("#global-movement"); sel.value = "nh35"; sel.dispatchEvent(new Event("change")); await F();
+    const after = [S.movement, S.ha_gmt.added, [...document.querySelectorAll("#hand-add option")].map((o) => o.value).filter(Boolean).join(), t.note.textContent];
+    t.undo(-1); await F(); const back = [t.S.movement, t.S.ha_gmt.added];      // undo puts a new settings object in place
+    t.S.ha_gmt.added = t.S.ha_gmt.on = false; t.render(); await F();
+    return { order, options: [...sel.options].map((o) => o.value).join(), after, back }; });
+  check(r.order && r.options.startsWith("any,nh35,nh34,nh36,nh38") && r.after[0] === "nh35" && !r.after[1] && r.after[2] === "" && /GMT hand/.test(r.after[3]) && r.back[0] === "any" && r.back[1],
+    `Movement, "Section tabs ↔ Dial·Rehaut·Bezel" (${r.order}): ${r.options}; the NH35 chosen takes the GMT hand off and the + offers nothing (${r.after[2] || "none"}): "${r.after[3]}"; undo brings both back (${r.back.join(", ")})`);
 }
 { // show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in … Only the colors of the dial is editable here"; "Showcase has no caseless watches"; "Cases snap to dials")
   const q = () => page.evaluate(() => { const t = window.dial_tool, app = document.querySelector("#app"), panel = document.querySelector(".panel"), main = document.querySelector("main");

@@ -582,7 +582,7 @@ export const PANEL = {
         if (row.label) label.textContent = row.label(T);
         const tiles = [...group.querySelectorAll('[role="radio"]')];
         const on = row.shown ? row.shown(T) : T[row.key];      // shown: which tile stands for the value (a big date lights the Date tile)
-        tiles.forEach((b) => { const i = +b.id.slice(id.length + 1); b.classList.toggle("on", i === on); b.setAttribute("aria-checked", String(i === on)); });
+        tiles.forEach((b) => { const i = +b.id.slice(id.length + 1); b.classList.toggle("on", i === on); b.setAttribute("aria-checked", String(i === on)); if (row.offered) b.hidden = !row.offered(T, this.S).includes(i); });      // offered: only these (a movement's limits, #586, R16)
       };
     }
 
