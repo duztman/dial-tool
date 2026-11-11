@@ -3695,6 +3695,17 @@ await touch.close();
   check(corner.every(Boolean) && tiny[0] && tiny[1] && tiny[3] && tiny[4] && tiny[5] >= 60 && tiny[6] && tiny[7] && Math.round(b1[0] - b0[0]) === -200 && Math.round(b1[1] - b0[1]) === -100 && shown === "1" && away.every(Boolean) && up,
     `Tiny Preview (#337): its button at the bottom right (top right until 4.81); open, the dial and its margins at ${tiny[2]} mm in the browser's mm, over everything, no guides; dragged (−200, −100), its eye shows under the pointer and puts it away; Backdrop over Shadows at the bottom left; Guides, the case and X-ray down the top right corner, the list dropping (4.86)`);
 }
+{ // the case's wall shades the dial in the edit view (v1.1.79; Okay, 11 Nov 2026: "Bezel and rehault needs shadows in dial tool main to gauge the height there"): a bezel 1 mm over the dial throws a crescent 1 / tan(the light's height) wide; twice as high, twice as wide; with the bezel off, none
+  const r = await page.evaluate(async () => { const t = window.dial_tool, S = t.S, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok))), was = JSON.stringify([S.bz_on, S.bz_h, S.bz_seat, S.bz_dial_up, S.rh_on, S.sh_on]);
+    const shift = () => { const p = document.querySelector('g[clip-path="url(#shadow-clip-case-on-dial)"] path'); if (!p || !p.isConnected) return null; const m = /translate\((-?[\d.]+) (-?[\d.]+)\)/.exec(p.getAttribute("transform") || ""); return m ? +Math.hypot(+m[1], +m[2]).toFixed(3) : null; };
+    Object.assign(S, { sh_on: true, rh_on: false, bz_on: true, bz_h: 1, bz_seat: 0, bz_dial_up: 0 }); t.changed(true); await tick(); const one = shift();
+    S.bz_h = 2; t.changed(true); await tick(); const two = shift();
+    S.bz_on = false; t.changed(true); await tick(); const none = shift();
+    const [a, b, c, d, e, g] = JSON.parse(was); Object.assign(S, { bz_on: a, bz_h: b, bz_seat: c, bz_dial_up: d, rh_on: e, sh_on: g }); t.changed(true); await tick();
+    return { one, two, none, want: +(1 / Math.tan(Math.min(89, Math.max(20, S.sh_rise)) * Math.PI / 180)).toFixed(3) }; });
+  check(r.one !== null && Math.abs(r.one - r.want) < 0.002 && Math.abs(r.two - 2 * r.want) < 0.004 && r.none === null,
+    `the case's wall shades the dial in the edit view: a bezel 1 mm over the face throws its shadow ${r.one} mm (1 / tan of the light's height = ${r.want}), 2 mm ${r.two}; none with the bezel off (${r.none}) (Okay, 11 Nov 2026: "Bezel and rehault needs shadows in dial tool main to gauge the height there")`);
+}
 { // a list that opens is whole and on top (v1.1.77; Okay, 11 Nov 2026: "dropdowns behind ui elements"): the languages' list hangs on the window, not in the panel's scrolling list (the bar lay over its end); a menu's list at the window's right edge (the canvas's Case) stays inside it
   const whole = (q) => page.evaluate((q) => { const l = document.querySelector(q); if (!l || l.hidden) return "not open"; const b = l.getBoundingClientRect(), out = [];
     if (b.left < 0 || b.top < 0 || b.right > innerWidth || b.bottom > innerHeight) out.push(`past the window (${Math.round(b.left)}, ${Math.round(b.top)} – ${Math.round(b.right)}, ${Math.round(b.bottom)} in ${innerWidth} × ${innerHeight})`);

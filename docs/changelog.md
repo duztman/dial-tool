@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.79 beta · 11 Nov 2026 — the case's wall shades the dial in the edit view
+
+Okay, 11 Nov 2026, 21:53: "Bezel and rehault needs shadows in dial tool main to gauge the height there."
+
+- **The wall's shadow** (`guides.js` `draw_shadows`, with Shadows on): on the light's side the highest edge at the opening — the bezel's top over the dial's face (seat + ring height − dial over band) or, with no bezel, the rehaut's rise — shades the dial's face and what is printed on it: a crescent as wide as that height divided by the tangent of the light's height, the law of every shadow there. A bezel also shades the rehaut's wall under it. A leaning rehaut alone shades the dial only where its shadow is longer than its own reach. Preview only (R5); nothing outside the bezel, where the view has no body.
+- So a height is read off the picture: a bezel 1 mm over the face throws 1.43 mm at the light's 35°, 3 mm throws 4.3.
+- **Tests**: `window.mjs` — the case's wall shades the dial (1 mm, 2 mm, none with the bezel off).
+
 ## v1.1.78 beta · 11 Nov 2026 — show mode with the tool's bezel: the shadow and the shine are the crystal's
 
 Okay, 11 Nov 2026, 21:39: "show case on 2d is still looking weird, glass seems larger covering bezel, bezel border looks like a wall."

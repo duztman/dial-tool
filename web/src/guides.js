@@ -355,6 +355,21 @@ export const GUIDES = {
       const first = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
       surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
     }
+    // THE CASE'S WALL (Okay, 11 Nov 2026: "Bezel and rehault needs shadows in dial tool main to gauge the height there"): the rehaut and
+    // the bezel stand round the dial, and on the light's side their inner edge shades what lies inside it — a crescent as wide as the
+    // edge is high over that surface, divided by the tangent of the light's height, as every shadow here. One edge casts: the
+    // highest at the opening (the bezel's top over the dial's face — seat + ring height − dial over band — or, with no bezel, the
+    // rehaut's rise), standing at the rehaut's outer edge. It falls on the dial's face with everything printed there, and, from a
+    // bezel, on the rehaut's wall (taken at half its rise). A leaning rehaut alone shades the dial only where its shadow is longer
+    // than its own reach, as a slope does. Nothing is drawn outside the bezel: the view has no body to catch it
+    if (plate_at >= 0 && (S.rh_on || S.bz_on)) {
+      const R = S.dial_d / 2, rw = S.rh_on ? G.rehaut_w(S) : 0, rh = S.rh_on ? G.rehaut_h(S) : 0, zb = S.bz_on ? Math.max(0, S.bz_seat + S.bz_h - S.bz_dial_up) : 0, edge = R + rw, z = Math.max(rh, zb);
+      const circle = (r) => `M${f(-r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(-r)} 0Z`, field = (r) => `M-999 -999H999V999H-999Z${circle(r)}`;      // everything but a disc: what an edge of that radius keeps the light off
+      const first = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide"), before = first >= 0 ? nodes[first] : null, metal = [...G.case_metal(S).slice(0, 3), 1];
+      const wall = (name, outline, dz) => { const s = surface(name, before, outline, 999); s.cast(field(edge), 0, dz, metal); s.g.lastElementChild.setAttribute("fill-rule", "evenodd"); return s; };      // from_z 999: no hand's shadow is cast again here (the plate's surface has them)
+      if (z > 0) wall("case-on-dial", [[circle(R), 0]], z);
+      if (S.rh_on && zb > rh) { const s = wall("case-on-rehaut", [[circle(edge) + circle(R), 0]], zb - rh / 2); shade.parts.get("case-on-rehaut/clip/0").setAttribute("clip-rule", "evenodd"); }
+    }
     // each hand catches the hands above it
     const after = (i) => { let n = i + 1; while ((items[n]?.role === "mark" || items[n]?.role === "lume") && items[n].name === items[i].name) n++; return n; };      // past a disc's painted mark, which catches the shadow too (#300)
     for (const h of hands) if (hands.some((o) => o.z > h.z) || (cap_r && top > h.z)) surface("hand-" + h.item.name, nodes[after(h.i)] || null, [[h.d, h.item.angle]], h.z);

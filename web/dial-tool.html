@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.78 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.79 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9544,7 +9544,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.78 beta";
+var VERSION = "v1.1.79 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -23692,6 +23692,22 @@ var GUIDES = {
     if (plate_at >= 0 && hands.length) {
       const first = items.findIndex((x2) => x2.role === "hand" || x2.role === "cap" || x2.role === "guide");
       surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
+    }
+    if (plate_at >= 0 && (S.rh_on || S.bz_on)) {
+      const R = S.dial_d / 2, rw = S.rh_on ? rehaut_w(S) : 0, rh = S.rh_on ? rehaut_h(S) : 0, zb = S.bz_on ? Math.max(0, S.bz_seat + S.bz_h - S.bz_dial_up) : 0, edge = R + rw, z = Math.max(rh, zb);
+      const circle3 = (r) => `M${f2(-r)} 0A${f2(r)} ${f2(r)} 0 1 0 ${f2(r)} 0A${f2(r)} ${f2(r)} 0 1 0 ${f2(-r)} 0Z`, field = (r) => `M-999 -999H999V999H-999Z${circle3(r)}`;
+      const first = items.findIndex((x2) => x2.role === "hand" || x2.role === "cap" || x2.role === "guide"), before = first >= 0 ? nodes[first] : null, metal = [...case_metal(S).slice(0, 3), 1];
+      const wall = (name, outline, dz) => {
+        const s = surface(name, before, outline, 999);
+        s.cast(field(edge), 0, dz, metal);
+        s.g.lastElementChild.setAttribute("fill-rule", "evenodd");
+        return s;
+      };
+      if (z > 0) wall("case-on-dial", [[circle3(R), 0]], z);
+      if (S.rh_on && zb > rh) {
+        const s = wall("case-on-rehaut", [[circle3(edge) + circle3(R), 0]], zb - rh / 2);
+        shade.parts.get("case-on-rehaut/clip/0").setAttribute("clip-rule", "evenodd");
+      }
     }
     const after = (i2) => {
       let n = i2 + 1;
