@@ -94,8 +94,8 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   const O = await import("../src/output.js"), SHOW = await import("../src/show.js"), S = G.fresh_settings({}); S.paint = false; S.material = 2;
   const st = G.build_static(S), seen = G.scene(S, st, 0, true).find((x) => x.role === "plate"), file = O.svg_document(S, st, 0, {}), for3d = O.svg_document(S, st, 0, { facts: SHOW.svg_facts(S) });
   S.paint = true; const painted = O.svg_document(S, G.build_static(S), 0, {});
-  check(seen.metal && JSON.stringify(seen.fill) === JSON.stringify(G.PLATE_METAL_COLOURS[2]) && !/id="plate"/.test(file) && /id="plate"/.test(painted) && /id="plate"[^>]*data-role="plate"/.test(for3d),
-    `"Plate left unprinted": no paint, the preview's plate is bare ${G.PLATE_METALS[2]}; the file has no plate, a painted one has; a file for a 3D view keeps the metal plate`);
+  check(seen.metal && JSON.stringify(seen.fill) === JSON.stringify(G.PLATE_METAL_COLOURS[2]) && !/id="plate"/.test(file) && /id="plate"/.test(painted) && /id="plate"[^>]*data-role="plate" data-make="plate" data-metal="steel"/.test(for3d),
+    `"Plate left unprinted": no paint, the preview's plate is bare ${G.PLATE_METALS[2]}; the file has no plate, a painted one has; a file for a 3D view keeps the metal plate, saying its metal (steel)`);
 }
 // #585, #587: the hands start at a real movement's heights, and every movement's heights come from the one record
 { const D = G.DEFAULTS, by = (id) => G.movement(id), m8 = by("miyota-8215").heights, T = G.HAND_T;

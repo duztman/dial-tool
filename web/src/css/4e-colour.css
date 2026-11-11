@@ -115,6 +115,11 @@
   .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: center; padding: var(--u2) 0; border-bottom: var(--hair) solid var(--row-rule); }      /* a hairline after each row; the head's own line stands above the first (Okay, 30 Oct 2026, 16:43: "Remove & move up") */
   .colourpop > .chiprow { margin: calc(-1 * var(--pop-gap) / 2) 0; }      /* the rows close under the head and each other: the pop-out's gap halved round them */
   .chiprow > .quiet { font-size: var(--t-s); }
+  .chiprow[hidden] { display: none; }
+  /* No colour (Okay, 11 Nov 2026: "No color is a pill"): one pill at the chips' start, its word in the row's type; pressed, filled light with the night's ink */
+  .chiprow > .nocolour { justify-self: start; height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u4); border: var(--hair) solid currentColor; border-radius: var(--round-pill); background: none; color: inherit; font-size: var(--t-s); }
+  .chiprow > .nocolour[aria-pressed="true"] { background: var(--white); color: var(--night); border-color: var(--white); }
+  @media (hover: hover) { .chiprow > .nocolour:hover:not([aria-pressed="true"]) { background: var(--night-hover); } }
   .chiprow .chips { width: 100%; grid-template-columns: repeat(var(--pop-chips), minmax(0, 1fr)); gap: var(--u2); }      /* close together, so the chips grow (Okay, 30 Oct 2026: "larger swatches there, closer together"); an eleventh colour starts a second line on the same columns */
   .chiprow .chips button { width: 100%; height: auto; aspect-ratio: 1; }
   .chips button.ral { position: relative; color: rgba(255, 255, 255, 0.45); font: 600 var(--t-xs)/1 var(--sans); }      /* exactly a RAL colour: a faded R, centred (Okay, 30 Oct 2026, 16:14: "Faded R"; 16:43: "centered") */

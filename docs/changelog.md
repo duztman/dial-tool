@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.72 beta · 11 Nov 2026 — No colour a pill; a bare plate says its metal
+
+Okay, 11 Nov 2026, 15:42: "No color is a pill. Can 3d get these new bare metal dials?"
+
+- **No colour** is a pill on a row of its own in the colour pop-out, **Bare**: an outline in the night's ink, filled light when pressed; then no chip of On this dial is marked.
+- **The parts' record** (`parts.js`): a bare plate says its metal (`metal`, `data-metal`: brass · bronze · steel · silver), read back by `read_part` — Show Case 3D (Pro) builds it as metal.
+- **Tests**: `labels.mjs` — the file for a 3D view says the bare plate's metal.
+
 ## v1.1.71 beta · 11 Nov 2026 — Base, Material and Paint; the bare metal's sheen
 
 Okay, 11 Nov 2026, 14:33, marking the Dial tab: "I think we are repeating dial too many times here. If there’s a better term for it, change into it. The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button in it. For material brass, bronze steel? Give metals a subtle gradient that moves with sun" — and "Brass · Bronze · Steel · Silver", "Plate left unprinted", "Edit mode and show mode", "Paint on, metal under it".

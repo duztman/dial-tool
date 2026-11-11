@@ -80,7 +80,8 @@ export const COLOUR = {
     shut.innerHTML = icon(SIGNS.cross);
     const head = el("header", { title: "Drag to move" }, P.title, wide, shut);
     P.used_chips = el("span", { className: "chips", id: "pop-used" });
-    P.none = el("button", { type: "button", className: "nocolour", id: "pop-none", textContent: "No colour", title: "No colour: the bare material shows", hidden: true, onclick: () => { if (P.at && P.at.none) { P.at.none.set(); this.pop_refresh(); } } });
+    P.none_btn = el("button", { type: "button", className: "nocolour", id: "pop-none", textContent: "No colour", title: "No colour: the bare material shows", onclick: () => { if (P.at && P.at.none) { P.at.none.set(); this.pop_refresh(); } } });
+    P.none = el("div", { className: "chiprow nonerow", hidden: true }, el("span", { className: "quiet", textContent: "Bare" }), P.none_btn);      // a row of its own, its pill at the chips' start (Okay, 11 Nov 2026: "No color is a pill")
     P.palette_chips = el("span", { className: "chips", id: "pop-palette" });
     P.field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
     P.hues = el("div", { className: "hue", title: "Hue" }, el("i"));
@@ -259,7 +260,7 @@ export const COLOUR = {
     const rgb = colour.slice(0, 3), value = to_hex(rgb).toUpperCase();
     const before = P.el.getBoundingClientRect();      // RAL mode is taller: when the pop-out stands low on the screen it grows upward, high it grows down (Okay, 30 Oct 2026: "ral selection makes color popup grow up when it's down on screen, down when up")
     P.title.textContent = P.at.label();
-    P.none.hidden = !P.at.none; if (P.at.none) P.none.setAttribute("aria-pressed", String(P.at.none.off()));
+    P.none.hidden = !P.at.none; if (P.at.none) P.none_btn.setAttribute("aria-pressed", String(P.at.none.off()));
     const put = (c) => P.pick(c);
     const chip = (c) => { const lume = lume_exact(c), ral = !lume && ral_exact(c), said = lume ? `Lume ${lume.name}` : ral ? `RAL ${ral.code} ${ral.name}` : c, b = el("button", { type: "button", className: lume ? "lume" : ral ? "ral" : "", title: said, ariaLabel: said, onclick: () => put(c) }); b.style.background = c; b.dataset.colour = c; return b; };      // a chip that is exactly a RAL carries a faded R (Okay, 30 Oct 2026, 16:14), a lume's a faded L (2 Nov 2026, 22:38)
     const used = this.dial_colours().map((c) => to_hex(c).toUpperCase());      // this dial's colours, each once
@@ -276,7 +277,7 @@ export const COLOUR = {
       } });
       P.palette_chips.replaceChildren(...this.palette.map(chip), change);
     }
-    for (const b of P.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
+    for (const b of P.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value && !(P.at.none && P.at.none.off()));      // bare: no colour is in hand
     // RAL mode shows a family's grid and the bands in place of the field and the hues (ral.js)
     const ral = this.colour_mode === "RAL", near = ral ? ral_nearest(rgb, P.design) : null, lumed = this.colour_mode === "Lume", only = Boolean(P.at.lume_only);
     P.field.hidden = P.hues.hidden = ral || lumed;

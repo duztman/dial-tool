@@ -49,6 +49,7 @@ const one = (x, hand, H, S) => {
 export const part_record = (S, x) => {
   const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && G.HANDS.includes(x.name) ? x.name : null, H = hand ? S["ha_" + hand] : null, p = one(x, hand, H, S);
   const r = { role: x.role, make: P.make_of(x.role, hand), hand };
+  if (x.metal) r.metal = (G.PLATE_METALS[S.material] || G.PLATE_METALS[0]).toLowerCase();      // a bare plate: its metal, for a 3D view to make it metal
   if (PRINTED(x.role) || x.role === "mark") r.ink = G.ink_mm(S, x);
   if (r.make === "hand" && hand) Object.assign(r, { over: S["sh_" + hand] ?? S.sh_hour, t: P.STACK.hand_t, hw: p.hw, boss: G.hand_boss(H, hand) ? H.hub / 2 : null,
     section: !p.bevel ? "flat" : P.SECTIONS[1 + (H.bevel_look | 0)] ?? "ridge" });      // a hand's section in the Bevel words: Ridge · Faceted · Domed, flat with no Bevel
