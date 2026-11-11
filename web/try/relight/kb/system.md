@@ -106,18 +106,36 @@ A link is the dial's settings; shapes need the tool's engine and fonts. An artif
 
 - **Build**: `node web/try/relight/engine-build.mjs <a checkout of dev>/web <out>` → `<out>/engine.js` and `<out>/fonts/`. It bundles the tool's own `geometry.js`, `output.js`, `show.js` with PathKit and HarfBuzz (as `web/build.mjs` does), a map from a font's name to its file (`font_list.js` without its samples), and exports `svgFromLink(text, fontsFolder)` → `{ svg, version, d, missing }`: the link read as the page reads it (`session.js` `unpack`), the dial's fonts fetched from the folder, the SVG written as Export writes it with its facts.
 - **Page**: `dialFromLink` imports `engine.js` from beside the page at the first link, then hands the SVG to `dialFromText` — one reader for a file and a link. The pane names the engine's version, and any font not with the page (a stand-in is drawn).
-- **Publish**: the artifact is `index.html` (the page with `scene.js` inlined), `engine.js`, `fonts/*`. `engine.js` and `fonts/` are built, not committed.
+- **Publish**: the artifact is `index.html` (the page with `scene.js` inlined), its modules and stylesheet (The files, below), `engine.js`, `parts.js`, `movements.js`, `fonts/*`. Those four are built, not committed.
 - **When the tool changes**: a link's keys only grow (R31); a link with keys the engine does not know needs the engine built again from the newer `dev` and published. A link of another scheme, a set of dials, a link cut short: said in the pane.
 
-## One file
+## The files
 
-`watch3d.html` holds the page, imagetracerjs and the drawing's core (the module that was `svg3d-core.mjs`) inline; only `scene.js` is apart. The artifact's page is `watch3d.html` with `scene.js` inlined in place of its tag; beside it, for links, `engine.js` and `fonts/` (A link, above).
+The page is a shell and its parts, laid out the way Dial Tool's `web/src/` is, so it can be lifted into the tool or a Pro repo whole (Okay, 11 Nov 2026: "3d is being made for pro. But the rules in dial tool and 3d should be synced … We can take the 3d to a private repo"):
+
+| File | What it is |
+|---|---|
+| `watch3d.html` | the shell: the panel's markup, the import map, the scripts in order |
+| `watch3d.css` | the page's look (Dial Tool's tokens and regions, copied — at the merge, the tool's own layers) |
+| `main.js` | the scene, its looks (Photo · Toon · Dither · Engineer), the case, the bracelet, the dial in depth, the panel — one module; its parts share the scene's state |
+| `specs.js` | the watches as data: `CASES`, `BRACELETS` |
+| `sweep.js` | the builder: a section along a path, a finish per face |
+| `dial-in.js` | a dial from Dial Tool: its SVG → the scene (`readDial`), each part read by `parts.js` |
+| `drawing.js` | the Engineer drawing (the module that was `svg3d-core.mjs`) |
+| `imagetracer.js` | imagetracerjs 1.2.6 (public domain), for the drawing's tones |
+| `scene.js` | the opener dial (`dump.mjs`) |
+| `parts.js`, `movements.js`, `engine.js`, `fonts/` | **Dial Tool's**, copied by `engine-build.mjs`, not committed: the dial's parts and the stack's rules (#589), the movements (#587), the engine and fonts for a pasted link |
+
+**The stack's rules are the tool's** (`parts.js` `STACK`): a hand's thickness (0.15), the cap's (0.25), a boss's step (0.05), a hand's pipe (wall 0.2, reach 0.4), the room to the crystal (0.4). A dial's SVG says them too (`data-stack`); the page stands its hands by the dial's. A hand's thickness: its movement's where the maker prints one, else the Hand thickness slider once moved, else the dial's (`handT`). An **applied** part (`make: "applied"` — no dial has one yet) is a solid of its own height, its top edge cut by its section (flat · ridge · faceted · domed: `APPLIED_BEVEL`).
+
+The artifact is the same files, `watch3d.html` published as `index.html` with `scene.js` inlined. The page's modules need a server: open it over `python3 -m http.server 8765` in `web/`, not as a file.
 
 ## Shooting and publishing
 
 - `node try/relight/shot3d.mjs out.png <from°> <rise°> [studio|sun] [top|photo|side] [diver] [oyster|barn|jubilee|leather]` — Chromium with SwiftShader; needs `three@0.170.0` in `node_modules` (`npm install --no-save three@0.170.0`). Slow (≈ 50 s a shot), grainy AO; the look is true, the frame times are not.
 - `node try/relight/build.mjs` → `relight-built.html`… for the 3D page the one-file build is made by inlining `scene.js` into `watch3d.html` (see `rounds.md` round 1's recipe) and published to the artifact *Watch 3D trial* by the same path.
-- `python3 try/relight/check.py` before any publish: the module parses and no statement hides after a `//` comment on its line (it happened four times).
+- `node try/relight/same3d.mjs save`, change, `node try/relight/same3d.mjs check` (with `DIAL=file.svg` for a dial from the tool): a change that must not change the look — the scene's every mesh and the Engineer SVG compared exactly; the pictures carry the AO's noise and are for the eye.
+- `python3 try/relight/check.py` before any publish: the page's files parse and no statement hides after a `//` comment on its line (it happened four times).
 - `node try/relight/shot-set.mjs /tmp/n` shoots a round's set (top · low · side · lug join · underside) from the working page, for looking before publishing.
 - A part outside the fixed views (the keepers, the buckle): a one-off script on `shot3d.mjs`'s pattern that moves `window.watch3d.camera` (`position`, `lookAt`, `fov`, `updateProjectionMatrix`) before `render()` — run it from `web/` so playwright resolves.
 - R21: judge a height from the **Side** view, a seam from a **crop at 2×**, never from the top view alone.
