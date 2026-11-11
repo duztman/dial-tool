@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.74 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.75 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -294,7 +294,7 @@ export const DEFAULTS = {
   // seat · bz_h its height · bz_lip the recess · bz_rim · bz_up · bz_dome the crystal's) show in the section diagram and
   // in show mode; the plan does not see them
   rh_on: false, rh_deg: 24, rh_len: 1.5, rh_c: [0.78, 0.78, 0.76, 1],      // 24° and 1.5 mm: the 3D exercise's wall, 0.6 out over 1.35 up. rh_w is dead (R8): nothing reads it
-  bz_on: false, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_c: [0.80, 0.80, 0.78, 1], bz_insert_c: [0.17, 0.17, 0.19, 1],      // bz_c is dead (R8): the bezel is case material (case_metal)
+  bz_on: false, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_c: [0.80, 0.80, 0.78, 1], bz_insert_c: [0.17, 0.17, 0.19, 1], bz_marks: 0,      // bz_c is dead (R8): the bezel is case material (case_metal)
   bz_teeth_n: 60, bz_teeth_depth: 0.5, bz_teeth_fill: 0.62, bz_teeth_chamfer: 0.45,
   bz_dial_up: 0.7, bz_seat: 0.3, bz_h: 2.3, bz_lip: 0.55, bz_rim: 0.4, bz_up: 0.65, bz_dome: 1.35,
   ui_dial_tab: 0,                                  // the Dial tab's own tabs: Dial · Rehaut · Bezel (#582; ui_case is the canvas's Case view)
@@ -787,6 +787,7 @@ export const LINK_KEYS = [
   "rh_deg", "rh_len",      // v1.1.59 beta (#582): appended
   "motion", "movement", "fit_d",      // v1.1.69–70 beta (#590, #586): appended; Jump, the Imaginary Movement and the common fit to start, as every older link
   "material", "paint",      // v1.1.71 beta: appended; brass under a painted plate to start, as every older link
+  "bz_marks",               // v1.1.75 beta: appended; the insert to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1679,6 +1680,7 @@ export const SURFACE_MOST = [Infinity, 1, 3];
 export const ring_surface = (S, ring) => (SURFACES[ring.surface] === "rehaut" && S.rh_on ? 1 : SURFACES[ring.surface] === "bezel" && S.bz_on ? 2 : 0);
 /** how many rings stand on a surface now */
 export const rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
+export const BEZEL_MARKS = ["Insert", "Metal"];      // where a rotating bezel's markings are: on an insert set in it, or on its metal (Okay, 11 Nov 2026: "for bezels, add markings on metal instead of inset ring"); a fixed bezel's are always on its metal. R9: appended only
 export const BEZEL_KINDS = ["Rotating", "Fixed"];      // rotating: a turning ring with an insert and a coin edge · fixed: a plain pressed ring
 /** the rehaut's reach in plan and its rise: a wall rh_len long leaning rh_deg from the vertical */
 export const rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);
@@ -1690,9 +1692,10 @@ export function case_spans(S) {
   const R = S.dial_d / 2, rh = S.rh_on ? [R, R + rehaut_w(S)] : null, b0 = rh ? rh[1] : R;
   const bz = S.bz_on ? [b0, b0 + S.bz_w] : null;
   const rotating = bz && S.bz_kind === 0;
-  const insert = rotating ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
+  const insert = rotating && S.bz_marks !== 1 ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
+  const marks = insert ?? (bz ? [b0, bz[1] - S.bz_chamfer] : null);      // where the bezel's rings stand: its insert, or its metal inside the chamfer
   const teeth = rotating && S.bz_teeth_depth > 0 ? bz[1] + S.bz_teeth_depth : bz ? bz[1] : null;
-  return { dial: [0, R], rehaut: rh, bezel: bz, insert, outer: teeth ?? (rh ? rh[1] : R), chamfer: bz ? [bz[1] - S.bz_chamfer, bz[1]] : null };
+  return { dial: [0, R], rehaut: rh, bezel: bz, insert, outer: teeth ?? (rh ? rh[1] : R), chamfer: bz ? [bz[1] - S.bz_chamfer, bz[1]] : null, marks };
 }
 /** the radius the drawing reaches, mm: the dial's, or the case's outer edge (the page and the view fit it) */
 export const reach_mm = (S) => case_spans(S).outer;
@@ -1700,7 +1703,7 @@ export const reach_mm = (S) => case_spans(S).outer;
  *  surface's inner edge (Edge) or it fills the surface (Fit: a band as wide as the surface and centred on it, marks as
  *  long as it is wide from its outer edge, words on its middle). A surface that is off puts the ring back on the dial. */
 export function placed(S, ring) {
-  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? (case_spans(S).insert || case_spans(S).bezel) : null;
+  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? case_spans(S).marks : null;
   if (!span || !ring.r_from) return ring;
   const [a, b] = span, kind = kind_of(ring);
   if (R_FROM[ring.r_from] === "Edge") return { ...ring, r: a + ring.r };

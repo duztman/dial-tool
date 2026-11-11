@@ -389,7 +389,7 @@ function caseEngineer(C, v, L) {
     out.push(`<g clip-path="url(#dial-${C.key})"><g transform="translate(${f(-uS[0] * sl)} ${f(-uS[1] * sl)})"><path d="M-500 -500H500V500H-500Z${circle(C.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.4 * SHD))}"/></g></g>`); }
   // the crystal: a highlight crescent on the side facing the light, a faint one opposite
   const g = (a, r, w, o) => `<path d="M${f(Math.cos(rad(a - 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 28 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 28 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, o * GLASS.op))}" stroke-width="${f(w * GLASS.fat)}" stroke-linecap="round"/>`;
-  out.push(g(L, C.opening - 0.9, 0.8, 0.55), g(L + 180, C.opening - 0.9, 0.4, 0.22));      // the glass's shine: white, and the dial never white, so it always shows
+  out.push(g(L, (C.glassR ?? C.opening) - 0.9, 0.8, 0.55), g(L + 180, (C.glassR ?? C.opening) - 0.9, 0.4, 0.22));      // the glass's shine: white, and the dial never white, so it always shows
   out.push(stroke(circle(C.opening), 0.2));
   return out.join("");
 }
@@ -441,7 +441,7 @@ function caseArtisan(C, v, L) {
   // the bezel's wall shades the dial on the light's side: a hard crescent (18:06)
   out.push(`<g clip-path="url(#dial-${C.key})"><g transform="translate(${f(-uL[0] * (C.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))} ${f(-uL[1] * (C.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))})"><path d="M-500 -500H500V500H-500Z${circle(C.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.44 * SHD))}"/></g></g>`);
   // the glass: one soft white blob on the light's side
-  const r = C.opening - 1.2, a = L;
+  const r = (C.glassR ?? C.opening) - 1.2, a = L;
   out.push(`<path d="M${f(Math.cos(rad(a - 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 35 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 35 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, 0.5 * GLASS.op))}" stroke-width="${f(1.6 * GLASS_K * GLASS.fat)}" stroke-linecap="round"/>`);
   return out.join("");
 }
@@ -844,12 +844,12 @@ export const sizeFor = (key, d, outer = null) => { const C = CASES[key] || CASES
 // as the chosen case has them. LIVE: { outer, dial } in dial mm, set by draw() and frame(); null for a dial without a case
 const CASE_LIP = 0.65;      // the 3D exercise's `inset`: the ring's outer radius this far inside the body's
 let LIVE = null;
-const live_case = (C) => (LIVE ? Object.assign(C, { opening: LIVE.outer, dial: LIVE.dial, insert: null, bands: [] }) : C);
+const live_case = (C) => (LIVE ? Object.assign(C, { opening: LIVE.outer, glassR: LIVE.glass, dial: LIVE.dial, insert: null, bands: [] }) : C);      // glassR: the crystal's edge, the bezel's inner one
 export const caseBox = (key, size) => { const C = scaleCase(CASES[key], size); return { h: C.l2l, w: (C.cushion ? 2 * C.cushion.a : C.rails ? Math.max(C.od, C.lugw + 2 * C.lugT) : C.od) + 2 * C.crown.h, dial: C.dial }; };
 export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 export function draw(o) {
   use(o.style || "artisan"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
-  LIVE = o.case ? { outer: o.case.outer, dial: o.d } : null;
+  LIVE = o.case ? { outer: o.case.outer, glass: o.case.glass ?? o.case.outer, dial: o.d } : null;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
   SOFT = Boolean(o.blurs); GRADIENTS = o.gradients !== false; HEIGHTS = o.heights || {}; HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;
   // a colour that is one of the engine's own keeps that entry's three tones; any other gets three made from it

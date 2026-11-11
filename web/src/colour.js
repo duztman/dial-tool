@@ -483,8 +483,9 @@ export const COLOUR = {
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [], show = S.ui_show;
       if (show) lines.push({ text: "Dial", lead: true, colours: one("plate", "Dial", () => this.S.c_plate, (v) => { this.S.c_plate = v; this.changed(); }) });      // flush on the marks' column, bold (01:13: "is not indented, is bold")
-      if (show) lines.push({ sub: true, text: "Rings", colours: [] });
-      S.rings.forEach((ring, i) => {
+      // the rings by where they stand (Okay, 11 Nov 2026: "Bezels and rehaut rings also under colors panel on show case. Change colors
+      // possible"): the dial's under Rings, then Rehaut and Bezel — each its ground's colour first, then its rings
+      const ring_line = (ring, i) => {
         const line = { text: ring.name || G.kind_of(ring), colours: this.ring_colours(i) };
         if (show) {
           line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i] || {}).on, write: (on) => this.show_ring(i, on) };
@@ -492,8 +493,20 @@ export const COLOUR = {
           line.grip = i;      // the ring list's 6-dot grip before the swatch: dragged, the rings' order (#579)
           if (line.colours.length > 1) line.note = `${line.colours.length} sectors`;
         }
-        lines.push(line);
-      });
+        return line;
+      };
+      if (show) lines.push({ sub: true, text: "Rings", colours: [] });
+      S.rings.forEach((ring, i) => { if (!show || G.ring_surface(S, ring) === 0) lines.push(ring_line(ring, i)); });
+      if (show && S.rh_on) {
+        lines.push({ sub: true, text: "Rehaut", colours: [] });
+        lines.push({ text: "Rehaut", colours: one("rehaut", "Rehaut", () => this.S.rh_c, (v) => { this.S.rh_c = v; this.changed(); }) });
+        S.rings.forEach((ring, i) => { if (G.ring_surface(S, ring) === 1) lines.push(ring_line(ring, i)); });
+      }
+      if (show && S.bz_on) {
+        lines.push({ sub: true, text: "Bezel", colours: [] });
+        if (G.case_spans(S).insert) lines.push({ text: "Insert", colours: one("insert", "Insert", () => this.S.bz_insert_c, (v) => { this.S.bz_insert_c = v; this.changed(); }) });      // the bezel's metal is the case's (Watch › Case colour)
+        S.rings.forEach((ring, i) => { if (G.ring_surface(S, ring) === 2) lines.push(ring_line(ring, i)); });
+      }
       const cap = this.cap_colour();
       if (show) lines.push({ sub: true, text: "Hands", colours: [] });
       G.HANDS.forEach((h, k) => {

@@ -61,7 +61,7 @@ export const part_record = (S, x) => {
 /** the case for a 3D view (parts.js case_attrs): the tool's rehaut and bezel, in mm, the bezel's metal the case's own */
 export const case_record = (S) => ({
   rehaut: S.rh_on ? { w: G.rehaut_w(S), h: G.rehaut_h(S), c: hex(S.rh_c) } : null,
-  bezel: S.bz_on ? { kind: G.BEZEL_KINDS[S.bz_kind] === "Fixed" ? "fixed" : "rotating", w: S.bz_w, chamfer: S.bz_chamfer, in_in: S.bz_in_in, in_out: S.bz_in_out, insert: hex(S.bz_insert_c),
+  bezel: S.bz_on ? { kind: G.BEZEL_KINDS[S.bz_kind] === "Fixed" ? "fixed" : "rotating", marks: G.BEZEL_KINDS[S.bz_kind] === "Fixed" || G.BEZEL_MARKS[S.bz_marks] === "Metal" ? "metal" : "insert", w: S.bz_w, chamfer: S.bz_chamfer, in_in: S.bz_in_in, in_out: S.bz_in_out, insert: hex(S.bz_insert_c),
     teeth: { n: S.bz_teeth_n, depth: S.bz_teeth_depth, fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer }, dial_up: S.bz_dial_up, seat: S.bz_seat, h: S.bz_h, lip: S.bz_lip, rim: S.bz_rim, up: S.bz_up, dome: S.bz_dome } : null,
 });
 export const svg_facts = (S) => Object.assign((x) => P.part_attrs(part_record(S, x)), { dial: P.dial_attrs(S.dial_d) + P.case_attrs(case_record(S)) });
@@ -72,7 +72,7 @@ export function options(S, items, effects) {
   const P = WATCH.presets(style), lit = effects;
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null), view: VIEW_NAMES[S.w_view] || "detail",
-    case: S.rh_on || S.bz_on ? { outer: G.reach_mm(S) } : null,      // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
+    case: S.rh_on || S.bz_on ? { outer: G.reach_mm(S), glass: G.case_spans(S).bezel ? G.case_spans(S).bezel[0] : G.reach_mm(S) } : null,      // glass: the crystal's edge — inside the bezel, not over it (Okay, 11 Nov 2026: "the glass is drawn over the bezel now somehow")      // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
     items: items.flatMap((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && G.HANDS.includes(x.name) ? x.name : null;
       const H = hand ? S["ha_" + hand] : null;
       // a hand's boss as a part of its own over the hand (#404; Okay, 3 Nov 2026: "The boss itself, as a round disc"): the

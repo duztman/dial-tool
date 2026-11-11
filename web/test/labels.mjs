@@ -106,6 +106,14 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(!/data-case/.test(none) && c && c.bezel.w === 3.1 && c.bezel.kind === "rotating" && c.bezel.teeth.n === S.bz_teeth_n && Math.abs(c.rehaut.w - G.rehaut_w(S)) < 1e-9 && /^#/.test(c.rehaut.c),
     `"add bezel and rehaut there": the file says the case — the bezel ${c?.bezel?.kind} ${c?.bezel?.w} mm with ${c?.bezel?.teeth?.n} scallops, the rehaut ${c?.rehaut?.w?.toFixed(2)} out; none without them`);
 }
+// markings on the bezel's metal (Okay, 11 Nov 2026: "for bezels, add markings on metal instead of inset ring"): no insert; the rings
+// stand inside the chamfer; the file for 3D says so
+{
+  const SHOW = await import("../src/show.js"), S = G.fresh_settings({}); S.bz_on = true; S.bz_marks = 1;
+  const sp = G.case_spans(S), rec = SHOW.case_record(S).bezel;
+  check(sp.insert === null && Math.abs(sp.marks[1] - (sp.bezel[1] - S.bz_chamfer)) < 1e-9 && sp.marks[0] === sp.bezel[0] && rec.marks === "metal" && !G.case_grounds(S).some((g) => g[0] === "insert"),
+    `"markings on metal instead of inset ring": no insert, the rings between ${sp.marks.map((v) => v.toFixed(2)).join(" and ")} mm (inside the chamfer), the file says ${rec.marks}`);
+}
 // #585, #587: the hands start at a real movement's heights, and every movement's heights come from the one record
 { const D = G.DEFAULTS, by = (id) => G.movement(id), m8 = by("miyota-8215").heights, T = G.HAND_T;
   const own = ["hour", "minute", "second"].every((h) => D["sh_" + h] === m8[h]) && D.sh_cap === m8.cap;

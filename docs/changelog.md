@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.75 beta · 11 Nov 2026 — the case's colours in show mode; markings on the bezel's metal; the glass inside the bezel
+
+Okay, 11 Nov 2026, 17:17: "Bezels and rehaut rings also under colors panel on show case. Change colors possible. Also for bezels, add markings on metal instead of inset ring. On main showcase the glass is drawn over the bezel now somehow, check. Bezel settings on 3d showcase now."
+
+- **Show mode's Colours** (`colour.js` `row_colours`): Rings lists the dial's rings; **Rehaut** its colour and its ring; **Bezel** the insert's colour (with an insert) and its rings — each a swatch to change, as the others.
+- **Markings** (`bz_marks`, `BEZEL_MARKS`: Insert · Metal) on a rotating bezel's pane: on the Metal there is no insert — no ground, no recess in the section (the closed top, the coin edge kept), Insert in · out and its colour hidden — and the bezel's rings fit inside the chamfer (`case_spans().marks`, read by `placed`). A fixed bezel's are on its metal as before. The file for 3D says `marks`.
+- **The glass** in show mode ends at the bezel's inner edge (`watch.js` `glassR`, `show.js` `case.glass`): with the tool's bezel the crescents stood on it.
+- **Tests**: `labels.mjs` — markings on the metal; `window.mjs` — the Bezel rows with Markings.
+
 ## v1.1.74 beta · 11 Nov 2026 — a saved SVG says the case, for 3D
 
 Okay, 11 Nov 2026, 16:18: "Now i need transparencies on 3d, add bezel and rehaut there at the same time, go"
