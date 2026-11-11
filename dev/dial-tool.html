@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.69 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.70 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -385,6 +385,7 @@
      4.46.2: "add 4… scale up circles"): from the controls' column to the end, a unit between them as between tiles,
      each as large as its share of the line allows. A time in the dots (2:15) is set a size smaller to fit */
   .circles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .circles > button[hidden] { display: none; }      /* a place a movement can't drive (#586, R16), and 4:30 where none asks for it */
   .circles > button { display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--field); }
   @media (hover: hover) { .circles > button:hover { background: var(--hover); } }
   .circles > .atmore.on { font-size: var(--t-xs); }
@@ -760,6 +761,7 @@
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > .menubox { grid-column: 6 / span 2; }
+  .movebar > .menubox { grid-column: 4 / span 4; }      /* Movement (#586): a movement's full name, from the third column to the edge */
 }
 
 /* rows: a setting on the six columns, nested rows, notes */
@@ -8742,6 +8744,243 @@ var MOVEMENTS = [
         2
       ],
       "disc_d": 23
+    },
+    "of": null,
+    "can": {
+      "seconds": "central",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [
+        3,
+        6,
+        9
+      ],
+      "date_default": 3,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.5,
+      "minute": 0.88,
+      "second": 0.198
+    }
+  },
+  {
+    "id": "nh34",
+    "name": "Seiko NH34 (GMT)",
+    "short": "NH34",
+    "kind": "automatic",
+    "shown": true,
+    "dial": {
+      "d": 28.5,
+      "thickness": 0.4,
+      "hole": 2.7
+    },
+    "heights": {
+      "from": "maker",
+      "hour": 0.6,
+      "minute": 1.19,
+      "second": 1.81,
+      "cap": 1.91
+    },
+    "posts": {
+      "d": {
+        "hour": 1.5,
+        "minute": 0.88,
+        "second": 0.198
+      },
+      "top": {
+        "hour": 0.78,
+        "minute": 1.37,
+        "second": 1.91
+      }
+    },
+    "hand_t": {
+      "hour": 0.18,
+      "minute": 0.18,
+      "second": 0.1
+    },
+    "crystal_clearance": 0.45,
+    "disc_under_face": null,
+    "date": {
+      "positions": [
+        3,
+        6,
+        9
+      ],
+      "r": 10.55,
+      "aperture": [
+        2.9,
+        2
+      ],
+      "disc_d": 23
+    },
+    "of": "nh35",
+    "can": {
+      "seconds": "central",
+      "gmt": true,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [
+        3,
+        6,
+        9
+      ],
+      "date_default": 3,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.5,
+      "minute": 0.88,
+      "second": 0.198,
+      "gmt": 2.2
+    }
+  },
+  {
+    "id": "nh36",
+    "name": "Seiko NH36 (day-date)",
+    "short": "NH36",
+    "kind": "automatic",
+    "shown": true,
+    "dial": {
+      "d": 28.5,
+      "thickness": 0.4,
+      "hole": 2.05
+    },
+    "heights": {
+      "from": "maker",
+      "hour": 0.6,
+      "minute": 1.19,
+      "second": 1.81,
+      "cap": 1.91
+    },
+    "posts": {
+      "d": {
+        "hour": 1.5,
+        "minute": 0.88,
+        "second": 0.198
+      },
+      "top": {
+        "hour": 0.78,
+        "minute": 1.37,
+        "second": 1.91
+      }
+    },
+    "hand_t": {
+      "hour": 0.18,
+      "minute": 0.18,
+      "second": 0.1
+    },
+    "crystal_clearance": 0.45,
+    "disc_under_face": null,
+    "date": {
+      "positions": [
+        3,
+        6,
+        9
+      ],
+      "r": 10.55,
+      "aperture": [
+        2.9,
+        2
+      ],
+      "disc_d": 23
+    },
+    "of": "nh35",
+    "can": {
+      "seconds": "central",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [
+        3,
+        6,
+        9
+      ],
+      "date_default": 3,
+      "day": {
+        "positions": [
+          3,
+          6
+        ],
+        "r": 8.45,
+        "aperture": [
+          7,
+          2
+        ],
+        "date_part": 2.9
+      },
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.5,
+      "minute": 0.88,
+      "second": 0.198
+    }
+  },
+  {
+    "id": "nh38",
+    "name": "Seiko NH38 (no date)",
+    "short": "NH38",
+    "kind": "automatic",
+    "shown": true,
+    "dial": {
+      "d": 28.5,
+      "thickness": 0.4,
+      "hole": 2.05
+    },
+    "heights": {
+      "from": "maker",
+      "hour": 0.6,
+      "minute": 1.19,
+      "second": 1.81,
+      "cap": 1.91
+    },
+    "posts": {
+      "d": {
+        "hour": 1.5,
+        "minute": 0.88,
+        "second": 0.198
+      },
+      "top": {
+        "hour": 0.78,
+        "minute": 1.37,
+        "second": 1.91
+      }
+    },
+    "hand_t": {
+      "hour": 0.18,
+      "minute": 0.18,
+      "second": 0.1
+    },
+    "crystal_clearance": 0.45,
+    "disc_under_face": null,
+    "date": null,
+    "of": "nh35",
+    "can": {
+      "seconds": "central",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [],
+      "date_default": null,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.5,
+      "minute": 0.88,
+      "second": 0.198
     }
   },
   {
@@ -8793,6 +9032,27 @@ var MOVEMENTS = [
         2
       ],
       "disc_d": 23.4
+    },
+    "of": null,
+    "can": {
+      "seconds": "central",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [
+        3,
+        6
+      ],
+      "date_default": 3,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.52,
+      "minute": 1,
+      "second": 0.17
     }
   },
   {
@@ -8846,6 +9106,29 @@ var MOVEMENTS = [
         2
       ],
       "disc_d": null
+    },
+    "of": null,
+    "can": {
+      "seconds": "central",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [
+        3,
+        12,
+        9,
+        6
+      ],
+      "date_default": 3,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.5,
+      "minute": 0.9,
+      "second": 0.25
     }
   },
   {
@@ -8898,6 +9181,28 @@ var MOVEMENTS = [
         2
       ],
       "disc_d": null
+    },
+    "of": null,
+    "can": {
+      "seconds": "central or none",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [
+        3,
+        4,
+        6
+      ],
+      "date_default": 3,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.2,
+      "minute": 0.7,
+      "second": 0.2
     }
   },
   {
@@ -8950,6 +9255,28 @@ var MOVEMENTS = [
         2
       ],
       "disc_d": null
+    },
+    "of": null,
+    "can": {
+      "seconds": "central",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [
+        3,
+        6,
+        4.5
+      ],
+      "date_default": 3,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.2,
+      "minute": 0.7,
+      "second": 0.2
     }
   },
   {
@@ -8975,7 +9302,25 @@ var MOVEMENTS = [
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": null,
-    "date": null
+    "date": null,
+    "of": null,
+    "can": {
+      "seconds": "small",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [],
+      "date_default": null,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 2,
+      "minute": 1.15,
+      "second": 0.27
+    }
   },
   {
     "id": "miyota-2035",
@@ -9000,7 +9345,25 @@ var MOVEMENTS = [
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": null,
-    "date": null
+    "date": null,
+    "of": null,
+    "can": {
+      "seconds": "central or none",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [],
+      "date_default": null,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.2,
+      "minute": 0.7,
+      "second": 0.17
+    }
   },
   {
     "id": "miyota-8215",
@@ -9050,6 +9413,26 @@ var MOVEMENTS = [
         1.9
       ],
       "disc_d": 23
+    },
+    "of": null,
+    "can": {
+      "seconds": "central",
+      "gmt": false,
+      "date_hand": false,
+      "day_hand": false,
+      "month_hand": false,
+      "date": [
+        3
+      ],
+      "date_default": 3,
+      "day": null,
+      "ampm": false,
+      "moon": false
+    },
+    "holes": {
+      "hour": 1.52,
+      "minute": 1,
+      "second": 0.17
     }
   },
   {
@@ -9064,7 +9447,10 @@ var MOVEMENTS = [
     "hand_t": null,
     "crystal_clearance": null,
     "disc_under_face": null,
-    "date": null
+    "date": null,
+    "of": null,
+    "can": null,
+    "holes": null
   }
 ];
 var movement = (id) => MOVEMENTS.find((m) => m.id === id) ?? null;
@@ -9145,7 +9531,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.69 beta";
+var VERSION = "v1.1.70 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9400,6 +9786,8 @@ var HAND_BASE = {
   added: false,
   cycle: 0,
   offset: 0,
+  fit_d: null,
+  // the hole's Ø when Hole is Fit (#586): the chosen movement's post for this hand; null = the common fit, HOLE_FIT
   motion: 0,
   // a calendar hand's motion, a place in HAND_MOTIONS: 0 jumps at midnight as a date wheel does · 1 sweeps through the day (Okay, 11 Nov 2026: "weekday and stuff need to sweep or jump, with a selector")
   lang: 0
@@ -9528,6 +9916,8 @@ var DEFAULTS = {
   margin: 3,
   guides: false,
   // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
+  movement: "any",
+  // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,
   // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1],
@@ -9830,6 +10220,70 @@ var DEFAULTS = {
   gd_sel_strength: 95,
   gd_sel_w: 1.5
 };
+var MOVEMENT_CHOICES = () => [movement("any"), ...MOVEMENTS.filter((m) => m.shown && m.id !== "any")];
+var can_of = (S) => movement(S.movement)?.can ?? null;
+var PLACE_OF = { 3: "3", 4: "4", 4.5: "4:30", 6: "6", 9: "9", 12: "12" };
+var can_hand = (S, name) => {
+  const c = can_of(S);
+  if (!c) return true;
+  return name === "hour" || name === "minute" ? true : name === "second" ? c.seconds !== "none" && c.seconds !== "small" : name === "gmt" ? c.gmt : name === "date" ? c.date_hand : name === "day" ? c.day_hand : name === "month" ? c.month_hand : false;
+};
+var window_kinds_can = (S) => {
+  const c = can_of(S);
+  if (!c) return WINDOW_KINDS.map((_, i2) => i2);
+  return WINDOW_KINDS.map((k, i2) => k === "date" ? c.date.length ? i2 : -1 : k === "day" ? c.day ? i2 : -1 : k === "am \xB7 pm" ? c.ampm ? i2 : -1 : k === "moon phase" ? c.moon ? i2 : -1 : -1).filter((i2) => i2 >= 0);
+};
+var window_places_can = (S, kind) => {
+  const c = can_of(S);
+  if (!c) return null;
+  const k = WINDOW_KINDS[kind];
+  return k === "date" ? c.date.map((p) => PLACE_OF[p]).filter(Boolean) : k === "day" && c.day ? c.day.positions.map((p) => PLACE_OF[p]).filter(Boolean) : [];
+};
+function apply_movement(S, id) {
+  const M = movement(id);
+  S.movement = M ? id : "any";
+  const c = M?.can, gone = [];
+  for (const name of FIXED_HANDS) S["ha_" + name] = { ...S["ha_" + name], fit_d: M?.holes?.[name] ?? null };
+  if (S.ha_gmt) S.ha_gmt = { ...S.ha_gmt, fit_d: M?.holes?.gmt ?? null };
+  if (!c) return gone;
+  if (M.dial?.d) S.dial_d = M.dial.d;
+  if (M.dial?.hole) S.dial_hole = M.dial.hole;
+  if (M.heights) {
+    for (const k of ["hour", "minute", "second", "cap"]) if (M.heights[k] != null) S["sh_" + k] = M.heights[k];
+  }
+  for (const name of ADDED_HANDS) {
+    const H2 = S["ha_" + name];
+    if (H2 && H2.added && !can_hand(S, name)) {
+      S["ha_" + name] = { ...H2, added: false, on: false };
+      S.rings = S.rings.filter((r) => r.fn !== name).length ? S.rings.filter((r) => r.fn !== name) : S.rings;
+      gone.push(HAND_WORD[name] + " hand");
+    }
+  }
+  if (!can_hand(S, "second") && S.ha_second.on) {
+    S.ha_second = { ...S.ha_second, on: false };
+    gone.push("Seconds hand");
+  }
+  const kinds = window_kinds_can(S);
+  windows_of(S).forEach((w, i2) => {
+    if (!w.on) return;
+    const put = (o) => {
+      if (i2 === 0) for (const [k, v] of Object.entries(o)) S[FIRST_WINDOW[k]] = v;
+      else S.windows[i2 - 1] = { ...S.windows[i2 - 1], ...o };
+    };
+    if (!kinds.includes(w.kind)) {
+      put({ on: false });
+      gone.push(WINDOW_KINDS[w.kind] + " window");
+      return;
+    }
+    const places = window_places_can(S, w.kind), here = DATE_AT[w.at]?.[0], at = places.includes(here) && w.at_deg == null ? w.at : DATE_AT.findIndex((d) => d[0] === (PLACE_OF[c.date_default] ?? places[0]));
+    if (WINDOW_KINDS[w.kind] === "date" && M.date) put({ at, at_deg: null, r: M.date.r ?? w.r, w: M.date.aperture?.[0] ?? w.w, h: M.date.aperture?.[1] ?? w.h });
+    if (WINDOW_KINDS[w.kind] === "day" && c.day) {
+      const inner = c.day.r - c.day.aperture[0] / 2, day_w = c.day.aperture[0] - (c.day.date_part ?? 0);
+      put({ at, at_deg: null, r: +(inner + day_w / 2).toFixed(3), w: +(day_w - 0.2).toFixed(3), h: c.day.aperture[1] });
+    }
+  });
+  return gone;
+}
 var COLOUR_MODES = ["RGB", "HEX", "CMYK", "RAL", "Lume"];
 var UNITS = [
   ["mm", "Millimetres", 1, 0],
@@ -10556,8 +11010,12 @@ var LINK_KEYS = [
   "r_from",
   // v1.1.58 beta (#582): appended; the case off to start, every ring on the dial, as every older link; rh_w dead since v1.1.59 (the rehaut by angle and length, R8)
   "rh_deg",
-  "rh_len"
+  "rh_len",
   // v1.1.59 beta (#582): appended
+  "motion",
+  "movement",
+  "fit_d"
+  // v1.1.69–70 beta (#590, #586): appended; Jump, the Imaginary Movement and the common fit to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -12000,7 +12458,7 @@ function hand_outline(shape3, L, W2, T, tip, F, at, R = 0, bulge = 37.5) {
   return new Path();
 }
 var HOLE_FIT = { hour: 1.5, minute: 0.9, second: 0.2 };
-var hole_of = (h, name = "") => !(h.hub > 0) || HAND_SHAPES[h.shape] === "disc" ? 0 : h.hole_as === 1 ? HOLE_FIT[name] || 0 : h.hole_as === 2 ? max(+h.hole || 0, 0) : 0;
+var hole_of = (h, name = "") => !(h.hub > 0) || HAND_SHAPES[h.shape] === "disc" ? 0 : h.hole_as === 1 ? (h.fit_d ?? HOLE_FIT[name]) || 0 : h.hole_as === 2 ? max(+h.hole || 0, 0) : 0;
 function hand_boss(h, name = "") {
   if (!(h.hub > 0) || HAND_SHAPES[h.shape] === "disc") return null;
   const hole = hole_of(h, name);
@@ -14134,7 +14592,7 @@ var ROWS = {
     // off, its rows don't apply, so the pane goes (R16): the tab is empty below its Show (#416)      // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     // four complications: a big date is the Date tile with its tick below (4.89; Okay, 19 Oct 2026: "Big date function is an under selection of date function"); its kind, 4, stays what is stored (R9)
-    pick("kind", "Complication", WINDOW_KINDS, (i2) => icon(PICS.window[i2], 30, 21), { ...W, small: true, across: 4, skip: [4], shown: (T) => WINDOW_KINDS[T.kind] === "big date" ? 0 : T.kind, show: win_on }),
+    pick("kind", "Complication", WINDOW_KINDS, (i2) => icon(PICS.window[i2], 30, 21), { ...W, small: true, across: 4, skip: [4], offered: (T, S) => window_kinds_can(S), shown: (T) => WINDOW_KINDS[T.kind] === "big date" ? 0 : T.kind, show: win_on }),
     chk("big", "Big date", { ...W, nest: true, show: win_is("date", "big date"), get: (T) => WINDOW_KINDS[T.kind] === "big date", put: (tool2, on) => tool2.set_value("window", "kind", WINDOW_KINDS.indexOf(on ? "big date" : "date")) }),
     // all on one line (4.79: the fifth, big date, fell to a line of its own)
     info("Two holes: the tens and the units, each on a disc.", { ...W, show: win_is("date", "big date") }),
@@ -14437,6 +14895,8 @@ var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
 var on_tab = (n) => (rows) => rows.map((r) => r.pin ? r : { ...r, show: (T, S, app) => (S.ui_dial_tab || 0) === n && (!r.show || r.show(T, S, app)) });
 var CS = { side: true };
 ROWS.Dial = [
+  custom("movement_bar", { pin: true, bar: true }),
+  // Movement (#586), between the section tabs and Dial · Rehaut · Bezel (Okay, 11 Nov 2026)
   custom("case_tabs", { pin: true, bar: true }),
   ...on_tab(0)(DIAL_ROWS),
   ...on_tab(1)([
@@ -19385,6 +19845,7 @@ var PANEL = {
           const i2 = +b.id.slice(id.length + 1);
           b.classList.toggle("on", i2 === on);
           b.setAttribute("aria-checked", String(i2 === on));
+          if (row.offered) b.hidden = !row.offered(T, this.S).includes(i2);
         });
       };
     }
@@ -20976,7 +21437,7 @@ var HANDS2 = {
     wrap.append(line);
     let drawn2 = "";
     out.refresh = (S) => {
-      const shown = HANDS.filter((h) => hand_added(S, h)), key = shown.join();
+      const shown = HANDS.filter((h) => hand_added(S, h)), key = shown.join() + "|" + (S.movement || "any");
       if (key !== drawn2) {
         drawn2 = key;
         tabs.replaceChildren(...shown.map((h) => {
@@ -20984,7 +21445,7 @@ var HANDS2 = {
           b.setAttribute("role", "tab");
           return b;
         }));
-        const left = HAND_FUNCTIONS.filter(([h]) => !shown.includes(h));
+        const left = HAND_FUNCTIONS.filter(([h]) => !shown.includes(h) && can_hand(S, h));
         select.replaceChildren(el("option", { value: "", textContent: "Add a hand", hidden: true, selected: true }), ...left.map(([h, words]) => el("option", { value: h, textContent: words })));
         plus.hidden = !left.length;
       }
@@ -21238,6 +21699,36 @@ function case_section(S) {
   return out;
 }
 var CASE2 = {
+  /** Movement, always in view on the Dial tab, between the section tabs and Dial · Rehaut · Bezel (#586; Okay, 11 Nov 2026:
+   *  "Section tabs ↔ Dial·Rehaut·Bezel", "Build by house rules"): one line as the Hands tab's All hands — the name and a
+   *  dropdown of the movements. A movement chosen writes its defaults and takes off what it can't drive (R16); one undo step */
+  row_movement_bar(wrap, out) {
+    wrap.className = "handsbar movebar";
+    const select = el("select", { id: "global-movement", title: "The movement this dial is for: its sizes and what it can drive", ariaLabel: "Movement" });
+    for (const m of MOVEMENT_CHOICES()) select.append(el("option", { value: m.id, textContent: m.name }));
+    select.onchange = () => this.set_movement(select.value);
+    const box3 = chevron_box(select);
+    wrap.append(el("h2", { textContent: "Movement" }), box3.box);
+    out.refresh = (S) => {
+      select.value = S.movement || "any";
+      box3.sync();
+    };
+  },
+  /** a movement chosen (#586): the dial scaled with its new Ø if Scale everything is on, then its defaults written and what
+   *  it can't drive taken off (geometry.js apply_movement); the preview's note says what went */
+  set_movement(id) {
+    const S = this.S, M = movement(id), d = M?.dial?.d;
+    this.take_step();
+    if (S.ui_scale && d > 0 && S.dial_d > 0 && d !== S.dial_d) this.scale_with(S.dial_d, d);
+    const gone = apply_movement(S, id);
+    if (gone.length) this.say(`${M.name} can't drive it, so it was taken off: ${gone.join(", ")}. Undo brings it back.`);
+    this.static_dirty = true;
+    this.steady(() => {
+      this.fill_ring_list();
+      this.sync_rows();
+    });
+    this.render();
+  },
   /** the Dial tab's own tabs, always in view: Dial · Rehaut · Bezel (Okay, 9 Nov 2026: "Tab under dial. What we have now
    *  is a tab, bezel and rehault are tabs"), as the hand tabs are */
   row_case_tabs(wrap, out) {
@@ -21518,13 +22009,19 @@ var WINDOWS = {
       w.at_deg = null;
       this.changed(true);
     };
-    const quarters = ["3", "6", "9", "12", "4"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));
+    const quarters = ["3", "6", "9", "12", "4", "4:30"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));
     const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "\xB7\xB7\xB7", title: "Every place, or any time: 2:15, 7:40\u2026" });
     more.setAttribute("aria-expanded", "false");
     more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Position" });
     wrap.append(el("label", { textContent: "Position" }), el("span", { className: "circles" }, ...quarters, more));
     out.refresh = (T) => {
-      for (const b of quarters) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
+      const can = window_places_can(this.S, T.kind);
+      for (const b of quarters) {
+        b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
+        const name = DATE_AT[+b.id.slice(19)]?.[0];
+        b.hidden = can ? !can.includes(name) : name === "4:30";
+      }
+      more.hidden = Boolean(can);
       const elsewhere = T.at_deg != null || !["3", "6", "9", "12", "4"].includes(DATE_AT[T.at]?.[0]);
       more.classList.toggle("on", elsewhere);
       more.textContent = elsewhere ? window_place(T) : "\xB7\xB7\xB7";
