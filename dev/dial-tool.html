@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.67 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.68 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -2243,13 +2243,13 @@
   /* a popup on the bar (barpop): the date's (#402, #412, #432) and, on a phone, the zoom's (#445). Okay's drawing,
      final (20 Oct 2026, 01:05: "popup drawing and final decisions made in photoshop. other than tue (font rendering)
      which should be default dark interface text, all else is pixel perfect. gaps, placements within blocks, block sizes"),
-     measured from it: a light ground framed by the bar's dark; inside, 8 round and 10 before the weekday; the weekday in
-     the panel's dark type; the boxes the bar's dark, a control high, the bar's light hairline; their values white and
+     measured from it: a light ground framed by the bar's dark; inside, 8 round and 10 before the weekday's box, 8 after it; the boxes the bar's dark, a control high, the bar's light hairline; their values white and
      semibold, each cell its drawn width (day 30, month 39, year 44, ⌄ 16); 2 between boxes, 4 before − +; − and + a
      control wide each. A press on a value opens its menu; the day's word opens the system's picker */
   .bar .barpop { box-shadow: var(--shadow-pop); position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); padding-left: var(--datepop-lead); border: var(--hair) solid var(--bar); border-radius: var(--round-small); background: var(--datepop-ground); color: var(--ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; box-shadow: var(--shadow); }
   .bar .barpop .popline { display: flex; align-items: center; gap: var(--datepop-gap); height: var(--control); }
-  .bar .barpop .weekday { margin-right: calc(var(--datepop-pad) - var(--datepop-gap)); color: var(--ink); }      /* the weekday, then 8 to the day's box */
+  .bar .barpop .pop-weekday { margin-right: calc(var(--datepop-pad) - var(--datepop-gap)); }      /* the weekday's box, then 8 to the day's (Okay, 11 Nov 2026: "Weekday choosable too") */
+  .bar .barpop .pop-weekday .popword { width: var(--datepop-month); }      /* three letters, as the month's box */
   .bar .barpop .popgroup { position: relative; display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
   .bar .barpop .popgroup .popword { display: grid; place-items: center; padding: 0; color: var(--bar-ink); font-weight: 600; }
   @media (hover: hover) { .bar .barpop .popgroup:hover { background: var(--bar-field); } }
@@ -7603,7 +7603,7 @@ var PK = null;
 function attach(pk) {
   PK = pk;
 }
-var STYLE = "miyazaki";
+var STYLE = "artisan";
 var SOFT = false;
 var GLINT = "plain";
 var INK_K = 6;
@@ -7690,7 +7690,7 @@ var TONES = {
       blackgrey: [["#3a3b3d", "#2f3032", "#252628"], ["#8e9093", "#76787b", "#5f6164"], ["#3a3b3d", "#2f3032", "#252628"]]
     }
   },
-  miyazaki: {
+  artisan: {
     INK: "#262626",
     INKB: null,
     ink: [0.62, 0.8],
@@ -7707,7 +7707,7 @@ var TONES = {
   }
 };
 {
-  const T = TONES.miyazaki;
+  const T = TONES.artisan;
   T.METALS.steel.forEach((c, i2) => {
     const [h, sat, l] = hex2hsl(c);
     T.METALS.steel[i2] = hsl2hex([h, sat, l * 0.85]);
@@ -8133,7 +8133,7 @@ function caseEngineer(C2, v, L) {
   out.push(stroke(circle(C2.opening), 0.2));
   return out.join("");
 }
-function caseMiyazaki(C2, v, L) {
+function caseArtisan(C2, v, L) {
   FLARE_TINT = flareColour(C2.metal);
   const R = C2.cushion ? C2.cushion.a : C2.od / 2, T = C2.metal, out = [];
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C2.cushion ? cushionLug(C2, sx, sy) : lugPath(C2, sx, sy), T, L, 0.5, 1, C2.cushion || C2.rails ? null : circle(R + 0.6)));
@@ -8199,7 +8199,7 @@ function caseMiyazaki(C2, v, L) {
   out.push(`<path d="M${f(Math.cos(rad(a - 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 35 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 35 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, 0.5 * GLASS.op))}" stroke-width="${f(1.6 * GLASS_K * GLASS.fat)}" stroke-linecap="round"/>`);
   return out.join("");
 }
-var caseSVG = (C2, v, L) => STYLE === "engineer" ? caseEngineer(C2, v, L) : caseMiyazaki(C2, v, L);
+var caseSVG = (C2, v, L) => STYLE === "engineer" ? caseEngineer(C2, v, L) : caseArtisan(C2, v, L);
 function leatherPiece(y0, y1, w0, w1, T, L, tip = 0, holes = []) {
   const s = Math.sign(y1 - y0), yEnd = y1 - s * tip, rw = 2.2;
   let d = `M${f(-w0 / 2)} ${f(y0 + s * rw)}Q${f(-w0 / 2)} ${f(y0)} ${f(-w0 / 2 + rw)} ${f(y0)}L${f(w0 / 2 - rw)} ${f(y0)}Q${f(w0 / 2)} ${f(y0)} ${f(w0 / 2)} ${f(y0 + s * rw)}L${f(w1 / 2)} ${f(yEnd)}`;
@@ -8277,7 +8277,7 @@ function natoEngineer(C2, L, set, open, span) {
   for (let y = half + 165 - 25; y > half + 100; y -= 7) h += `<ellipse cx="0" cy="${f(y)}" rx="0.85" ry="0.65" fill="${INK}" fill-opacity="0.75"/>`;
   return h;
 }
-function natoMiyazaki(C2, L, set, open, span) {
+function natoArtisan(C2, L, set, open, span) {
   const S = NATO_SETS[set] || NATO_MORE[set], w = C2.lugw - 0.3, x0 = -w / 2, half = C2.l2l / 2;
   const stripes = STRIPES[set] || [[0, 1, 0]];
   const y0 = open ? -(half + 70) : -span, y1 = open ? half + 165 : span, band = rrect(x0, y0, -x0, y1, 1.2);
@@ -8295,7 +8295,7 @@ function natoMiyazaki(C2, L, set, open, span) {
   }
   return h;
 }
-var natoSVG = (...a) => STYLE === "engineer" ? natoEngineer(...a) : natoMiyazaki(...a);
+var natoSVG = (...a) => STYLE === "engineer" ? natoEngineer(...a) : natoArtisan(...a);
 function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   const id = "vb" + VB_N++, h = y1 - y0, N = 9;
   CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
@@ -8316,7 +8316,7 @@ function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   s += `<g fill="${ramp[0]}">${vx(!litL)}${hz(!litT)}</g><g fill="${ramp[ramp.length - 1]}">${vx(litL)}${hz(litT)}</g>`;
   return s + `</g>`;
 }
-function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
+function barrelArtisan(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   const id = "vb" + VB_N++, h = y1 - y0, N = 7;
   CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
   let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;
@@ -8331,7 +8331,7 @@ function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   s += `<g fill="${ramp[0]}">${vx(!litL)}${hz(!litT)}</g><g fill="${ramp[ramp.length - 1]}">${vx(litL)}${hz(litT)}</g>`;
   return s + `</g>`;
 }
-var barrel = (...a) => STYLE === "engineer" ? barrelEngineer(...a) : barrelMiyazaki(...a);
+var barrel = (...a) => STYLE === "engineer" ? barrelEngineer(...a) : barrelArtisan(...a);
 function vaultEngineer({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
   const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
   const pitch = 6.4, out = [];
@@ -8363,7 +8363,7 @@ function vaultEngineer({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2
   }
   return out.join("");
 }
-function vaultMiyazaki({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
+function vaultArtisan({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
   const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
   const pitch = 6.4, out = [];
   for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
@@ -8390,7 +8390,7 @@ function vaultMiyazaki({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2
   }
   return out.join("");
 }
-var vaultBracelet = (o) => STYLE === "engineer" ? vaultEngineer(o) : vaultMiyazaki(o);
+var vaultBracelet = (o) => STYLE === "engineer" ? vaultEngineer(o) : vaultArtisan(o);
 function linksBracelet({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2 = 40, ramp, ink = null, inkW = 0.22, wrap = FLAT_WRAP }) {
   const lv0 = [Math.cos(rad(H2)) * Math.cos(rad(L)), Math.cos(rad(H2)) * Math.sin(rad(L)) * sy, Math.sin(rad(H2))];
   const h = 4.4, g = 0.15, mid = W2 * 0.46, out = [`<rect x="${f(-W2 / 2 + 0.3)}" y="${f(Math.min(sy * wrap.map(y0), sy * wrap.map(span)))}" width="${f(W2 - 0.6)}" height="${f(Math.abs(wrap.map(span) - wrap.map(y0)))}" fill="${ramp[0]}"/>`];
@@ -8555,7 +8555,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
 
-${strapSVG}${strap === "bracelet" ? "" : contact(C2, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
+${strapSVG}${strap === "bracelet" ? "" : contact(C2, L, strap, span, STYLE === "artisan")}${caseStr}${STYLE === "artisan" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
 </svg>`;
 }
 var GREYS = ["#504f4f", "#444442", "#373735"];
@@ -8579,7 +8579,7 @@ function frame(o) {
   return `<g transform="scale(1 -1)"><defs>${CLIPS.join("")}</defs>${body}</g>`;
 }
 function silhouetteOf(key, size) {
-  use("miyazaki");
+  use("artisan");
   DIAL_IN = false;
   GLINT = "off";
   OUTLINE_ON = false;
@@ -8619,7 +8619,7 @@ var fullBox = (kind = null, size = 1, bracelet = false) => {
 };
 var STYLES = {
   engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
-  miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` }
+  artisan: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` }
 };
 var hsl = (h, k) => {
   const [hh, s, l] = hex2hsl(h);
@@ -8647,7 +8647,7 @@ var caseBox = (key, size) => {
   return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.rails ? Math.max(C2.od, C2.lugw + 2 * C2.lugT) : C2.od) + 2 * C2.crown.h, dial: C2.dial };
 };
 function draw(o) {
-  use(o.style || "miyazaki");
+  use(o.style || "artisan");
   const STYLE_ = STYLES[STYLE];
   OUTLINE_ON = o.outline !== false;
   LIVE = o.case ? { outer: o.case.outer, dial: o.d } : null;
@@ -9145,7 +9145,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.67 beta";
+var VERSION = "v1.1.68 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9696,7 +9696,7 @@ var DEFAULTS = {
   // ── w_: the watch round the dial in show mode (22 Oct 2026, build list #509; R7). Kept in the settings file and the
   // session, never in a link (R31: these keys are not in LINK_KEYS). Lists only grow at their end (R9).
   w_style: 1,
-  // the paint: 0 Engineer, 1 Miyazaki (watch.js). The dial side draws Engineer, flat, whatever this says
+  // the paint: 0 Engineer, 1 Artisan (watch.js). The dial side draws Engineer, flat, whatever this says
   w_lighting: 0,
   // 0 dramatic (the spotlight pool and the flare), 1 flat
   w_view: 0,
@@ -9733,7 +9733,7 @@ var DEFAULTS = {
   w_grounds: [],
   // show mode's backdrops of your own (#510; Okay, 25 Oct 2026: "Adding colors or gradients by user possible, save file carries those too"): each [colour] or [first, second], colours as c_backdrop's; added at the end
   w_ground_auto: false,
-  // Backdrop › Auto: the ground follows the paint's own (Engineer Stone, Miyazaki Umber; watch.js presets().floor), as the Show Case's opener did; picking any other backdrop turns it off
+  // Backdrop › Auto: the ground follows the paint's own (Engineer Stone, Artisan Umber; watch.js presets().floor), as the Show Case's opener did; picking any other backdrop turns it off
   c_backdrop2: null,
   // a second backdrop colour: a gradient at 45°, the backdrop's colour at the top left, this at the bottom right; null = one colour
   out_watch_px: 3e3,
@@ -11451,10 +11451,10 @@ function placed(S, ring) {
   if (kind === "ticks" || kind === "markers") return { ...ring, r: b, len: b - a, from: 0 };
   return { ...ring, r: (a + b) / 2 };
 }
-var STYLE_NAMES = ["engineer", "miyazaki"];
+var STYLE_NAMES = ["engineer", "artisan"];
 var METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
 var hex_rgba = (h) => [1, 3, 5].map((i2) => parseInt(h.slice(i2, i2 + 2), 16) / 255).concat(1);
-var case_metal = (S) => S.c_metal || hex_rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
+var case_metal = (S) => S.c_metal || hex_rgba(presets(STYLE_NAMES[S.w_style] || "artisan").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
 var REHAUT_SHADE = 0.3;
 var REHAUT_SECTORS = 72;
 function shaded_ring(a, b, colour, from, shade = REHAUT_SHADE, N = REHAUT_SECTORS) {
@@ -12460,13 +12460,13 @@ var METAL_NAMES2 = METAL_NAMES;
 var NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey", "solid"];
 var SOLID_NATO = "#2a3550";
 function nato_colours(S) {
-  const name = NATO_NAMES[S.w_nato], P2 = presets(STYLE_NAMES2[S.w_style] || "miyazaki");
+  const name = NATO_NAMES[S.w_nato], P2 = presets(STYLE_NAMES2[S.w_style] || "artisan");
   if (S.c_nato) return S.c_nato.map(hex);
   return name === "solid" ? [SOLID_NATO, SOLID_NATO, SOLID_NATO] : P2.nato[name] || P2.nato.regimental;
 }
 var INSERTS = [["#2b2c30", "#2b2c30"], ["#1f3a6e", "#1f3a6e"], ["#1f5a3a", "#1f5a3a"], ["#23407a", "#a8262e"], ["#222326", "#22457e"], ["#222326", "#a3232b"], ["#2a2420", "#6b3f24"], ["#222326", "#2f7a3c"]];
 var metal_picture = (i2) => {
-  const c = presets("miyazaki").metals[METAL_NAMES2[i2]] || "#9a9a9a";
+  const c = presets("artisan").metals[METAL_NAMES2[i2]] || "#9a9a9a";
   return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><circle r="11" fill="${c}"/><path d="M-11 0A11 11 0 0 1 11 0A11 8 0 0 0 -11 0Z" fill="#fff" fill-opacity="0.3"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`;
 };
 var insert_picture = (i2) => {
@@ -12498,7 +12498,7 @@ var part_record = (S, x2) => {
 };
 var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), { dial: dial_attrs(S.dial_d) });
 function options(S, items, effects) {
-  const style = STYLE_NAMES2[S.w_style] || "miyazaki", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
+  const style = STYLE_NAMES2[S.w_style] || "artisan", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P2 = presets(style), lit = effects;
   return {
     style,
@@ -12544,8 +12544,8 @@ function options(S, items, effects) {
   };
 }
 var rgba = (h) => [1, 3, 5].map((i2) => parseInt(h.slice(i2, i2 + 2), 16) / 255).concat(1);
-var auto_ground = (S) => rgba(presets(STYLE_NAMES2[S.w_style] || "miyazaki").floor);
-var metal_colour = (S) => rgba(presets(STYLE_NAMES2[S.w_style] || "miyazaki").metals[METAL_NAMES2[S.w_metal]] || "#9c8250");
+var auto_ground = (S) => rgba(presets(STYLE_NAMES2[S.w_style] || "artisan").floor);
+var metal_colour = (S) => rgba(presets(STYLE_NAMES2[S.w_style] || "artisan").metals[METAL_NAMES2[S.w_metal]] || "#9c8250");
 var at_night = (S, svg) => S.w_night ? night(svg, S.w_moon, S.w_decay, Boolean(S.ui_effects && S.sh_blur)) : svg;
 var angles_of = (items) => {
   const A = {};
@@ -14379,7 +14379,7 @@ ROWS.Light = [
   // first (Okay, 3 Nov 2026, 01:06: "Light gets another pill selector, top: day/night. Night is lume mode"); the drawing: night.js
   num2("w_decay", "Lume decay %", 0, 100, 1, { whole: true, show: (S) => S.w_night === 1 }),
   // "Lume mode opens up a slider below for lume decay": 0 freshly charged, 100 gone
-  seg("w_style", "Style", ["Engineer", "Miyazaki"]),
+  seg("w_style", "Style", ["Engineer", "Artisan"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
   hdr("Sun", { folded: false, title: (S) => S.w_night === 1 ? "Moon" : "Sun" }),
   // at night the pane is the Moon's ("Sun is replaced by the "moon" below"): the same light, its own Strength
@@ -21332,7 +21332,6 @@ var WINDOWS = {
    *  content"). The menus are the rows' menus (menu_arrow, R34) on the bar's dark; built once, hidden. */
   date_pop_box() {
     const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const weekday = el("span", { className: "popword weekday", id: "date-pop-weekday" });
     const shown = () => /* @__PURE__ */ new Date(shown_day(this.S) + "T12:00:00");
     const put = (d) => this.set_value("global", "date", `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
     const group = (name, set) => {
@@ -21346,6 +21345,9 @@ var WINDOWS = {
       };
       return { select, word, el: el("span", { className: "popgroup pop-" + name }, word, menu_arrow(select)) };
     };
+    const WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], wd = (d) => (d.getDay() + 6) % 7;
+    const weekday = group("weekday", (d, v) => d.setDate(d.getDate() + v - wd(d)));
+    WEEK.forEach((w, i2) => weekday.select.append(el("option", { value: i2, textContent: w })));
     const day = group("day", (d, v) => d.setDate(v));
     const month = group("month", (d, v) => {
       const keep = d.getDate();
@@ -21364,7 +21366,7 @@ var WINDOWS = {
     this.date_pop = el(
       "div",
       { className: "barpop datepop", id: "date-pop", hidden: true },
-      el("div", { className: "popline" }, weekday, day.el, month.el, year.el, el("span", { className: "popsteps" }, step(-1), step(1)))
+      el("div", { className: "popline" }, weekday.el, day.el, month.el, year.el, el("span", { className: "popsteps" }, step(-1), step(1)))
     );
     this.date_pop.onkeydown = (e) => {
       if (e.key === "Escape") this.date_pop_open(false);
@@ -21372,13 +21374,8 @@ var WINDOWS = {
     this.date_pop_sync = () => {
       if (!this.date_pop || this.date_pop.hidden) return;
       const d = shown(), y = d.getFullYear(), m = d.getMonth(), last2 = new Date(y, m + 1, 0).getDate();
-      const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      weekday.textContent = DAYS[d.getDay()];
-      if (!weekday.style.width) {
-        const pen2 = document.createElement("canvas").getContext("2d"), c = getComputedStyle(weekday);
-        pen2.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
-        weekday.style.width = Math.ceil(Math.max(...DAYS.map((x2) => pen2.measureText(x2).width))) + "px";
-      }
+      weekday.word.textContent = WEEK[wd(d)];
+      weekday.select.value = wd(d);
       if (day.select.options.length !== last2) day.select.replaceChildren(...Array.from({ length: last2 }, (_, i2) => el("option", { value: i2 + 1, textContent: i2 + 1 })));
       if (+(year.select.options[0] || {}).value !== y - 50) year.select.replaceChildren(...Array.from({ length: 101 }, (_, i2) => el("option", { value: y - 50 + i2, textContent: y - 50 + i2 })));
       day.select.value = d.getDate();
@@ -22113,7 +22110,14 @@ var PREVIEW = {
     try {
       if (this.playing) {
         const [wall, t] = this.play_from;
-        this.S.t = (t + (performance.now() - wall) / 1e3 * this.speed) % 86400;
+        let now = t + (performance.now() - wall) / 1e3 * this.speed;
+        const days = Math.floor(now / 86400);
+        if (days) {
+          now -= days * 86400;
+          this.play_from = [performance.now(), now];
+          this.step_day(days);
+        }
+        this.S.t = now;
         this.sync_time();
         this.pulse(this.S.t, performance.now() / 1e3);
         this.render();
@@ -23296,6 +23300,11 @@ var BAR = {
     this.clock.style.setProperty("--ink-dy", dy + "px");
   },
   set_time(t) {
+    const days = Math.floor(t / 86400);
+    if (days) {
+      t -= days * 86400;
+      this.step_day(days);
+    }
     this.S.t = t;
     if (this.playing) this.play_from = [performance.now(), t];
     this.sync_time();
@@ -28245,7 +28254,7 @@ var DialTool = class _DialTool {
         if (at && at.closest && at.closest("input, textarea, select, [contenteditable='true']")) return;
         if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
           const step = (e.shiftKey ? 3600 : 60) * (e.key === "ArrowLeft" ? -1 : 1);
-          tool2.set_time(((tool2.S.t + step) % 86400 + 86400) % 86400);
+          tool2.set_time(tool2.S.t + step);
           e.preventDefault();
         } else if (e.key === " " && !e.repeat) {
           tool2.play(!tool2.playing);
