@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.83 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.84 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -144,6 +144,7 @@ export const RING_BASE = {
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
   ink_d: 0,                                        // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
   stroke_b: false,                                 // show mode's Inks: its stroke's colour split into two inks, the stroke printed with ink B (as ink_b; not in the link)
+  cut: 0,                                          // an engraved ring's cut, a place in CUT_SHAPES: V (the start) or Round (Okay, 12 Nov 2026: "Both shapes for every engraving item available, v is default"). A view that cuts for true reads it; the flat drawing does not
   ink_h: null, stroke_h: null,                     // show mode's Inks: this ring's own height, and its stroke's, mm — unlinked from its ink's (Okay, 3 Nov 2026, 02:11: "Share one height unless switched to separate heights"); null = the ink's. The file and the session, not the link
   ink_b: false,                                    // show mode's Inks (#545): with its colour split into two inks, this ring is printed with ink B; the file and the session, not the link (R7)
   // a stroke round the numerals or letters (#551; Okay, 30 Oct 2026: "good strokes, uniform. And round/sharp/miter
@@ -795,6 +796,7 @@ export const LINK_KEYS = [
   "w_body", "on_hand",      // v1.1.76 beta: appended; Fit and no disc to start, as every older link (w_body stays out of links, NOT_IN_LINK)
   "engrave", "rh_engrave", "bz_engrave",      // v1.1.76 beta: appended; painted to start, as every older link
   "bz_melt",                // v1.1.80 beta (#599): appended; a bezel seated on the case to start, as every older link
+  "cut",                    // v1.1.84 beta: appended; a V to start, as every older link's engraving
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1717,16 +1719,18 @@ export const bezel_insert = (S) => !!(S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rot
  *  overlap there is one pocket, not two — kept CUT_EDGE inside the face they are cut in, so a tick that runs to the edge ends in a
  *  wall. items: the scene's engraved parts → { plate, bezel }, each a Path or null. The bezel's face is its top between the crystal's
  *  rim and the chamfer; the rehaut's wall is too steep for a plan's outline and is left to the view */
-export const CUT_EDGE = 0.02;
+export const CUT_EDGE = 0.02, CUT_SHAPES = ["V", "Round"];      // a cut's section: two faces meeting on a line (an engraver's), or a round-bottomed groove (a ball cutter's). R9: appended only
+/** an outline moved inward by t mm, its corners kept sharp: the line a cut's wall reaches at that depth (a view asks for several) */
+export const cut_inset = (p, t) => offset(p.copy().removeOverlap(), -t, "Miter");
 export function cut_unions(S, items) {
-  const all = { plate: null, bezel: null }, sp = case_spans(S);
-  // a marking is cut where it LIES, whatever surface its ring is set to (a bezel's ring with Radius from Centre lies on the dial): every
-  // one but the rehaut's goes to both, and each face keeps what falls inside it
-  for (const x of items) { const s = x.ring?.ring ? ring_surface(S, x.ring.ring) : 0; if (s === 1 || !x.path) continue; for (const k of ["plate", "bezel"]) all[k] = all[k] ? all[k].union(x.path) : x.path; }
-  if (all.plate) all.plate = all.plate.intersection(circle(S.dial_d - 2 * CUT_EDGE));
-  if (!sp.bezel) all.bezel = null;
-  if (all.bezel && sp.bezel) { const a = sp.bezel[0] - S.bz_rim + 0.3 + CUT_EDGE, b = sp.bezel[1] - S.bz_chamfer - CUT_EDGE; all.bezel = b > a ? all.bezel.intersection(circle(2 * b).difference(circle(2 * a))) : null; }
-  for (const k of ["plate", "bezel"]) if (all[k] && !all[k].svg(3, true)) all[k] = null;      // nothing of it fell on that face
+  const sp = case_spans(S), all = {}, faces = { plate: circle(S.dial_d - 2 * CUT_EDGE) };
+  if (sp.bezel) { const a = sp.bezel[0] - S.bz_rim + 0.3 + CUT_EDGE, b = sp.bezel[1] - S.bz_chamfer - CUT_EDGE; if (b > a) faces.bezel = circle(2 * b).difference(circle(2 * a)); }
+  // a marking is cut where it LIES, whatever surface its ring is set to: every one but the rehaut's is offered to both faces, and
+  // each keeps what falls inside it. By the ring's Cut — one outline a face and a shape (plate-v, plate-round, bezel-v, bezel-round)
+  const joined = {};
+  for (const x of items) { const ring = x.ring?.ring; if (!x.path || (ring && ring_surface(S, ring) === 1)) continue; const shape = (CUT_SHAPES[ring?.cut] || CUT_SHAPES[0]).toLowerCase(); joined[shape] = joined[shape] ? joined[shape].union(x.path) : x.path; }
+  if (joined.v && joined.round) joined.round = joined.round.difference(joined.v);      // where the two overlap the V has it: one pocket, not two
+  for (const [face, area] of Object.entries(faces)) for (const [shape, p] of Object.entries(joined)) { const on = p.intersection(area); if (on.svg(3, true)) all[`${face}-${shape}`] = on; }
   return all;
 }
 export const COIN_DEPTH = 0.5;      // the depth a coin edge starts at when its tick is set (the Diver preset's)

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.83 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.84 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9546,7 +9546,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.83 beta";
+var VERSION = "v1.1.84 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9675,6 +9675,8 @@ var RING_BASE = {
   // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
   stroke_b: false,
   // show mode's Inks: its stroke's colour split into two inks, the stroke printed with ink B (as ink_b; not in the link)
+  cut: 0,
+  // an engraved ring's cut, a place in CUT_SHAPES: V (the start) or Round (Okay, 12 Nov 2026: "Both shapes for every engraving item available, v is default"). A view that cuts for true reads it; the flat drawing does not
   ink_h: null,
   stroke_h: null,
   // show mode's Inks: this ring's own height, and its stroke's, mm — unlinked from its ink's (Okay, 3 Nov 2026, 02:11: "Share one height unless switched to separate heights"); null = the ink's. The file and the session, not the link
@@ -11059,8 +11061,10 @@ var LINK_KEYS = [
   "rh_engrave",
   "bz_engrave",
   // v1.1.76 beta: appended; painted to start, as every older link
-  "bz_melt"
+  "bz_melt",
   // v1.1.80 beta (#599): appended; a bezel seated on the case to start, as every older link
+  "cut"
+  // v1.1.84 beta: appended; a V to start, as every older link's engraving
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -11964,20 +11968,25 @@ var bezel_melted = (S) => !!(S.bz_on && S.bz_melt);
 var bezel_coin = (S) => S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && !S.bz_melt ? max(0, +S.bz_teeth_depth || 0) : 0;
 var bezel_insert = (S) => !!(S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && BEZEL_MARKS[S.bz_marks] !== "Metal" && !S.bz_melt);
 var CUT_EDGE = 0.02;
+var CUT_SHAPES = ["V", "Round"];
 function cut_unions(S, items) {
-  const all = { plate: null, bezel: null }, sp = case_spans(S);
-  for (const x2 of items) {
-    const s = x2.ring?.ring ? ring_surface(S, x2.ring.ring) : 0;
-    if (s === 1 || !x2.path) continue;
-    for (const k of ["plate", "bezel"]) all[k] = all[k] ? all[k].union(x2.path) : x2.path;
-  }
-  if (all.plate) all.plate = all.plate.intersection(circle2(S.dial_d - 2 * CUT_EDGE));
-  if (!sp.bezel) all.bezel = null;
-  if (all.bezel && sp.bezel) {
+  const sp = case_spans(S), all = {}, faces = { plate: circle2(S.dial_d - 2 * CUT_EDGE) };
+  if (sp.bezel) {
     const a = sp.bezel[0] - S.bz_rim + 0.3 + CUT_EDGE, b = sp.bezel[1] - S.bz_chamfer - CUT_EDGE;
-    all.bezel = b > a ? all.bezel.intersection(circle2(2 * b).difference(circle2(2 * a))) : null;
+    if (b > a) faces.bezel = circle2(2 * b).difference(circle2(2 * a));
   }
-  for (const k of ["plate", "bezel"]) if (all[k] && !all[k].svg(3, true)) all[k] = null;
+  const joined = {};
+  for (const x2 of items) {
+    const ring = x2.ring?.ring;
+    if (!x2.path || ring && ring_surface(S, ring) === 1) continue;
+    const shape3 = (CUT_SHAPES[ring?.cut] || CUT_SHAPES[0]).toLowerCase();
+    joined[shape3] = joined[shape3] ? joined[shape3].union(x2.path) : x2.path;
+  }
+  if (joined.v && joined.round) joined.round = joined.round.difference(joined.v);
+  for (const [face, area] of Object.entries(faces)) for (const [shape3, p] of Object.entries(joined)) {
+    const on = p.intersection(area);
+    if (on.svg(3, true)) all[`${face}-${shape3}`] = on;
+  }
   return all;
 }
 var COIN_DEPTH = 0.5;
@@ -13118,8 +13127,8 @@ var case_record = (S) => ({
 var body_fit = (S) => bodyFit(CASE_OF_BEZEL[S.bezel] || "dress", S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, bezel_melted(S));
 var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), {
   dial: dial_attrs(S.dial_d) + case_attrs(case_record(S)),
-  // what is engraved, one outline a surface, for a view that cuts it into the metal (geometry.js cut_unions): `data-cut-plate`, `data-cut-bezel`
-  cuts: (items) => Object.entries(cut_unions(S, items)).filter(([, p]) => p).map(([k, p]) => ` data-cut-${k}="${p.svg(4, true)}"`).join("")
+  // what is engraved, one outline a face and a cut's shape, for a view that cuts it into the metal (geometry.js cut_unions): `data-cut-plate-v`, `data-cut-bezel-round` …
+  cuts: (items) => Object.entries(cut_unions(S, items)).map(([k, p]) => ` data-cut-${k}="${p.svg(4, true)}"`).join("")
 });
 function options(S, items, effects) {
   const style = STYLE_NAMES2[S.w_style] || "artisan", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
@@ -14526,6 +14535,8 @@ var ROWS = {
     seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...S.rh_on && rings_on(S, 1) < SURFACE_MOST[1] ? [1] : [], ...S.bz_on && rings_on(S, 2) < SURFACE_MOST[2] ? [2] : []] }),
     // a full surface is not offered (rehaut 1, bezel 3)
     seg("r_from", "Radius from", R_FROM, { show: (R, S) => ring_surface(S, R) > 0 }),
+    seg("cut", "Cut", CUT_SHAPES, { show: (R, S) => ring_engraved(S, R) }),
+    // an engraved ring's section, seen where it is cut for true (Show Case 3D); V to start
     num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num2("w", "\xD8", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
     num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),

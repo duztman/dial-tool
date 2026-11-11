@@ -72,8 +72,8 @@ export const case_record = (S) => ({
 /** the body's Ø at Fit for this dial, mm (Body Ø's floor) */
 export const body_fit = (S) => WATCH.bodyFit(G.CASE_OF_BEZEL[S.bezel] || "dress", S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null, G.bezel_melted(S));
 export const svg_facts = (S) => Object.assign((x) => P.part_attrs(part_record(S, x)), { dial: P.dial_attrs(S.dial_d) + P.case_attrs(case_record(S)),
-  // what is engraved, one outline a surface, for a view that cuts it into the metal (geometry.js cut_unions): `data-cut-plate`, `data-cut-bezel`
-  cuts: (items) => Object.entries(G.cut_unions(S, items)).filter(([, p]) => p).map(([k, p]) => ` data-cut-${k}="${p.svg(4, true)}"`).join("") });
+  // what is engraved, one outline a face and a cut's shape, for a view that cuts it into the metal (geometry.js cut_unions): `data-cut-plate-v`, `data-cut-bezel-round` …
+  cuts: (items) => Object.entries(G.cut_unions(S, items)).map(([k, p]) => ` data-cut-${k}="${p.svg(4, true)}"`).join("") });
 
 /** what watch.js draws for this dial and these settings — the Show Case's `options()` */
 export function options(S, items, effects) {

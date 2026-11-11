@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.84 beta · 12 Nov 2026 — a cut's section: V or Round, a ring at a time
+
+Okay, 12 Nov 2026, 02:13: "Both shapes for every engraving item available, v is default. Band on a bezel is for that. If no inset part exists it is paint or engraving on a bare metal surface."
+
+- **Cut** (`rows.js`, a ring's row, shown while the ring is engraved; key `cut`, the last of `LINK_KEYS`, R9): **V** (to start, so every older link's engraving is a V) or **Round**. The drawing and the files do not change: a section is seen in 3D alone.
+- **`cut_unions`** joins a face's cuts a section: the saved SVG says `data-cut-plate-v`, `-plate-round`, `-bezel-v`, `-bezel-round` (`svg_facts`); where a V and a Round overlap the place is the V's. **`cut_inset`**: an outline moved inward, for the section's walls (Show Case 3D, Pro round 121).
+- **Tests**: `labels.mjs` — the outlines a section, and an outline moved inward.
+
 ## v1.1.83 beta · 12 Nov 2026 — a cut is said where it lies; the plate says what it is made of
 
 Okay, 12 Nov 2026, 01:46, with his dial in Show Case 3D: "The facets, looks depths, etc. also changing dial material did not affect the view. Are the connections off? Investigate."

@@ -146,10 +146,11 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
 {
   const { svg_document } = await import("../src/output.js"), { svg_facts } = await import("../src/show.js");
   const S = G.fresh_settings({ paint: false, engrave: 1, bz_on: true, bz_kind: 1, bz_engrave: 1, rings: [{ kind: "band", r: 10, width: 2 }, { kind: "ticks", r: 11.5, count: 12, len: 4, w: 0.5 }, { kind: "ticks", surface: 2, r_from: 2, count: 12, w: 0.4 }] });
-  const svg = svg_document(S, G.build_static(S), 0, { facts: svg_facts(S) }), plate = /data-cut-plate="([^"]+)"/.exec(svg)?.[1] || "", bezel = /data-cut-bezel="([^"]+)"/.exec(svg)?.[1] || "";
+  const svg = svg_document(S, G.build_static(S), 0, { facts: svg_facts(S) }), plate = /data-cut-plate-v="([^"]+)"/.exec(svg)?.[1] || "", bezel = /data-cut-bezel-v="([^"]+)"/.exec(svg)?.[1] || "";
+  const R2 = structuredClone(S); R2.rings[1].cut = 1; const svg2 = svg_document(R2, G.build_static(R2), 0, { facts: svg_facts(R2) }), inset = G.cut_inset(G.circle(10), 1).svg(2);
   const reach = (d) => Math.max(...[...d.matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((m) => Math.hypot(+m[1], +m[2]))), sp = G.case_spans(S);
   const plain = svg_document(G.fresh_settings({}), G.build_static(G.fresh_settings({})), 0, { facts: svg_facts(G.fresh_settings({})) });
-  check(plate && bezel && (plate.match(/M/g) || []).length < 13 && reach(bezel) <= sp.bezel[1] - S.bz_chamfer - G.CUT_EDGE + 0.01 && /^<g id="dial" data-dial-d/m.test(svg) && !/data-cut-/.test(plain),
-    `an engraved dial's SVG says each surface's cuts as one outline: the plate's band and the twelve ticks over it joined (${(plate.match(/M/g) || []).length} contours), the bezel's held ${G.CUT_EDGE} mm inside its top's edge (${reach(bezel).toFixed(2)} of ${(sp.bezel[1] - S.bz_chamfer).toFixed(2)}); a painted dial says none (Okay: "cut the shapes out of the bezels top. VisiBLE and engraved at every height")`);
+  check(plate && bezel && (plate.match(/M/g) || []).length < 13 && reach(bezel) <= sp.bezel[1] - S.bz_chamfer - G.CUT_EDGE + 0.01 && /^<g id="dial" data-dial-d/m.test(svg) && !/data-cut-/.test(plain) && /data-cut-plate-round="/.test(svg2) && /data-cut-plate-v="/.test(svg2) && !/data-cut-plate-round/.test(svg) && Math.abs(reach(inset) - 4) < 0.02,
+    `an engraved dial's SVG says each surface's cuts as one outline: the plate's band and the twelve ticks over it joined (${(plate.match(/M/g) || []).length} contours), the bezel's held ${G.CUT_EDGE} mm inside its top's edge (${reach(bezel).toFixed(2)} of ${(sp.bezel[1] - S.bz_chamfer).toFixed(2)}); a ring's Cut set to Round has an outline of its own beside the V's ("Both shapes for every engraving item available, v is default"); an outline moves in by a depth (Ø 10 in by 1 → r ${reach(inset).toFixed(2)}); a painted dial says none (Okay: "cut the shapes out of the bezels top. VisiBLE and engraved at every height")`);
 }
 process.exit(bad ? 1 : 0);

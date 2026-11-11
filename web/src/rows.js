@@ -228,6 +228,7 @@ export const ROWS = {
     // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
     seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...(S.rh_on && G.rings_on(S, 1) < G.SURFACE_MOST[1] ? [1] : []), ...(S.bz_on && G.rings_on(S, 2) < G.SURFACE_MOST[2] ? [2] : [])] }),      // a full surface is not offered (rehaut 1, bezel 3)
     seg("r_from", "Radius from", G.R_FROM, { show: (R, S) => G.ring_surface(S, R) > 0 }),
+    seg("cut", "Cut", G.CUT_SHAPES, { show: (R, S) => G.ring_engraved(S, R) }),      // an engraved ring's section, seen where it is cut for true (Show Case 3D); V to start
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Ø", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),      // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
