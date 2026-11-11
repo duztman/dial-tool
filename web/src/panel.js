@@ -621,7 +621,7 @@ export const PANEL = {
       pill.onclick = () => this.pop_open(this.colour_of_row(row), pill);
       const name = el("label", { htmlFor: id, textContent: row.text });
       wrap.append(name, pill);
-      out.refresh = (T) => { pill.show((row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : [0, 0, 0, 1])); if (row.say) name.textContent = row.say(T)[0]; };
+      out.refresh = (T) => { if (row.none && this.S[row.none] === false) pill.none(); else pill.show((row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : [0, 0, 0, 1])); if (row.say) name.textContent = row.say(T)[0]; };
     }
 
     if (row.kind === "txt") {

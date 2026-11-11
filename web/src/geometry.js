@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.70 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.71 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -235,6 +235,8 @@ export const HAND_BASE = {
   motion: 0,    // a calendar hand's motion, a place in HAND_MOTIONS: 0 jumps at midnight as a date wheel does · 1 sweeps through the day (Okay, 11 Nov 2026: "weekday and stuff need to sweep or jump, with a selector")
   lang: 0,      // a calendar hand's names on its ring, a place in MOMENT_LANGS (EN · TR · DE · FR · IT); the Names pill
 };
+export const PLATE_METALS = ["Brass", "Bronze", "Steel", "Silver"];      // the plate's material (Okay, 11 Nov 2026: "Brass · Bronze · Steel · Silver"); R9: appended only
+export const PLATE_METAL_COLOURS = [[0.78, 0.64, 0.36, 1], [0.64, 0.46, 0.30, 1], [0.66, 0.67, 0.68, 1], [0.85, 0.85, 0.84, 1]];      // their bare colours, the preview's middle tone
 export const HAND_MOTIONS = ["Jump", "Sweep"];      // a calendar hand: jumps at midnight · sweeps through the day, the month or the year (R9: appended only)
 export const HAND_CYCLES = ["24 h", "12 h"];      // a GMT hand's turn: once a day · twice a day (R9: appended only)
 export const BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];      // R9: a new look is appended; Faceted (1) is not offered (#573) and draws as a Ridge
@@ -277,6 +279,7 @@ const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: 
 export const DEFAULTS = {
   version: 2,
   dial_d: 30.0, margin: 3.0, guides: false,      // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
+  material: 0, paint: true,      // the plate's MATERIAL, a place in PLATE_METALS, and whether it is painted (c_plate): no paint, the metal is the face — seen in the preview with a sheen that follows the sun, left unprinted in the files (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button")
   movement: "any",                                 // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
@@ -783,6 +786,7 @@ export const LINK_KEYS = [
   "rh_on", "rh_w", "rh_c", "bz_on", "bz_kind", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_c", "bz_insert_c", "bz_teeth_n", "bz_teeth_depth", "bz_teeth_fill", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome", "surface", "r_from",      // v1.1.58 beta (#582): appended; the case off to start, every ring on the dial, as every older link; rh_w dead since v1.1.59 (the rehaut by angle and length, R8)
   "rh_deg", "rh_len",      // v1.1.59 beta (#582): appended
   "motion", "movement", "fit_d",      // v1.1.69–70 beta (#590, #586): appended; Jump, the Imaginary Movement and the common fit to start, as every older link
+  "material", "paint",      // v1.1.71 beta: appended; brass under a painted plate to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2612,7 +2616,8 @@ export function scene(S, statik, t, preview = true, selected = null) {
       add("date number", x.number, dim(wc(x).text_c || wc(x).ink, face), { window: x.index });
       for (const m of x.more || []) add("date picture", m.path, dim(wc(x)[m.key] || (m.like_number ? wc(x).text_c || wc(x).ink : m.or), face), { window: x.index });      // a picture's further colours (4.73)
     }
-    add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));      // the hole shows when the hands are hidden
+    if (S.paint === false) add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0], face), { metal: true });      // no paint: the bare metal is the face (a file leaves it unprinted, output.js drawn)
+    else add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));      // the hole shows when the hands are hidden
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });

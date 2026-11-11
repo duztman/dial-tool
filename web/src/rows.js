@@ -163,7 +163,11 @@ export const cap_rows = (S) => S.ui_hand === G.top_hand(S) && (S.ha_second.on ||
 
 const DIAL_ROWS = [
     // Okay, 13 Oct 2026: Dial stays in view (pinned); the list of colours scrolls under it. The page around the dial (margin, backdrop) is the Settings box's (Okay, 10 Nov 2026: "Page margin and color move under settings from dial").
-    hdr("Dial", { pin: true }),                    // the plate: how big, what colour, what is on it
+    // the plate is the BASE tab's (Okay, 11 Nov 2026, his marks on the Dial tab: "Dial" → "Base", the pane "Dial" → "Material",
+    // "+ Metals"; "color gets a new line called paint"): its material on the heading line, its paint a line of its own
+    hdr("Material", { pin: true }),                // the plate: what it is made of, how big, what is on it
+    seg("material", "Material", G.PLATE_METALS, { head: true }),      // the bare metal: seen when Paint is No colour, with a sheen that follows the sun
+    col("c_plate", "Paint", { none: "paint" }),      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
     num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
     chk("ui_scale", "Scale everything with it", { nest: true }),
     // Weight (#88; atlas 6.19, Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the
@@ -172,7 +176,6 @@ const DIAL_ROWS = [
     num("ui_weight", "Weight %", 50, 200, 1, { whole: true }),
     info("Every width on the dial at once — marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
     num("dial_hole", "Centre hole", 0, 6, 0.1),      // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
-    col("c_plate", "Plate", { head: true }),      // the plate's colour on the Dial heading line, no row of its own (Okay, 24 Oct 2026: his drawing, the pill up on "Dial", "Row gone")
     custom("background"),
     // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
     // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
@@ -222,7 +225,7 @@ export const ROWS = {
     // the ring's ground (#582; Okay, 9 Nov 2026: "Rings on rehault and bezel addable, stackable"; the radius "Both, and a
     // 'fit' option. If i am doing bands etc."): Dial · Rehaut · Bezel, the two shown once the case has them; on a surface
     // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
-    seg("surface", "Surface", ["Dial", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...(S.rh_on ? [1] : []), ...(S.bz_on ? [2] : [])] }),
+    seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...(S.rh_on ? [1] : []), ...(S.bz_on ? [2] : [])] }),
     seg("r_from", "Radius from", G.R_FROM, { show: (R, S) => R.surface > 0 && ((R.surface === 1 && S.rh_on) || (R.surface === 2 && S.bz_on)) }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Ø", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),

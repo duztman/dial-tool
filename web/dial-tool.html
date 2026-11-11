@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.70 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.71 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7977,9 +7977,15 @@ var bossLight = (x2, L) => {
   CLIPS.push(`<clipPath id="${id}"><path d="${x2.p}"/></clipPath>`, `<linearGradient id="${id}g" gradientUnits="userSpaceOnUse" x1="${f(ux * x2.r)}" y1="${f(uy * x2.r)}" x2="${f(-ux * x2.r)}" y2="${f(-uy * x2.r)}"><stop offset="0" stop-color="#fff" stop-opacity="${f(lit)}"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${f(dark)}"/></linearGradient>`);
   return `<g clip-path="url(#${id})"><rect x="${f(-x2.r)}" y="${f(-x2.r)}" width="${f(2 * x2.r)}" height="${f(2 * x2.r)}" fill="url(#${id}g)"/></g>`;
 };
+var metalSheen = (x2, L, r) => {
+  const id = "mt" + INK_N++, ux = Math.cos(rad(L)) * r, uy = -Math.sin(rad(L)) * r, c = clampL(x2.f), [R, G, B] = [1, 3, 5].map((i2) => parseInt(c.slice(i2, i2 + 2), 16) / 255);
+  const shade = (k) => "#" + [R, G, B].map((v) => Math.round(255 * Math.max(0, Math.min(1, k > 0 ? v + (1 - v) * k : v * (1 + k))))).map((v) => v.toString(16).padStart(2, "0")).join("");
+  CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(ux)}" y1="${f(uy)}" x2="${f(-ux)}" y2="${f(-uy)}"><stop offset="0" stop-color="${shade(0.28)}"/><stop offset="0.5" stop-color="${c}"/><stop offset="1" stop-color="${shade(-0.22)}"/></linearGradient>`);
+  return `url(#${id})`;
+};
 function dialSVG(C2, v, L) {
   const D = DIALS[0], s = (C2.dial - (C2.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
-  const col2 = (x2) => clampL(x2.f);
+  const col2 = (x2) => x2.metal ? metalSheen(x2, L, D.d / 2) : clampL(x2.f);
   const items = D.items;
   const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
   const handsShadow = items.filter((x2) => x2.hand || x2.role === "cap").map((x2) => {
@@ -9531,7 +9537,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.70 beta";
+var VERSION = "v1.1.71 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9793,6 +9799,8 @@ var HAND_BASE = {
   lang: 0
   // a calendar hand's names on its ring, a place in MOMENT_LANGS (EN · TR · DE · FR · IT); the Names pill
 };
+var PLATE_METALS = ["Brass", "Bronze", "Steel", "Silver"];
+var PLATE_METAL_COLOURS = [[0.78, 0.64, 0.36, 1], [0.64, 0.46, 0.3, 1], [0.66, 0.67, 0.68, 1], [0.85, 0.85, 0.84, 1]];
 var HAND_MOTIONS = ["Jump", "Sweep"];
 var HAND_CYCLES = ["24 h", "12 h"];
 var BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];
@@ -9916,6 +9924,9 @@ var DEFAULTS = {
   margin: 3,
   guides: false,
   // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
+  material: 0,
+  paint: true,
+  // the plate's MATERIAL, a place in PLATE_METALS, and whether it is painted (c_plate): no paint, the metal is the face — seen in the preview with a sheen that follows the sun, left unprinted in the files (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button")
   movement: "any",
   // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,
@@ -11014,8 +11025,11 @@ var LINK_KEYS = [
   // v1.1.59 beta (#582): appended
   "motion",
   "movement",
-  "fit_d"
+  "fit_d",
   // v1.1.69–70 beta (#590, #586): appended; Jump, the Imaginary Movement and the common fit to start, as every older link
+  "material",
+  "paint"
+  // v1.1.71 beta: appended; brass under a painted plate to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -12675,7 +12689,8 @@ function scene(S, statik, t, preview = true, selected = null) {
       add("date number", x2.number, dim(wc(x2).text_c || wc(x2).ink, face), { window: x2.index });
       for (const m of x2.more || []) add("date picture", m.path, dim(wc(x2)[m.key] || (m.like_number ? wc(x2).text_c || wc(x2).ink : m.or), face), { window: x2.index });
     }
-    add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));
+    if (S.paint === false) add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0], face), { metal: true });
+    else add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });
@@ -12944,7 +12959,7 @@ var VIEW_NAMES = ["detail", "full", "dial"];
 var hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
 var PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);
 var one = (x2, hand, H2, S) => {
-  return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0 };
+  return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0, metal: Boolean(x2.metal) };
 };
 var part_record = (S, x2) => {
   const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null, H2 = hand ? S["ha_" + hand] : null, p = one(x2, hand, H2, S);
@@ -13462,8 +13477,8 @@ function file_name(S, ext, now = /* @__PURE__ */ new Date()) {
   if (ext === "sheet") return `dial-${num(S.dial_d, 2)}mm-sheet${what}-${day}.pdf`;
   return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
 }
-function drawn(S, statik, t, preview, selected) {
-  return scene(S, statik, t, preview, selected).map((item) => item.role === "hand" || item.role === "mark" || item.role === "lume" ? { ...item, path: turned(item.path, item.angle) } : item);
+function drawn(S, statik, t, preview, selected, keep_metal = false) {
+  return scene(S, statik, t, preview, selected).filter((item) => preview || keep_metal || !item.metal).map((item) => item.role === "hand" || item.role === "mark" || item.role === "lume" ? { ...item, path: turned(item.path, item.angle) } : item);
 }
 var WEIGHTS = [
   ["extralight", 200],
@@ -13508,7 +13523,7 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
   out.push(`<g id="dial"${facts ? facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
-  for (const item of drawn(S, statik, t, preview, selected)) {
+  for (const item of drawn(S, statik, t, preview, selected, Boolean(facts))) {
     const id = named(item) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
     if (text && text.texts.length) {
@@ -14270,8 +14285,14 @@ var H = { scope: "hand" };
 var cap_rows = (S) => S.ui_hand === top_hand(S) && (S.ha_second.on || S.ha_cap_top);
 var DIAL_ROWS = [
   // Okay, 13 Oct 2026: Dial stays in view (pinned); the list of colours scrolls under it. The page around the dial (margin, backdrop) is the Settings box's (Okay, 10 Nov 2026: "Page margin and color move under settings from dial").
-  hdr("Dial", { pin: true }),
-  // the plate: how big, what colour, what is on it
+  // the plate is the BASE tab's (Okay, 11 Nov 2026, his marks on the Dial tab: "Dial" → "Base", the pane "Dial" → "Material",
+  // "+ Metals"; "color gets a new line called paint"): its material on the heading line, its paint a line of its own
+  hdr("Material", { pin: true }),
+  // the plate: what it is made of, how big, what is on it
+  seg("material", "Material", PLATE_METALS, { head: true }),
+  // the bare metal: seen when Paint is No colour, with a sheen that follows the sun
+  col("c_plate", "Paint", { none: "paint" }),
+  // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
   num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),
   // typed past these it stops there and says so (#233: 0 and 1000 were taken)
   chk("ui_scale", "Scale everything with it", { nest: true }),
@@ -14282,8 +14303,6 @@ var DIAL_ROWS = [
   info("Every width on the dial at once \u2014 marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
   num2("dial_hole", "Centre hole", 0, 6, 0.1),
   // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
-  col("c_plate", "Plate", { head: true }),
-  // the plate's colour on the Dial heading line, no row of its own (Okay, 24 Oct 2026: his drawing, the pill up on "Dial", "Row gone")
   custom("background"),
   // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
   // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
@@ -14347,7 +14366,7 @@ var ROWS = {
     // the ring's ground (#582; Okay, 9 Nov 2026: "Rings on rehault and bezel addable, stackable"; the radius "Both, and a
     // 'fit' option. If i am doing bands etc."): Dial · Rehaut · Bezel, the two shown once the case has them; on a surface
     // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
-    seg("surface", "Surface", ["Dial", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...S.rh_on ? [1] : [], ...S.bz_on ? [2] : []] }),
+    seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...S.rh_on ? [1] : [], ...S.bz_on ? [2] : []] }),
     seg("r_from", "Radius from", R_FROM, { show: (R, S) => R.surface > 0 && (R.surface === 1 && S.rh_on || R.surface === 2 && S.bz_on) }),
     num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num2("w", "\xD8", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
@@ -17243,6 +17262,12 @@ var COLOUR = {
     shut.innerHTML = icon(SIGNS.cross);
     const head = el("header", { title: "Drag to move" }, P2.title, wide, shut);
     P2.used_chips = el("span", { className: "chips", id: "pop-used" });
+    P2.none = el("button", { type: "button", className: "nocolour", id: "pop-none", textContent: "No colour", title: "No colour: the bare material shows", hidden: true, onclick: () => {
+      if (P2.at && P2.at.none) {
+        P2.at.none.set();
+        this.pop_refresh();
+      }
+    } });
     P2.palette_chips = el("span", { className: "chips", id: "pop-palette" });
     P2.field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
     P2.hues = el("div", { className: "hue", title: "Hue" }, el("i"));
@@ -17311,6 +17336,7 @@ var COLOUR = {
       { className: "colourpop night", id: "colour-pop", hidden: true },
       head,
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "On this dial" }), P2.used_chips),
+      P2.none,
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P2.palette_chips),
       P2.field,
       P2.ral,
@@ -17360,7 +17386,13 @@ var COLOUR = {
     const dot = el("i", { className: "dot" }), hex3 = el("span", { className: "hex", id: id + "-hex" });
     const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex3);
     pill.setAttribute("aria-expanded", "false");
+    pill.none = () => {
+      paint(dot, [0, 0, 0, 0]);
+      dot.classList.add("none");
+      hex3.textContent = "None";
+    };
     pill.show = (c) => {
+      dot.classList.remove("none");
       paint(dot, c);
       dot.classList.toggle("lume", !is_open(c) && Boolean(lume_exact(to_hex(c))));
       hex3.textContent = is_open(c) ? "Open" : colour_word(c);
@@ -17376,12 +17408,17 @@ var COLOUR = {
       // rings (Okay, 12 Oct 2026) and hands (#163, 14 Oct 2026) can be see-through; a lume never: an ink, laid whole
       lume_only: Boolean(row.lume_only),
       // an opening's fill: Lume alone, with Open (#175)
+      // none: the pop-out's No colour button, for a colour that may be left off (Paint: Okay, 11 Nov 2026, "on off is possible through color selector popup adding a no color button in it")
+      none: row.none ? { off: () => this.S[row.none] === false, set: () => this.set_value("global", row.none, false) } : null,
       read: () => {
         const T = this.target(row.scope);
         return T ? (row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : null) : null;
       },
       // get · put: a row standing for part of a setting (a NATO's stripe)
-      write: (value) => row.put ? row.put(this, value) : this.set_value(row.scope, row.key, value),
+      write: (value) => {
+        if (row.none && this.S[row.none] === false) this.set_value("global", row.none, true);
+        return row.put ? row.put(this, value) : this.set_value(row.scope, row.key, value);
+      },
       label: () => {
         const S = this.S, scope = row.scope;
         const whose = scope === "ring" ? this.ring().name || kind_of(this.ring()) : scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : scope === "window" ? `Window ${S.ui_window + 1}` : "";
@@ -17463,6 +17500,8 @@ var COLOUR = {
     const rgb2 = colour.slice(0, 3), value = to_hex(rgb2).toUpperCase();
     const before = P2.el.getBoundingClientRect();
     P2.title.textContent = P2.at.label();
+    P2.none.hidden = !P2.at.none;
+    if (P2.at.none) P2.none.setAttribute("aria-pressed", String(P2.at.none.off()));
     const put = (c) => P2.pick(c);
     const chip = (c) => {
       const lume2 = lume_exact(c), ral2 = !lume2 && ral_exact(c), said = lume2 ? `Lume ${lume2.name}` : ral2 ? `RAL ${ral2.code} ${ral2.name}` : c, b = el("button", { type: "button", className: lume2 ? "lume" : ral2 ? "ral" : "", title: said, ariaLabel: said, onclick: () => put(c) });
@@ -19895,7 +19934,8 @@ var PANEL = {
       const name = el("label", { htmlFor: id, textContent: row.text });
       wrap.append(name, pill);
       out.refresh = (T) => {
-        pill.show((row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : [0, 0, 0, 1]));
+        if (row.none && this.S[row.none] === false) pill.none();
+        else pill.show((row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : [0, 0, 0, 1]));
         if (row.say) name.textContent = row.say(T)[0];
       };
     }
@@ -21734,7 +21774,7 @@ var CASE2 = {
   row_case_tabs(wrap, out) {
     wrap.className = "tabsbar casetabs";
     const tabs = el("span", { className: "segs", role: "tablist", ariaLabel: "Dial, rehaut or bezel" });
-    ["Dial", "Rehaut", "Bezel"].forEach((name, i2) => {
+    ["Base", "Rehaut", "Bezel"].forEach((name, i2) => {
       const b = el("button", { type: "button", className: "tab", id: "case-tab-" + i2, textContent: name, onclick: () => {
         this.S.ui_dial_tab = i2;
         this.sync_rows();
@@ -22611,6 +22651,32 @@ var PREVIEW = {
     this.pending = true;
     requestAnimationFrame(() => this.frame());
   },
+  /** the bare plate's sheen (Okay, 11 Nov 2026: "Give metals a subtle gradient that moves with sun"): one linear gradient
+   *  across the dial, lighter toward the sun's side, darker away, redrawn only when the sun or the metal changes */
+  draw_metal(items) {
+    const plate = items.find((x2) => x2.metal);
+    if (!plate) return;
+    if (!this.metal_grad || !this.metal_grad.isConnected) {
+      this.metal_key = null;
+      const defs = svg_el("defs"), g2 = svg_el("linearGradient");
+      g2.id = "plate-metal";
+      g2.setAttribute("gradientUnits", "userSpaceOnUse");
+      for (let i2 = 0; i2 < 3; i2++) g2.append(svg_el("stop"));
+      defs.append(g2);
+      this.dial.prepend(defs);
+      this.metal_grad = g2;
+    }
+    const S = this.S, key = [S.sh_from, S.dial_d, ...plate.fill].join();
+    if (key === this.metal_key) return;
+    this.metal_key = key;
+    const a = S.sh_from * Math.PI / 180, r = S.dial_d / 2, ux = Math.sin(a) * r, uy = Math.cos(a) * r;
+    const g = this.metal_grad, shade = (k) => to_hex(plate.fill.map((v, i2) => i2 < 3 ? Math.max(0, Math.min(1, k > 0 ? v + (1 - v) * k : v * (1 + k))) : v));
+    for (const [n, v] of [["x1", ux], ["y1", uy], ["x2", -ux], ["y2", -uy]]) g.setAttribute(n, v.toFixed(3));
+    [[0, shade(0.28)], [0.5, shade(0)], [1, shade(-0.22)]].forEach(([o, c], i2) => {
+      g.children[i2].setAttribute("offset", o);
+      g.children[i2].setAttribute("stop-color", c);
+    });
+  },
   frame() {
     this.pending = false;
     if (this.closed) return;
@@ -22684,10 +22750,10 @@ var PREVIEW = {
         slot.d = d;
         slot.path = item.path;
       }
-      const fill = item.fill ? to_hex(item.fill) + "/" + item.fill[3] : "none";
+      const fill = item.fill ? to_hex(item.fill) + "/" + item.fill[3] + (item.metal ? "/metal" : "") : "none";
       if (fill !== slot.fill) {
         slot.fill = fill;
-        node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
+        node.setAttribute("fill", item.metal ? "url(#plate-metal)" : item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
       const stroke2 = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.spaced ? "/spaced" : "") : "none";
@@ -22718,6 +22784,7 @@ var PREVIEW = {
       }
       node.dataset.i = i2;
     });
+    this.draw_metal(items);
     this.draw_picked();
     this.draw_light(items);
     if (!this.S.ui_show) this.draw_shadows(items);

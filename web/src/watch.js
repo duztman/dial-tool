@@ -281,9 +281,15 @@ const bossLight = (x, L) => { const id = "bs" + (INK_N++), k = HAND_BEVEL || 0.6
   const ux = Math.cos(rad(L)), uy = -Math.sin(rad(L));      // toward the light: the shadows fall the other way (away())
   CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`, `<linearGradient id="${id}g" gradientUnits="userSpaceOnUse" x1="${f(ux * x.r)}" y1="${f(uy * x.r)}" x2="${f(-ux * x.r)}" y2="${f(-uy * x.r)}"><stop offset="0" stop-color="#fff" stop-opacity="${f(lit)}"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${f(dark)}"/></linearGradient>`);
   return `<g clip-path="url(#${id})"><rect x="${f(-x.r)}" y="${f(-x.r)}" width="${f(2 * x.r)}" height="${f(2 * x.r)}" fill="url(#${id}g)"/></g>`; };
+/** a bare metal plate's sheen (Okay, 11 Nov 2026: "Give metals a subtle gradient that moves with sun"): lighter toward
+ *  the light, darker away, across the dial — as the dial side draws it (preview.js draw_metal) */
+const metalSheen = (x, L, r) => { const id = "mt" + (INK_N++), ux = Math.cos(rad(L)) * r, uy = -Math.sin(rad(L)) * r, c = clampL(x.f), [R, G, B] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255);
+  const shade = (k) => "#" + [R, G, B].map((v) => Math.round(255 * Math.max(0, Math.min(1, k > 0 ? v + (1 - v) * k : v * (1 + k))))).map((v) => v.toString(16).padStart(2, "0")).join("");
+  CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(ux)}" y1="${f(uy)}" x2="${f(-ux)}" y2="${f(-uy)}"><stop offset="0" stop-color="${shade(0.28)}"/><stop offset="0.5" stop-color="${c}"/><stop offset="1" stop-color="${shade(-0.22)}"/></linearGradient>`);
+  return `url(#${id})`; };
 function dialSVG(C, v, L) {
   const D = DIALS[0], s = (C.dial - (C.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
-  const col = (x) => clampL(x.f);      // every colour's lightness kept between 15 and 85 %
+  const col = (x) => (x.metal ? metalSheen(x, L, D.d / 2) : clampL(x.f));      // every colour's lightness kept between 15 and 85 %; a bare metal plate its sheen
   const items = D.items;
   // the hands' shadows as the dial side casts them (Okay, 24 Oct 2026, #519: "Should look the same"; asked, "Dial side's"):
   // each from its own height over the plate (HEIGHTS, mm), away from the light, as long as the sun's height throws it and

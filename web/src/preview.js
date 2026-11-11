@@ -422,6 +422,27 @@ export const PREVIEW = {
     requestAnimationFrame(() => this.frame());
   },
 
+  /** the bare plate's sheen (Okay, 11 Nov 2026: "Give metals a subtle gradient that moves with sun"): one linear gradient
+   *  across the dial, lighter toward the sun's side, darker away, redrawn only when the sun or the metal changes */
+  draw_metal(items) {
+    const plate = items.find((x) => x.metal);
+    if (!plate) return;
+    if (!this.metal_grad || !this.metal_grad.isConnected) {      // made again when the window was rebuilt
+      this.metal_key = null;
+      const defs = svg_el("defs"), g = svg_el("linearGradient");
+      g.id = "plate-metal"; g.setAttribute("gradientUnits", "userSpaceOnUse");
+      for (let i = 0; i < 3; i++) g.append(svg_el("stop"));
+      defs.append(g); this.dial.prepend(defs); this.metal_grad = g;
+    }
+    const S = this.S, key = [S.sh_from, S.dial_d, ...plate.fill].join();
+    if (key === this.metal_key) return;
+    this.metal_key = key;
+    const a = S.sh_from * Math.PI / 180, r = S.dial_d / 2, ux = Math.sin(a) * r, uy = Math.cos(a) * r;      // the light's clock angle (12 up, clockwise); dial space is y up
+    const g = this.metal_grad, shade = (k) => to_hex(plate.fill.map((v, i) => (i < 3 ? Math.max(0, Math.min(1, k > 0 ? v + (1 - v) * k : v * (1 + k))) : v)));
+    for (const [n, v] of [["x1", ux], ["y1", uy], ["x2", -ux], ["y2", -uy]]) g.setAttribute(n, v.toFixed(3));
+    [[0, shade(0.28)], [0.5, shade(0)], [1, shade(-0.22)]].forEach(([o, c], i) => { g.children[i].setAttribute("offset", o); g.children[i].setAttribute("stop-color", c); });
+  },
+
   frame() {
     this.pending = false;
     if (this.closed) return;
@@ -488,10 +509,10 @@ export const PREVIEW = {
         slot.d = d;
         slot.path = item.path;
       }
-      const fill = item.fill ? to_hex(item.fill) + "/" + item.fill[3] : "none";
+      const fill = item.fill ? to_hex(item.fill) + "/" + item.fill[3] + (item.metal ? "/metal" : "") : "none";
       if (fill !== slot.fill) {
         slot.fill = fill;
-        node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
+        node.setAttribute("fill", item.metal ? "url(#plate-metal)" : item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
       const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.spaced ? "/spaced" : "") : "none";
@@ -514,6 +535,7 @@ export const PREVIEW = {
       }
       node.dataset.i = i;
     });
+    this.draw_metal(items);
     this.draw_picked();
     this.draw_light(items);      // a ring of shine and the hands' bevels, before the shadows that fall over them (4.77)
     if (!this.S.ui_show) this.draw_shadows(items);      // show mode: the watch draws the hands' shadows

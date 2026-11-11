@@ -80,6 +80,7 @@ export const COLOUR = {
     shut.innerHTML = icon(SIGNS.cross);
     const head = el("header", { title: "Drag to move" }, P.title, wide, shut);
     P.used_chips = el("span", { className: "chips", id: "pop-used" });
+    P.none = el("button", { type: "button", className: "nocolour", id: "pop-none", textContent: "No colour", title: "No colour: the bare material shows", hidden: true, onclick: () => { if (P.at && P.at.none) { P.at.none.set(); this.pop_refresh(); } } });
     P.palette_chips = el("span", { className: "chips", id: "pop-palette" });
     P.field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
     P.hues = el("div", { className: "hue", title: "Hue" }, el("i"));
@@ -130,6 +131,7 @@ export const COLOUR = {
     P.el = el("div", { className: "colourpop night", id: "colour-pop", hidden: true },
       head,
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "On this dial" }), P.used_chips),
+      P.none,
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P.palette_chips),
       P.field, P.ral, P.lumes, P.charts, P.hues, P.bands, P.alpha_row, el("div", { className: "asnumbers" }, P.modes, el("span", { className: "valuebox" }, P.dot, P.numbers), P.copy));
     P.el.setAttribute("role", "dialog");
@@ -162,7 +164,8 @@ export const COLOUR = {
     const dot = el("i", { className: "dot" }), hex = el("span", { className: "hex", id: id + "-hex" });
     const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex);
     pill.setAttribute("aria-expanded", "false");
-    pill.show = (c) => { paint(dot, c); dot.classList.toggle("lume", !is_open(c) && Boolean(lume_exact(to_hex(c)))); hex.textContent = is_open(c) ? "Open" : colour_word(c); if (title) pill.ariaLabel = `${title} ${hex.textContent}`; };      // a lume's swatch carries a faded L (22:38: "Lume colors get L in their swatches")      // a screen reader hears whose colour it is, not the hex alone (#244, 4.47.2)
+    pill.none = () => { paint(dot, [0, 0, 0, 0]); dot.classList.add("none"); hex.textContent = "None"; };      // no colour at all: the Paint's off (the bare metal shows)
+    pill.show = (c) => { dot.classList.remove("none"); paint(dot, c); dot.classList.toggle("lume", !is_open(c) && Boolean(lume_exact(to_hex(c)))); hex.textContent = is_open(c) ? "Open" : colour_word(c); if (title) pill.ariaLabel = `${title} ${hex.textContent}`; };      // a lume's swatch carries a faded L (22:38: "Lume colors get L in their swatches")      // a screen reader hears whose colour it is, not the hex alone (#244, 4.47.2)
     return pill;
   },
 
@@ -172,8 +175,11 @@ export const COLOUR = {
     return {
       alpha: (row.scope === "ring" || row.scope === "hand") && !row.lume_only,      // rings (Okay, 12 Oct 2026) and hands (#163, 14 Oct 2026) can be see-through; a lume never: an ink, laid whole
       lume_only: Boolean(row.lume_only),      // an opening's fill: Lume alone, with Open (#175)
+      // none: the pop-out's No colour button, for a colour that may be left off (Paint: Okay, 11 Nov 2026, "on off is possible through color selector popup adding a no color button in it")
+      none: row.none ? { off: () => this.S[row.none] === false, set: () => this.set_value("global", row.none, false) } : null,
       read: () => { const T = this.target(row.scope); return T ? (row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : null) : null; },      // get · put: a row standing for part of a setting (a NATO's stripe)
-      write: (value) => (row.put ? row.put(this, value) : this.set_value(row.scope, row.key, value)),
+      write: (value) => { if (row.none && this.S[row.none] === false) this.set_value("global", row.none, true);      // a colour picked puts it back on
+        return row.put ? row.put(this, value) : this.set_value(row.scope, row.key, value); },
       label: () => {
         const S = this.S, scope = row.scope;
         const whose = scope === "ring" ? this.ring().name || G.kind_of(this.ring()) : scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : scope === "window" ? `Window ${S.ui_window + 1}` : "";
@@ -253,6 +259,7 @@ export const COLOUR = {
     const rgb = colour.slice(0, 3), value = to_hex(rgb).toUpperCase();
     const before = P.el.getBoundingClientRect();      // RAL mode is taller: when the pop-out stands low on the screen it grows upward, high it grows down (Okay, 30 Oct 2026: "ral selection makes color popup grow up when it's down on screen, down when up")
     P.title.textContent = P.at.label();
+    P.none.hidden = !P.at.none; if (P.at.none) P.none.setAttribute("aria-pressed", String(P.at.none.off()));
     const put = (c) => P.pick(c);
     const chip = (c) => { const lume = lume_exact(c), ral = !lume && ral_exact(c), said = lume ? `Lume ${lume.name}` : ral ? `RAL ${ral.code} ${ral.name}` : c, b = el("button", { type: "button", className: lume ? "lume" : ral ? "ral" : "", title: said, ariaLabel: said, onclick: () => put(c) }); b.style.background = c; b.dataset.colour = c; return b; };      // a chip that is exactly a RAL carries a faded R (Okay, 30 Oct 2026, 16:14), a lume's a faded L (2 Nov 2026, 22:38)
     const used = this.dial_colours().map((c) => to_hex(c).toUpperCase());      // this dial's colours, each once

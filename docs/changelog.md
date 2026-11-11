@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## v1.1.71 beta · 11 Nov 2026 — Base, Material and Paint; the bare metal's sheen
+
+Okay, 11 Nov 2026, 14:33, marking the Dial tab: "I think we are repeating dial too many times here. If there’s a better term for it, change into it. The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button in it. For material brass, bronze steel? Give metals a subtle gradient that moves with sun" — and "Brass · Bronze · Steel · Silver", "Plate left unprinted", "Edit mode and show mode", "Paint on, metal under it".
+
+- **Base**: the Dial tab's own first tab (Base · Rehaut · Bezel), and the rings' Surface (Base · Rehaut · Bezel) — one "dial" fewer on the screen.
+- **Material**: the pane's name, with Brass · Bronze · Steel · Silver on its heading line (`material`, `PLATE_METALS`, `PLATE_METAL_COLOURS`). **Paint**: the plate's colour on a line of its own (`c_plate`, `paint`).
+- **No colour** in the colour pop-out (`colour.js`, a row's `none`): Paint off — its pill says None, the plate is the bare metal. A colour picked paints it again.
+- **The sheen**: a bare plate wears a linear gradient across the dial, lighter toward the sun, darker away (+28 % · the metal · −22 %), drawn again only when the sun or the metal changes — `preview.js` `draw_metal`, `watch.js` `metalSheen` in show mode.
+- **The files**: a bare plate is left out of every file (`output.js` `drawn`), the metal being the face; a file saved for a 3D view (SVG with the parts' facts) keeps it, so Show Case 3D finds its plate.
+- **Tests**: `labels.mjs` — the bare plate in the preview, out of the file, kept for 3D; `window.mjs` — No colour, the pill's None, the sheen, a colour painting again; the tests' names follow (Base, Material, Paint).
+
 ## v1.1.70 beta · 11 Nov 2026 — #586: choose your movement
 
 Okay, 11 Nov 2026, 14:11: "Do choose your movement next"; his answers: "All its defaults", "Yes, remove (R16)", the NH35's siblings "Yes, as their own rows", "Build by house rules".

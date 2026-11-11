@@ -77,7 +77,7 @@ export const CASE = {
   row_case_tabs(wrap, out) {
     wrap.className = "tabsbar casetabs";
     const tabs = el("span", { className: "segs", role: "tablist", ariaLabel: "Dial, rehaut or bezel" });
-    ["Dial", "Rehaut", "Bezel"].forEach((name, i) => {
+    ["Base", "Rehaut", "Bezel"].forEach((name, i) => {      // Base: the dial's own plate (Okay, 11 Nov 2026: "we are repeating dial too many times")
       const b = el("button", { type: "button", className: "tab", id: "case-tab-" + i, textContent: name, onclick: () => { this.S.ui_dial_tab = i; this.sync_rows(); this.render(); } });
       b.setAttribute("role", "tab");
       tabs.append(b);

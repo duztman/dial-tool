@@ -88,6 +88,15 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(names[0] === "any" && names.includes("nh34") && names.includes("nh36") && names.includes("nh38") && !names.includes("eta-6497-1") && gmt && hole === 2.7 && nodate && free,
     `the list: Imaginary first, the NH35's siblings as rows (${names.join(", ")}); NH34 drives a GMT hand (centre hole ${hole}); NH38 takes the date off; the Imaginary Movement lifts every limit`);
 }
+// Material and Paint (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible
+// through color selector popup adding a no color button"; "Plate left unprinted"): no paint, the preview shows the bare metal, a file leaves the plate out
+{
+  const O = await import("../src/output.js"), SHOW = await import("../src/show.js"), S = G.fresh_settings({}); S.paint = false; S.material = 2;
+  const st = G.build_static(S), seen = G.scene(S, st, 0, true).find((x) => x.role === "plate"), file = O.svg_document(S, st, 0, {}), for3d = O.svg_document(S, st, 0, { facts: SHOW.svg_facts(S) });
+  S.paint = true; const painted = O.svg_document(S, G.build_static(S), 0, {});
+  check(seen.metal && JSON.stringify(seen.fill) === JSON.stringify(G.PLATE_METAL_COLOURS[2]) && !/id="plate"/.test(file) && /id="plate"/.test(painted) && /id="plate"[^>]*data-role="plate"/.test(for3d),
+    `"Plate left unprinted": no paint, the preview's plate is bare ${G.PLATE_METALS[2]}; the file has no plate, a painted one has; a file for a 3D view keeps the metal plate`);
+}
 // #585, #587: the hands start at a real movement's heights, and every movement's heights come from the one record
 { const D = G.DEFAULTS, by = (id) => G.movement(id), m8 = by("miyota-8215").heights, T = G.HAND_T;
   const own = ["hour", "minute", "second"].every((h) => D["sh_" + h] === m8[h]) && D.sh_cap === m8.cap;

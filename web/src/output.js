@@ -38,8 +38,9 @@ export function file_name(S, ext, now = new Date()) {
 }
 
 /** the shapes of a scene, hands turned to their angle: [{role, path, fill, …}] without guides. */
-function drawn(S, statik, t, preview, selected) {
-  return scene(S, statik, t, preview, selected).map((item) => (item.role === "hand" || item.role === "mark" || item.role === "lume" ? { ...item, path: turned(item.path, item.angle) } : item));
+function drawn(S, statik, t, preview, selected, keep_metal = false) {
+  // a bare metal plate (no paint) is the face itself: nothing to print, so a file leaves it out — but a file for a 3D view keeps it (keep_metal)
+  return scene(S, statik, t, preview, selected).filter((item) => preview || keep_metal || !item.metal).map((item) => (item.role === "hand" || item.role === "mark" || item.role === "lume" ? { ...item, path: turned(item.path, item.angle) } : item));
 }
 
 const WEIGHTS = [["extralight", 200], ["ultralight", 200], ["thin", 100], ["hairline", 100], ["semibold", 600], ["demibold", 600], ["extrabold", 800],
@@ -83,7 +84,7 @@ export function svg_document(S, statik, t, { preview = false, selected = null, l
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
   out.push(`<g id="dial"${facts ? facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
-  for (const item of drawn(S, statik, t, preview, selected)) {
+  for (const item of drawn(S, statik, t, preview, selected, Boolean(facts))) {
     const id = named(item) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
     if (text && text.texts.length) {

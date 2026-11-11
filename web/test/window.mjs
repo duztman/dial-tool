@@ -891,7 +891,7 @@ for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC3
 await shot("4c4-guides-dark");
 await backdrop_hex("#CCCCC7");
 // the Dial section: Dial (diameter, plate, background), then Colours and Reset; no Page pane (margin and backdrop are the Settings box's) and no Guides pane
-check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has three panes (Reset last since 4.41.25): Dial stays in view, Colours scrolls under it; no Page pane (Okay, 10 Nov 2026: 'Page margin and color move under settings from dial'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
+check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Material"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has three panes (Reset last since 4.41.25): Dial stays in view, Colours scrolls under it; no Page pane (Okay, 10 Nov 2026: 'Page margin and color move under settings from dial'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
 // Settings (#554; Okay, 31 Oct 2026, 01:49: "a settings icon. In place of mm … Inside two settings: unit … Colors";
 // approved 02:24): a cog at the panel's top right, never boxed; pressed, a box with Unit and Colours. Lengths are shown
 // and typed in the unit, kept in mm (R1)
@@ -1012,11 +1012,11 @@ const row_line = await page.$eval(".form .colourlist .row", (e) => getComputedSt
 check(row_line.split("rgb(255, 255, 255)").length === 3, "every row has a white hairline before and after it, on the grey");
 const half_line = await page.$eval(".row:has(+ .row.nest)", (e) => { const c = getComputedStyle(e); return [c.boxShadow.split("rgb").length - 1, c.backgroundSize, c.backgroundPosition, e.querySelector("label").textContent]; });
 check(half_line[0] === 1 && half_line[1].startsWith("calc(66.6667% - 4px)") && half_line[2] === "100% 100%" && half_line[3] === "Diameter", "before a nested row stands a half line, from the controls' column to the right edge: Diameter draws it, over Scale everything with it");
-await page.click('.pinned .fold:has-text("Dial")', { position: { x: 60, y: 12 } });      // on its word: the plate's pill stands on the heading's middle (#533)
+await page.click('.pinned .fold:has-text("Material")', { position: { x: 60, y: 12 } });      // on its word: the plate's pill stands on the heading's middle (#533)
 check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible(".form .colourlist .row"), "a heading folds its own group only");
-check((await page.textContent('.pinned .fold:has-text("Dial") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
-await page.click('.pinned .fold:has-text("Dial") .eye');
-check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.pinned .fold:has-text("Dial") .summary')) === "", "its eye opens it again, and the summary goes");
+check((await page.textContent('.pinned .fold:has-text("Material") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
+await page.click('.pinned .fold:has-text("Material") .eye');
+check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.pinned .fold:has-text("Material") .summary')) === "", "its eye opens it again, and the summary goes");
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
 await tab("Rings");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
@@ -1128,7 +1128,7 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
 {
   await tab("Dial");
   const tabs0 = await page.evaluate(() => { const bar = document.querySelector(".casetabs"), r = (e) => e.getBoundingClientRect(); const tabs = [...bar.querySelectorAll(".tab")]; return { names: tabs.map((t) => t.textContent + (t.classList.contains("on") ? "*" : "")).join(), wide: tabs.every((t) => r(t).width > 80), pinned: Boolean(bar.closest(".pinned")), grounds: window.dial_tool.items.filter((x) => ["rehaut", "bezel", "insert", "bezel chamfer"].includes(x.role)).length, dial_rows: [...document.querySelectorAll(".row")].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector("label")).map((x) => x.querySelector("label").textContent).slice(0, 2).join() }; });
-  check(tabs0.names === "Dial*,Rehaut,Bezel" && tabs0.wide && tabs0.pinned && tabs0.grounds === 0 && tabs0.dial_rows === "Diameter,Scale everything with it", `the Dial tab has its own tabs, pinned: ${tabs0.names}; the case off to start, no grounds drawn; the Dial rows as before (${tabs0.dial_rows})`);
+  check(tabs0.names === "Base*,Rehaut,Bezel" && tabs0.wide && tabs0.pinned && tabs0.grounds === 0 && tabs0.dial_rows === "Paint,Diameter", `the Dial tab has its own tabs, pinned: ${tabs0.names}; the case off to start, no grounds drawn; the Dial rows as before (${tabs0.dial_rows})`);
   await page.click("#case-tab-2"); await frame();
   await page.click("#global-bz-on-Bezel"); await frame();
   const bz = await page.evaluate(() => { const t = window.dial_tool, S = t.S, rows = [...document.querySelectorAll(".row")].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector("label")).map((x) => { const l = x.querySelector("label"); return l.querySelector(".whole")?.textContent || l.textContent; });
@@ -1478,19 +1478,19 @@ check(lines.length === 1, `number rows share their columns (${lines.join(" | ")}
 
 // ── colour: a swatch opens the pop-out at its right; the value can be typed ──
 await page.evaluate(() => window.dial_tool.value_pop_close());      // a controller still open from above (the second drawing's square is larger, 4.52, and stood over the swatch)
-await page.click("#global-c-plate-Plate");
-const pop_at = await page.evaluate(() => { const p = document.querySelector("#colour-pop").getBoundingClientRect(), s = document.querySelector("#global-c-plate-Plate").closest(".colour").getBoundingClientRect(); return [Math.round(p.left - s.right), p.top < s.bottom && p.bottom > s.top]; });
+await page.click("#global-c-plate-Paint");
+const pop_at = await page.evaluate(() => { const p = document.querySelector("#colour-pop").getBoundingClientRect(), s = document.querySelector("#global-c-plate-Paint").closest(".colour").getBoundingClientRect(); return [Math.round(p.left - s.right), p.top < s.bottom && p.bottom > s.top]; });
 check(await page.isVisible("#colour-pop") && pop_at[0] === 12 && pop_at[1], "the plate's swatch opens the colour pop-out, 12 to the right of its pill");
-const pop_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#colour-pop")), pill = getComputedStyle(document.querySelector("#global-c-plate-Plate").closest(".colour")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), parseFloat(pill.borderTopLeftRadius), getComputedStyle(document.querySelector("#global-c-plate-Plate-hex")).fontFamily.includes("mono") && document.querySelector("#global-c-plate-Plate").tagName === "BUTTON" && getComputedStyle(document.querySelector("#global-c-plate-Plate")).backgroundColor === "rgb(17, 17, 17)"]; });
+const pop_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#colour-pop")), pill = getComputedStyle(document.querySelector("#global-c-plate-Paint").closest(".colour")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), parseFloat(pill.borderTopLeftRadius), getComputedStyle(document.querySelector("#global-c-plate-Paint-hex")).fontFamily.includes("mono") && document.querySelector("#global-c-plate-Paint").tagName === "BUTTON" && getComputedStyle(document.querySelector("#global-c-plate-Paint")).backgroundColor === "rgb(17, 17, 17)"]; });
 check(pop_look[0] === "rgb(20, 20, 19)" && pop_look[1] >= 12 && pop_look[2] >= 4 && pop_look[3], "the pop-out is near black with round corners; a colour in the panel is a pill, one button: a small swatch and its hex in monospace; black while its pop-out is open");
 check(await page.isHidden(".alpharow"), "the plate has no opacity strip");
 await page.mouse.click(60, 200);      // on the Diameter label: a plain spot outside the pop-out (the colour list moved down with the centre hole row, #165)
 check(await page.isHidden("#colour-pop"), "a press outside the pop-out puts it away");
 await page.evaluate(() => window.dial_tool.value_pop_close());      // that press was on Diameter's name, which opens its controller: put it away (since 4.52 the controller is larger and stood over the swatch)
-await page.click("#global-c-plate-Plate");
+await page.click("#global-c-plate-Paint");
 await page.mouse.click(60, 200); await page.evaluate(() => window.dial_tool.value_pop_close());      // the same plain spot as above (a point lower down lands on the Colours list since the Dial tab got its tabs, #582 — a window's eye there turned the date window off)
-await page.click("#global-c-plate-Plate-hex");
-check(await page.isVisible("#colour-pop") && await page.textContent("#colour-pop h2") === "Plate", "a click on the hex in the pill opens the pop-out too");
+await page.click("#global-c-plate-Paint-hex");
+check(await page.isVisible("#colour-pop") && await page.textContent("#colour-pop h2") === "Paint", "a click on the hex in the pill opens the pop-out too");
 check(await page.$$eval("#pop-used button", (b) => b.length) >= 3 && await page.$$eval("#pop-palette button[data-colour]", (b) => b.length) === 10 && await page.isVisible('#pop-palette [data-colour="#0E2A47"]'), "first row: this dial's colours; second row: a palette of ten");
 const one_row = await page.$$eval("#pop-palette button", (b) => new Set(b.map((x) => Math.round(x.getBoundingClientRect().top))).size);
 check(one_row === 1, "the ten and their + stand in one row");
@@ -1516,13 +1516,13 @@ check(await S("S.c_plate[2] > S.c_plate[0] && S.c_plate[2] > S.c_plate[1]") && h
   await page.click("#pop-design");
   await page.click("#pop-band-3");
   await page.click('#pop-ralgrid button[data-code="3020"]');
-  const chosen = await page.evaluate(() => { const t = window.dial_tool; const box = document.querySelector(".valuebox"); return { hex: t.S.c_plate.slice(0, 3).map((v) => Math.round(v * 255)).join(","), code: document.querySelector("#pop-ral").value, name: document.querySelector("#pop-ral-name").textContent, on: document.querySelector("#pop-ralgrid button.on")?.dataset.code, text: t.pop_text(), cut: getComputedStyle(document.querySelector("#pop-ral-name")).textOverflow, letters: [...document.querySelectorAll(".valuebox .cell")].map((c) => c.dataset.l).join(" "), swatch: box.querySelector(".dot") !== null && getComputedStyle(box.querySelector(".dot")).borderTopWidth === "0px", rule: getComputedStyle(box.querySelector(".cell")).borderLeftColor, pill: document.querySelector("#global-c-plate-Plate-hex").textContent, pill_w: Math.round(document.querySelector("#global-c-plate-Plate-hex").getBoundingClientRect().width), chip: document.querySelector('#pop-used button[data-colour="#C1121C"]')?.classList.contains("ral") }; });
+  const chosen = await page.evaluate(() => { const t = window.dial_tool; const box = document.querySelector(".valuebox"); return { hex: t.S.c_plate.slice(0, 3).map((v) => Math.round(v * 255)).join(","), code: document.querySelector("#pop-ral").value, name: document.querySelector("#pop-ral-name").textContent, on: document.querySelector("#pop-ralgrid button.on")?.dataset.code, text: t.pop_text(), cut: getComputedStyle(document.querySelector("#pop-ral-name")).textOverflow, letters: [...document.querySelectorAll(".valuebox .cell")].map((c) => c.dataset.l).join(" "), swatch: box.querySelector(".dot") !== null && getComputedStyle(box.querySelector(".dot")).borderTopWidth === "0px", rule: getComputedStyle(box.querySelector(".cell")).borderLeftColor, pill: document.querySelector("#global-c-plate-Paint-hex").textContent, pill_w: Math.round(document.querySelector("#global-c-plate-Paint-hex").getBoundingClientRect().width), chip: document.querySelector('#pop-used button[data-colour="#C1121C"]')?.classList.contains("ral") }; });
   check(chosen.hex === "193,18,28" && chosen.code === "3020" && chosen.name === "Traffic red" && chosen.on === "3020" && chosen.text === "RAL 3020 Traffic red" && chosen.cut === "ellipsis" && chosen.letters === "ral name" && chosen.swatch && chosen.rule === "rgb(0, 0, 0)" && chosen.pill === "R3020" && chosen.chip,
     `the red band shows the reds; RAL 3020 pressed takes its colour exactly (${chosen.hex}); the line: the swatch plain in the box, the cells RAL · NAME divided by a black rule, ${chosen.code} ${chosen.name} (a long name cut); the plate's pill says ${chosen.pill} (${chosen.pill_w} wide) and its chip in On this dial carries an R`);
   await enter_value("#pop-ral", "RAL 210 50 30");
-  const typed = await page.evaluate(() => { document.activeElement.blur(); window.dial_tool.pop_refresh(); return { hex: window.dial_tool.S.c_plate.slice(0, 3).map((v) => Math.round(v * 255)).join(","), near: document.querySelector("#pop-ral").value, name: document.querySelector("#pop-ral-name").textContent, pill: document.querySelector("#global-c-plate-Plate-hex").textContent, pill_w: Math.round(document.querySelector("#global-c-plate-Plate-hex").getBoundingClientRect().width) }; });      // the field left: a field being typed in is never overwritten
+  const typed = await page.evaluate(() => { document.activeElement.blur(); window.dial_tool.pop_refresh(); return { hex: window.dial_tool.S.c_plate.slice(0, 3).map((v) => Math.round(v * 255)).join(","), near: document.querySelector("#pop-ral").value, name: document.querySelector("#pop-ral-name").textContent, pill: document.querySelector("#global-c-plate-Paint-hex").textContent, pill_w: Math.round(document.querySelector("#global-c-plate-Paint-hex").getBoundingClientRect().width) }; });      // the field left: a field being typed in is never overwritten
   await page.evaluate(() => { window.dial_tool.S.c_plate = [0.5, 0.5, 0.5, 1]; window.dial_tool.sync_rows(); });
-  const near = await page.evaluate(() => ({ code: document.querySelector("#pop-ral").value, on: document.querySelector("#pop-ralgrid button.on"), pill: document.querySelector("#global-c-plate-Plate-hex").textContent }));
+  const near = await page.evaluate(() => ({ code: document.querySelector("#pop-ral").value, on: document.querySelector("#pop-ralgrid button.on"), pill: document.querySelector("#global-c-plate-Paint-hex").textContent }));
   check(typed.hex === "0,131,141" && typed.near === "210 50 30" && typed.name === "China Blue" && typed.pill === "R210-50-30" && typed.pill_w === chosen.pill_w && near.code.startsWith("≈ ") && near.on === null && near.pill === "#808080", `a Design code typed takes the colour (RAL 210 50 30 → ${typed.hex}, ${typed.name}); the pill says ${typed.pill} at the hex's width (${typed.pill_w}), cut; a colour on no RAL reads as the nearest with ≈ before it (${near.code}), no cell ringed, the pill its hex again`);
   await page.click("#pop-as-RGB");
   const rgb_line = await page.evaluate(() => ({ letters: [...document.querySelectorAll(".valuebox .cell")].map((c) => c.dataset.l).join(""), over: [...document.querySelectorAll(".valuebox .cell")].every((c) => getComputedStyle(c, "::before").content === `"${c.dataset.l}"`), hidden: document.querySelector(".sv").hidden || document.querySelector("#pop-ralgrid").hidden === false || document.querySelector("#pop-charts").hidden === false }));
@@ -1531,7 +1531,7 @@ check(await S("S.c_plate[2] > S.c_plate[0] && S.c_plate[2] > S.c_plate[1]") && h
   await page.evaluate(([x, y]) => window.dial_tool.pop_place(x, y), stood);      // back where it stood, for the checks after
 }
 // add the colour in hand to the palette; it is kept by the browser; − takes it out
-const in_hand = await S("document.querySelector('#global-c-plate-Plate-hex').textContent");
+const in_hand = await S("document.querySelector('#global-c-plate-Paint-hex').textContent");
 await page.click("#pop-add");
 check(await page.$$eval("#pop-palette button[data-colour]", (b) => b.length) === 11 && await S(`JSON.parse(localStorage.getItem('dial-tool-palette')).includes('${in_hand}')`) && await page.textContent("#pop-add") === "−", "+ adds the colour in hand to the palette, kept by the browser; the + becomes −");
 await page.click("#pop-add");
@@ -1542,7 +1542,7 @@ await page.click("#pop-as-HEX");
 check(JSON.stringify(await S("S.c_plate.slice(0, 3)")) === "[0,0,0]" && await page.inputValue("#pop-hex") === "#000000", "CMYK: K 100 is black, and HEX says #000000");
 await page.click("#pop-as-RGB");
 await enter_value("#pop-R", "255");
-check(JSON.stringify(await S("S.c_plate.slice(0, 3)")) === "[1,0,0]" && await page.textContent("#global-c-plate-Plate-hex") === "R3026", "RGB: R 255 → #FF0000, which is exactly RAL 3026, so the pill says R3026");
+check(JSON.stringify(await S("S.c_plate.slice(0, 3)")) === "[1,0,0]" && await page.textContent("#global-c-plate-Paint-hex") === "R3026", "RGB: R 255 → #FF0000, which is exactly RAL 3026, so the pill says R3026");
 const one_line = await page.evaluate(() => { const tops = [...document.querySelectorAll("#colour-pop .asnumbers button, #colour-pop .asnumbers input")].map((e) => { const r = e.getBoundingClientRect(); return Math.round((r.top + r.bottom) / 2); }); const c = getComputedStyle(document.querySelector("#pop-copy")); return [new Set(tops).size, c.textTransform, document.querySelector("#pop-copy svg") !== null && document.querySelector("#pop-copy").textContent.trim() === ""]; });
 check(one_line[0] === 1 && one_line[2], "RGB · CMYK · HEX · RAL, the values and Copy — the copy sign alone (Okay, 30 Oct 2026: \"Copy gets an icon\") — stand on one line, in capitals");
 const pop_size = await page.$eval("#colour-pop", (e) => { const r = e.getBoundingClientRect(); return [r.width, r.height]; });
@@ -1565,10 +1565,10 @@ const pop_back = await page.$eval("#colour-pop", (e) => { const r = e.getBoundin
 check(pop_back[0] === pop_before[2] && near(pop_back[1], pop_size[1], 1), "and back to its own size");
 await shot("4c1-picker");
 await page.click('#colour-pop [data-colour="#0E2A47"]');
-check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[14,42,71,255]" && await page.textContent("#global-c-plate-Plate-hex") === "#0E2A47", "picking navy sets the plate, and the value shows as text");
+check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[14,42,71,255]" && await page.textContent("#global-c-plate-Paint-hex") === "#0E2A47", "picking navy sets the plate, and the value shows as text");
 await page.click("#pop-as-HEX"); await enter_value("#pop-hex", "ede8db");
 check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[237,232,219,255]", "a typed value sets it too");
-await page.click("#global-c-plate-Plate");
+await page.click("#global-c-plate-Paint");
 await shot("4c2-colour");
 check(await page.$$eval(".tabs button", (b) => b.filter((x) => !x.hidden).map((x) => x.textContent.trim()).join(" ")) === "Dial Rings Hands Windows Export" && await page.$("main button.guidesbox#guides svg") !== null, "tabs: Export last; Guides is a rounded switch with a bullseye at the top right");
 
@@ -2173,7 +2173,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
     t.set_value("window", "jump", false); t.set_value("window", "kind", was[1]); t.set_value("window", "on", was[0]); t.set_time(10 * 3600 + 9 * 60 + 36); return [sweep, jumped, pm]; });
   await tab("Export");
   const pdf = await download("#export-pdf"), said = await page.evaluate(() => window.dial_tool.log_lines.slice(0, 4).join(" "));
-  const parts = [Math.abs(inch - 38.1) < 0.01, near_move > 0 && far_move > 0 && far_move < near_move * 0.6, steps.includes("Now") && steps.includes("Plate") && steps.some((x) => x.includes("Radius")), after,
+  const parts = [Math.abs(inch - 38.1) < 0.01, near_move > 0 && far_move > 0 && far_move < near_move * 0.6, steps.includes("Now") && steps.includes("Paint") && steps.some((x) => x.includes("Radius")), after,
     w1.every((v, i) => Math.abs(v - w0[i] * 1.5) < 1e-4) && w2.every((v, i) => Math.abs(v - w0[i]) < 1e-4), jump[0] !== jump[1], /thinnest line/.test(said)];
   check(parts.every(Boolean),
     `(${parts.map(Number).join("")}) typed 1.5in → ${inch} mm (#187); the slider moved ${near_move.toFixed(2)} on its track, ${far_move.toFixed(2)} 150 px below it (#406); the steps named (${steps.join(" · ")}) and a press goes back two (#172); Weight 150 % and back (#88); Jump moves the am · pm disc (${jump.join(" ")}, #401); the log names the thinnest line (#225)`);
@@ -2685,6 +2685,16 @@ await shot("10-bar");
   check(r.order && r.options.startsWith("any,nh35,nh34,nh36,nh38") && r.after[0] === "nh35" && !r.after[1] && r.after[2] === "" && /GMT hand/.test(r.after[3]) && r.back[0] === "any" && r.back[1],
     `Movement, "Section tabs ↔ Dial·Rehaut·Bezel" (${r.order}): ${r.options}; the NH35 chosen takes the GMT hand off and the + offers nothing (${r.after[2] || "none"}): "${r.after[3]}"; undo brings both back (${r.back.join(", ")})`);
 }
+{ // Paint's No colour (Okay, 11 Nov 2026: "on off is possible through color selector popup adding a no color button in it"): the pill says None, the plate wears the metal's sheen; a colour picked paints it again
+  await tab("Dial");
+  await page.click("#global-c-plate-Paint"); await frame();
+  await page.click("#pop-none"); await frame();
+  const off = await page.evaluate(() => [window.dial_tool.S.paint, document.querySelector("#global-c-plate-Paint-hex").textContent, [...document.querySelectorAll("#preview path, svg path")].some((p) => p.getAttribute("fill") === "url(#plate-metal)"), document.querySelector("#plate-metal stop")?.getAttribute("stop-color")]);
+  await page.click("#pop-palette button:nth-child(2)"); await frame();
+  const on = await page.evaluate(() => window.dial_tool.S.paint);
+  await page.keyboard.press("Escape"); await frame();
+  check(off[0] === false && off[1] === "None" && off[2] && Boolean(off[3]) && on === true, `No colour: Paint off, the pill says ${off[1]}, the plate the metal with its sheen (${off[3]} on the sun's side); a palette colour paints it again (${on})`);
+}
 { // show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in … Only the colors of the dial is editable here"; "Showcase has no caseless watches"; "Cases snap to dials")
   const q = () => page.evaluate(() => { const t = window.dial_tool, app = document.querySelector("#app"), panel = document.querySelector(".panel"), main = document.querySelector("main");
     return { on: Boolean(t.S.ui_show), showing: app.classList.contains("showing"), away: app.classList.contains("away"), section: t.S.ui_section, tabs: [...document.querySelectorAll(".tabs button")].filter((b) => !b.hidden).map((b) => b.dataset.tab).join(" "),
@@ -3154,13 +3164,13 @@ await shot("10-bar");
 }
 { // every menu opens the tool's own list, a press anywhere on its box, never folding its pane (Okay, 20 Oct 2026, 01:05: "clicking 'centre' activates dropdown not collapse"; "the popping up thing on these, styled like mm dropdown. all around the site")
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring]; });
-  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_section = 1; t.show_section(); t.sync_rows(); const p = document.querySelector("#resize-from").closest(".pane"); if (p.classList.contains("folded")) t.fold(t.rows.find((r) => r.el === p), false); });
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_section = 1; t.S.ui_ring = 1; t.show_section(); t.sync_rows(); const p = document.querySelector("#resize-from").closest(".pane"); if (p.classList.contains("folded")) t.fold(t.rows.find((r) => r.el === p), false); });
   await page.click("#resize-from"); await page.waitForTimeout(100);
   const open = await page.evaluate(() => { const L = document.querySelector("#menu-list"), box = document.querySelector("#resize-from").closest(".menubox").getBoundingClientRect(), l = L.getBoundingClientRect(); return [L.hidden, L.classList.contains("unitmenu") && getComputedStyle(L).backgroundColor === "rgb(255, 255, 255)" && getComputedStyle(L).borderTopLeftRadius === "0px", [Math.round(l.top - box.top), Math.round(l.left - box.left), L.querySelector("button").classList.contains("on")].join(" "), l.width >= box.width - 0.5, document.querySelector("#resize-from").closest(".pane").classList.contains("folded"), L.querySelectorAll("button").length]; });      // on the panel's white: white, sharp corners (Okay, 2 Nov 2026)
   await page.click("#menu-list button:nth-child(2)"); await page.waitForTimeout(100);
-  const after = await page.evaluate(() => [document.querySelector("#menu-list").hidden, document.querySelector(".fromwords").textContent, document.querySelector("#resize-from").selectedIndex]);
+  const after = await page.evaluate(() => [document.querySelector("#menu-list").hidden, document.querySelector(".fromwords").textContent, document.querySelector("#resize-from").selectedIndex, document.querySelector("#resize-from").options[1].textContent]);
   await page.evaluate((w) => { const t = window.dial_tool; t.set_value("ring", t.ring().kind === 2 ? "anchor" : "from", 0); t.S.ui_section = w[0]; t.S.ui_ring = w[1]; t.show_section(); t.sync_rows(); }, was);
-  check(!open[0] && open[1] && open[2] === "0 0 true" && open[3] && !open[4] && open[5] === 3 && after[0] && after[2] === 1 && after[1] === (await page.evaluate(() => document.querySelector("#resize-from").options[1].textContent)),
+  check(!open[0] && open[1] && open[2] === "0 0 true" && open[3] && !open[4] && open[5] === 3 && after[0] && after[2] === 1 && after[1] === after[3],
     `a menu opens the tool's list (the unit box's look) over its box, the chosen one first (top, left, first chosen: ${open[2]}; Okay, 2 Nov 2026: "the dropdown, when open should cover the button it's coming out of … Button state selected in bold up top, options below"), as wide, its pane not folded; a choice sets it, says it (${after[1]}) and closes the list`);
 }
 { // the Show box's ticks on their words' middles; the date popup's gaps the bar's own, date to NOW (Okay, 20 Oct 2026, 00:06, two pictures marked: "Why are you breaking things and not understanding me?")
@@ -3302,8 +3312,8 @@ await pad.tap("#guide-gd_hole-colour");      // its colours shut again
 await pad.tap("#guide-gd_axes-colour");      // the centre lines' colours, by its dot
 await pad.touchscreen.tap(...await pad.$eval('#guide-pop .tone:nth-child(5)', (e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 8]; }));
 check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just outside a dot chooses it");
-await pad.tap("#global-c-plate-Plate-hex");
-const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 2, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").tagName === "SPAN", !document.querySelector("#colour-pop").hidden]; });
+await pad.tap("#global-c-plate-Paint-hex");
+const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 2, r.top + 4) === c[4], document.querySelector("#global-c-plate-Paint-hex").tagName === "SPAN", !document.querySelector("#colour-pop").hidden]; });
 check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't typed in; a chip is pressed from 2 beside it (half the 5.5 between two)");
 { // under a finger a row's slider and its name open the controller; its field takes typing and its − + step in place (4.68; Okay, 18 Oct 2026, 22:35: "On phones and ipad tapping or sliding slider or title opens controller, you can type in box or tap plusminus"; 4.60–4.67 the field and − + opened it)
   await pad.evaluate(() => { const t = window.dial_tool; t.pop_close && t.pop_close(); t.value_pop_close(); if (t.guides_open) t.guides_open(false); });

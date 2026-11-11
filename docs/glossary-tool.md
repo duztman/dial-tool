@@ -20,6 +20,8 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Tab** | A choice of what the panes below edit, drawn as touching tabs with V-cut corners: hand tabs, window cards, Complication buttons. |
 | **Dial tabs** | Dial · Rehaut · Bezel on the Dial tab's pinned line (`ui_dial_tab`, #582): which rows show below. |
 | **Hand tabs** | Hour · Minute · Seconds and every added hand (GMT), on Hands' second pinned line; after them the **+** that asks a new hand's function (GMT · Date · Day · Month), adding the hand with its scale ring; an added hand's Show line carries its **−**. |
+| **Base** | The Dial tab's own first tab — the plate itself — beside Rehaut and Bezel; a ring's Surface too. |
+| **Material** · **Paint** | The plate's metal (Brass · Bronze · Steel · Silver) and the colour painted over it; Paint's **No colour** leaves the metal bare, with a sheen that follows the sun, and unprinted in the files. |
 | **Movement** (the Dial tab) | The calibre the dial is for, on a line of its own under the section tabs: the **Imaginary Movement** (no limits) or a real one, whose defaults it writes and whose limits it keeps (R16). |
 | **Motion** (a calendar hand) | **Jump** · **Sweep**: a Date, Day or Month hand moves a place at midnight, or on through its day (the Month hand through its month). |
 | **Window cards** | Four cards on top of Windows (12 · 3 · 6 · 9), tabs choosing the window to edit. |
