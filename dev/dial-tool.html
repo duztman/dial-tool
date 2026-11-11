@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.76 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.77 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1052,7 +1052,6 @@
   @media (hover: hover) { .colourlist .chev:hover { color: var(--ink); } }
   .inklist > .row.inkline > label { color: var(--ink); }
   .inklist > .row.inkline.open > .place.two { display: flex; align-items: center; justify-content: end; gap: var(--u3); color: var(--grey); }      /* Two inks in the number's place, its word right against it */
-  .inklist > .row.inkpart > .letter { display: grid; place-items: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the eye's place */
   .row.bevels { grid-template-columns: auto minmax(0, 1fr); }
   .row.bevels > label { grid-column: 1; }
   .row.bevels > .pillswitch { grid-column: 2; justify-self: end; flex-wrap: nowrap; }      /* its name, then its pills to the line's end, on one line */
@@ -1232,7 +1231,7 @@
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { display: contents; }                 /* its parts stand on the list's columns: the kind square under the rows' icons, the details and Change in the names' room, then colour · size · radius */
-  .kindmenu { position: fixed; z-index: 30; top: auto; right: auto; }      /* the kinds, under the selected row's kind icon (placed by app.js: the list scrolls and would cut it), over everything, as the add menu is under its plus */
+  :is(.kindmenu, .langmenu) { position: fixed; z-index: 30; top: auto; right: auto; overflow-y: auto; }      /* the kinds, under the selected row's kind icon, and the languages, under their button: on the window (menu_hang in panel.js: the list scrolls and would cut them, the bar would cover them), over everything, scrolling when longer than their room */
   .kindmenu button.on { background: var(--ink); color: var(--paper); }
   .kindmenu .note { margin: 0; padding: var(--u2) var(--u4); border-top: var(--hair) solid var(--rule); font-size: var(--t-s); white-space: normal; }
   /* the details written out (#327, 4.55): two lines, grey names and dark values, each line cut at its end */
@@ -1956,7 +1955,6 @@
   .guidelast .answers { display: flex; gap: var(--u2); }
   .roundb { display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: none; color: var(--ink); }
   @media (hover: hover) { .roundb:hover { background: var(--ink); color: var(--paper); } }
-  .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: var(--shade-w); max-width: calc(100vw - 2 * var(--margin));
     max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); border-radius: var(--shade-round); }      /* from the panel's margin, as wide as the drawing whatever the panel's width — over the dial on an iPad (Okay, 25 Oct 2026, 16:55: "Keep window width same, ok to go over onto the dial if need be"), standing on the switch, its corners all round (Okay, 25 Oct 2026, 02:29: "ROUND CORNERS"); over the panel's column, so the dial and its shadows stay in view */
@@ -2494,9 +2492,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// ../../dial-tool/web/node_modules/pathkit-wasm/bin/pathkit.js
+// node_modules/pathkit-wasm/bin/pathkit.js
 var require_pathkit = __commonJS({
-  "../../dial-tool/web/node_modules/pathkit-wasm/bin/pathkit.js"(exports2, module) {
+  "node_modules/pathkit-wasm/bin/pathkit.js"(exports2, module) {
     var PathKitInit2 = (() => {
       var _scriptDir = typeof document !== "undefined" && document.currentScript ? document.currentScript.src : void 0;
       if (typeof __filename !== "undefined") _scriptDir = _scriptDir || __filename;
@@ -3975,9 +3973,9 @@ var require_pathkit = __commonJS({
   }
 });
 
-// ../../dial-tool/web/node_modules/gifenc/dist/gifenc.js
+// node_modules/gifenc/dist/gifenc.js
 var require_gifenc = __commonJS({
-  "../../dial-tool/web/node_modules/gifenc/dist/gifenc.js"(exports2) {
+  "node_modules/gifenc/dist/gifenc.js"(exports2) {
     var __defProp2 = Object.defineProperty;
     var __markAsModule = (target) => __defProp2(target, "__esModule", { value: true });
     var __export2 = (target, all) => {
@@ -4790,7 +4788,7 @@ var require_gifenc = __commonJS({
 // src/main.js
 var import_pathkit = __toESM(require_pathkit(), 1);
 
-// ../../dial-tool/web/node_modules/harfbuzzjs/dist/index.mjs
+// node_modules/harfbuzzjs/dist/index.mjs
 var dist_exports = {};
 __export(dist_exports, {
   AxisFlags: () => AxisFlags,
@@ -4824,7 +4822,7 @@ __export(dist_exports, {
   versionString: () => versionString
 });
 
-// ../../dial-tool/web/node_modules/harfbuzzjs/dist/harfbuzz.js
+// node_modules/harfbuzzjs/dist/harfbuzz.js
 async function createHarfBuzz(moduleArg = {}) {
   var moduleRtn;
   var Module2 = moduleArg;
@@ -5463,7 +5461,7 @@ async function createHarfBuzz(moduleArg = {}) {
 }
 var harfbuzz_default = createHarfBuzz;
 
-// ../../dial-tool/web/node_modules/harfbuzzjs/dist/index.mjs
+// node_modules/harfbuzzjs/dist/index.mjs
 var Module;
 var exports;
 var freeFuncPtr;
@@ -9545,7 +9543,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.76 beta";
+var VERSION = "v1.1.77 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -18644,6 +18642,7 @@ var FONTS = {
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its
    *  two letters; a press opens the list (Okay, 13 Oct 2026). The ring keeps the place in G.LANGS (R9). */
   lang_box(scope = "ring", pre = "", or = null) {
+    if ($("#" + pre + "lang-menu")) $("#" + pre + "lang-menu").remove();
     const menu = el("div", { className: "unitmenu langmenu", id: pre + "lang-menu", hidden: true });
     menu.setAttribute("role", "menu");
     const button = el("button", { type: "button", className: "btn langbox", id: pre + "lang" });
@@ -18651,6 +18650,7 @@ var FONTS = {
     const open = (on) => {
       menu.hidden = !on;
       button.setAttribute("aria-expanded", String(on));
+      if (on) this.menu_hang(menu, button, { side: "right", gap: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")) });
     };
     (this.lang_opens = this.lang_opens || []).push(open);
     button.onclick = () => open(menu.hidden);
@@ -18669,7 +18669,7 @@ var FONTS = {
       return b;
     });
     const box3 = el("div", { className: "langs" }, button, menu);
-    box3.onkeydown = (e) => {
+    box3.onkeydown = menu.onkeydown = (e) => {
       if (e.key === "Escape" && !menu.hidden) {
         open(false);
         button.focus();
@@ -19516,7 +19516,7 @@ var PANEL = {
     });
     list.replaceChildren(...items);
     list.classList.toggle("inner", Boolean(select.closest(".guidelist, .colourpop, .settingsbox, .shadelist, .picker, .versionlist, .numpop")));
-    const dark = Boolean(select.closest(".night, .guidelist, .shadelist, main, .colourpop"));
+    const dark = Boolean(select.closest(".night, .guidelist, .shadelist, main, .colourpop, .bar"));
     list.classList.toggle("night", dark);
     list.classList.toggle("flush", Boolean(select.closest(".guidehead .plus, .tabsbar .plus")));
     list.hidden = false;
@@ -19526,12 +19526,26 @@ var PANEL = {
     const room_below = innerHeight - (flush ? box3.bottom : box3.top), room_above = flush ? box3.top : box3.bottom, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
     list.style.minWidth = `${Math.round(box3.width)}px`;
     list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - u)}px`;
-    list.style.left = `${Math.round(flush ? Math.max(u, box3.right - list.offsetWidth) : box3.left)}px`;
+    list.style.left = `${Math.round(Math.max(u, Math.min(flush ? box3.right - list.offsetWidth : box3.left, innerWidth - list.offsetWidth - u)))}px`;
     list.style.top = up ? "" : `${Math.round(flush ? box3.bottom : box3.top)}px`;
     list.style.bottom = up ? `${Math.round(innerHeight - (flush ? box3.top : box3.bottom))}px` : "";
     list.scrollTop = 0;
     list.focus({ preventScroll: true });
     document.addEventListener("pointerdown", this.menus_away, true);
+  },
+  /** a small menu of its own (the languages, a ring's kinds) hung on the window, not in the panel: the list that scrolls
+   *  would cut it and the bar would lie over it. In the body, fixed; under `anchor` by `gap`, its `side` edge on the
+   *  anchor's — over the anchor when the room under it is the smaller one — never past the window's edges, scrolling
+   *  when it is longer than its room. Call it with the menu shown (it is measured). */
+  menu_hang(menu, anchor, { side = "left", gap = 0 } = {}) {
+    if (menu.parentElement !== document.body) document.body.append(menu);
+    const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")), at = anchor.getBoundingClientRect();
+    menu.style.maxHeight = "";
+    const w = menu.offsetWidth, h = menu.offsetHeight, below = innerHeight - at.bottom - gap - u, above = at.top - gap - u, up = h > below && above > below;
+    menu.style.maxHeight = `${Math.floor(up ? above : below)}px`;
+    menu.style.left = `${Math.round(clamp(side === "right" ? at.right - w : at.left, u, Math.max(u, innerWidth - w - u)))}px`;
+    menu.style.top = up ? "" : `${at.bottom + gap}px`;
+    menu.style.bottom = up ? `${innerHeight - at.top + gap}px` : "";
   },
   menu_list_close() {
     if (this.menus_list) this.menus_list.hidden = true;
@@ -20897,14 +20911,9 @@ var RINGS = {
     menu.setAttribute("role", "menu");
     const open = (on) => {
       const icon_at = $("#ring-kind-square");
-      if (on && icon_at) {
-        document.body.append(menu);
-        const at = icon_at.getBoundingClientRect();
-        menu.style.left = `${at.left}px`;
-        menu.style.top = `${at.bottom + 5.5}px`;
-      }
       menu.hidden = !(on && icon_at);
       if (icon_at) icon_at.setAttribute("aria-expanded", String(!menu.hidden));
+      if (on && icon_at) this.menu_hang(menu, icon_at, { gap: 5.5 });
     };
     this.kind_open = open;
     this.kind_menu = menu;
@@ -26461,7 +26470,7 @@ async function build_signed_wearos_apk(watchfaceXml, drawables = {}, metadata = 
   return await sign_apk_v2_v3(alignedApk);
 }
 
-// ../../dial-tool/web/node_modules/mp4-muxer/build/mp4-muxer.mjs
+// node_modules/mp4-muxer/build/mp4-muxer.mjs
 var __accessCheck = (obj, member, msg) => {
   if (!member.has(obj))
     throw TypeError("Cannot " + msg);
@@ -29204,7 +29213,7 @@ var DialTool = class _DialTool {
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
     if (this.settings_open && !$("#settings-box").hidden && !on(".unit, #colour-pop, #value-pop")) this.settings_open(false);
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
-    if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
+    if (this.lang_opens && !on(".langs, .langmenu")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.kind_open && $("#kind-menu") && !$("#kind-menu").hidden && !on("#ring-kind-square") && !on("#kind-menu")) this.kind_open(false);
     if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname")) this.value_pop_close();
