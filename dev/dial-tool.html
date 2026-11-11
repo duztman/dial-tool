@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.81 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.82 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9546,7 +9546,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.81 beta";
+var VERSION = "v1.1.82 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -11963,6 +11963,20 @@ var BEZEL_MARKS = ["Insert", "Metal"];
 var bezel_melted = (S) => !!(S.bz_on && S.bz_melt);
 var bezel_coin = (S) => S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && !S.bz_melt ? max(0, +S.bz_teeth_depth || 0) : 0;
 var bezel_insert = (S) => !!(S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && BEZEL_MARKS[S.bz_marks] !== "Metal" && !S.bz_melt);
+var CUT_EDGE = 0.02;
+function cut_unions(S, items) {
+  const all = { plate: null, bezel: null }, sp = case_spans(S);
+  for (const x2 of items) {
+    const s = x2.ring?.ring ? ring_surface(S, x2.ring.ring) : 0, k = s === 0 ? "plate" : s === 2 ? "bezel" : null;
+    if (k && x2.path) all[k] = all[k] ? all[k].union(x2.path) : x2.path;
+  }
+  if (all.plate) all.plate = all.plate.intersection(circle2(S.dial_d - 2 * CUT_EDGE));
+  if (all.bezel && sp.bezel) {
+    const a = sp.bezel[0] - S.bz_rim + 0.3 + CUT_EDGE, b = sp.bezel[1] - S.bz_chamfer - CUT_EDGE;
+    all.bezel = b > a ? all.bezel.intersection(circle2(2 * b).difference(circle2(2 * a))) : null;
+  }
+  return all;
+}
 var COIN_DEPTH = 0.5;
 var bezel_seat = (S) => bezel_melted(S) ? 0 : S.bz_seat;
 var BEZEL_KINDS = ["Rotating", "Fixed"];
@@ -13097,7 +13111,11 @@ var case_record = (S) => ({
   // the body's Ø, mm, when it isn't Fit (Okay, 11 Nov 2026: Body Ø)
 });
 var body_fit = (S) => bodyFit(CASE_OF_BEZEL[S.bezel] || "dress", S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, bezel_melted(S));
-var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), { dial: dial_attrs(S.dial_d) + case_attrs(case_record(S)) });
+var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), {
+  dial: dial_attrs(S.dial_d) + case_attrs(case_record(S)),
+  // what is engraved, one outline a surface, for a view that cuts it into the metal (geometry.js cut_unions): `data-cut-plate`, `data-cut-bezel`
+  cuts: (items) => Object.entries(cut_unions(S, items)).filter(([, p]) => p).map(([k, p]) => ` data-cut-${k}="${p.svg(4, true)}"`).join("")
+});
 function options(S, items, effects) {
   const style = STYLE_NAMES2[S.w_style] || "artisan", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P2 = presets(style), lit = effects;
@@ -13644,13 +13662,15 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
     return ` id="${/^[a-z]/.test(slug) ? "" : "ring-"}${slug}${ids.get(slug) > 1 ? "-" + ids.get(slug) : ""}"`;
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
-  out.push(`<g id="dial"${facts ? facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
+  const head = out.length, engraved = [];
+  out.push("");
   let cut = null;
   for (const item of drawn(S, statik, t, preview, selected, Boolean(facts))) {
     if (item.engrave && !cut) {
       cut = [];
       out.push(cut);
     }
+    if (item.engrave) engraved.push(item);
     const at = item.engrave ? cut : out, tag = item.engrave ? "e" : "";
     const id = (item.engrave ? "" : named(item)) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
@@ -13670,6 +13690,7 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
       at.push(`<path${id} d="${item.path.svg(5, true)}" fill="${rgb(item.fill)}"${alpha}/>`);
     }
   }
+  out[head] = `<g id="dial"${facts ? (facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"`) + (facts.cuts ? facts.cuts(engraved) : "") : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`;
   if (cut) out.splice(out.indexOf(cut), 1, `<g id="engrave">`, ...cut, `</g>`);
   out.push(`</g>`, `</svg>`);
   return out.join("\n");
