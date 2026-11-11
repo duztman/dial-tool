@@ -274,7 +274,6 @@
   .guidelast .answers { display: flex; gap: var(--u2); }
   .roundb { display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: none; color: var(--ink); }
   @media (hover: hover) { .roundb:hover { background: var(--ink); color: var(--paper); } }
-  .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: var(--shade-w); max-width: calc(100vw - 2 * var(--margin));
     max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); border-radius: var(--shade-round); }      /* from the panel's margin, as wide as the drawing whatever the panel's width — over the dial on an iPad (Okay, 25 Oct 2026, 16:55: "Keep window width same, ok to go over onto the dial if need be"), standing on the switch, its corners all round (Okay, 25 Oct 2026, 02:29: "ROUND CORNERS"); over the panel's column, so the dial and its shadows stay in view */

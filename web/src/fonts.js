@@ -221,11 +221,13 @@ export const FONTS = {
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its
    *  two letters; a press opens the list (Okay, 13 Oct 2026). The ring keeps the place in G.LANGS (R9). */
   lang_box(scope = "ring", pre = "", or = null) {
+    if ($("#" + pre + "lang-menu")) $("#" + pre + "lang-menu").remove();      // the last one built, left in the body
     const menu = el("div", { className: "unitmenu langmenu", id: pre + "lang-menu", hidden: true });
     menu.setAttribute("role", "menu");
     const button = el("button", { type: "button", className: "btn langbox", id: pre + "lang" });
     button.setAttribute("aria-haspopup", "menu");
-    const open = (on) => { menu.hidden = !on; button.setAttribute("aria-expanded", String(on)); };
+    // on the window, hung from the button's right end (menu_hang): in the panel the scrolling list cut it and the bar lay over it
+    const open = (on) => { menu.hidden = !on; button.setAttribute("aria-expanded", String(on)); if (on) this.menu_hang(menu, button, { side: "right", gap: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")) }); };
     (this.lang_opens = this.lang_opens || []).push(open);
     button.onclick = () => open(menu.hidden);
     const items = G.LANGS.map((code, i) => {
@@ -236,7 +238,7 @@ export const FONTS = {
       return b;
     });
     const box = el("div", { className: "langs" }, button, menu);
-    box.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); button.focus(); } };
+    box.onkeydown = menu.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); button.focus(); } };
     open(false);
     const refresh = (T) => {
       const R = { lang: T.lang ?? (or ? or(T) : 0) };

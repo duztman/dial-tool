@@ -93,7 +93,6 @@
   @media (hover: hover) { .colourlist .chev:hover { color: var(--ink); } }
   .inklist > .row.inkline > label { color: var(--ink); }
   .inklist > .row.inkline.open > .place.two { display: flex; align-items: center; justify-content: end; gap: var(--u3); color: var(--grey); }      /* Two inks in the number's place, its word right against it */
-  .inklist > .row.inkpart > .letter { display: grid; place-items: center; color: var(--ink); }      /* an ink of two parts: A or B as a word, in the eye's place */
   .row.bevels { grid-template-columns: auto minmax(0, 1fr); }
   .row.bevels > label { grid-column: 1; }
   .row.bevels > .pillswitch { grid-column: 2; justify-self: end; flex-wrap: nowrap; }      /* its name, then its pills to the line's end, on one line */

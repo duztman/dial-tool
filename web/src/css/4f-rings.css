@@ -76,7 +76,7 @@
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { display: contents; }                 /* its parts stand on the list's columns: the kind square under the rows' icons, the details and Change in the names' room, then colour · size · radius */
-  .kindmenu { position: fixed; z-index: 30; top: auto; right: auto; }      /* the kinds, under the selected row's kind icon (placed by app.js: the list scrolls and would cut it), over everything, as the add menu is under its plus */
+  :is(.kindmenu, .langmenu) { position: fixed; z-index: 30; top: auto; right: auto; overflow-y: auto; }      /* the kinds, under the selected row's kind icon, and the languages, under their button: on the window (menu_hang in panel.js: the list scrolls and would cut them, the bar would cover them), over everything, scrolling when longer than their room */
   .kindmenu button.on { background: var(--ink); color: var(--paper); }
   .kindmenu .note { margin: 0; padding: var(--u2) var(--u4); border-top: var(--hair) solid var(--rule); font-size: var(--t-s); white-space: normal; }
   /* the details written out (#327, 4.55): two lines, grey names and dark values, each line cut at its end */

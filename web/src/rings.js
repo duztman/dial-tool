@@ -276,8 +276,8 @@ export const RINGS = {
     menu.setAttribute("role", "menu");
     const open = (on) => {
       const icon_at = $("#ring-kind-square");
-      if (on && icon_at) { document.body.append(menu); const at = icon_at.getBoundingClientRect(); menu.style.left = `${at.left}px`; menu.style.top = `${at.bottom + 5.5}px`; }
       menu.hidden = !(on && icon_at); if (icon_at) icon_at.setAttribute("aria-expanded", String(!menu.hidden));
+      if (on && icon_at) this.menu_hang(menu, icon_at, { gap: 5.5 });
     };
     this.kind_open = open;
     this.kind_menu = menu;

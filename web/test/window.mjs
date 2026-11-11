@@ -3685,6 +3685,26 @@ await touch.close();
   check(corner.every(Boolean) && tiny[0] && tiny[1] && tiny[3] && tiny[4] && tiny[5] >= 60 && tiny[6] && tiny[7] && Math.round(b1[0] - b0[0]) === -200 && Math.round(b1[1] - b0[1]) === -100 && shown === "1" && away.every(Boolean) && up,
     `Tiny Preview (#337): its button at the bottom right (top right until 4.81); open, the dial and its margins at ${tiny[2]} mm in the browser's mm, over everything, no guides; dragged (−200, −100), its eye shows under the pointer and puts it away; Backdrop over Shadows at the bottom left; Guides, the case and X-ray down the top right corner, the list dropping (4.86)`);
 }
+{ // a list that opens is whole and on top (v1.1.77; Okay, 11 Nov 2026: "dropdowns behind ui elements"): the languages' list hangs on the window, not in the panel's scrolling list (the bar lay over its end); a menu's list at the window's right edge (the canvas's Case) stays inside it
+  const whole = (q) => page.evaluate((q) => { const l = document.querySelector(q); if (!l || l.hidden) return "not open"; const b = l.getBoundingClientRect(), out = [];
+    if (b.left < 0 || b.top < 0 || b.right > innerWidth || b.bottom > innerHeight) out.push(`past the window (${Math.round(b.left)}, ${Math.round(b.top)} – ${Math.round(b.right)}, ${Math.round(b.bottom)} in ${innerWidth} × ${innerHeight})`);
+    for (const fx of [0.05, 0.5, 0.95]) for (const fy of [0.05, 0.5, 0.95]) { const e = document.elementFromPoint(b.left + b.width * fx, b.top + b.height * fy); if (e && !l.contains(e)) out.push(`under ${e.tagName.toLowerCase()}.${String(e.className).split(" ")[0]}`); }
+    return out.length ? [...new Set(out)].join(", ") : "whole"; }, q);
+  const was = await page.evaluate(() => { const t = window.dial_tool, was = [t.S.ui_section, t.S.ui_ring]; [...document.querySelectorAll(".panel > .tabs > button")].find((b) => !b.hidden && b.dataset.tab === "Rings").click(); return was; });
+  await page.waitForTimeout(150);
+  await page.evaluate(() => { const b = document.querySelector("#lang"), f = b.closest(".form"); if (f) f.scrollTop += b.getBoundingClientRect().bottom - f.getBoundingClientRect().bottom + 40; });      // the button low in the list: the worst place for a list that hangs under it
+  await page.click("#lang"); await page.waitForTimeout(80);
+  const lang = await whole("#lang-menu"), n = await page.evaluate(() => document.querySelectorAll("#lang-menu button").length);
+  await page.keyboard.press("Escape");
+  const shut = await page.isHidden("#lang-menu");
+  const at = await page.evaluate(() => { const r = document.querySelector("#case-pick").getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+  await page.mouse.click(at[0], at[1]); await page.waitForTimeout(80);
+  const pick = await whole("#menu-list");
+  await page.keyboard.press("Escape");
+  await page.evaluate(([sec]) => { const t = window.dial_tool; t.S.ui_section = sec; t.show_section(); t.render(); }, was);
+  check(lang === "whole" && n > 5 && shut && pick === "whole",
+    `a list that opens is whole and on top: the languages' ${n} lines (${lang}), put away by Escape (${shut}); the canvas's Case list at the window's right edge (${pick}) (Okay, 11 Nov 2026: "dropdowns behind ui elements")`);
+}
 await browser.close();
 console.log(problems.length ? `\n${problems.length} problem(s).` : "\nWindow test passed.");
 process.exit(problems.length ? 1 : 0);

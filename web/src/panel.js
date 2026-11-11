@@ -152,7 +152,7 @@ export const PANEL = {
     list.classList.toggle("inner", Boolean(select.closest(".guidelist, .colourpop, .settingsbox, .shadelist, .picker, .versionlist, .numpop")));      // a dropdown inside a popup: the nearer shadow (Okay, 2 Nov 2026)
     // the list's look follows its ground (Okay, 2 Nov 2026): on a black box or the canvas — the Guides and Shadows lists, the
     // canvas's switches — black with round corners; on the panel's white, white with sharp corners
-    const dark = Boolean(select.closest(".night, .guidelist, .shadelist, main, .colourpop"));
+    const dark = Boolean(select.closest(".night, .guidelist, .shadelist, main, .colourpop, .bar"));      // the bar and its date popup are black boxes too
     list.classList.toggle("night", dark);
     list.classList.toggle("flush", Boolean(select.closest(".guidehead .plus, .tabsbar .plus")));      // Added's +: the list's right edge on the button's
     list.hidden = false;
@@ -167,12 +167,28 @@ export const PANEL = {
     const room_below = innerHeight - (flush ? box.bottom : box.top), room_above = flush ? box.top : box.bottom, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
     list.style.minWidth = `${Math.round(box.width)}px`;
     list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - u)}px`;
-    list.style.left = `${Math.round(flush ? Math.max(u, box.right - list.offsetWidth) : box.left)}px`;
+    // its left on the button's, and never past the window's edge: a list wider than a button at the window's right (the canvas's Case) moves in by what it would lose
+    list.style.left = `${Math.round(Math.max(u, Math.min(flush ? box.right - list.offsetWidth : box.left, innerWidth - list.offsetWidth - u)))}px`;
     list.style.top = up ? "" : `${Math.round(flush ? box.bottom : box.top)}px`;
     list.style.bottom = up ? `${Math.round(innerHeight - (flush ? box.top : box.bottom))}px` : "";
     list.scrollTop = 0;                            // the chosen one is the first
     list.focus({ preventScroll: true });           // the list holds the keys (Escape, the arrows), and the chosen one shows only its bold, no focus ring under it (Okay, 2 Nov 2026: "selected does not get a double bottom line when selected, gets highlighted only with bold")
     document.addEventListener("pointerdown", this.menus_away, true);
+  },
+
+  /** a small menu of its own (the languages, a ring's kinds) hung on the window, not in the panel: the list that scrolls
+   *  would cut it and the bar would lie over it. In the body, fixed; under `anchor` by `gap`, its `side` edge on the
+   *  anchor's — over the anchor when the room under it is the smaller one — never past the window's edges, scrolling
+   *  when it is longer than its room. Call it with the menu shown (it is measured). */
+  menu_hang(menu, anchor, { side = "left", gap = 0 } = {}) {
+    if (menu.parentElement !== document.body) document.body.append(menu);
+    const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")), at = anchor.getBoundingClientRect();
+    menu.style.maxHeight = "";
+    const w = menu.offsetWidth, h = menu.offsetHeight, below = innerHeight - at.bottom - gap - u, above = at.top - gap - u, up = h > below && above > below;
+    menu.style.maxHeight = `${Math.floor(up ? above : below)}px`;
+    menu.style.left = `${Math.round(clamp(side === "right" ? at.right - w : at.left, u, Math.max(u, innerWidth - w - u)))}px`;
+    menu.style.top = up ? "" : `${at.bottom + gap}px`;
+    menu.style.bottom = up ? `${innerHeight - at.top + gap}px` : "";
   },
 
   menu_list_close() {

@@ -265,7 +265,7 @@ class DialTool {
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
     if (this.settings_open && !$("#settings-box").hidden && !on(".unit, #colour-pop, #value-pop")) this.settings_open(false);      // the Backdrop's pop-out and the margin's value pop stand outside the box; working in them keeps it open
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
-    if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
+    if (this.lang_opens && !on(".langs, .langmenu")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.kind_open && $("#kind-menu") && !$("#kind-menu").hidden && !on("#ring-kind-square") && !on("#kind-menu")) this.kind_open(false);
     if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname")) this.value_pop_close();

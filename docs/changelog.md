@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## v1.1.77 beta · 11 Nov 2026 — a list that opens is whole and on top
+
+Okay, 11 Nov 2026, 19:35: "We lost a lot of things, dropdowns behind ui elements, 3d loses lights while adjusting different things." — 19:57: "Fix all please. Do big tests, audit the css etc."
+
+- **The languages' list** (a font's EN button) hangs on the window, from the button's right end: it stood in the panel's scrolling list, which cut it, and its end lay under the bar. Over its button when the room under it is the smaller one; scrolling when longer than its room.
+- **A ring's kinds** hang the same way (`panel.js` `menu_hang`: one mechanism for a small menu of its own, R34) — never past the window's edges.
+- **A menu's list never leaves the window**: a list wider than its button at the window's right edge (the canvas's Case) moves in by what it would lose (`menu_list`); it lost 26 px.
+- **A list dropped from the bar** (the date popup's weekday · day · month · year) is the dark one, as every list on a black box (Okay, 2 Nov 2026); it was the panel's white.
+- **The stylesheet's audit**: the two days' changes (v1.1.64–76) add no raw pixel, no `!important`, no z-index; two rules no code names are gone (`.guidefoot`, `.inkpart`).
+- **Tests**: `window.mjs` — a list that opens is whole and on top (the languages', the canvas's Case). `test/pops.mjs`, an audit beside the tests: every opener in every tab of both modes pressed, what opens checked for the window's edges and for being on top — 182 at an iPad's size, 0 wrong (9 before: the languages' list, the Case list eight times).
+- **Show Case 3D's side** (the lights lost while adjusting) is Pro's round 109.
+
 ## v1.1.76 beta · 11 Nov 2026 — Body Ø; a bezel starts flat; Paint · Engrave on bare metal; a ring on a disc hand
 
 Okay, 11 Nov 2026, 18:14: "The body size adjustment of the watch should move independently from the dial size, default body fits the dial size snugly. Default bezel is mostly off on all sliders, 1mm height. I need the ability to add these engravings instead of paint on metal, needs a switch, on dial tool as well as show case 3d and rehaut needs to be adjustable on 3d." — his answers: Body Ø in the tool, 3D follows; height 1 and width kept, the rest 0; the switch for the bezel's metal, the rehaut's ring and a bare plate; Engrave a look and a layer of its own in the files. 18:45: "A disk hand is allowed a ring in it like rehault, controllers appear beneath, on dial tool. All go"
