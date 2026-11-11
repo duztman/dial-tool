@@ -13,6 +13,8 @@
 //   disc      a window's disc, under the plate                  under (how deep under the plate's face)
 //   in window what a window shows, printed on its disc          —
 //   case      the rehaut, the bezel, its insert                 — (the case is the view's own)
+//   engraved  a marking cut into the metal it lies on (a bare   — (the cut's depth is the view's; Okay, 11 Nov 2026: "I need the
+//             plate, the rehaut, a bezel's metal): Finish Engrave  ability to add these engravings instead of paint on metal")
 // SECTION: a hand's or an applied part's cross-section, in the tool's Bevel words (geometry.js BEVEL_LOOKS) — flat · ridge ·
 // faceted · domed. The tool draws Faceted as a Ridge (#573); a view may too. Nothing is applied yet: the make is ready for it.
 // A record travels in a saved SVG as `data-` attributes (show.js `svg_facts` writes them, `read_part` reads them back), so a
@@ -30,7 +32,7 @@ export const STACK = {
   clear: 0.4,          // from the top of the stack to the crystal (Miyota's)
 };
 export const SECTIONS = ["flat", "ridge", "faceted", "domed"];
-export const MAKES = ["plate", "printed", "applied", "hand", "on hand", "cap", "disc", "in window", "case"];
+export const MAKES = ["plate", "printed", "applied", "hand", "on hand", "cap", "disc", "in window", "case", "engraved"];      // appended only
 
 const CASE = ["rehaut", "bezel", "bezel chamfer", "insert"], WINDOW = ["date number", "date picture", "disc print"];
 /** a part's make, from its role in the engine's words (show.js) */
@@ -72,7 +74,7 @@ export function read_part(get) {
 /** THE CASE round the dial as the tool sets it (Okay, 11 Nov 2026: "add bezel and rehaut there"): the rehaut's reach and rise
  *  and its colour; the bezel's kind and every number of its stack (the 3D exercise's own names, mm) and its insert's colour.
  *  null where that part is off. → `data-case`, its JSON (quotes written as &quot;) */
-export const case_attrs = (c) => (c && (c.rehaut || c.bezel) ? ` data-case="${JSON.stringify(c).replace(/"/g, "&quot;")}"` : "");
+export const case_attrs = (c) => (c && (c.rehaut || c.bezel || c.body) ? ` data-case="${JSON.stringify(c).replace(/"/g, "&quot;")}"` : "");
 export const read_case = (text) => { try { return text ? JSON.parse(text) : null; } catch (e) { return null; } };
 /** the dial group's `data-stack` → the stack's rules (the tool's numbers where the file says none) */
 export const read_stack = (text) => ({ ...STACK, ...Object.fromEntries(String(text || "").split(/\s+/).filter(Boolean).map((kv) => kv.split(":")).map(([k, v]) => [k, +v])) });

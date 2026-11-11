@@ -1135,8 +1135,13 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
     const box = [...document.querySelectorAll(".casedetail")].find((x) => !x.hidden), svg = box && box.querySelector("svg.section"), r = (e) => e.getBoundingClientRect();
     const side = [...document.querySelectorAll(".row.side")].filter((x) => !x.hidden && x.checkVisibility());
     return { on: S.bz_on, rows: rows.slice(0, 10).join(), parts: svg ? [...svg.querySelectorAll("path")].map((p) => p.className.baseVal.replace(" focus", "")).join() : null, focus: svg ? [...svg.querySelectorAll("path.focus")].length : 0, beside: Boolean(box && side.length && Math.abs(r(box).top - r(side[0]).top) < 2 && r(side[0]).left > r(box).right), grounds: t.items.filter((x) => ["bezel", "insert", "bezel chamfer"].includes(x.role)).map((x) => x.role).join(), page: Math.round(t.constructor.G ? 0 : 0), reach: +(t.S.dial_d / 2 + t.S.bz_w + t.S.bz_teeth_depth).toFixed(2) }; });
-  check(bz.on && bz.rows === "Bezel,Preset,Kind,Markings,Width,Chamfer,Insert in,Insert out,Insert,Scallops" && bz.parts === "dial line,bezel,insert,teeth" && bz.focus === 3 && bz.beside && bz.grounds === "bezel,bezel chamfer,insert",
+  check(bz.on && bz.rows === "Bezel,Preset,Kind,Markings,Width,Chamfer,Insert in,Insert out,Insert,Scallops" && bz.parts === "dial line,bezel,insert" && bz.focus === 2 && bz.beside && bz.grounds === "bezel,bezel chamfer,insert",
     `Bezel ticked: the rows Bezel · Preset · Kind · Markings, then Width · Chamfer · Insert in · out · Insert beside the section (no Metal: the bezel is case material, "link and lock") (${bz.rows}); the section draws the dial's line and the bezel alone — ${bz.parts} — the bezel's parts in ink (${bz.focus}); the plan gets the ring, its chamfer and the insert (${bz.grounds}), the page out to ${bz.reach} mm`);
+  // a bezel starts flat (Okay, 11 Nov 2026: "Default bezel is mostly off on all sliders, 1mm height"); a dial saved with a bezel keeps its own numbers
+  const flat = await S("[S.bz_h, S.bz_w, S.bz_chamfer, S.bz_teeth_depth, S.bz_seat, S.bz_lip, S.bz_dome, S.bz_up].join()");
+  const kept = await S("(() => { const was = JSON.parse(JSON.stringify(S)); S.bz_on = false; S.bz_h = 2.5; t.set_value('global', 'bz_on', true); const h = S.bz_h; Object.assign(S, was); return h; })()");
+  check(flat === "1,3.3,0,0,0,0,0,0" && kept === 2.5, `a bezel switched on starts flat — height, width, chamfer, scallops, seat, lip, dome, crystal up: ${flat} (Okay: "Default bezel is mostly off on all sliders, 1mm height"); one with numbers of its own keeps them (${kept})`);
+  await page.evaluate(() => { const S = window.dial_tool.S; Object.assign(S, { bz_teeth_depth: 0.5, bz_chamfer: 0.45, bz_h: 2.3, bz_lip: 0.55, bz_seat: 0.3, bz_dome: 1.35, bz_up: 0.65, bz_rim: 0.4, bz_dial_up: 0.7, bz_in_in: 0.4, bz_in_out: 0.6, bz_teeth_chamfer: 0.45 }); window.dial_tool.static_dirty = true; window.dial_tool.changed(true); }); await frame();
   // the scene reaches the coin edge: the bezel ground's outer edge is the ring's width plus the scallops' depth
   const edge = await S("(() => { const b = t.items.find((x) => x.role === 'bezel').path.bounds(); return [+(b[2]).toFixed(2), +(S.dial_d / 2 + S.bz_w + S.bz_teeth_depth).toFixed(2), +G_page().toFixed(1)]; })()".replace("G_page()", "(2 * (S.dial_d / 2 + S.bz_w + S.bz_teeth_depth) + 2 * S.margin)"));
   check(Math.abs(edge[0] - edge[1]) < 0.02, `the bezel's outline reaches the coin edge, ${edge[0]} mm (ring ${await S("S.bz_w")} + scallops ${await S("S.bz_teeth_depth")}); the page is ${edge[2]} mm`);
@@ -1172,10 +1177,57 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
       const insert_row = document.querySelector('[id^="global-w-insert"]')?.closest(".row");
       return { r_clip: r_clip && +r_clip.toFixed(2), outer: +R.toFixed(2), insert_hidden: !insert_row || insert_row.hidden || !insert_row.checkVisibility(), section: S.ui_section, tabs: [...document.querySelectorAll(".tabs button")].filter((b) => !b.hidden).map((b) => b.dataset.tab).join(" ") }; });
     check(shown.r_clip !== null && Math.abs(shown.r_clip - shown.outer) < 0.05 && shown.insert_hidden, `in show mode the diver case opens to the tool's bezel (the dial's clip r ${shown.r_clip} = the coin edge ${shown.outer}); the Watch pane's Insert tiles go (the Bezel tab's insert rules) (${shown.tabs})`);
+    // BODY Ø (Okay, 11 Nov 2026: "The body size adjustment of the watch should move independently from the dial size, default body fits
+    // the dial size snugly"): Fit to start; Own Ø takes Fit's number; 6 mm more, the body is wider and the opening stays at the bezel
+    const body = await own.evaluate(async () => { const t = window.dial_tool, S = t.S, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok))), wait = () => new Promise((ok) => setTimeout(ok, 600));
+      const clip_r = () => { const m = (t.watch_g.querySelector('clipPath[id^="dial-"] path')?.getAttribute("d") || "").match(/^M(-?[\d.]+)/); return m ? +(-parseFloat(m[1])).toFixed(2) : null; };
+      const wide = () => +Math.max(...[...t.watch_g.querySelectorAll("path")].map((p) => p.getBBox().width).filter((w) => w < 100)).toFixed(1);      // the case's widest part (the ground and the strap run on)
+      const row = [...document.querySelectorAll(".row")].find((x) => x.querySelector("label")?.textContent === "Body" && x.checkVisibility()), b = row ? [...row.querySelectorAll("button")] : [];
+      const start = [S.w_body, b.map((x) => x.textContent + (x.classList.contains("on") ? "*" : "")).join()], r0 = clip_r(), w0 = wide();
+      b[1]?.click(); await tick(); await wait(); const fit = S.w_body, w1 = wide();
+      t.set_value("global", "w_body", fit + 6); t.changed(true); await tick(); await wait();
+      return { start, fit, same: Math.abs(w1 - w0) < 0.2, r0, r1: clip_r(), w0, w2: wide() }; });
+    check(body.start.join("|") === "0|Fit*,Own Ø" && body.fit > 30 && body.same && body.r0 === body.r1 && body.w2 > body.w0 + 3, `Body Ø: Fit to start (${body.start.join(" · ")}); Own Ø takes Fit's ${body.fit} mm and nothing moves; 6 mm more and the watch is wider (${body.w0} → ${body.w2}) while the opening stays at the bezel (r ${body.r0} → ${body.r1}) (Okay: "move independently from the dial size, default body fits the dial size snugly")`);
     await own.close(); }
   await page.evaluate(() => { const t = window.dial_tool, S = t.S; const R = S.rings[S.ui_ring]; R.surface = 0; R.r_from = 0; S.bz_on = false; S.rh_on = false; S.ui_dial_tab = 0; t.static_dirty = true; t.sync_rows(); t.render(); });      // the window as it was found: the case off, the Dial tab on Dial
   await frame();
 }
+// THE FINISH SWITCH (Okay, 11 Nov 2026: "I need the ability to add these engravings instead of paint on metal, needs a switch"): Paint ·
+// Engrave on the Base tab once the plate is bare, on the Rehaut tab, on the Bezel tab once its markings are on its metal
+{ const own = await (await visitor()).newPage();
+  await own.goto("file://" + process.cwd() + "/dial-tool.html");
+  await own.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  const fin = await own.evaluate(async () => { const t = window.dial_tool, S = t.S, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    const seen = () => [...document.querySelectorAll(".row")].filter((x) => x.checkVisibility() && x.querySelector("label")?.textContent === "Finish").map((x) => [...x.querySelectorAll("button")].map((b) => b.textContent).join("·")).join("|");
+    const tab = async (n) => { [...document.querySelectorAll(".tabs button")].find((b) => b.textContent.trim() === "Dial").click(); S.ui_dial_tab = n; t.show_section(); t.sync_rows(); await tick(); };
+    await tab(0); const painted = seen(); t.set_value("global", "paint", false); t.changed(true); t.show_section(); await tick(); const bare = seen();
+    await tab(1); t.set_value("global", "rh_on", true); t.changed(true); t.show_section(); await tick(); const rehaut = seen();
+    await tab(2); t.set_value("global", "bz_on", true); t.set_value("global", "bz_kind", 0); t.set_value("global", "bz_marks", 0); t.changed(true); t.show_section(); await tick(); const insert = seen();
+    t.set_value("global", "bz_marks", 1); t.changed(true); t.show_section(); await tick(); const metal = seen();
+    return { painted, bare, rehaut, insert, metal }; });
+  check(fin.painted === "" && fin.bare === "Paint·Engrave" && fin.rehaut === "Paint·Engrave" && fin.insert === "" && fin.metal === "Paint·Engrave",
+    `Finish Paint · Engrave: on the Base tab only once the plate is bare (${fin.painted || "none"} → ${fin.bare}); on the Rehaut tab (${fin.rehaut}); on the Bezel tab with its markings on the metal (insert: ${fin.insert || "none"}; metal: ${fin.metal}) (Okay: "needs a switch")`);
+  await own.close(); }
+// A RING ON A DISC HAND (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault, controllers appear beneath"): one, added on
+// the hand's tab, under its rows; it turns with the hand and is not on the Rings tab's list. In a page of its own
+{ const own = await (await visitor()).newPage();
+  await own.goto("file://" + process.cwd() + "/dial-tool.html");
+  await own.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  const disc = await own.evaluate(async () => { const t = window.dial_tool, S = t.S, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    [...document.querySelectorAll(".tabs button")].find((b) => b.textContent.trim() === "Hands").click(); await tick();
+    S.ui_hand = 0; t.set_value("hand", "shape", 10); t.static_dirty = true; t.changed(true); t.sync_rows(); await tick();
+    const head = () => [...document.querySelectorAll(".form .pane h2")].filter((h) => h.checkVisibility()).map((h) => h.textContent.trim());
+    const before = head().join(" · ");
+    t.ring_tool("add", "numerals"); await tick(); t.ring_tool("add", "numerals"); await tick();
+    const mine = S.rings.filter((r) => r.surface === 3);
+    const items = t.items.filter((x) => x.role === "mark" && x.ring), hour = t.items.find((x) => x.role === "hand" && x.name === "hour");
+    const listed = [...document.querySelectorAll(".ringlist li[data-i]")].filter((li) => li.checkVisibility()).length;
+    [...document.querySelectorAll(".tabs button")].find((b) => b.textContent.trim() === "Rings").click(); await tick();
+    const on_rings = [...document.querySelectorAll(".ringlist li")].some((li) => S.rings[+li.dataset.i]?.surface === 3);
+    return { before, after: head().join(" · "), n: mine.length, hand: mine[0]?.on_hand, items: items.length, turns: items.length > 0 && items.every((x) => x.angle === hour.angle && x.name === "hour"), listed, on_rings }; });
+  check(disc.n === 1 && disc.hand === "hour" && disc.items > 0 && disc.turns && disc.listed === 1 && !disc.on_rings && disc.before.includes("Disc ring"),
+    `a disc hand takes one ring (${disc.n}, the second refused), on the ${disc.hand} hand, ${disc.items} parts drawn with the hand and turning with it (${disc.turns}); its list and panes under the hand's rows (${disc.before}), not on the Rings tab's list (${!disc.on_rings}) (Okay: "A disk hand is allowed a ring in it like rehault, controllers appear beneath")`);
+  await own.close(); }
 await tab("Hands");
 await page.click("#hand-tab-0");
 {
@@ -1190,7 +1242,7 @@ await page.click("#hand-tab-0");
   const a = await look();
   check(a.beside === 12 && a.top === -1 && a.bottom === 0 && a.panes === "Opening · Bevel" && a.centre === 2, `a hand's pane: at the left a box with the hand itself, its centre marked, as high as the rows beside it; after it the Opening and Bevel panes (Okay, 2 Nov 2026, 22:09: "move bevel as an eye and a tick box below openings") (${JSON.stringify({ ...a, d: 0 })})`);      // top −1: its line on the first row's (4.46.2; 6 below it until then)
   // its shapes: a row of thumbs over the box and every row beside it, from the box's left to the end, one line, the SVG tile last (Okay, 2 Nov 2026, 22:00: "hand type moves up top of the preview and sliders")
-  const thumbs = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), box = r(document.querySelector("#hand-detail")), rows = [...document.querySelectorAll(".form .row.side:not([hidden])")].map(r), t = [...document.querySelectorAll(".row.thumbs > .picks.thumbs > *")].map(r), end = Math.max(...rows.map((x) => x.right));
+  const thumbs = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), box = r(document.querySelector("#hand-detail")), rows = [...document.querySelectorAll(".form .row.side:not([hidden])")].filter((x) => x.checkVisibility()).map(r), t = [...document.querySelectorAll(".row.thumbs > .picks.thumbs > *")].map(r), end = Math.max(...rows.map((x) => x.right));
     const row = document.querySelector(".row.thumbs"), c = getComputedStyle(row), pane = row.closest(".pane"), line = r(pane).top, foot = r(row).bottom;
     return [t.length, t.every((x) => x.bottom <= box.top && x.bottom <= Math.min(...rows.map((y) => y.top)) && x.height > x.width), new Set(t.map((x) => Math.round(x.top))).size, Math.abs(t[0].left - box.left).toFixed(1) + " " + Math.abs(t.at(-1).right - end).toFixed(1), [...document.querySelectorAll(".row.thumbs .pickt > span")].every((e) => !e.checkVisibility()),
       c.borderBottomColor === "rgb(17, 17, 17)" && c.borderBottomWidth === "1px" && getComputedStyle(pane).backgroundImage.includes("linear-gradient"), [(t[0].top - line).toFixed(1), (foot - 1 - t[0].bottom).toFixed(1), (box.top + 1 - foot).toFixed(1)].join(" ")]; });

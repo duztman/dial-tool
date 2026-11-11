@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.76 beta · 11 Nov 2026 — Body Ø; a bezel starts flat; Paint · Engrave on bare metal; a ring on a disc hand
+
+Okay, 11 Nov 2026, 18:14: "The body size adjustment of the watch should move independently from the dial size, default body fits the dial size snugly. Default bezel is mostly off on all sliders, 1mm height. I need the ability to add these engravings instead of paint on metal, needs a switch, on dial tool as well as show case 3d and rehaut needs to be adjustable on 3d." — his answers: Body Ø in the tool, 3D follows; height 1 and width kept, the rest 0; the switch for the bezel's metal, the rehaut's ring and a bare plate; Engrave a look and a layer of its own in the files. 18:45: "A disk hand is allowed a ring in it like rehault, controllers appear beneath, on dial tool. All go"
+
+- **Body Ø** (`w_body`, show mode's Watch tab: Body Fit · Own Ø, then Body Ø): Fit (0) puts the body snug round the dial and its rehaut and bezel, as before; Own Ø takes Fit's number to start and grows the body — lugs, crown, strap — while the opening stays at the dial (`watch.js` `scaleCase(C, k, kIn)`, `fitFor`, `bodyFit`; `sizeFor` never under Fit). A show setting: in the session, not in a link. A saved SVG for 3D says it (`data-case` `body`).
+- **A bezel starts flat** (`BEZEL_START`, `app.js`): switched on with its numbers untouched it is a plain ring 1 mm high, its width kept (3.3 mm), every other number 0. A dial saved with a bezel keeps its numbers (its link left out what matched DEFAULTS; switched on there, they are no longer untouched only when someone set them — `bezel_untouched`).
+- **Finish: Paint · Engrave** (`FINISHES`; `engrave` the bare plate's — on the Base tab once Paint is None; `rh_engrave` the rehaut's ring; `bz_engrave` the bezel's markings on its metal): Engrave cuts the rings in — drawn in their ground's colour in shadow (`engraved_colour`), in one group `engrave` in the SVG and one layer **Engrave** in the PDF, in no ink film; in the parts' record their make is `engraved` (`parts.js` `MAKES`, appended).
+- **A ring on a disc hand** (`SURFACES` "hand", `on_hand`, `disc_hand_on`; `SURFACE_MOST` 1): the Hands tab lists the disc's one ring under the hand's rows, before Opening, with the full ring panes; it is drawn with the hand and turns with it, Fit on the disc's outer 30 %; never on the Rings tab's list.
+- **Tests**: `labels.mjs` — Engrave in the scene, the SVG, the PDF, the films; `window.mjs` — Body Ø, a bezel starting flat, the Finish switch's three places, a ring on a disc hand.
+
 ## v1.1.75 beta · 11 Nov 2026 — the case's colours in show mode; markings on the bezel's metal; the glass inside the bezel
 
 Okay, 11 Nov 2026, 17:17: "Bezels and rehaut rings also under colors panel on show case. Change colors possible. Also for bezels, add markings on metal instead of inset ring. On main showcase the glass is drawn over the bezel now somehow, check. Bezel settings on 3d showcase now."

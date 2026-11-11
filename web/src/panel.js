@@ -297,7 +297,7 @@ export const PANEL = {
   sync_rows() {
     if (this.ring_fit_context) {      // the selected ring is one of the list's surface (the Rings tab: the dial's; Rehaut, Bezel: theirs); the list follows a change of surface
       this.ring_fit_context();
-      const c = this.ring_context();
+      const c = this.ring_context_key();
       if (c !== this.ring_ctx_shown) { this.ring_ctx_shown = c; this.fill_ring_list(); }
     }
     if (this.case_sync) this.case_sync();      // the case's switch follows an undo, a link, a file (4.66)

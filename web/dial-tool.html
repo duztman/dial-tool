@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.75 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.76 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7820,11 +7820,12 @@ function lugChamfer(C2, sx, sy, w = 0.75) {
   const p = (x2, y) => `${f(sx * x2)} ${f(sy * y)}`;
   return `M${p(xo, half - r)}C${p(xo, half - (half - yb) * 0.5)} ${p(xb - 0.6, yb + 1.2)} ${p(xb, yb)}L${p(xb - w * 1.3, yb + 0.2)}C${p(xb - 0.6 - w, yb + 1.4)} ${p(xo - w, half - (half - yb) * 0.5)} ${p(xo - w, half - r)}Z`;
 }
-function scaleCase(C2, k) {
-  if (k === 1) return C2;
+var INSIDE = ["opening", "dial", "insert", "bands"];
+function scaleCase(C2, k, kIn = k) {
+  if (k === 1 && kIn === 1) return C2;
   const s = (v) => typeof v === "number" ? v * k : Array.isArray(v) ? v.map(s) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([a, b]) => [a, ["n", "coin", "knurl", "at"].includes(a) ? b : s(b)])) : v;
   const out = { ...C2 };
-  for (const key of ["od", "l2l", "lugw", "lugT", "flare", "bands", "opening", "dial", "crown", "insert", "cushion", "cushionBevel"]) if (key in C2) out[key] = s(C2[key]);
+  for (const key of ["od", "l2l", "lugw", "lugT", "flare", "bands", "opening", "dial", "crown", "insert", "cushion", "cushionBevel"]) if (key in C2) out[key] = INSIDE.includes(key) && kIn !== k ? scaleCase({ [key]: C2[key] }, kIn)[key] : s(C2[key]);
   return out;
 }
 var SOFT_DEF = `<filter id="shsoft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600"><feGaussianBlur stdDeviation="0.07"/></filter>`;
@@ -8546,12 +8547,12 @@ function silhouetteOutline(paths, L = 0) {
   CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(-ux * D)}" y1="${f(-uy * D)}" x2="${f(ux * D)}" y2="${f(uy * D)}"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0.65"/></linearGradient>`);
   return `<path d="${d}" fill="none" stroke="url(#${id})" stroke-width="0.2" stroke-linejoin="round"/>`;
 }
-function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1) {
+function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1, fit = size) {
   WEAVE = strap.endsWith("-big") ? "weavebig" : "weave";
   strap = strap.replace(/-big$/, "");
   SUN_H = h;
   CLIPS = [];
-  const C2 = live_case({ ...scaleCase(CASES[key], size), key, dialOverride: dial, ...metal ? { metal: METALS[metal] } : {} }), span = open ? 260 : 64;
+  const C2 = live_case({ ...scaleCase(CASES[key], size, fit), key, dialOverride: dial, ...metal ? { metal: METALS[metal] } : {} }), span = open ? 260 : 64;
   OUTL_S = [];
   OUTT = OUTL_S;
   const strapSVG = strap === "bracelet" ? braceletSVG(C2, L, open ? C2.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C2, L, strap.split("-")[1], open, span) : natoSVG(C2, L, strap.split("-")[1], open, span);
@@ -8582,7 +8583,7 @@ function frame(o) {
   CLIPS = [];
   SUN_H = 40;
   LIVE = o.outer ? { outer: o.outer, dial: o.d } : null;
-  const C2 = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
+  const C2 = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer, o.body), fitFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
   INSERT = { top: GREYS[2], bottom: GREYS[2] };
   const body = caseSVG(C2, "own", 225);
   NO_LINES = false;
@@ -8648,10 +8649,12 @@ function presets(style) {
     nato: Object.fromEntries(Object.entries({ ...NATO_SETS, ...NATO_MORE }).map(([k, S]) => [k, S.map((T) => T[1])]))
   };
 }
-var sizeFor = (key, d, outer = null) => {
+var fitFor = (key, d, outer = null) => {
   const C2 = CASES[key] || CASES.dress;
   return outer ? (2 * outer + 2 * CASE_LIP) / C2.od : d / (C2.dial - (C2.insert ? 2 * REHAUT : 0));
 };
+var sizeFor = (key, d, outer = null, body = 0) => Math.max(fitFor(key, d, outer), body > 0 ? body / (CASES[key] || CASES.dress).od : 0);
+var bodyFit = (key, d, outer = null) => fitFor(key, d, outer) * (CASES[key] || CASES.dress).od;
 var CASE_LIP = 0.65;
 var LIVE = null;
 var live_case = (C2) => LIVE ? Object.assign(C2, { opening: LIVE.outer, glassR: LIVE.glass, dial: LIVE.dial, insert: null, bands: [] }) : C2;
@@ -8687,7 +8690,7 @@ function draw(o) {
   const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
   const make = (mode) => {
     GLINT = mode;
-    return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur);
+    return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size, o.fit ?? o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur);
   };
   const vb = (x2, y, w, h) => `${f(x2)} ${f(y)} ${f(w)} ${f(h)}`;
   const [fw, fh] = fullBox(o.key, o.size, o.strap === "bracelet" || o.strap === "links");
@@ -9542,7 +9545,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.75 beta";
+var VERSION = "v1.1.76 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9615,6 +9618,8 @@ var RING_BASE = {
   surface: 0,
   r_from: 0,
   // the case (#582): which ground the ring lies on, a place in SURFACES (dial · rehaut · bezel); how its radius reads there, a place in R_FROM — from the centre, as on the dial; from the surface's inner edge; Fit (a band as wide as the surface, marks as long, words on its middle). On the dial both are 0
+  on_hand: "",
+  // surface "hand": which disc hand it lies on (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault"), a name in HANDS
   fn: "",
   // the hand this ring is the scale of (#577: "gmt", "date", …; "" for a ring of its own): added and removed with that hand
   r: 13,
@@ -9929,6 +9934,10 @@ var DEFAULTS = {
   margin: 3,
   guides: false,
   // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
+  engrave: 0,
+  rh_engrave: 0,
+  bz_engrave: 0,
+  // FINISH, a place in FINISHES, of the markings on bare metal — the plate's (no paint), the rehaut's ring, the bezel's markings on its metal: painted on, or cut in (Okay, 11 Nov 2026: "I need the ability to add these engravings instead of paint on metal, needs a switch"); an engraved marking is in the files on a layer of its own, Engrave, and in no ink film
   material: 0,
   paint: true,
   // the plate's MATERIAL, a place in PLATE_METALS, and whether it is painted (c_plate): no paint, the metal is the face — seen in the preview with a sheen that follows the sun, left unprinted in the files (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button")
@@ -10109,6 +10118,8 @@ var DEFAULTS = {
   // the paint: 0 Engineer, 1 Artisan (watch.js). The dial side draws Engineer, flat, whatever this says
   w_lighting: 0,
   // 0 dramatic (the spotlight pool and the flare), 1 flat
+  w_body: 0,
+  // the body's Ø in mm, 0 Fit: snug round the dial and its rehaut and bezel (Okay, 11 Nov 2026: "The body size adjustment of the watch should move independently from the dial size, default body fits the dial size snugly")
   w_view: 0,
   // what Fit shows in show mode: 0 the detail (lug tip to lug tip), 1 the whole watch, 2 the dial as the dial side
   w_metal: 1,
@@ -11036,8 +11047,15 @@ var LINK_KEYS = [
   "material",
   "paint",
   // v1.1.71 beta: appended; brass under a painted plate to start, as every older link
-  "bz_marks"
+  "bz_marks",
   // v1.1.75 beta: appended; the insert to start, as every older link
+  "w_body",
+  "on_hand",
+  // v1.1.76 beta: appended; Fit and no disc to start, as every older link (w_body stays out of links, NOT_IN_LINK)
+  "engrave",
+  "rh_engrave",
+  "bz_engrave"
+  // v1.1.76 beta: appended; painted to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -11911,11 +11929,26 @@ function ring_edges(ring) {
   const outer = ring.r + from_shift(ring, ext);
   return [ring.r, outer - ext, outer];
 }
-var SURFACES = ["dial", "rehaut", "bezel"];
+var SURFACES = ["dial", "rehaut", "bezel", "hand"];
 var R_FROM = ["Centre", "Edge", "Fit"];
-var SURFACE_MOST = [Infinity, 1, 3];
-var ring_surface = (S, ring) => SURFACES[ring.surface] === "rehaut" && S.rh_on ? 1 : SURFACES[ring.surface] === "bezel" && S.bz_on ? 2 : 0;
+var SURFACE_MOST = [Infinity, 1, 3, 1];
+var disc_hand_on = (S, name) => Boolean(name) && HANDS.includes(name) && Boolean(S["ha_" + name]?.on) && HAND_SHAPES[S["ha_" + name].shape] === "disc" && (FIXED_HANDS.includes(name) || hand_added(S, name));
+var ring_surface = (S, ring) => SURFACES[ring.surface] === "rehaut" && S.rh_on ? 1 : SURFACES[ring.surface] === "bezel" && S.bz_on ? 2 : SURFACES[ring.surface] === "hand" && disc_hand_on(S, ring.on_hand) ? 3 : 0;
+var disc_span = (S, name) => {
+  const r = max(S["ha_" + name].disc_d, 0.1) / 2;
+  return [0.7 * r, r];
+};
 var rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
+var FINISHES = ["Paint", "Engrave"];
+var bezel_marks_on_metal = (S) => S.bz_on && (BEZEL_KINDS[S.bz_kind] === "Fixed" || BEZEL_MARKS[S.bz_marks] === "Metal");
+var ring_engraved = (S, ring) => {
+  const s = ring_surface(S, ring);
+  return s === 0 ? S.paint === false && FINISHES[S.engrave] === "Engrave" : s === 1 ? FINISHES[S.rh_engrave] === "Engrave" : s === 2 ? bezel_marks_on_metal(S) && FINISHES[S.bz_engrave] === "Engrave" : false;
+};
+var engraved_colour = (S, ring) => {
+  const s = ring_surface(S, ring), g = s === 0 ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : s === 1 ? S.rh_c : case_metal(S);
+  return [...g.slice(0, 3).map((v) => v * 0.55), 1];
+};
 var BEZEL_MARKS = ["Insert", "Metal"];
 var BEZEL_KINDS = ["Rotating", "Fixed"];
 var rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);
@@ -11931,7 +11964,7 @@ function case_spans(S) {
 }
 var reach_mm = (S) => case_spans(S).outer;
 function placed(S, ring) {
-  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? case_spans(S).marks : null;
+  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? case_spans(S).marks : SURFACES[ring.surface] === "hand" && disc_hand_on(S, ring.on_hand) ? disc_span(S, ring.on_hand) : null;
   if (!span || !ring.r_from) return ring;
   const [a, b] = span, kind = kind_of(ring);
   if (R_FROM[ring.r_from] === "Edge") return { ...ring, r: a + ring.r };
@@ -12666,6 +12699,8 @@ function scene(S, statik, t, preview = true, selected = null) {
     const black = [0, 0, 0, 1], cuts = S.out_cutlines !== false;
     const ink = S.out_ink || "", of = (c) => !ink || ink_hex(c) === ink;
     for (const d of rings) {
+      if (ring_surface(S, d.raw || d.ring) === 3) continue;
+      if (ring_engraved(S, d.raw || d.ring)) continue;
       if (!ink || !d.tints) {
         if (of(d.ring.c) || d.tints && !ink) add("ring", d.path, black, { ring: d, index: index(d) });
       } else d.tints.forEach((tint, n) => {
@@ -12704,7 +12739,15 @@ function scene(S, statik, t, preview = true, selected = null) {
     }
     if (S.paint === false) add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0], face), { metal: true });
     else add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));
+    const on_disc = (d) => ring_surface(S, d.raw || d.ring) === 3;
     for (const d of rings) {
+      if (on_disc(d)) continue;
+      if (ring_engraved(S, d.raw || d.ring)) {
+        const cut = dim(engraved_colour(S, d.raw || d.ring), face);
+        add("ring", d.path, cut, { ring: d, index: index(d), engrave: true });
+        if (d.stroke) add("ring stroke", d.stroke, cut, { ring: d, index: index(d), part: "stroke", engrave: true });
+        continue;
+      }
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });
       if (d.stroke) add("ring stroke", d.stroke, dim(d.ring.stroke_c, face), { ring: d, index: index(d), part: "stroke" });
@@ -12715,6 +12758,11 @@ function scene(S, statik, t, preview = true, selected = null) {
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
         if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), dim(h.mark_c, hands_layer), { name, angle: a });
         if (mark_stroke(h)) add("mark", mark_stroke(h), dim(h.mark_stroke_c || h.c, hands_layer), { name, angle: a, edge: true });
+        for (const d of rings) if (on_disc(d) && (d.raw || d.ring).on_hand === name) {
+          if (d.tints) d.tints.forEach((tint, n) => add("mark", tint.path, dim(sector_colour(d.ring, tint.at), hands_layer), { name, angle: a, ring: d, index: index(d), part: n + 1 }));
+          else add("mark", d.path, dim(d.ring.c, hands_layer), { name, angle: a, ring: d, index: index(d) });
+          if (d.stroke) add("mark", d.stroke, dim(d.ring.stroke_c, hands_layer), { name, angle: a, ring: d, index: index(d), part: "stroke" });
+        }
         if (fills_openings(h)) add("lume", hand_openings(h), dim(h.op_fill, hands_layer), { name, angle: a });
       }
       if (cap_shows(S)) add("cap", circle2(S.ha_cap), dim(S.c_cap, hands_layer));
@@ -12790,6 +12838,8 @@ var turned = (path, angle) => path.copy().rotate(-angle);
 var RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
 var HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub", "hole"];
 var WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
+var BEZEL_START = { bz_h: 1, bz_chamfer: 0, bz_in_in: 0, bz_in_out: 0, bz_teeth_depth: 0, bz_teeth_chamfer: 0, bz_dial_up: 0, bz_seat: 0, bz_lip: 0, bz_rim: 0, bz_up: 0, bz_dome: 0 };
+var bezel_untouched = (S) => Object.keys(BEZEL_START).every((k) => S[k] === DEFAULTS[k]) && S.bz_w === DEFAULTS.bz_w;
 var CASE_MM = ["rh_len", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_teeth_depth", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome"];
 function each_measure(S, visit, keys = null) {
   if (keys) {
@@ -12949,7 +12999,7 @@ function part_attrs(p) {
   return says.map(([k, v]) => ` data-${k}="${v}"`).join("");
 }
 var dial_attrs = (d) => ` data-dial-d="${mm(d)}" data-parts="${PARTS_V}" data-stack="${Object.entries(STACK).map(([k, v]) => `${k}:${v}`).join(" ")}"`;
-var case_attrs = (c) => c && (c.rehaut || c.bezel) ? ` data-case="${JSON.stringify(c).replace(/"/g, "&quot;")}"` : "";
+var case_attrs = (c) => c && (c.rehaut || c.bezel || c.body) ? ` data-case="${JSON.stringify(c).replace(/"/g, "&quot;")}"` : "";
 
 // src/show.js
 var METAL_NAMES2 = METAL_NAMES;
@@ -12980,6 +13030,10 @@ var part_record = (S, x2) => {
   const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null, H2 = hand ? S["ha_" + hand] : null, p = one(x2, hand, H2, S);
   const r = { role: x2.role, make: make_of(x2.role, hand), hand };
   if (x2.metal) r.metal = (PLATE_METALS[S.material] || PLATE_METALS[0]).toLowerCase();
+  if (x2.engrave) {
+    r.make = "engraved";
+    return r;
+  }
   if (PRINTED(x2.role) || x2.role === "mark") r.ink = ink_mm(S, x2);
   if (r.make === "hand" && hand) Object.assign(r, {
     over: S["sh_" + hand] ?? S.sh_hour,
@@ -13011,8 +13065,11 @@ var case_record = (S) => ({
     rim: S.bz_rim,
     up: S.bz_up,
     dome: S.bz_dome
-  } : null
+  } : null,
+  body: S.w_body > 0 ? Math.max(body_fit(S), S.w_body) : null
+  // the body's Ø, mm, when it isn't Fit (Okay, 11 Nov 2026: Body Ø)
 });
+var body_fit = (S) => bodyFit(CASE_OF_BEZEL[S.bezel] || "dress", S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null);
 var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), { dial: dial_attrs(S.dial_d) + case_attrs(case_record(S)) });
 function options(S, items, effects) {
   const style = STYLE_NAMES2[S.w_style] || "artisan", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
@@ -13021,7 +13078,8 @@ function options(S, items, effects) {
     style,
     key: kind,
     d: S.dial_d,
-    size: sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null),
+    size: sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, S.w_body),
+    fit: fitFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null),
     view: VIEW_NAMES[S.w_view] || "detail",
     case: S.rh_on || S.bz_on ? { outer: reach_mm(S), glass: case_spans(S).bezel ? case_spans(S).bezel[0] : reach_mm(S) } : null,
     // glass: the crystal's edge — inside the bezel, not over it (Okay, 11 Nov 2026: "the glass is drawn over the bezel now somehow")      // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
@@ -13136,7 +13194,7 @@ var GRADIENTS2 = [
   ["Ink", "#0e0f14", "#3b4256"]
 ];
 function fit_zoom(tool2, w, h) {
-  const S = tool2.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, size = sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null), cb = caseBox(kind, size);
+  const S = tool2.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, size = sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, S.w_body), cb = caseBox(kind, size);
   if (S.w_view === 2) return Math.min(w, h) / page_mm(S);
   const [bw, bh] = S.w_view === 1 ? fullBox(kind, size, kind === "diver" && (S.strap === 2 || S.strap === 4)) : [cb.w, cb.h];
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
@@ -13496,6 +13554,7 @@ var num = (v, digits = 4) => {
 };
 var rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
 function item_name(item) {
+  if (item.engrave) return "Engrave";
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");
   if (item.role === "ring stroke") return (item.ring.ring.name || item.ring.kind) + " stroke";
   if (item.role === "hand") return hand_word(item.name);
@@ -13559,24 +13618,32 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
   out.push(`<g id="dial"${facts ? facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
+  let cut = null;
   for (const item of drawn(S, statik, t, preview, selected, Boolean(facts))) {
-    const id = named(item) + (facts ? facts(item) : "");
+    if (item.engrave && !cut) {
+      cut = [];
+      out.push(cut);
+    }
+    const at = item.engrave ? cut : out, tag = item.engrave ? "e" : "";
+    const id = (item.engrave ? "" : named(item)) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
+    if (text && item.engrave) text.texts = text.texts.map((x2) => ({ ...x2, fill: item.fill }));
     if (text && text.texts.length) {
       let clip = "";
       if (text.removed) {
         const area = new Path().rect(-500, -500, 1e3, 1e3).difference(text.removed);
-        out.push(`<clipPath id="cut-${out.length}"><path d="${area.svg(5, true)}"/></clipPath>`);
-        clip = ` clip-path="url(#cut-${out.length - 1})"`;
+        at.push(`<clipPath id="cut-${tag}${at.length}"><path d="${area.svg(5, true)}"/></clipPath>`);
+        clip = ` clip-path="url(#cut-${tag}${at.length - 1})"`;
       }
-      out.push(`<g${id}${clip}>`, ...text.texts.map(svg_text), `</g>`);
+      at.push(`<g${id}${clip}>`, ...text.texts.map(svg_text), `</g>`);
     } else if (item.stroke) {
-      out.push(`<path${id} d="${item.path.svg(5, true)}" fill="none" stroke="${rgb(item.stroke)}" stroke-opacity="${item.stroke[3]}" stroke-width="${num(0.03 * item.px)}"/>`);
+      at.push(`<path${id} d="${item.path.svg(5, true)}" fill="none" stroke="${rgb(item.stroke)}" stroke-opacity="${item.stroke[3]}" stroke-width="${num(0.03 * item.px)}"/>`);
     } else {
       const alpha = item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : "";
-      out.push(`<path${id} d="${item.path.svg(5, true)}" fill="${rgb(item.fill)}"${alpha}/>`);
+      at.push(`<path${id} d="${item.path.svg(5, true)}" fill="${rgb(item.fill)}"${alpha}/>`);
     }
   }
+  if (cut) out.splice(out.indexOf(cut), 1, `<g id="engrave">`, ...cut, `</g>`);
   out.push(`</g>`, `</svg>`);
   return out.join("\n");
 }
@@ -13592,8 +13659,8 @@ function pdf_document(S, statik, t) {
   for (const item of drawn(S, statik, t, false, null)) {
     const [r, g, b, a] = item.fill;
     if (a < 1 && !alphas.includes(a)) alphas.push(a);
-    layers.push(item_name(item));
-    body.push(`/OC /L${layers.length - 1} BDC`, a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`);
+    const name = item_name(item), L = name === "Engrave" && layers.includes(name) ? layers.indexOf(name) : layers.push(name) - 1;
+    body.push(`/OC /L${L} BDC`, a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`);
     for (const c of item.path.d) {
       const v = c.slice(1).map((x2) => num(x2, 5)).join(" ");
       body.push(c[0] === "M" ? `${v} m` : c[0] === "L" ? `${v} l` : c[0] === "C" ? `${v} c` : "h");
@@ -14328,7 +14395,8 @@ var DIAL_ROWS = [
   seg("material", "Material", PLATE_METALS, { head: true }),
   // the bare metal: seen when Paint is No colour, with a sheen that follows the sun
   col("c_plate", "Paint", { none: "paint" }),
-  // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
+  seg("engrave", "Finish", FINISHES, { show: (T, S) => S.paint === false }),
+  // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
   num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),
   // typed past these it stops there and says so (#233: 0 and 1000 were taken)
   chk("ui_scale", "Scale everything with it", { nest: true }),
@@ -14404,7 +14472,7 @@ var ROWS = {
     // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
     seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...S.rh_on && rings_on(S, 1) < SURFACE_MOST[1] ? [1] : [], ...S.bz_on && rings_on(S, 2) < SURFACE_MOST[2] ? [2] : []] }),
     // a full surface is not offered (rehaut 1, bezel 3)
-    seg("r_from", "Radius from", R_FROM, { show: (R, S) => R.surface > 0 && (R.surface === 1 && S.rh_on || R.surface === 2 && S.bz_on) }),
+    seg("r_from", "Radius from", R_FROM, { show: (R, S) => ring_surface(S, R) > 0 }),
     num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num2("w", "\xD8", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
     num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
@@ -14870,6 +14938,9 @@ ROWS.Watch = [
   seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
   pick("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre"], (i2) => tilePicture(CASE_OF_BEZEL[i2]), { order: [3, 2, 1, 5], shown: (S) => BEZEL_OF_CASE[CASE_OF_BEZEL[S.bezel] || "dress"] }),
   // the same key the dial side's case menu writes (R9: the numbers keep their meaning); tiles, each case's silhouette (Okay, 23 Oct 2026: "Tiles with pictures")
+  // BODY Ø (Okay, 11 Nov 2026: "should move independently from the dial size, default body fits the dial size snugly"): Fit, or a Ø of its own — never inside Fit
+  seg("w_body", "Body", ["Fit", "Own \xD8"], { get: (S) => S.w_body > 0 ? 1 : 0, put: (tool2, v) => tool2.set_value("global", "w_body", v ? Math.round(body_fit(tool2.S) * 20) / 20 : 0) }),
+  num2("w_body", "Body \xD8", 10, 80, 0.05, { show: (S) => S.w_body > 0, bounds: (S) => [body_fit(S), 80] }),
   pick("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], (i2) => metal_picture(i2)),
   // tiles, as Case and Insert: each fits the column (Okay, 23 Oct 2026: "do the same as others")
   col("c_metal", "Case colour", { or: (S) => metal_colour(S) }),
@@ -14965,16 +15036,20 @@ ROWS.Dial = [
     num2("rh_deg", "Angle \xB0", 0, 85, 1, { ...CS, whole: true, short: "Angle", show: (T, S) => S.rh_on }),
     num2("rh_len", "Length", 0.2, 8, 0.05, { ...CS, show: (T, S) => S.rh_on }),
     col("rh_c", "Colour", { ...CS, show: (T, S) => S.rh_on }),
+    seg("rh_engrave", "Finish", FINISHES, { show: (T, S) => S.rh_on }),
+    // its ring painted on or cut in (Okay, 11 Nov 2026)
     info((S) => `The wall leans ${S.rh_deg}\xB0 from upright, so in plan it reaches ${rehaut_w(S).toFixed(2)} mm out from the dial\u2019s edge and rises ${rehaut_h(S).toFixed(2)} mm. Rings go on it: a ring\u2019s Surface, in Rings.`, { show: (T, S) => S.rh_on })
   ]),
   ...on_tab(2)([
     // the BEZEL stack (the 3D exercise's named numbers, in 2D): the ring, its insert and coin edge in plan; the heights in the section
     hdr("Bezel", { headless: true }),
     chk("bz_on", "Bezel", {}),
+    // starts flat (G.BEZEL_START, set in app.js set_value)
     custom("case_preset", { show: (T, S) => S.bz_on }),
     seg("bz_kind", "Kind", BEZEL_KINDS, { show: (T, S) => S.bz_on }),
     seg("bz_marks", "Markings", BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
+    seg("bz_engrave", "Finish", FINISHES, { show: (T, S) => bezel_marks_on_metal(S) }),
+    // markings on the metal painted on or cut in (Okay, 11 Nov 2026)      // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num2("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
     num2("bz_chamfer", "Chamfer", 0, 2, 0.05, { ...CS, show: (T, S) => S.bz_on }),
@@ -15011,6 +15086,17 @@ ROWS.Dial = [
     };
   })
 ];
+ROWS.Hands.splice(ROWS.Hands.findIndex((r) => r.kind === "hdr" && r.text === "Opening"), 0, ...ROWS.Rings.filter((r) => r.key !== "surface").map((r) => {
+  const list = r.name === "ring_list" || r.kind === "hdr" && r.text === "Rings, top first";
+  return {
+    ...r,
+    scope: r.scope ?? "ring",
+    pin: false,
+    id: r.id ? r.id + "-disc" : void 0,
+    ...r.kind === "hdr" && r.text === "Rings, top first" ? { title: () => "Disc ring" } : {},
+    show: (T, S, app) => app.ring_context() === 3 && (list || app.in_context(S.ui_ring)) && (!r.show || r.show(T, S, app))
+  };
+}));
 for (const name of SECTIONS2) for (const row of ROWS[name]) {
   row.scope ??= name === "Rings" ? "ring" : "global";
   name_row(row);
@@ -19614,7 +19700,7 @@ var PANEL = {
   sync_rows() {
     if (this.ring_fit_context) {
       this.ring_fit_context();
-      const c = this.ring_context();
+      const c = this.ring_context_key();
       if (c !== this.ring_ctx_shown) {
         this.ring_ctx_shown = c;
         this.fill_ring_list();
@@ -20597,19 +20683,25 @@ var RINGS = {
    *  Rings tab the dial's (0); the Dial tab's Rehaut and Bezel tabs theirs (1, 2) while that part of the case is on; null: none */
   ring_context() {
     const S = this.S, on_dial_tab = SECTIONS2[S.ui_section] === "Dial";
+    if (SECTIONS2[S.ui_section] === "Hands") return disc_hand_on(S, HANDS[S.ui_hand]) ? 3 : null;
     if (!on_dial_tab) return 0;
     return S.ui_dial_tab === 1 && S.rh_on ? 1 : S.ui_dial_tab === 2 && S.bz_on ? 2 : null;
   },
   in_context(i2) {
     const c = this.ring_context(), ring = this.S.rings[i2];
-    return Boolean(ring) && c !== null && ring_surface(this.S, ring) === c;
+    return Boolean(ring) && c !== null && ring_surface(this.S, ring) === c && (c !== 3 || ring.on_hand === HANDS[this.S.ui_hand]);
+  },
+  /** the context and, on a disc hand, which: the list is filled again when it changes */
+  ring_context_key() {
+    const c = this.ring_context();
+    return c === 3 ? "3" + HANDS[this.S.ui_hand] : c;
   },
   /** the selected ring is one of the context's, if it has any: → whether it has */
   ring_fit_context() {
     const c = this.ring_context();
     if (c === null) return false;
     if (this.in_context(this.S.ui_ring)) return true;
-    const i2 = this.S.rings.findIndex((r) => ring_surface(this.S, r) === c);
+    const i2 = this.S.rings.findIndex((r, k) => ring_surface(this.S, r) === c && (c !== 3 || r.on_hand === HANDS[this.S.ui_hand]));
     if (i2 >= 0) this.S.ui_ring = i2;
     return i2 >= 0;
   },
@@ -21141,7 +21233,8 @@ var RINGS = {
       if (c > 0) {
         ring.surface = c;
         ring.r_from = R_FROM.indexOf("Fit");
-        const sp = case_spans(this.S), span = c === 1 ? sp.rehaut : sp.insert || sp.bezel;
+        if (c === 3) ring.on_hand = HANDS[this.S.ui_hand];
+        const sp = case_spans(this.S), dr = c === 3 ? this.S["ha_" + ring.on_hand].disc_d / 2 : 0, span = c === 3 ? [0.7 * dr, dr] : c === 1 ? sp.rehaut : sp.insert || sp.bezel;
         if (span && "size" in ring && (kind_of(ring) === "numerals" || kind_of(ring) === "text")) ring.size = +Math.min(ring.size, 0.6 * (span[1] - span[0])).toFixed(2);
       }
       rings.splice(mine.length ? i2 : 0, 0, ring);
@@ -22744,10 +22837,10 @@ var PREVIEW = {
   /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
    *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
   draw_bezel() {
-    const S = this.S, outer = S.rh_on || S.bz_on ? reach_mm(S) : null, key = S.ui_case ? `${S.bezel || 0}/${S.dial_d}/${outer}` : "";
+    const S = this.S, outer = S.rh_on || S.bz_on ? reach_mm(S) : null, key = S.ui_case ? `${S.bezel || 0}/${S.dial_d}/${outer}/${S.w_body}` : "";
     if (key === this.bezel_key) return;
     this.bezel_key = key;
-    this.bezel_g.innerHTML = S.ui_case ? frame({ kind: CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, outer }) : "";
+    this.bezel_g.innerHTML = S.ui_case ? frame({ kind: CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, outer, body: S.w_body }) : "";
   },
   /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. No case
    *  to start (ui_case; Okay, 23 Oct 2026: "On main default is caseless"); the kind is show mode's too. No strap here: the
@@ -29019,6 +29112,7 @@ var DialTool = class _DialTool {
       (this.blade_len ||= {})[this.S.ui_hand] = T2.len;
       Object.assign(T2, { mark_in: true, disc_d: d, mark: 1, mark_tri: true, mark_w: +(len * 2 / Math.sqrt(3)).toFixed(2), len: +(0.9 * d / 2).toFixed(2), mark_stroke_w: 0, c: [...(T2.c || [0.1, 0.1, 0.12, 1]).slice(0, 3), 0.5] });
     }
+    if (key === "bz_on" && value && !this.S.bz_on && bezel_untouched(this.S)) Object.assign(this.S, BEZEL_START);
     if (scope === "hand" && key === "shape" && HAND_SHAPES[value] !== "disc" && HAND_SHAPES[this.target("hand").shape] === "disc") {
       const T2 = this.target("hand"), kept = this.blade_len?.[this.S.ui_hand];
       if (T2.c?.[3] === 0.5) T2.c = [...T2.c.slice(0, 3), 1];

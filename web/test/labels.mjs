@@ -128,4 +128,18 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(JSON.stringify(M.HOLE_FIT) === JSON.stringify(G.HOLE_FIT) && nh.posts.top.hour === 0.78 && nh.posts.d.hour === 1.5 && my.posts.top.hour === 0.73 && my.posts.top.second === 1.45 && M.movement("any").posts === null,
     `"do the accurate hand pipes": a movement says its posts — the NH35's hour wheel Ø ${nh.posts.d.hour} to ${nh.posts.top.hour} over the dial, flush with its hand's top; the 8215's to ${my.posts.top.hour}, the seconds tip at ${my.posts.top.second}; without a movement the tool's own hand holes`);
 }
+// ENGRAVE (Okay, 11 Nov 2026: "I need the ability to add these engravings instead of paint on metal, needs a switch"): a bare plate's
+// rings with Finish Engrave are cut in — the metal's colour in shadow, one layer Engrave in the SVG and the PDF, in no ink film, made
+// "engraved" in the parts record; the rehaut's ring and the bezel's markings on its metal the same, an insert's never
+{ const O = await import("../src/output.js"), SHOW = await import("../src/show.js"), { OPENER } = await import("../src/opener.js");
+  const S = G.fresh_settings(OPENER); S.paint = false; S.engrave = 1; const st = G.build_static(S), items = G.scene(S, st, 0, false, null);
+  const cut = items.filter((x) => x.engrave), rings = items.filter((x) => x.role === "ring"), svg = O.svg_document(S, st, 0, { facts: SHOW.svg_facts(S) });
+  const pdf = new TextDecoder("latin1").decode(O.pdf_document(S, st, 0)), engraveOCG = (pdf.match(/\/Name <FEFF0045006E00670072006100760065>/g) || []).length;
+  S.out_production = true; const film = G.scene(S, st, 0, false, null).filter((x) => x.role === "ring").length; S.out_production = false;
+  const painted = G.scene(Object.assign(G.fresh_settings(OPENER), { paint: false }), st, 0, false, null).filter((x) => x.engrave).length;
+  const rb = G.fresh_settings({ rh_on: true, rh_engrave: 1, bz_on: true, bz_kind: 0, bz_marks: 0, bz_engrave: 1, rings: [{ ...G.RING_BASE, kind: 1, surface: 1 }, { ...G.RING_BASE, kind: 1, surface: 2 }] });
+  const on = (T) => [G.ring_engraved(T, T.rings[0]), G.ring_engraved(T, T.rings[1])].join(); const insert = on(rb); rb.bz_marks = 1; const metal = on(rb);
+  check(cut.length === rings.length && cut.length > 0 && cut.every((x) => x.fill[0] < 0.5) && (svg.match(/<g id="engrave">/g) || []).length === 1 && (svg.match(/data-make="engraved"/g) || []).length === cut.length && engraveOCG === 1 && film === 0 && painted === 0 && insert === "true,false" && metal === "true,true",
+    `Engrave: a bare plate's ${rings.length} rings cut in (${cut.length}), the metal's colour in shadow; one Engrave group in the SVG, one Engrave layer in the PDF (${engraveOCG}), in no film (${film}); Paint keeps them painted (${painted}); the rehaut's ring and the bezel's on an insert ${insert}, on its metal ${metal} (Okay: "engravings instead of paint on metal, needs a switch")`);
+}
 process.exit(bad ? 1 : 0);

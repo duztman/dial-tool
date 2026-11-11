@@ -16,6 +16,7 @@ export const rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Mat
 
 /** what a scene item is called in a file: a layer in the PDF, an id in the SVG. */
 function item_name(item) {
+  if (item.engrave) return "Engrave";      // cut in, not printed (Finish Engrave, Okay, 11 Nov 2026): one layer for the laser or the etch
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");      // a band with sector colours is one shape per colour
   if (item.role === "ring stroke") return (item.ring.ring.name || item.ring.kind) + " stroke";      // the outline round a ring's letters (#551)
   if (item.role === "hand") return hand_word(item.name);
@@ -84,24 +85,29 @@ export function svg_document(S, statik, t, { preview = false, selected = null, l
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
   out.push(`<g id="dial"${facts ? facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
+  let cut = null;      // the ENGRAVE group: every engraved item, gathered where the first one falls (under the paint over it)
   for (const item of drawn(S, statik, t, preview, selected, Boolean(facts))) {
-    const id = named(item) + (facts ? facts(item) : "");
+    if (item.engrave && !cut) { cut = []; out.push(cut); }
+    const at = item.engrave ? cut : out, tag = item.engrave ? "e" : "";      // an engraved item goes into the group
+    const id = (item.engrave ? "" : named(item)) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
+    if (text && item.engrave) text.texts = text.texts.map((x) => ({ ...x, fill: item.fill }));      // an engraved word: the cut's colour
     if (text && text.texts.length) {
       let clip = "";
       if (text.removed) {                          // everything except what was cut away
         const area = new Path().rect(-500, -500, 1000, 1000).difference(text.removed);
-        out.push(`<clipPath id="cut-${out.length}"><path d="${area.svg(5, true)}"/></clipPath>`);
-        clip = ` clip-path="url(#cut-${out.length - 1})"`;
+        at.push(`<clipPath id="cut-${tag}${at.length}"><path d="${area.svg(5, true)}"/></clipPath>`);
+        clip = ` clip-path="url(#cut-${tag}${at.length - 1})"`;
       }
-      out.push(`<g${id}${clip}>`, ...text.texts.map(svg_text), `</g>`);
+      at.push(`<g${id}${clip}>`, ...text.texts.map(svg_text), `</g>`);
     } else if (item.stroke) {                      // a line, not a fill: a guide, a disc's dashed edge in X-ray (preview only, R5)
-      out.push(`<path${id} d="${item.path.svg(5, true)}" fill="none" stroke="${rgb(item.stroke)}" stroke-opacity="${item.stroke[3]}" stroke-width="${num(0.03 * item.px)}"/>`);
+      at.push(`<path${id} d="${item.path.svg(5, true)}" fill="none" stroke="${rgb(item.stroke)}" stroke-opacity="${item.stroke[3]}" stroke-width="${num(0.03 * item.px)}"/>`);
     } else {
       const alpha = item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : "";
-      out.push(`<path${id} d="${item.path.svg(5, true)}" fill="${rgb(item.fill)}"${alpha}/>`);
+      at.push(`<path${id} d="${item.path.svg(5, true)}" fill="${rgb(item.fill)}"${alpha}/>`);
     }
   }
+  if (cut) out.splice(out.indexOf(cut), 1, `<g id="engrave">`, ...cut, `</g>`);
   out.push(`</g>`, `</svg>`);
   return out.join("\n");
 }
@@ -121,8 +127,8 @@ export function pdf_document(S, statik, t) {
   for (const item of drawn(S, statik, t, false, null)) {
     const [r, g, b, a] = item.fill;
     if (a < 1 && !alphas.includes(a)) alphas.push(a);
-    layers.push(item_name(item));
-    body.push(`/OC /L${layers.length - 1} BDC`, a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`);
+    const name = item_name(item), L = name === "Engrave" && layers.includes(name) ? layers.indexOf(name) : layers.push(name) - 1;      // the engraved items share one layer
+    body.push(`/OC /L${L} BDC`, a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`);
     for (const c of item.path.d) {
       const v = c.slice(1).map((x) => num(x, 5)).join(" ");
       body.push(c[0] === "M" ? `${v} m` : c[0] === "L" ? `${v} l` : c[0] === "C" ? `${v} c` : "h");

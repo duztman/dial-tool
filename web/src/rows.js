@@ -167,7 +167,8 @@ const DIAL_ROWS = [
     // "+ Metals"; "color gets a new line called paint"): its material on the heading line, its paint a line of its own
     hdr("Material", { pin: true }),                // the plate: what it is made of, how big, what is on it
     seg("material", "Material", G.PLATE_METALS, { head: true }),      // the bare metal: seen when Paint is No colour, with a sheen that follows the sun
-    col("c_plate", "Paint", { none: "paint" }),      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
+    col("c_plate", "Paint", { none: "paint" }),
+    seg("engrave", "Finish", G.FINISHES, { show: (T, S) => S.paint === false }),      // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
     num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
     chk("ui_scale", "Scale everything with it", { nest: true }),
     // Weight (#88; atlas 6.19, Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the
@@ -226,7 +227,7 @@ export const ROWS = {
     // 'fit' option. If i am doing bands etc."): Dial · Rehaut · Bezel, the two shown once the case has them; on a surface
     // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
     seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...(S.rh_on && G.rings_on(S, 1) < G.SURFACE_MOST[1] ? [1] : []), ...(S.bz_on && G.rings_on(S, 2) < G.SURFACE_MOST[2] ? [2] : [])] }),      // a full surface is not offered (rehaut 1, bezel 3)
-    seg("r_from", "Radius from", G.R_FROM, { show: (R, S) => R.surface > 0 && ((R.surface === 1 && S.rh_on) || (R.surface === 2 && S.bz_on)) }),
+    seg("r_from", "Radius from", G.R_FROM, { show: (R, S) => G.ring_surface(S, R) > 0 }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Ø", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),      // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
@@ -603,6 +604,9 @@ ROWS.Watch = [
   hdr("Watch"),
   seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
   pick("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre"], (i) => tilePicture(G.CASE_OF_BEZEL[i]), { order: [3, 2, 1, 5], shown: (S) => G.BEZEL_OF_CASE[G.CASE_OF_BEZEL[S.bezel] || "dress"] }),      // the same key the dial side's case menu writes (R9: the numbers keep their meaning); tiles, each case's silhouette (Okay, 23 Oct 2026: "Tiles with pictures")
+  // BODY Ø (Okay, 11 Nov 2026: "should move independently from the dial size, default body fits the dial size snugly"): Fit, or a Ø of its own — never inside Fit
+  seg("w_body", "Body", ["Fit", "Own Ø"], { get: (S) => (S.w_body > 0 ? 1 : 0), put: (tool, v) => tool.set_value("global", "w_body", v ? Math.round(SHOW.body_fit(tool.S) * 20) / 20 : 0) }),
+  num("w_body", "Body Ø", 10, 80, 0.05, { show: (S) => S.w_body > 0, bounds: (S) => [SHOW.body_fit(S), 80] }),
   pick("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], (i) => SHOW.metal_picture(i)),      // tiles, as Case and Insert: each fits the column (Okay, 23 Oct 2026: "do the same as others")
   col("c_metal", "Case colour", { or: (S) => SHOW.metal_colour(S) }),
   pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i) => SHOW.insert_picture(i), { show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" && !S.bz_on }),      // tiles, each insert a ring in its two colours      // with the tool's own bezel on, its insert is the Bezel tab's (#582)
@@ -682,15 +686,17 @@ ROWS.Dial = [
     num("rh_deg", "Angle °", 0, 85, 1, { ...CS, whole: true, short: "Angle", show: (T, S) => S.rh_on }),
     num("rh_len", "Length", 0.2, 8, 0.05, { ...CS, show: (T, S) => S.rh_on }),
     col("rh_c", "Colour", { ...CS, show: (T, S) => S.rh_on }),
+    seg("rh_engrave", "Finish", G.FINISHES, { show: (T, S) => S.rh_on }),      // its ring painted on or cut in (Okay, 11 Nov 2026)
     info((S) => `The wall leans ${S.rh_deg}° from upright, so in plan it reaches ${G.rehaut_w(S).toFixed(2)} mm out from the dial’s edge and rises ${G.rehaut_h(S).toFixed(2)} mm. Rings go on it: a ring’s Surface, in Rings.`, { show: (T, S) => S.rh_on }),
   ]),
   ...on_tab(2)([
     // the BEZEL stack (the 3D exercise's named numbers, in 2D): the ring, its insert and coin edge in plan; the heights in the section
     hdr("Bezel", { headless: true }),
-    chk("bz_on", "Bezel", {}),
+    chk("bz_on", "Bezel", {}),      // starts flat (G.BEZEL_START, set in app.js set_value)
     custom("case_preset", { show: (T, S) => S.bz_on }),
     seg("bz_kind", "Kind", G.BEZEL_KINDS, { show: (T, S) => S.bz_on }),
-    seg("bz_marks", "Markings", G.BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),      // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
+    seg("bz_marks", "Markings", G.BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    seg("bz_engrave", "Finish", G.FINISHES, { show: (T, S) => G.bezel_marks_on_metal(S) }),      // markings on the metal painted on or cut in (Okay, 11 Nov 2026)      // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
     num("bz_chamfer", "Chamfer", 0, 2, 0.05, { ...CS, show: (T, S) => S.bz_on }),
@@ -723,5 +729,14 @@ ROWS.Dial = [
       show: (T, S, app) => (S.ui_dial_tab === 1 || S.ui_dial_tab === 2) && app.ring_context() !== null && (list || app.in_context(S.ui_ring)) && (!r.show || r.show(T, S, app)) };
   }),
 ];
+
+// THE RING ON A DISC HAND (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault, controllers appear beneath"): the
+// Rings tab's list and panes once more, under the hand's own rows, before its Opening, listing the disc's one ring; it turns with the hand
+ROWS.Hands.splice(ROWS.Hands.findIndex((r) => r.kind === "hdr" && r.text === "Opening"), 0, ...ROWS.Rings.filter((r) => r.key !== "surface").map((r) => {
+  const list = r.name === "ring_list" || (r.kind === "hdr" && r.text === "Rings, top first");
+  return { ...r, scope: r.scope ?? "ring", pin: false, id: r.id ? r.id + "-disc" : undefined,
+    ...(r.kind === "hdr" && r.text === "Rings, top first" ? { title: () => "Disc ring" } : {}),
+    show: (T, S, app) => app.ring_context() === 3 && (list || app.in_context(S.ui_ring)) && (!r.show || r.show(T, S, app)) };
+}));
 
 for (const name of SECTIONS) for (const row of ROWS[name]) { row.scope ??= name === "Rings" ? "ring" : "global"; name_row(row); }

@@ -109,15 +109,18 @@ export const RINGS = {
    *  Rings tab the dial's (0); the Dial tab's Rehaut and Bezel tabs theirs (1, 2) while that part of the case is on; null: none */
   ring_context() {
     const S = this.S, on_dial_tab = SECTIONS[S.ui_section] === "Dial";
+    if (SECTIONS[S.ui_section] === "Hands") return G.disc_hand_on(S, G.HANDS[S.ui_hand]) ? 3 : null;      // a disc hand's own ring (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault, controllers appear beneath")
     if (!on_dial_tab) return 0;
     return S.ui_dial_tab === 1 && S.rh_on ? 1 : S.ui_dial_tab === 2 && S.bz_on ? 2 : null;
   },
-  in_context(i) { const c = this.ring_context(), ring = this.S.rings[i]; return Boolean(ring) && c !== null && G.ring_surface(this.S, ring) === c; },
+  in_context(i) { const c = this.ring_context(), ring = this.S.rings[i]; return Boolean(ring) && c !== null && G.ring_surface(this.S, ring) === c && (c !== 3 || ring.on_hand === G.HANDS[this.S.ui_hand]); },
+  /** the context and, on a disc hand, which: the list is filled again when it changes */
+  ring_context_key() { const c = this.ring_context(); return c === 3 ? "3" + G.HANDS[this.S.ui_hand] : c; },
   /** the selected ring is one of the context's, if it has any: → whether it has */
   ring_fit_context() {
     const c = this.ring_context(); if (c === null) return false;
     if (this.in_context(this.S.ui_ring)) return true;
-    const i = this.S.rings.findIndex((r) => G.ring_surface(this.S, r) === c);
+    const i = this.S.rings.findIndex((r, k) => G.ring_surface(this.S, r) === c && (c !== 3 || r.on_hand === G.HANDS[this.S.ui_hand]));
     if (i >= 0) this.S.ui_ring = i;
     return i >= 0;
   },
@@ -548,7 +551,8 @@ export const RINGS = {
       const ring = G.new_ring(kind, this.S, kind === "numerals" || kind === "text" ? rings.find((r) => G.kind_of(r) === "numerals") : null);      // a new ring of words takes the top numerals ring's type
       if (c > 0) {      // on the rehaut or the bezel: fitted to it to start, words and figures sized to its width
         ring.surface = c; ring.r_from = G.R_FROM.indexOf("Fit");
-        const sp = G.case_spans(this.S), span = c === 1 ? sp.rehaut : sp.insert || sp.bezel;
+        if (c === 3) ring.on_hand = G.HANDS[this.S.ui_hand];
+        const sp = G.case_spans(this.S), dr = c === 3 ? this.S["ha_" + ring.on_hand].disc_d / 2 : 0, span = c === 3 ? [0.7 * dr, dr] : c === 1 ? sp.rehaut : sp.insert || sp.bezel;
         if (span && "size" in ring && (G.kind_of(ring) === "numerals" || G.kind_of(ring) === "text")) ring.size = +Math.min(ring.size, 0.6 * (span[1] - span[0])).toFixed(2);
       }
       rings.splice(mine.length ? i : 0, 0, ring);

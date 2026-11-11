@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.75 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.76 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -128,6 +128,7 @@ export const ACCENT = [0.80, 0.22, 0.10, 1];
 export const RING_BASE = {
   kind: 0, name: "", on: true, c: INK,
   surface: 0, r_from: 0,                           // the case (#582): which ground the ring lies on, a place in SURFACES (dial · rehaut · bezel); how its radius reads there, a place in R_FROM — from the centre, as on the dial; from the surface's inner edge; Fit (a band as wide as the surface, marks as long, words on its middle). On the dial both are 0
+  on_hand: "",                                     // surface "hand": which disc hand it lies on (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault"), a name in HANDS
   fn: "",                                          // the hand this ring is the scale of (#577: "gmt", "date", …; "" for a ring of its own): added and removed with that hand
   r: 13.0, count: 12, start: 0.0, span: 360.0, every: 1, offset: 0, invert: false,
   skip: 0, knock: 0, clear: 0.25,
@@ -279,6 +280,7 @@ const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: 
 export const DEFAULTS = {
   version: 2,
   dial_d: 30.0, margin: 3.0, guides: false,      // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
+  engrave: 0, rh_engrave: 0, bz_engrave: 0,      // FINISH, a place in FINISHES, of the markings on bare metal — the plate's (no paint), the rehaut's ring, the bezel's markings on its metal: painted on, or cut in (Okay, 11 Nov 2026: "I need the ability to add these engravings instead of paint on metal, needs a switch"); an engraved marking is in the files on a layer of its own, Engrave, and in no ink film
   material: 0, paint: true,      // the plate's MATERIAL, a place in PLATE_METALS, and whether it is painted (c_plate): no paint, the metal is the face — seen in the preview with a sheen that follows the sun, left unprinted in the files (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button")
   movement: "any",                                 // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
@@ -345,6 +347,7 @@ export const DEFAULTS = {
   // session, never in a link (R31: these keys are not in LINK_KEYS). Lists only grow at their end (R9).
   w_style: 1,            // the paint: 0 Engineer, 1 Artisan (watch.js). The dial side draws Engineer, flat, whatever this says
   w_lighting: 0,         // 0 dramatic (the spotlight pool and the flare), 1 flat
+  w_body: 0,             // the body's Ø in mm, 0 Fit: snug round the dial and its rehaut and bezel (Okay, 11 Nov 2026: "The body size adjustment of the watch should move independently from the dial size, default body fits the dial size snugly")
   w_view: 0,             // what Fit shows in show mode: 0 the detail (lug tip to lug tip), 1 the whole watch, 2 the dial as the dial side
   w_metal: 1,            // 0 steel, 1 gold, 2 aluminium, 3 bronze, 4 titanium, 5 black
   c_metal: null,         // a case colour of your own; null = the metal's preset
@@ -788,6 +791,8 @@ export const LINK_KEYS = [
   "motion", "movement", "fit_d",      // v1.1.69–70 beta (#590, #586): appended; Jump, the Imaginary Movement and the common fit to start, as every older link
   "material", "paint",      // v1.1.71 beta: appended; brass under a painted plate to start, as every older link
   "bz_marks",               // v1.1.75 beta: appended; the insert to start, as every older link
+  "w_body", "on_hand",      // v1.1.76 beta: appended; Fit and no disc to start, as every older link (w_body stays out of links, NOT_IN_LINK)
+  "engrave", "rh_engrave", "bz_engrave",      // v1.1.76 beta: appended; painted to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1673,13 +1678,24 @@ export function ring_edges(ring) {
 /** the radii a dragged length or radius snaps to (#184; Okay, 14 Oct 2026: lengths and radii "snap to rings' edges
  *  while dragged"): every edge of every ring shown, but the ring being dragged (`except`, its index). Sorted, no doubles. */
 // ── the case: surfaces (#582) ────────────────────────────────
-export const SURFACES = ["dial", "rehaut", "bezel"], R_FROM = ["Centre", "Edge", "Fit"];      // R9: appended only
+export const SURFACES = ["dial", "rehaut", "bezel", "hand"], R_FROM = ["Centre", "Edge", "Fit"];      // R9: appended only
 /** how many rings a surface holds (Okay, 11 Nov 2026: "Bezel ring allows up to three rings … Rehaut gets one ring only") */
-export const SURFACE_MOST = [Infinity, 1, 3];
+export const SURFACE_MOST = [Infinity, 1, 3, 1];      // a disc hand: one (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault")
+/** a disc hand a ring can lie on: on, and a disc */
+export const disc_hand_on = (S, name) => Boolean(name) && HANDS.includes(name) && Boolean(S["ha_" + name]?.on) && HAND_SHAPES[S["ha_" + name].shape] === "disc" && (FIXED_HANDS.includes(name) || hand_added(S, name));
 /** the surface a ring is on now: its own, or the dial's when that part of the case is off */
-export const ring_surface = (S, ring) => (SURFACES[ring.surface] === "rehaut" && S.rh_on ? 1 : SURFACES[ring.surface] === "bezel" && S.bz_on ? 2 : 0);
+export const ring_surface = (S, ring) => (SURFACES[ring.surface] === "rehaut" && S.rh_on ? 1 : SURFACES[ring.surface] === "bezel" && S.bz_on ? 2 : SURFACES[ring.surface] === "hand" && disc_hand_on(S, ring.on_hand) ? 3 : 0);
+/** the disc's span a ring on it fills (Fit): its outer 30 %, where a 24-hour disc carries its figures */
+const disc_span = (S, name) => { const r = max(S["ha_" + name].disc_d, 0.1) / 2; return [0.7 * r, r]; };
 /** how many rings stand on a surface now */
 export const rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
+export const FINISHES = ["Paint", "Engrave"];      // how a marking on bare metal is made (Okay, 11 Nov 2026). R9: appended only
+/** the bezel's markings lie on its metal: a fixed bezel's always, a rotating one's when Markings is Metal */
+export const bezel_marks_on_metal = (S) => S.bz_on && (BEZEL_KINDS[S.bz_kind] === "Fixed" || BEZEL_MARKS[S.bz_marks] === "Metal");
+/** a ring cut into the metal it lies on, not painted: the bare plate's with Finish Engrave, the rehaut's, the bezel's on its metal */
+export const ring_engraved = (S, ring) => { const s = ring_surface(S, ring); return s === 0 ? S.paint === false && FINISHES[S.engrave] === "Engrave" : s === 1 ? FINISHES[S.rh_engrave] === "Engrave" : s === 2 ? bezel_marks_on_metal(S) && FINISHES[S.bz_engrave] === "Engrave" : false; };
+/** the colour an engraved ring shows: its ground's, in shadow — the cut's floor and walls, darker than the face round it */
+export const engraved_colour = (S, ring) => { const s = ring_surface(S, ring), g = s === 0 ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : s === 1 ? S.rh_c : case_metal(S); return [...g.slice(0, 3).map((v) => v * 0.55), 1]; };
 export const BEZEL_MARKS = ["Insert", "Metal"];      // where a rotating bezel's markings are: on an insert set in it, or on its metal (Okay, 11 Nov 2026: "for bezels, add markings on metal instead of inset ring"); a fixed bezel's are always on its metal. R9: appended only
 export const BEZEL_KINDS = ["Rotating", "Fixed"];      // rotating: a turning ring with an insert and a coin edge · fixed: a plain pressed ring
 /** the rehaut's reach in plan and its rise: a wall rh_len long leaning rh_deg from the vertical */
@@ -1703,7 +1719,7 @@ export const reach_mm = (S) => case_spans(S).outer;
  *  surface's inner edge (Edge) or it fills the surface (Fit: a band as wide as the surface and centred on it, marks as
  *  long as it is wide from its outer edge, words on its middle). A surface that is off puts the ring back on the dial. */
 export function placed(S, ring) {
-  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? case_spans(S).marks : null;
+  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? case_spans(S).marks : SURFACES[ring.surface] === "hand" && disc_hand_on(S, ring.on_hand) ? disc_span(S, ring.on_hand) : null;
   if (!span || !ring.r_from) return ring;
   const [a, b] = span, kind = kind_of(ring);
   if (R_FROM[ring.r_from] === "Edge") return { ...ring, r: a + ring.r };
@@ -2585,6 +2601,8 @@ export function scene(S, statik, t, preview = true, selected = null) {
     // marks on every film, since they are what the films are laid by
     const ink = S.out_ink || "", of = (c) => !ink || ink_hex(c) === ink;
     for (const d of rings) {
+      if (ring_surface(S, d.raw || d.ring) === 3) continue;      // printed on a disc hand, not on the face
+      if (ring_engraved(S, d.raw || d.ring)) continue;      // cut in, not printed: in no film
       if (!ink || !d.tints) { if (of(d.ring.c) || (d.tints && !ink)) add("ring", d.path, black, { ring: d, index: index(d) }); }
       else d.tints.forEach((tint, n) => { if (of(sector_colour(d.ring, tint.at))) add("ring", tint.path, black, { ring: d, index: index(d), part: n + 1 }); });
       if (d.stroke && of(d.ring.stroke_c)) add("ring stroke", d.stroke, black, { ring: d, index: index(d), part: "stroke" });
@@ -2627,7 +2645,14 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
     if (S.paint === false) add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0], face), { metal: true });      // no paint: the bare metal is the face (a file leaves it unprinted, output.js drawn)
     else add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));      // the hole shows when the hands are hidden
+    const on_disc = (d) => ring_surface(S, d.raw || d.ring) === 3;      // a ring on a disc hand: drawn with the hand, turning with it
     for (const d of rings) {
+      if (on_disc(d)) continue;
+      if (ring_engraved(S, d.raw || d.ring)) {      // cut in (Finish Engrave): the ground's colour in shadow, its letters' stroke with it; a layer of its own in the files
+        const cut = dim(engraved_colour(S, d.raw || d.ring), face);
+        add("ring", d.path, cut, { ring: d, index: index(d), engrave: true });
+        if (d.stroke) add("ring stroke", d.stroke, cut, { ring: d, index: index(d), part: "stroke", engrave: true });
+        continue; }
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });
       if (d.stroke) add("ring stroke", d.stroke, dim(d.ring.stroke_c, face), { ring: d, index: index(d), part: "stroke" });      // over its letters (#551)
@@ -2638,6 +2663,11 @@ export function scene(S, statik, t, preview = true, selected = null) {
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
         if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), dim(h.mark_c, hands_layer), { name, angle: a });      // a disc's painted mark turns with it (#300)
         if (mark_stroke(h)) add("mark", mark_stroke(h), dim(h.mark_stroke_c || h.c, hands_layer), { name, angle: a, edge: true });      // and its stroke (#574)
+        for (const d of rings) if (on_disc(d) && (d.raw || d.ring).on_hand === name) {      // its ring, printed on it (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault")
+          if (d.tints) d.tints.forEach((tint, n) => add("mark", tint.path, dim(sector_colour(d.ring, tint.at), hands_layer), { name, angle: a, ring: d, index: index(d), part: n + 1 }));
+          else add("mark", d.path, dim(d.ring.c, hands_layer), { name, angle: a, ring: d, index: index(d) });
+          if (d.stroke) add("mark", d.stroke, dim(d.ring.stroke_c, hands_layer), { name, angle: a, ring: d, index: index(d), part: "stroke" });
+        }
         if (fills_openings(h)) add("lume", hand_openings(h), dim(h.op_fill, hands_layer), { name, angle: a });      // its openings' lume turns with it (#175)
       }
       if (cap_shows(S)) add("cap", circle(S.ha_cap), dim(S.c_cap, hands_layer));
@@ -2730,6 +2760,11 @@ export const turned = (path, angle) => path.copy().rotate(-angle);
 export const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
 export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub", "hole"];
 export const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
+/** a bezel as it starts (Okay, 11 Nov 2026: "Default bezel is mostly off on all sliders, 1mm height"): a plain ring 1 mm high, its
+ *  width kept, every other number 0. Set when the bezel is switched on while its numbers are still DEFAULTS' — so a dial saved
+ *  with a bezel (its link leaving out what matched DEFAULTS) comes back as it was */
+export const BEZEL_START = { bz_h: 1, bz_chamfer: 0, bz_in_in: 0, bz_in_out: 0, bz_teeth_depth: 0, bz_teeth_chamfer: 0, bz_dial_up: 0, bz_seat: 0, bz_lip: 0, bz_rim: 0, bz_up: 0, bz_dome: 0 };
+export const bezel_untouched = (S) => Object.keys(BEZEL_START).every((k) => S[k] === DEFAULTS[k]) && S.bz_w === DEFAULTS.bz_w;
 export const CASE_MM = ["rh_len", "bz_w", "bz_chamfer", "bz_in_in", "bz_in_out", "bz_teeth_depth", "bz_teeth_chamfer", "bz_dial_up", "bz_seat", "bz_h", "bz_lip", "bz_rim", "bz_up", "bz_dome"];      // the case's measures (#582); the teeth's count and fill are not mm
 function each_measure(S, visit, keys = null) {
   if (keys) {                                      // a chosen set: Weight's widths (#88)

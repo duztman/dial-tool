@@ -180,6 +180,8 @@ class DialTool {
       // opacity, zero stroke for the wedge")
       Object.assign(T, { mark_in: true, disc_d: d, mark: 1, mark_tri: true, mark_w: +(len * 2 / Math.sqrt(3)).toFixed(2), len: +(0.9 * d / 2).toFixed(2), mark_stroke_w: 0, c: [...(T.c || [0.1, 0.1, 0.12, 1]).slice(0, 3), 0.5] });
     }
+    // a bezel switched on starts flat (Okay, 11 Nov 2026: "Default bezel is mostly off on all sliders, 1mm height"), unless its numbers were set
+    if (key === "bz_on" && value && !this.S.bz_on && G.bezel_untouched(this.S)) Object.assign(this.S, G.BEZEL_START);
     // back from a disc to a blade: the half see-through it started with goes (a blade is solid), and its length comes back
     if (scope === "hand" && key === "shape" && G.HAND_SHAPES[value] !== "disc" && G.HAND_SHAPES[this.target("hand").shape] === "disc") {
       const T = this.target("hand"), kept = this.blade_len?.[this.S.ui_hand];

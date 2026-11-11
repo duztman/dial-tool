@@ -384,10 +384,10 @@ export const PREVIEW = {
   /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
    *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
   draw_bezel() {
-    const S = this.S, outer = S.rh_on || S.bz_on ? G.reach_mm(S) : null, key = S.ui_case ? `${S.bezel || 0}/${S.dial_d}/${outer}` : "";
+    const S = this.S, outer = S.rh_on || S.bz_on ? G.reach_mm(S) : null, key = S.ui_case ? `${S.bezel || 0}/${S.dial_d}/${outer}/${S.w_body}` : "";
     if (key === this.bezel_key) return;
     this.bezel_key = key;
-    this.bezel_g.innerHTML = S.ui_case ? frame({ kind: G.CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, outer }) : "";      // round the tool's own case when it has one (#582)
+    this.bezel_g.innerHTML = S.ui_case ? frame({ kind: G.CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, outer, body: S.w_body }) : "";      // round the tool's own case when it has one (#582)
   },
 
   /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. No case

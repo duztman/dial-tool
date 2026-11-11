@@ -143,11 +143,14 @@ function lugChamfer(C, sx, sy, w = 0.75) {
   const p = (x, y) => `${f(sx * x)} ${f(sy * y)}`;
   return `M${p(xo, half - r)}C${p(xo, half - (half - yb) * 0.5)} ${p(xb - 0.6, yb + 1.2)} ${p(xb, yb)}L${p(xb - w * 1.3, yb + 0.2)}C${p(xb - 0.6 - w, yb + 1.4)} ${p(xo - w, half - (half - yb) * 0.5)} ${p(xo - w, half - r)}Z`;
 }
-function scaleCase(C, k) {
-  if (k === 1) return C;
+/** the case at scale k; its inside (the opening, the dial, the insert, the bands) at kIn — the body grows apart from the dial
+ *  (Body Ø, Okay, 11 Nov 2026: "The body size adjustment of the watch should move independently from the dial size") */
+const INSIDE = ["opening", "dial", "insert", "bands"];
+function scaleCase(C, k, kIn = k) {
+  if (k === 1 && kIn === 1) return C;
   const s = (v) => (typeof v === "number" ? v * k : Array.isArray(v) ? v.map(s) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([a, b]) => [a, ["n", "coin", "knurl", "at"].includes(a) ? b : s(b)])) : v);
   const out = { ...C };
-  for (const key of ["od", "l2l", "lugw", "lugT", "flare", "bands", "opening", "dial", "crown", "insert", "cushion", "cushionBevel"]) if (key in C) out[key] = s(C[key]);
+  for (const key of ["od", "l2l", "lugw", "lugT", "flare", "bands", "opening", "dial", "crown", "insert", "cushion", "cushionBevel"]) if (key in C) out[key] = INSIDE.includes(key) && kIn !== k ? scaleCase({ [key]: C[key] }, kIn)[key] : s(C[key]);
   return out;
 }
 
@@ -746,10 +749,10 @@ function silhouetteOutline(paths, L = 0) {
   CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(-ux * D)}" y1="${f(-uy * D)}" x2="${f(ux * D)}" y2="${f(uy * D)}"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0.65"/></linearGradient>`);
   return `<path d="${d}" fill="none" stroke="url(#${id})" stroke-width="0.2" stroke-linejoin="round"/>`;
 }
-function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1) {
+function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1, fit = size) {
   WEAVE = strap.endsWith("-big") ? "weavebig" : "weave"; strap = strap.replace(/-big$/, "");
   SUN_H = h; CLIPS = [];
-  const C = live_case({ ...scaleCase(CASES[key], size), key, dialOverride: dial, ...(metal ? { metal: METALS[metal] } : {}) }), span = open ? 260 : 64;
+  const C = live_case({ ...scaleCase(CASES[key], size, fit), key, dialOverride: dial, ...(metal ? { metal: METALS[metal] } : {}) }), span = open ? 260 : 64;
   OUTL_S = []; OUTT = OUTL_S;
   const strapSVG = strap === "bracelet" ? braceletSVG(C, L, open ? C.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C, L, strap.split("-")[1], open, span) : natoSVG(C, L, strap.split("-")[1], open, span);
   // shadow: everything's silhouette shifted away from the light, flat; the case casts further than the strap
@@ -783,7 +786,7 @@ export function frame(o) {
   const kind = o.kind in CASES ? o.kind : "dress";
   use("engineer"); NO_LINES = true; INK = "none"; DIAL_IN = false; GLINT = "off"; CLIPS = []; SUN_H = 40;
   LIVE = o.outer ? { outer: o.outer, dial: o.d } : null;
-  const C = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
+  const C = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer, o.body), fitFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
   INSERT = { top: GREYS[2], bottom: GREYS[2] };      // a diver's insert in the dark grey too
   const body = caseSVG(C, "own", 225);
   NO_LINES = false; INSERT = was; DIAL_IN = true; use("engineer");
@@ -837,7 +840,11 @@ export function presets(style) { use(style); return { floor: STYLES[style].floor
 export const edge = (floor, view, style) => (view === "detail" ? hsl(floor, STYLES[style].ramp[2]) : floor);
 /** the size that puts a case round a dial of diameter `d` (Okay, 22 Oct 2026: "Cases snap to dials. Size of dial determines"): the
  *  published case's opening — less the rehaut on a diver — scaled to the dial */
-export const sizeFor = (key, d, outer = null) => { const C = CASES[key] || CASES.dress; return outer ? (2 * outer + 2 * CASE_LIP) / C.od : d / (C.dial - (C.insert ? 2 * REHAUT : 0)); };      // with the tool's own case (#582): the body's rim CASE_LIP outside the tool's bezel
+export const fitFor = (key, d, outer = null) => { const C = CASES[key] || CASES.dress; return outer ? (2 * outer + 2 * CASE_LIP) / C.od : d / (C.dial - (C.insert ? 2 * REHAUT : 0)); };
+/** the body's scale: Fit (body 0), or the body Ø asked for, never inside Fit (the opening would outgrow it) */
+export const sizeFor = (key, d, outer = null, body = 0) => Math.max(fitFor(key, d, outer), body > 0 ? body / (CASES[key] || CASES.dress).od : 0);
+/** the body's Ø at Fit, mm */
+export const bodyFit = (key, d, outer = null) => fitFor(key, d, outer) * (CASES[key] || CASES.dress).od;      // with the tool's own case (#582): the body's rim CASE_LIP outside the tool's bezel
 // the tool's own rehaut and bezel (#582; Okay, 10 Nov 2026: "The bezel and rehault should apply to showcase as they are"): when the
 // dial side has them, they come in with the dial's items, drawn flat in their colours, and the published case gives up its own
 // insert, rehaut and bands — its opening widens to the tool's outer edge, the body's rim CASE_LIP outside it, the lugs and crown
@@ -862,7 +869,7 @@ export function draw(o) {
   SH_OP = Math.min(1, STYLE_.shadow * SHD);      // the Shadows slider scales one opacity (Okay, 22 Oct 2026)
   BRACELET_KIND = o.strap === "links" ? "links" : "vault";      // the diver's two bracelets
   const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
-  const make = (mode) => { GLINT = mode; return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur); };
+  const make = (mode) => { GLINT = mode; return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size, o.fit ?? o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur); };
   const vb = (x, y, w, h) => `${f(x)} ${f(y)} ${f(w)} ${f(h)}`;
   const [fw, fh] = fullBox(o.key, o.size, o.strap === "bracelet" || o.strap === "links");
   const box = o.view === "full" ? [-fw / 2, -fh / 2, fw, fh] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];      // the exported picture's frame

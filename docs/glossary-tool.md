@@ -22,6 +22,9 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Hand tabs** | Hour · Minute · Seconds and every added hand (GMT), on Hands' second pinned line; after them the **+** that asks a new hand's function (GMT · Date · Day · Month), adding the hand with its scale ring; an added hand's Show line carries its **−**. |
 | **Base** | The Dial tab's own first tab — the plate itself — beside Rehaut and Bezel; a ring's Surface too. |
 | **Markings** (the bezel) | Where a rotating bezel's rings stand: on its **Insert**, or on its **Metal** (no insert). A fixed bezel's are on its metal. |
+| **Finish** | How a marking on bare metal is made: **Paint** (printed on) or **Engrave** (cut in). On the Base tab once the plate is bare, the Rehaut tab (its ring), the Bezel tab once its markings are on the metal. Engraved markings are one layer, Engrave, in the files and in no ink film. |
+| **Body Ø** | Show mode: the watch body's diameter. **Fit**: snug round the dial and its rehaut and bezel. **Own Ø**: larger; the lugs, crown and strap grow with it, the opening stays at the dial. |
+| **Disc ring** | The one ring a disc hand carries, edited under the hand's rows on the Hands tab; it turns with the hand. |
 | **Material** · **Paint** | The plate's metal (Brass · Bronze · Steel · Silver) and the colour painted over it; Paint's **No colour** leaves the metal bare, with a sheen that follows the sun, and unprinted in the files. |
 | **Movement** (the Dial tab) | The calibre the dial is for, on a line of its own under the section tabs: the **Imaginary Movement** (no limits) or a real one, whose defaults it writes and whose limits it keeps (R16). |
 | **Motion** (a calendar hand) | **Jump** · **Sweep**: a Date, Day or Month hand moves a place at midnight, or on through its day (the Month hand through its month). |
