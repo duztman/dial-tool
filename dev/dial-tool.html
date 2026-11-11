@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.71 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.72 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1074,6 +1074,11 @@
   .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: center; padding: var(--u2) 0; border-bottom: var(--hair) solid var(--row-rule); }      /* a hairline after each row; the head's own line stands above the first (Okay, 30 Oct 2026, 16:43: "Remove & move up") */
   .colourpop > .chiprow { margin: calc(-1 * var(--pop-gap) / 2) 0; }      /* the rows close under the head and each other: the pop-out's gap halved round them */
   .chiprow > .quiet { font-size: var(--t-s); }
+  .chiprow[hidden] { display: none; }
+  /* No colour (Okay, 11 Nov 2026: "No color is a pill"): one pill at the chips' start, its word in the row's type; pressed, filled light with the night's ink */
+  .chiprow > .nocolour { justify-self: start; height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u4); border: var(--hair) solid currentColor; border-radius: var(--round-pill); background: none; color: inherit; font-size: var(--t-s); }
+  .chiprow > .nocolour[aria-pressed="true"] { background: var(--white); color: var(--night); border-color: var(--white); }
+  @media (hover: hover) { .chiprow > .nocolour:hover:not([aria-pressed="true"]) { background: var(--night-hover); } }
   .chiprow .chips { width: 100%; grid-template-columns: repeat(var(--pop-chips), minmax(0, 1fr)); gap: var(--u2); }      /* close together, so the chips grow (Okay, 30 Oct 2026: "larger swatches there, closer together"); an eleventh colour starts a second line on the same columns */
   .chiprow .chips button { width: 100%; height: auto; aspect-ratio: 1; }
   .chips button.ral { position: relative; color: rgba(255, 255, 255, 0.45); font: 600 var(--t-xs)/1 var(--sans); }      /* exactly a RAL colour: a faded R, centred (Okay, 30 Oct 2026, 16:14: "Faded R"; 16:43: "centered") */
@@ -9537,7 +9542,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.71 beta";
+var VERSION = "v1.1.72 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -12923,6 +12928,7 @@ function part_attrs(p) {
   const says = [["role", p.role], ["make", p.make]];
   if (p.make === "printed" || p.make === "on hand" && p.ink != null) says.push(["ink", mm(p.ink)]);
   if (p.hand) says.push(["hand", p.hand]);
+  if (p.make === "plate" && p.metal) says.push(["metal", p.metal]);
   if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section]);
   if (p.make === "hand") {
     says.push(["over", mm(p.over)], ["t", mm(p.t)], ["section", p.section], ["hw", mm(p.hw)]);
@@ -12964,6 +12970,7 @@ var one = (x2, hand, H2, S) => {
 var part_record = (S, x2) => {
   const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null, H2 = hand ? S["ha_" + hand] : null, p = one(x2, hand, H2, S);
   const r = { role: x2.role, make: make_of(x2.role, hand), hand };
+  if (x2.metal) r.metal = (PLATE_METALS[S.material] || PLATE_METALS[0]).toLowerCase();
   if (PRINTED(x2.role) || x2.role === "mark") r.ink = ink_mm(S, x2);
   if (r.make === "hand" && hand) Object.assign(r, {
     over: S["sh_" + hand] ?? S.sh_hour,
@@ -17262,12 +17269,13 @@ var COLOUR = {
     shut.innerHTML = icon(SIGNS.cross);
     const head = el("header", { title: "Drag to move" }, P2.title, wide, shut);
     P2.used_chips = el("span", { className: "chips", id: "pop-used" });
-    P2.none = el("button", { type: "button", className: "nocolour", id: "pop-none", textContent: "No colour", title: "No colour: the bare material shows", hidden: true, onclick: () => {
+    P2.none_btn = el("button", { type: "button", className: "nocolour", id: "pop-none", textContent: "No colour", title: "No colour: the bare material shows", onclick: () => {
       if (P2.at && P2.at.none) {
         P2.at.none.set();
         this.pop_refresh();
       }
     } });
+    P2.none = el("div", { className: "chiprow nonerow", hidden: true }, el("span", { className: "quiet", textContent: "Bare" }), P2.none_btn);
     P2.palette_chips = el("span", { className: "chips", id: "pop-palette" });
     P2.field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
     P2.hues = el("div", { className: "hue", title: "Hue" }, el("i"));
@@ -17501,7 +17509,7 @@ var COLOUR = {
     const before = P2.el.getBoundingClientRect();
     P2.title.textContent = P2.at.label();
     P2.none.hidden = !P2.at.none;
-    if (P2.at.none) P2.none.setAttribute("aria-pressed", String(P2.at.none.off()));
+    if (P2.at.none) P2.none_btn.setAttribute("aria-pressed", String(P2.at.none.off()));
     const put = (c) => P2.pick(c);
     const chip = (c) => {
       const lume2 = lume_exact(c), ral2 = !lume2 && ral_exact(c), said = lume2 ? `Lume ${lume2.name}` : ral2 ? `RAL ${ral2.code} ${ral2.name}` : c, b = el("button", { type: "button", className: lume2 ? "lume" : ral2 ? "ral" : "", title: said, ariaLabel: said, onclick: () => put(c) });
@@ -17528,7 +17536,7 @@ var COLOUR = {
       } });
       P2.palette_chips.replaceChildren(...this.palette.map(chip), change);
     }
-    for (const b of P2.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
+    for (const b of P2.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value && !(P2.at.none && P2.at.none.off()));
     const ral = this.colour_mode === "RAL", near2 = ral ? ral_nearest(rgb2, P2.design) : null, lumed = this.colour_mode === "Lume", only = Boolean(P2.at.lume_only);
     P2.field.hidden = P2.hues.hidden = ral || lumed;
     P2.ral.hidden = P2.charts.hidden = P2.bands.hidden = !ral;
