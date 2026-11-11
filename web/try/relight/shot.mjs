@@ -1,4 +1,4 @@
-// shot.mjs — a crop of the trial for the chat. Run from web/: node try/relight/shot.mjs out.png <sun from °> <sun height °> [style 0 photo · 2 miyazaki · 1 engineer]
+// shot.mjs — a crop of the trial for the chat. Run from web/: node try/relight/shot.mjs out.png <sun from °> <sun height °> [style 0 photo · 2 artisan · 1 engineer]
 import { chromium } from "playwright";
 const [out, from, rise, style = "0"] = process.argv.slice(2);
 const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });

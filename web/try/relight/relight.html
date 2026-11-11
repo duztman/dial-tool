@@ -12,7 +12,7 @@
   pictures — a HEIGHT map (mm), an ALBEDO map (the colour of what is there) and a MATERIAL map (metal or not, gloss) —
   and one small program on the graphics card (a "fragment shader") lights every pixel from them: the slope of the height
   gives the normal, the sun gives the light, a short march through the height map toward the sun gives the shadow. The
-  three looks are three ways of turning that same light into colour: Photo smooth, Miyazaki in two steps, Engineer in
+  three looks are three ways of turning that same light into colour: Photo smooth, Artisan in two steps, Engineer in
   three steps with ink lines where the height jumps.
 
   The dial's parts are the app's own (try/relight/scene.json, from dump.mjs). The case is written here by hand from the
@@ -37,7 +37,7 @@
 <div id="stage"><canvas id="gl"></canvas><div id="status"></div></div>
 <div id="side">
   <h1>Relight trial</h1>
-  <div class="pills" id="styles"><button data-s="0" class="on">Photo</button><button data-s="2">Miyazaki</button><button data-s="1">Engineer</button></div>
+  <div class="pills" id="styles"><button data-s="0" class="on">Photo</button><button data-s="2">Artisan</button><button data-s="1">Engineer</button></div>
   <label>Sun from <span class="num" id="v-from"></span></label><input type="range" id="from" min="0" max="359" value="135">
   <label>Sun height <span class="num" id="v-rise"></span></label><input type="range" id="rise" min="12" max="85" value="40">
   <label>Shadows <span class="num" id="v-dark"></span></label><input type="range" id="dark" min="0" max="100" value="60">
@@ -208,7 +208,7 @@ void main() {
     vec2 e = vec2(0.11 / box, 0.0);               // 0.22 mm lines: a jump of more than 0.12 mm within that reach
     float jump = max(max(abs(h(uv + e.xy) - h(uv - e.xy)), abs(h(uv + e.yx) - h(uv - e.yx))), max(abs(h(uv + e.xy) - z), abs(h(uv + e.yx) - z)));
     if (jump > 0.18) c = vec3(0.30);
-  } else {                                        // Miyazaki: deeper colours, lit or in shade, hard shadows, no lines
+  } else {                                        // Artisan: deeper colours, lit or in shade, hard shadows, no lines
     vec3 deep = a * 0.86; deep = mix(vec3(dot(deep, vec3(0.299, 0.587, 0.114))), deep, 1.25);
     float lit = diff > 0.62 ? 1.0 : diff > 0.25 ? 0.0 : -1.0;
     vec3 base = lit > 0.5 ? mix(deep, vec3(1.0), 0.18 + 0.15 * metal) : lit < -0.5 ? deep * 0.62 : deep;
