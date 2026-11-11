@@ -2659,10 +2659,18 @@ await shot("10-bar");
     t.set_time(S.t + 120); out.push(S.date, Math.round(S.t)); await new Promise((f) => requestAnimationFrame(() => requestAnimationFrame(f))); out.push(A());
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", shiftKey: true })); out.push(S.date, Math.round(S.t));
     t.speed = 720; t.set_time(86400 - 2); t.play(true); await new Promise((f) => setTimeout(f, 400)); t.play(false); out.push(S.date, S.t < 86400);
+    // Jump · Sweep (Okay, 11 Nov 2026: "weekday and stuff need to sweep or jump, with a selector"): at noon a sweeping hand is half a place on
+    t.play(false); t.set_value("global", "date", "2026-11-11"); t.set_time(43200); S.ha_day.added = S.ha_day.on = S.ha_month.added = S.ha_month.on = true;
+    const D = (n) => t.items.filter((x) => x.role === "hand" && x.name === n)[0]?.angle, F = () => new Promise((f) => requestAnimationFrame(() => requestAnimationFrame(f)));
+    t.render(); await F(); out.push(D("day"), D("month"));
+    S.ha_day.motion = 1; S.ha_month.motion = 1; S.ha_date.motion = 1; t.render(); await F(); out.push(D("day"), D("month"), D("date"));
+    S.ha_day.added = S.ha_day.on = S.ha_month.added = S.ha_month.on = false; S.ha_day.motion = S.ha_month.motion = S.ha_date.motion = 0;
     S.ha_date.added = false; S.ha_date.on = false; t.speed = 1; t.render(); return out; });
   await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "date", v[0]); t.set_time(v[1]); }, was);
   check(r[0] === "2026-11-11" && r[2] === "2026-11-12" && r[3] === 60 && Math.abs(r[4] - 11 / 31 * 360) < 1e-6 && Math.abs(r[1] - 10 / 31 * 360) < 1e-6 && r[5] === "2026-11-11" && r[6] === 82860 && r[7] === "2026-11-12" && r[8],
     `"They don't move with time": two minutes past 23:59 the date is the 12th and the Date hand jumps a place (${r[1].toFixed(1)}° → ${r[4].toFixed(1)}°); ⇧← back over midnight the 11th again (${r[5]}, ${r[6]} s); Play at 720× past midnight the 12th (${r[7]})`);
+  check(Math.abs(r[9] - 2 / 7 * 360) < 1e-6 && Math.abs(r[10] - 10 / 12 * 360) < 1e-6 && Math.abs(r[11] - 2.5 / 7 * 360) < 1e-6 && Math.abs(r[12] - (10 + 10.5 / 30) / 12 * 360) < 1e-6 && Math.abs(r[13] - 10.5 / 31 * 360) < 1e-6,
+    `"sweep or jump, with a selector": Wednesday noon the Day hand jumps to Wed (${r[9].toFixed(1)}°), swept half a day on (${r[11].toFixed(1)}°); the Month hand on November (${r[10].toFixed(1)}°) swept 10½ days into it (${r[12].toFixed(1)}°); the Date hand half a place past the 11th (${r[13].toFixed(1)}°)`);
 }
 { // show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in … Only the colors of the dial is editable here"; "Showcase has no caseless watches"; "Cases snap to dials")
   const q = () => page.evaluate(() => { const t = window.dial_tool, app = document.querySelector("#app"), panel = document.querySelector(".panel"), main = document.querySelector("main");

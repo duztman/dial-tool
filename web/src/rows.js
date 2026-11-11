@@ -341,6 +341,7 @@ export const ROWS = {
     seg("cycle", "Turns in", G.HAND_CYCLES, { ...H, side: true, short: "Turns", show: (T, S) => G.HANDS[S.ui_hand] === "gmt" }),
     num("offset", "Hours ahead", -12, 14, 0.5, { ...H, side: true, short: "Ahead", show: (T, S) => G.HANDS[S.ui_hand] === "gmt" }),
     // a calendar hand's names in a language (Okay, 9 Nov 2026: "in a few languages"): the pill rewrites its ring's labels
+    seg("motion", "Motion", G.HAND_MOTIONS, { ...H, side: true, show: (T, S) => ["date", "day", "month"].includes(G.HANDS[S.ui_hand]) }),      // Jump · Sweep (Okay, 11 Nov 2026: "weekday and stuff need to sweep or jump, with a selector")
     seg("lang", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...H, side: true, show: (T, S) => ["day", "month"].includes(G.HANDS[S.ui_hand]),
       put: (tool, v) => { const name = G.HANDS[tool.S.ui_hand]; tool.S["ha_" + name].lang = v; G.relabel_function(tool.S, name); tool.changed(true); } }),
     num("len", "Length", 0.5, 30, 0.05, { ...H, side: true, say: (T) => (G.HAND_SHAPES[T.shape] === "disc" ? ["Marker at", "Marker at"] : ["Length", "Length"]) }),      // a disc's: where its marker's outer end is, and named so (#574; Okay, 2 Nov 2026, 22:18: "The distance of that dot from the center has its own slider")

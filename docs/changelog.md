@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.69 beta · 11 Nov 2026 — #590: a calendar hand jumps or sweeps
+
+Okay, 11 Nov 2026, 14:11: "Also weekday and stuff need to sweep or jump, with a selector."
+
+- **Motion** on a Date, Day or Month hand's pane: **Jump** (to start) — the hand moves a place at midnight, as a wheel does — or **Sweep** — it moves on through the day, a day's share of a place at a time; the Month hand sweeps through its month (`HAND_MOTIONS`, a hand's `motion`, `hand_angle`).
+- **Tests**: `window.mjs` — at Wednesday noon the Day hand on Wed, swept half a day on; the Month hand 10½ days into November; the Date hand half a place past the 11th.
+
 ## v1.1.68 beta · 11 Nov 2026 — the calendar hands move with time; the weekday a menu; Artisan
 
 Okay, 11 Nov 2026, 13:52: "We also need the gmt/week/month hand mechanism to work and the day selector on black bar popup gets day and month selector dropdowns as well." — then "They don't move with time", "Not tested, make it right", "Weekday choosable too"; and "Call it engineer 3d, and get a miyazaki3d and call it artisan 3d evvverywhere. Artisan replaces miyazaki, nuke all references."

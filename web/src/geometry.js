@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.68 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.69 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -231,8 +231,10 @@ export const HAND_BASE = {
   // second hour hand read on the ordinary numerals · offset — the other time, hours ahead of the time shown (half hours
   // for the half-hour zones; 0 to start)
   added: false, cycle: 0, offset: 0,
+  motion: 0,    // a calendar hand's motion, a place in HAND_MOTIONS: 0 jumps at midnight as a date wheel does · 1 sweeps through the day (Okay, 11 Nov 2026: "weekday and stuff need to sweep or jump, with a selector")
   lang: 0,      // a calendar hand's names on its ring, a place in MOMENT_LANGS (EN · TR · DE · FR · IT); the Names pill
 };
+export const HAND_MOTIONS = ["Jump", "Sweep"];      // a calendar hand: jumps at midnight · sweeps through the day, the month or the year (R9: appended only)
 export const HAND_CYCLES = ["24 h", "12 h"];      // a GMT hand's turn: once a day · twice a day (R9: appended only)
 export const BEVEL_LOOKS = ["Ridge", "Faceted", "Domed"];      // R9: a new look is appended; Faceted (1) is not offered (#573) and draws as a Ridge
 
@@ -2242,8 +2244,13 @@ export function hand_angle(S, name, t) {
   if (i >= 0) return hand_angles(t, BEATS[S.ha_beat][1])[i];
   const H = S["ha_" + name] || HAND_BASE;
   if (FUNCTIONS[name] && FUNCTIONS[name].places) {      // a calendar hand: its place for the moment, jumping as a wheel does
-    const place = hand_place(name, moment(shown_day(S), t));
-    return (place || 0) / FUNCTIONS[name].places * 360;
+    const mo = moment(shown_day(S), t);
+    let place = hand_place(name, mo) || 0;
+    if (HAND_MOTIONS[H.motion] === "Sweep") {      // on through the day: a day's share of a place (the month's hand a month's share)
+      const day = (mo.h * 3600 + mo.min * 60 + mo.s) / 86400;
+      place += name === "month" ? (mo.d - 1 + day) / new Date(Date.UTC(mo.y, mo.m, 0)).getUTCDate() : day;
+    }
+    return place / FUNCTIONS[name].places * 360;
   }
   const day = (((t + (+H.offset || 0) * 3600) % 86400) + 86400) % 86400;
   return HAND_CYCLES[H.cycle] === "12 h" ? (day % 43200) / 43200 * 360 : day / 86400 * 360;
