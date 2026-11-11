@@ -69,5 +69,10 @@ export function read_part(get) {
   if (make === "disc") p.under = num("under");
   return p;
 }
+/** THE CASE round the dial as the tool sets it (Okay, 11 Nov 2026: "add bezel and rehaut there"): the rehaut's reach and rise
+ *  and its colour; the bezel's kind and every number of its stack (the 3D exercise's own names, mm) and its insert's colour.
+ *  null where that part is off. → `data-case`, its JSON (quotes written as &quot;) */
+export const case_attrs = (c) => (c && (c.rehaut || c.bezel) ? ` data-case="${JSON.stringify(c).replace(/"/g, "&quot;")}"` : "");
+export const read_case = (text) => { try { return text ? JSON.parse(text) : null; } catch (e) { return null; } };
 /** the dial group's `data-stack` → the stack's rules (the tool's numbers where the file says none) */
 export const read_stack = (text) => ({ ...STACK, ...Object.fromEntries(String(text || "").split(/\s+/).filter(Boolean).map((kv) => kv.split(":")).map(([k, v]) => [k, +v])) });

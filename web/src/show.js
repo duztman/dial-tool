@@ -58,7 +58,13 @@ export const part_record = (S, x) => {
   if (r.make === "disc") r.under = G.windows_of(S)[x.window]?.depth ?? S.sh_disc;
   return r;
 };
-export const svg_facts = (S) => Object.assign((x) => P.part_attrs(part_record(S, x)), { dial: P.dial_attrs(S.dial_d) });
+/** the case for a 3D view (parts.js case_attrs): the tool's rehaut and bezel, in mm, the bezel's metal the case's own */
+export const case_record = (S) => ({
+  rehaut: S.rh_on ? { w: G.rehaut_w(S), h: G.rehaut_h(S), c: hex(S.rh_c) } : null,
+  bezel: S.bz_on ? { kind: G.BEZEL_KINDS[S.bz_kind] === "Fixed" ? "fixed" : "rotating", w: S.bz_w, chamfer: S.bz_chamfer, in_in: S.bz_in_in, in_out: S.bz_in_out, insert: hex(S.bz_insert_c),
+    teeth: { n: S.bz_teeth_n, depth: S.bz_teeth_depth, fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer }, dial_up: S.bz_dial_up, seat: S.bz_seat, h: S.bz_h, lip: S.bz_lip, rim: S.bz_rim, up: S.bz_up, dome: S.bz_dome } : null,
+});
+export const svg_facts = (S) => Object.assign((x) => P.part_attrs(part_record(S, x)), { dial: P.dial_attrs(S.dial_d) + P.case_attrs(case_record(S)) });
 
 /** what watch.js draws for this dial and these settings — the Show Case's `options()` */
 export function options(S, items, effects) {

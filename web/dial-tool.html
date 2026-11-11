@@ -12944,6 +12944,7 @@ function part_attrs(p) {
   return says.map(([k, v]) => ` data-${k}="${v}"`).join("");
 }
 var dial_attrs = (d) => ` data-dial-d="${mm(d)}" data-parts="${PARTS_V}" data-stack="${Object.entries(STACK).map(([k, v]) => `${k}:${v}`).join(" ")}"`;
+var case_attrs = (c) => c && (c.rehaut || c.bezel) ? ` data-case="${JSON.stringify(c).replace(/"/g, "&quot;")}"` : "";
 
 // src/show.js
 var METAL_NAMES2 = METAL_NAMES;
@@ -12987,7 +12988,26 @@ var part_record = (S, x2) => {
   if (r.make === "disc") r.under = windows_of(S)[x2.window]?.depth ?? S.sh_disc;
   return r;
 };
-var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), { dial: dial_attrs(S.dial_d) });
+var case_record = (S) => ({
+  rehaut: S.rh_on ? { w: rehaut_w(S), h: rehaut_h(S), c: hex(S.rh_c) } : null,
+  bezel: S.bz_on ? {
+    kind: BEZEL_KINDS[S.bz_kind] === "Fixed" ? "fixed" : "rotating",
+    w: S.bz_w,
+    chamfer: S.bz_chamfer,
+    in_in: S.bz_in_in,
+    in_out: S.bz_in_out,
+    insert: hex(S.bz_insert_c),
+    teeth: { n: S.bz_teeth_n, depth: S.bz_teeth_depth, fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer },
+    dial_up: S.bz_dial_up,
+    seat: S.bz_seat,
+    h: S.bz_h,
+    lip: S.bz_lip,
+    rim: S.bz_rim,
+    up: S.bz_up,
+    dome: S.bz_dome
+  } : null
+});
+var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), { dial: dial_attrs(S.dial_d) + case_attrs(case_record(S)) });
 function options(S, items, effects) {
   const style = STYLE_NAMES2[S.w_style] || "artisan", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P2 = presets(style), lit = effects;

@@ -97,6 +97,15 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(seen.metal && JSON.stringify(seen.fill) === JSON.stringify(G.PLATE_METAL_COLOURS[2]) && !/id="plate"/.test(file) && /id="plate"/.test(painted) && /id="plate"[^>]*data-role="plate" data-make="plate" data-metal="steel"/.test(for3d),
     `"Plate left unprinted": no paint, the preview's plate is bare ${G.PLATE_METALS[2]}; the file has no plate, a painted one has; a file for a 3D view keeps the metal plate, saying its metal (steel)`);
 }
+// the case for a 3D view (Okay, 11 Nov 2026: "add bezel and rehaut there"): a saved SVG says the tool's rehaut and bezel; off, nothing
+{
+  const P = await import("../src/parts.js"), SHOW = await import("../src/show.js"), O = await import("../src/output.js"), S = G.fresh_settings({});
+  const none = O.svg_document(S, G.build_static(S), 0, { facts: SHOW.svg_facts(S) });
+  S.rh_on = true; S.bz_on = true; S.bz_w = 3.1; const svg = O.svg_document(S, G.build_static(S), 0, { facts: SHOW.svg_facts(S) });
+  const c = P.read_case((svg.match(/data-case="([^"]*)"/)?.[1] ?? "").replace(/&quot;/g, '"'));
+  check(!/data-case/.test(none) && c && c.bezel.w === 3.1 && c.bezel.kind === "rotating" && c.bezel.teeth.n === S.bz_teeth_n && Math.abs(c.rehaut.w - G.rehaut_w(S)) < 1e-9 && /^#/.test(c.rehaut.c),
+    `"add bezel and rehaut there": the file says the case — the bezel ${c?.bezel?.kind} ${c?.bezel?.w} mm with ${c?.bezel?.teeth?.n} scallops, the rehaut ${c?.rehaut?.w?.toFixed(2)} out; none without them`);
+}
 // #585, #587: the hands start at a real movement's heights, and every movement's heights come from the one record
 { const D = G.DEFAULTS, by = (id) => G.movement(id), m8 = by("miyota-8215").heights, T = G.HAND_T;
   const own = ["hour", "minute", "second"].every((h) => D["sh_" + h] === m8[h]) && D.sh_cap === m8.cap;
