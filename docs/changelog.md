@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.83 beta · 12 Nov 2026 — a cut is said where it lies; the plate says what it is made of
+
+Okay, 12 Nov 2026, 01:46, with his dial in Show Case 3D: "The facets, looks depths, etc. also changing dial material did not affect the view. Are the connections off? Investigate."
+
+- **`cut_unions`**: a marking is cut where it lies, whatever surface its ring is set to. His dial has a band set to the Bezel surface with Radius from Centre, so it lies on the dial: it was dropped from both outlines; it is now in the plate's. Every engraved marking but the rehaut's goes to both faces and each keeps what falls inside it.
+- **The plate's record** says `material` — what the plate is made of — painted or bare (`metal` still says it only when bare), so a 3D view can show the metal a cut through the paint lays open.
+- Open, his to say: in the 2D drawing that band is coloured as the case's metal in shadow (it is a Bezel ring) though it lies on the plate.
+
 ## v1.1.82 beta · 12 Nov 2026 — the saved SVG says what is engraved as one outline a surface
 
 Okay, 11 Nov 2026, 23:02: "Why does engraving suck? It is not 3d, it gets lost at many heights. Why is it impossible to make them little extruded shapes and cut the shapes out of the bezels top. VisiBLE and engraved at every height."

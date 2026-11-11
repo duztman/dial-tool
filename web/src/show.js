@@ -50,6 +50,7 @@ export const part_record = (S, x) => {
   const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && G.HANDS.includes(x.name) ? x.name : null, H = hand ? S["ha_" + hand] : null, p = one(x, hand, H, S);
   const r = { role: x.role, make: P.make_of(x.role, hand), hand };
   if (x.metal) r.metal = (G.PLATE_METALS[S.material] || G.PLATE_METALS[0]).toLowerCase();      // a bare plate: its metal, for a 3D view to make it metal
+  if (x.role === "plate") r.material = (G.PLATE_METALS[S.material] || G.PLATE_METALS[0]).toLowerCase();      // what the plate is made of, painted or bare: what a cut through its paint lays open
   if (x.engrave) { r.make = "engraved"; return r; }      // cut in, not printed (Finish Engrave): no ink
   if (PRINTED(x.role) || x.role === "mark") r.ink = G.ink_mm(S, x);
   const made = G.ink_made(S, x);      // an ink made as an applied part (#602): a solid, its height, its top edge and what it is made of

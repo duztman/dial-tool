@@ -4,7 +4,8 @@
 // from dial tool" — so the numbers the 3D view stands the hands by live in the tool, not in the view.
 //
 // A part's MAKE says how it is made, and so which numbers it has (all in mm):
-//   plate     the dial's plate                                  metal: its bare metal (brass · bronze · steel · silver) when unpainted
+//   plate     the dial's plate                                  material: what it is made of (brass · bronze · steel · silver);
+//                                                               metal: the same word, said only when it is bare (unpainted)
 //   printed   ink on the plate (a ring, its stroke, a frame)    ink: the ink's thickness
 //   applied   a solid piece set on the plate (an index, a logo; height, section, edge (sharp · chamfer · round), material
 //             an ink made Applied in show mode's Inks, #602)    (colour · brass · bronze · steel · silver · gold · lume)
@@ -48,6 +49,7 @@ export function part_attrs(p) {
   if (p.make === "printed" || (p.make === "on hand" && p.ink != null)) says.push(["ink", mm(p.ink)]);
   if (p.hand) says.push(["hand", p.hand]);
   if (p.make === "plate" && p.metal) says.push(["metal", p.metal]);
+  if (p.make === "plate" && p.material) says.push(["material", p.material]);
   if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section], ["edge", p.edge || "sharp"], ["material", p.material || "colour"]);
   if (p.make === "hand") { says.push(["over", mm(p.over)], ["t", mm(p.t)], ["section", p.section], ["hw", mm(p.hw)]);
     if (p.section !== "flat") says.push(["bevel", 1]); if (p.section === "domed") says.push(["dome", 1]); if (p.boss) says.push(["boss", mm(p.boss)]); }
@@ -63,6 +65,7 @@ export const dial_attrs = (d) => ` data-dial-d="${mm(d)}" data-parts="${PARTS_V}
 export function read_part(get) {
   const num = (k) => (get(k) == null ? null : +get(k)), role = get("role") || "ring", hand = get("hand") || null, make = get("make") || make_of(role, hand);
   const p = { role, make, hand };
+  if (make === "plate") p.material = get("material") || get("metal") || null;      // what it is made of; `metal` says it is bare
   if (make === "plate" && get("metal")) p.metal = get("metal");      // bare: no paint over the metal (Okay, 11 Nov 2026: "Can 3d get these new bare metal dials?")
   if (make === "printed" || make === "on hand") { const ink = num("ink"); if (ink != null) p.ink = ink; }
   if (make === "applied") { p.height = num("height") ?? 0.3; p.section = get("section") || "flat"; p.edge = get("edge") || "sharp"; p.material = get("material") || "colour"; }

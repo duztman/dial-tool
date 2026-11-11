@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.82 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.83 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -1720,9 +1720,13 @@ export const bezel_insert = (S) => !!(S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rot
 export const CUT_EDGE = 0.02;
 export function cut_unions(S, items) {
   const all = { plate: null, bezel: null }, sp = case_spans(S);
-  for (const x of items) { const s = x.ring?.ring ? ring_surface(S, x.ring.ring) : 0, k = s === 0 ? "plate" : s === 2 ? "bezel" : null; if (k && x.path) all[k] = all[k] ? all[k].union(x.path) : x.path; }
+  // a marking is cut where it LIES, whatever surface its ring is set to (a bezel's ring with Radius from Centre lies on the dial): every
+  // one but the rehaut's goes to both, and each face keeps what falls inside it
+  for (const x of items) { const s = x.ring?.ring ? ring_surface(S, x.ring.ring) : 0; if (s === 1 || !x.path) continue; for (const k of ["plate", "bezel"]) all[k] = all[k] ? all[k].union(x.path) : x.path; }
   if (all.plate) all.plate = all.plate.intersection(circle(S.dial_d - 2 * CUT_EDGE));
+  if (!sp.bezel) all.bezel = null;
   if (all.bezel && sp.bezel) { const a = sp.bezel[0] - S.bz_rim + 0.3 + CUT_EDGE, b = sp.bezel[1] - S.bz_chamfer - CUT_EDGE; all.bezel = b > a ? all.bezel.intersection(circle(2 * b).difference(circle(2 * a))) : null; }
+  for (const k of ["plate", "bezel"]) if (all[k] && !all[k].svg(3, true)) all[k] = null;      // nothing of it fell on that face
   return all;
 }
 export const COIN_DEPTH = 0.5;      // the depth a coin edge starts at when its tick is set (the Diver preset's)
