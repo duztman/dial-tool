@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.81 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.82 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -1712,6 +1712,19 @@ export const BEZEL_MARKS = ["Insert", "Metal"];      // where a rotating bezel's
 export const bezel_melted = (S) => !!(S.bz_on && S.bz_melt);
 export const bezel_coin = (S) => (S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && !S.bz_melt ? max(0, +S.bz_teeth_depth || 0) : 0);
 export const bezel_insert = (S) => !!(S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && BEZEL_MARKS[S.bz_marks] !== "Metal" && !S.bz_melt);
+/** THE CUTS OF A SURFACE AS ONE OUTLINE (Okay, 11 Nov 2026: "cut the shapes out of the bezels top. VisiBLE and engraved at every height"):
+ *  a view that cuts engraved markings into the metal for true needs each surface's markings as one shape — where a band and its ticks
+ *  overlap there is one pocket, not two — kept CUT_EDGE inside the face they are cut in, so a tick that runs to the edge ends in a
+ *  wall. items: the scene's engraved parts → { plate, bezel }, each a Path or null. The bezel's face is its top between the crystal's
+ *  rim and the chamfer; the rehaut's wall is too steep for a plan's outline and is left to the view */
+export const CUT_EDGE = 0.02;
+export function cut_unions(S, items) {
+  const all = { plate: null, bezel: null }, sp = case_spans(S);
+  for (const x of items) { const s = x.ring?.ring ? ring_surface(S, x.ring.ring) : 0, k = s === 0 ? "plate" : s === 2 ? "bezel" : null; if (k && x.path) all[k] = all[k] ? all[k].union(x.path) : x.path; }
+  if (all.plate) all.plate = all.plate.intersection(circle(S.dial_d - 2 * CUT_EDGE));
+  if (all.bezel && sp.bezel) { const a = sp.bezel[0] - S.bz_rim + 0.3 + CUT_EDGE, b = sp.bezel[1] - S.bz_chamfer - CUT_EDGE; all.bezel = b > a ? all.bezel.intersection(circle(2 * b).difference(circle(2 * a))) : null; }
+  return all;
+}
 export const COIN_DEPTH = 0.5;      // the depth a coin edge starts at when its tick is set (the Diver preset's)
 /** the ring's seat over the band's top, mm: none when the bezel is the case's own metal rising */
 export const bezel_seat = (S) => (bezel_melted(S) ? 0 : S.bz_seat);

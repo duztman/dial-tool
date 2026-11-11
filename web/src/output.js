@@ -84,10 +84,11 @@ export function svg_document(S, statik, t, { preview = false, selected = null, l
     return ` id="${/^[a-z]/.test(slug) ? "" : "ring-"}${slug}${ids.get(slug) > 1 ? "-" + ids.get(slug) : ""}"`;
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
-  out.push(`<g id="dial"${facts ? facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
+  const head = out.length, engraved = []; out.push("");      // the dial's group: its tag is written after its parts, when what is engraved is known (facts.cuts)
   let cut = null;      // the ENGRAVE group: every engraved item, gathered where the first one falls (under the paint over it)
   for (const item of drawn(S, statik, t, preview, selected, Boolean(facts))) {
     if (item.engrave && !cut) { cut = []; out.push(cut); }
+    if (item.engrave) engraved.push(item);
     const at = item.engrave ? cut : out, tag = item.engrave ? "e" : "";      // an engraved item goes into the group
     const id = (item.engrave ? "" : named(item)) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
@@ -107,6 +108,7 @@ export function svg_document(S, statik, t, { preview = false, selected = null, l
       at.push(`<path${id} d="${item.path.svg(5, true)}" fill="${rgb(item.fill)}"${alpha}/>`);
     }
   }
+  out[head] = `<g id="dial"${facts ? (facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"`) + (facts.cuts ? facts.cuts(engraved) : "") : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`;
   if (cut) out.splice(out.indexOf(cut), 1, `<g id="engrave">`, ...cut, `</g>`);
   out.push(`</g>`, `</svg>`);
   return out.join("\n");

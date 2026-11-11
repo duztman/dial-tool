@@ -142,4 +142,14 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(cut.length === rings.length && cut.length > 0 && cut.every((x) => x.fill[0] < 0.5) && (svg.match(/<g id="engrave">/g) || []).length === 1 && (svg.match(/data-make="engraved"/g) || []).length === cut.length && engraveOCG === 1 && film === 0 && painted === 0 && insert === "true,false" && metal === "true,true",
     `Engrave: a bare plate's ${rings.length} rings cut in (${cut.length}), the metal's colour in shadow; one Engrave group in the SVG, one Engrave layer in the PDF (${engraveOCG}), in no film (${film}); Paint keeps them painted (${painted}); the rehaut's ring and the bezel's on an insert ${insert}, on its metal ${metal} (Okay: "engravings instead of paint on metal, needs a switch")`);
 }
+// what is engraved, one outline a surface, in the saved SVG (cut_unions): overlapping markings joined, held inside the face's edge
+{
+  const { svg_document } = await import("../src/output.js"), { svg_facts } = await import("../src/show.js");
+  const S = G.fresh_settings({ paint: false, engrave: 1, bz_on: true, bz_kind: 1, bz_engrave: 1, rings: [{ kind: "band", r: 10, width: 2 }, { kind: "ticks", r: 11.5, count: 12, len: 4, w: 0.5 }, { kind: "ticks", surface: 2, r_from: 2, count: 12, w: 0.4 }] });
+  const svg = svg_document(S, G.build_static(S), 0, { facts: svg_facts(S) }), plate = /data-cut-plate="([^"]+)"/.exec(svg)?.[1] || "", bezel = /data-cut-bezel="([^"]+)"/.exec(svg)?.[1] || "";
+  const reach = (d) => Math.max(...[...d.matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((m) => Math.hypot(+m[1], +m[2]))), sp = G.case_spans(S);
+  const plain = svg_document(G.fresh_settings({}), G.build_static(G.fresh_settings({})), 0, { facts: svg_facts(G.fresh_settings({})) });
+  check(plate && bezel && (plate.match(/M/g) || []).length < 13 && reach(bezel) <= sp.bezel[1] - S.bz_chamfer - G.CUT_EDGE + 0.01 && /^<g id="dial" data-dial-d/m.test(svg) && !/data-cut-/.test(plain),
+    `an engraved dial's SVG says each surface's cuts as one outline: the plate's band and the twelve ticks over it joined (${(plate.match(/M/g) || []).length} contours), the bezel's held ${G.CUT_EDGE} mm inside its top's edge (${reach(bezel).toFixed(2)} of ${(sp.bezel[1] - S.bz_chamfer).toFixed(2)}); a painted dial says none (Okay: "cut the shapes out of the bezels top. VisiBLE and engraved at every height")`);
+}
 process.exit(bad ? 1 : 0);

@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## v1.1.82 beta · 12 Nov 2026 — the saved SVG says what is engraved as one outline a surface
+
+Okay, 11 Nov 2026, 23:02: "Why does engraving suck? It is not 3d, it gets lost at many heights. Why is it impossible to make them little extruded shapes and cut the shapes out of the bezels top. VisiBLE and engraved at every height."
+
+- **`cut_unions`** (`geometry.js`): the engraved markings of the plate and of the bezel's top, each joined into one outline — a band and the ticks over it are one pocket — and kept 0.02 mm (`CUT_EDGE`) inside the face they are cut in. Written on the dial's group as `data-cut-plate` and `data-cut-bezel` (`show.js` `svg_facts`, `output.js`), which a drawing program ignores. Show Case 3D cuts real pockets from them (Pro round 118). The file's shapes and its Engrave layer are as before.
+- **Tests**: `labels.mjs` — an engraved dial's SVG says the two outlines, a painted one none.
+
 ## v1.1.81 beta · 12 Nov 2026 — the bezel's rows in one order; teeth or melt; inks as applied parts; the plate in show mode
 
 Okay, 12 Nov 2026, 00:21: "Teethed bezels cant melt melted bezels cant teeth. Melted bezel loses inset ring if there is one. It is one and same with case material. The last bits i asked for that went to the build list, do them immediately. Also on dial tool i could not find a bezel height (called ring height on sc3d) sync names and setting all places."
