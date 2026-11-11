@@ -696,6 +696,7 @@ ROWS.Dial = [
     custom("case_preset", { show: (T, S) => S.bz_on }),
     seg("bz_kind", "Kind", G.BEZEL_KINDS, { show: (T, S) => S.bz_on }),
     seg("bz_marks", "Markings", G.BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    chk("bz_melt", "Melt into case", { show: (T, S) => S.bz_on && G.BEZEL_KINDS[S.bz_kind] === "Fixed" }),      // #599: one piece with the body; a rotating ring is a part of its own (R16)
     seg("bz_engrave", "Finish", G.FINISHES, { show: (T, S) => G.bezel_marks_on_metal(S) }),      // markings on the metal painted on or cut in (Okay, 11 Nov 2026)      // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
@@ -711,7 +712,7 @@ ROWS.Dial = [
     hdr("Heights", { folded: true, show: (T, S) => S.bz_on }),
     info("Seen in the section and in show mode, not in the plan.", { show: (T, S) => S.bz_on }),
     num("bz_dial_up", "Dial over band", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
-    num("bz_seat", "Seat", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
+    num("bz_seat", "Seat", 0, 2, 0.05, { show: (T, S) => S.bz_on && !G.bezel_melted(S) }),      // a melted bezel has no seat (R16)
     num("bz_h", "Ring height", 0.3, 6, 0.05, { show: (T, S) => S.bz_on }),
     num("bz_lip", "Lip", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
     num("bz_rim", "Crystal rim", 0, 3, 0.05, { show: (T, S) => S.bz_on }),

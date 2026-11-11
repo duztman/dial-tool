@@ -128,6 +128,17 @@ check(G.link_kind("#1.fZLRjtsgEEV_~x")?.scheme === 1 && G.link_kind("0.abc")?.sc
     "a part on B stands at B's height, on A at A's, All inks at once added to both");
 }
 
+// a melted bezel travels (#599); a watch link from Show Case 3D opens as its dial (#600)
+{
+  const S = G.fresh_settings({ bz_on: true, bz_kind: 1, bz_melt: true }), l = link(S), back = G.fresh_settings(read(l));
+  const turning = G.fresh_settings({ bz_on: true, bz_kind: 0, bz_melt: true });
+  check(back.bz_melt === true && G.bezel_melted(back) && G.bezel_seat(back) === 0 && !G.bezel_melted(turning) && G.bezel_seat(turning) === turning.bz_seat && !G.bezel_melted(G.fresh_settings({})),
+    'a melted bezel in a link, there and back: one piece, no seat; a rotating ring does not melt; off to start (Okay: "a bezel that melts into the case, seemlessly, on off style")');
+  const watch = l + G.WATCH_MARK + "eJyrVipTsjLUUSpWsqpWSs7PS0lMUbIy0FFKL0rMS1ayMqoFAJ0RCZ8_-x", again = read(watch);
+  check(G.link_tail(watch) === "eJyrVipTsjLUUSpWsqpWSs7PS0lMUbIy0FFKL0rMS1ayMqoFAJ0RCZ8_-x" && G.link_dial(watch) === l && again && differences(S, G.fresh_settings(again)).length === 0 && G.link_tail(l) === "" && G.link_kind(G.WATCH_MARK + "abc") === null,
+    'a watch link (the dial\'s link, ".3d.", Show Case 3D\'s settings) reads as its dial; the tail is handed over whole; a tail alone is no dial (Okay: "I need a way to keep showc 3ds edited watches")');
+}
+
 // the key table: every key of the settings has a code, and the table only grows (its first 156 keys stay as they are)
 {
   const keys = [G.DEFAULTS, G.RING_BASE, G.HAND_BASE, G.WINDOW_BASE].flatMap((o) => Object.keys(o)).filter((k) => !k.startsWith("ui_") && k !== "version" && !G.NOT_IN_LINK(k));      // the watch's keys never travel in a link (show mode, 22 Oct 2026)

@@ -22,6 +22,8 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Hand tabs** | Hour · Minute · Seconds and every added hand (GMT), on Hands' second pinned line; after them the **+** that asks a new hand's function (GMT · Date · Day · Month), adding the hand with its scale ring; an added hand's Show line carries its **−**. |
 | **Base** | The Dial tab's own first tab — the plate itself — beside Rehaut and Bezel; a ring's Surface too. |
 | **Markings** (the bezel) | Where a rotating bezel's rings stand: on its **Insert**, or on its **Metal** (no insert). A fixed bezel's are on its metal. |
+| **Melt into case** | A fixed bezel made one piece with the case (`bz_melt`, #599; Okay, 11 Nov 2026: "a bezel that melts into the case, seemlessly"): no seat, no step, no line where they meet; its outer wall is the body's. Not offered on a rotating bezel, a part of its own. |
+| **Watch link** | A dial's link followed by `.3d.` and Show Case 3D's settings (#600): Show Case 3D copies and reads it; Dial Tool opens it as its dial and leaves the tail. |
 | **Finish** | How a marking on bare metal is made: **Paint** (printed on) or **Engrave** (cut in). On the Base tab once the plate is bare, the Rehaut tab (its ring), the Bezel tab once its markings are on the metal. Engraved markings are one layer, Engrave, in the files and in no ink film. |
 | **Body Ø** | Show mode: the watch body's diameter. **Fit**: snug round the dial and its rehaut and bezel. **Own Ø**: larger; the lugs, crown and strap grow with it, the opening stays at the dial. |
 | **Disc ring** | The one ring a disc hand carries, edited under the hand's rows on the Hands tab; it turns with the hand. |

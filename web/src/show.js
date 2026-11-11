@@ -63,11 +63,11 @@ export const part_record = (S, x) => {
 export const case_record = (S) => ({
   rehaut: S.rh_on ? { w: G.rehaut_w(S), h: G.rehaut_h(S), c: hex(S.rh_c) } : null,
   bezel: S.bz_on ? { kind: G.BEZEL_KINDS[S.bz_kind] === "Fixed" ? "fixed" : "rotating", marks: G.BEZEL_KINDS[S.bz_kind] === "Fixed" || G.BEZEL_MARKS[S.bz_marks] === "Metal" ? "metal" : "insert", w: S.bz_w, chamfer: S.bz_chamfer, in_in: S.bz_in_in, in_out: S.bz_in_out, insert: hex(S.bz_insert_c),
-    teeth: { n: S.bz_teeth_n, depth: S.bz_teeth_depth, fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer }, dial_up: S.bz_dial_up, seat: S.bz_seat, h: S.bz_h, lip: S.bz_lip, rim: S.bz_rim, up: S.bz_up, dome: S.bz_dome } : null,
+    teeth: { n: S.bz_teeth_n, depth: S.bz_teeth_depth, fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer }, dial_up: S.bz_dial_up, seat: G.bezel_seat(S), melt: G.bezel_melted(S) || undefined, h: S.bz_h, lip: S.bz_lip, rim: S.bz_rim, up: S.bz_up, dome: S.bz_dome } : null,
   body: S.w_body > 0 ? Math.max(body_fit(S), S.w_body) : null,      // the body's Ø, mm, when it isn't Fit (Okay, 11 Nov 2026: Body Ø)
 });
 /** the body's Ø at Fit for this dial, mm (Body Ø's floor) */
-export const body_fit = (S) => WATCH.bodyFit(G.CASE_OF_BEZEL[S.bezel] || "dress", S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null);
+export const body_fit = (S) => WATCH.bodyFit(G.CASE_OF_BEZEL[S.bezel] || "dress", S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null, G.bezel_melted(S));
 export const svg_facts = (S) => Object.assign((x) => P.part_attrs(part_record(S, x)), { dial: P.dial_attrs(S.dial_d) + P.case_attrs(case_record(S)) });
 
 /** what watch.js draws for this dial and these settings — the Show Case's `options()` */
@@ -75,8 +75,8 @@ export function options(S, items, effects) {
   const style = STYLE_NAMES[S.w_style] || "artisan", kind = G.CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P = WATCH.presets(style), lit = effects;
   return {
-    style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null, S.w_body), fit: WATCH.fitFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null), view: VIEW_NAMES[S.w_view] || "detail",
-    case: S.rh_on || S.bz_on ? { outer: G.reach_mm(S), glass: G.case_spans(S).bezel ? G.case_spans(S).bezel[0] : G.reach_mm(S) } : null,      // glass: the crystal's edge — inside the bezel, not over it (Okay, 11 Nov 2026: "the glass is drawn over the bezel now somehow")      // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
+    style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null, S.w_body, G.bezel_melted(S)), fit: WATCH.fitFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null, G.bezel_melted(S)), view: VIEW_NAMES[S.w_view] || "detail",
+    case: S.rh_on || S.bz_on ? { outer: G.reach_mm(S), melt: G.bezel_melted(S), glass: G.case_spans(S).bezel ? G.case_spans(S).bezel[0] : G.reach_mm(S) } : null,      // glass: the crystal's edge — inside the bezel, not over it (Okay, 11 Nov 2026: "the glass is drawn over the bezel now somehow")      // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
     items: items.flatMap((x) => { const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && G.HANDS.includes(x.name) ? x.name : null;
       const H = hand ? S["ha_" + hand] : null;
       // a hand's boss as a part of its own over the hand (#404; Okay, 3 Nov 2026: "The boss itself, as a round disc"): the
@@ -158,7 +158,7 @@ export const GRADIENTS = [["Dusk", "#3b3f58", "#b8876c"], ["Sea", "#1f4e5a", "#a
  *  as tall as the canvas less a margin, the case as wide as it allows; Whole watch — the whole drawing; Dial — as the
  *  dial side's Fit. Screen pixels per millimetre */
 export function fit_zoom(tool, w, h) {
-  const S = tool.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, size = WATCH.sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null, S.w_body), cb = WATCH.caseBox(kind, size);
+  const S = tool.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, size = WATCH.sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null, S.w_body, G.bezel_melted(S)), cb = WATCH.caseBox(kind, size);
   if (S.w_view === 2) return Math.min(w, h) / G.page_mm(S);
   const [bw, bh] = S.w_view === 1 ? WATCH.fullBox(kind, size, kind === "diver" && (S.strap === 2 || S.strap === 4)) : [cb.w, cb.h];      // the whole watch's frame is known before it is drawn
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);

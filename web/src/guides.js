@@ -363,7 +363,7 @@ export const GUIDES = {
     // bezel, on the rehaut's wall (taken at half its rise). A leaning rehaut alone shades the dial only where its shadow is longer
     // than its own reach, as a slope does. Nothing is drawn outside the bezel: the view has no body to catch it
     if (plate_at >= 0 && (S.rh_on || S.bz_on)) {
-      const R = S.dial_d / 2, rw = S.rh_on ? G.rehaut_w(S) : 0, rh = S.rh_on ? G.rehaut_h(S) : 0, zb = S.bz_on ? Math.max(0, S.bz_seat + S.bz_h - S.bz_dial_up) : 0, edge = R + rw, z = Math.max(rh, zb);
+      const R = S.dial_d / 2, rw = S.rh_on ? G.rehaut_w(S) : 0, rh = S.rh_on ? G.rehaut_h(S) : 0, zb = S.bz_on ? Math.max(0, G.bezel_seat(S) + S.bz_h - S.bz_dial_up) : 0, edge = R + rw, z = Math.max(rh, zb);
       const circle = (r) => `M${f(-r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(-r)} 0Z`, field = (r) => `M-999 -999H999V999H-999Z${circle(r)}`;      // everything but a disc: what an edge of that radius keeps the light off
       const first = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide"), before = first >= 0 ? nodes[first] : null, metal = [...G.case_metal(S).slice(0, 3), 1];
       const wall = (name, outline, dz) => { const s = surface(name, before, outline, 999); s.cast(field(edge), 0, dz, metal); s.g.lastElementChild.setAttribute("fill-rule", "evenodd"); return s; };      // from_z 999: no hand's shadow is cast again here (the plate's surface has them)

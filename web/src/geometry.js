@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.79 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.80 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -297,6 +297,7 @@ export const DEFAULTS = {
   // in show mode; the plan does not see them
   rh_on: false, rh_deg: 24, rh_len: 1.5, rh_c: [0.78, 0.78, 0.76, 1],      // 24° and 1.5 mm: the 3D exercise's wall, 0.6 out over 1.35 up. rh_w is dead (R8): nothing reads it
   bz_on: false, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_c: [0.80, 0.80, 0.78, 1], bz_insert_c: [0.17, 0.17, 0.19, 1], bz_marks: 0,      // bz_c is dead (R8): the bezel is case material (case_metal)
+  bz_melt: false,                                  // a fixed bezel melted into the case (#599; Okay, 11 Nov 2026: "a bezel that melts into the case, seemlessly, on off style"): one piece with the body — no seat, no step, no line. Read through bezel_melted()
   bz_teeth_n: 60, bz_teeth_depth: 0.5, bz_teeth_fill: 0.62, bz_teeth_chamfer: 0.45,
   bz_dial_up: 0.7, bz_seat: 0.3, bz_h: 2.3, bz_lip: 0.55, bz_rim: 0.4, bz_up: 0.65, bz_dome: 1.35,
   ui_dial_tab: 0,                                  // the Dial tab's own tabs: Dial · Rehaut · Bezel (#582; ui_case is the canvas's Case view)
@@ -793,6 +794,7 @@ export const LINK_KEYS = [
   "bz_marks",               // v1.1.75 beta: appended; the insert to start, as every older link
   "w_body", "on_hand",      // v1.1.76 beta: appended; Fit and no disc to start, as every older link (w_body stays out of links, NOT_IN_LINK)
   "engrave", "rh_engrave", "bz_engrave",      // v1.1.76 beta: appended; painted to start, as every older link
+  "bz_melt",                // v1.1.80 beta (#599): appended; a bezel seated on the case to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -869,9 +871,14 @@ export function un_base32(text) {
   }
   return Uint8Array.from(out);
 }
+/** A WATCH LINK (#600; Okay, 11 Nov 2026: "I need a way to keep showc 3ds edited watches" — "A link") is a dial's link, then
+ *  WATCH_MARK, then Show Case 3D's settings packed. The dial's part is read here as any dial's link; the tail is the 3D page's */
+export const WATCH_MARK = ".3d.";
+export const link_dial = (text) => { const t = String(text || ""), i = t.indexOf(WATCH_MARK); return i < 0 ? t : t.slice(0, i); };
+export const link_tail = (text) => { const t = String(text || ""), i = t.indexOf(WATCH_MARK); return i < 0 ? "" : t.slice(i + WATCH_MARK.length).trim(); };
 /** what the part after # is: a scheme-2 dial's letters, a link of an older scheme, or not a dial at all. */
 export function link_kind(hash) {
-  const h = (hash || "").replace(/^#/, "");
+  const h = link_dial(hash).replace(/^#/, "");
   if (/^[2-9][0-9A-Za-z]+$/.test(h)) return { scheme: +h[0], letters: h.slice(1) };      // schemes 2 on: the same writing after their number
   if (/^[01]\.[A-Za-z0-9_~-]+$/.test(h)) return { scheme: +h[0] };
   return null;
@@ -1697,6 +1704,10 @@ export const ring_engraved = (S, ring) => { const s = ring_surface(S, ring); ret
 /** the colour an engraved ring shows: its ground's, in shadow — the cut's floor and walls, darker than the face round it */
 export const engraved_colour = (S, ring) => { const s = ring_surface(S, ring), g = s === 0 ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : s === 1 ? S.rh_c : case_metal(S); return [...g.slice(0, 3).map((v) => v * 0.55), 1]; };
 export const BEZEL_MARKS = ["Insert", "Metal"];      // where a rotating bezel's markings are: on an insert set in it, or on its metal (Okay, 11 Nov 2026: "for bezels, add markings on metal instead of inset ring"); a fixed bezel's are always on its metal. R9: appended only
+/** the bezel is one piece with the case (#599): a fixed bezel with Melt on. A rotating ring is a part of its own, so it can't melt */
+export const bezel_melted = (S) => !!(S.bz_on && S.bz_melt && BEZEL_KINDS[S.bz_kind] === "Fixed");
+/** the ring's seat over the band's top, mm: none when the bezel is the case's own metal rising */
+export const bezel_seat = (S) => (bezel_melted(S) ? 0 : S.bz_seat);
 export const BEZEL_KINDS = ["Rotating", "Fixed"];      // rotating: a turning ring with an insert and a coin edge · fixed: a plain pressed ring
 /** the rehaut's reach in plan and its rise: a wall rh_len long leaning rh_deg from the vertical */
 export const rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);

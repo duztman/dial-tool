@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.79 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.80 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -8131,8 +8131,8 @@ function caseEngineer(C2, v, L) {
     out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d8d6cf"/>`);
     out.push(stroke(circle(ro)), stroke(circle(I.id / 2)));
   }
-  out.push(glint(C2.cushion ? C2.cushion.a - 0.7 : C2.od / 2 - 0.5, L), glint(C2.opening + 0.5, L, 0.4, 0.5, 20));
-  out.push(shape2(circle(C2.opening), T[2], 0.15));
+  out.push(glint(C2.cushion ? C2.cushion.a - 0.7 : C2.od / 2 - 0.5, L), C2.melt ? "" : glint(C2.opening + 0.5, L, 0.4, 0.5, 20));
+  out.push(C2.melt ? `<path d="${circle(C2.opening)}" fill="${T[1]}"/>` : shape2(circle(C2.opening), T[2], 0.15));
   if (DIAL_IN) out.push(`<g clip-path="url(#dial-${C2.key})">${dialSVG(C2, v, L)}</g>`);
   if (C2.insert) out.push(sloped(C2.opening - REHAUT, C2.opening, T, L, -1, 0.9), stroke(circle(C2.opening - REHAUT), 0.15));
   if (!DIAL_IN) return out.join("");
@@ -8142,7 +8142,7 @@ function caseEngineer(C2, v, L) {
   }
   const g = (a, r, w, o) => `<path d="M${f(Math.cos(rad(a - 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 28 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 28 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, o * GLASS.op))}" stroke-width="${f(w * GLASS.fat)}" stroke-linecap="round"/>`;
   out.push(`<g clip-path="url(#glass-${C2.key})">` + g(L, shineR(C2) - 0.9, 0.8, 0.55) + g(L + 180, shineR(C2) - 0.9, 0.4, 0.22) + `</g>`);
-  out.push(stroke(circle(C2.opening), 0.2));
+  if (!C2.melt) out.push(stroke(circle(C2.opening), 0.2));
   return out.join("");
 }
 function caseArtisan(C2, v, L) {
@@ -8196,10 +8196,11 @@ function caseArtisan(C2, v, L) {
       out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#bfbcb4" stroke-width="0.7" stroke-linecap="round"/>`);
     }
     out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d0cdc5"/>`);
+  } else if (C2.melt) {
   } else if (!C2.cushion) out.push(castBy(R - 1, circle(R)), blob(circle(R - 1), T, L, 0.6, 1.1));
   else out.push(castBy(C2.bands[0][0], P(cushionPts(C2.cushion.a, C2.cushion.n))), blob(circle(C2.bands[0][0]), T, L, 0.6, 1.1));
   out.push(glint(C2.cushion ? C2.cushion.a - 0.8 : C2.od / 2 - 0.6, L, 0.8, 0.55, 24));
-  out.push(`<path d="${circle(C2.opening)}" fill="${T[2]}"/>`);
+  out.push(`<path d="${circle(C2.opening)}" fill="${C2.melt ? T[1] : T[2]}"/>`);
   if (!DIAL_IN) return out.join("");
   out.push(`<g clip-path="url(#dial-${C2.key})">${dialSVG(C2, v, L)}</g>`);
   if (C2.insert) {
@@ -8581,8 +8582,8 @@ function frame(o) {
   GLINT = "off";
   CLIPS = [];
   SUN_H = 40;
-  LIVE = o.outer ? { outer: o.outer, dial: o.d } : null;
-  const C2 = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer, o.body), fitFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
+  LIVE = o.outer ? { outer: o.outer, dial: o.d, melt: !!o.melt } : null;
+  const C2 = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer, o.body, o.melt), fitFor(kind, o.d, o.outer, o.melt)), key: kind, metal: GREYS }), was = INSERT;
   INSERT = { top: GREYS[2], bottom: GREYS[2] };
   const body = caseSVG(C2, "own", 225);
   NO_LINES = false;
@@ -8596,6 +8597,7 @@ function silhouetteOf(key, size) {
   DIAL_IN = false;
   GLINT = "off";
   OUTLINE_ON = false;
+  LIVE = null;
   const kind = key in CASES ? key : "dress";
   METALS.custom = METALS.steel;
   LEATHER.custom = LEATHER.brown;
@@ -8648,15 +8650,15 @@ function presets(style) {
     nato: Object.fromEntries(Object.entries({ ...NATO_SETS, ...NATO_MORE }).map(([k, S]) => [k, S.map((T) => T[1])]))
   };
 }
-var fitFor = (key, d, outer = null) => {
+var fitFor = (key, d, outer = null, melt = false) => {
   const C2 = CASES[key] || CASES.dress;
-  return outer ? (2 * outer + 2 * CASE_LIP) / C2.od : d / (C2.dial - (C2.insert ? 2 * REHAUT : 0));
+  return outer ? (2 * outer + 2 * (melt ? 0 : CASE_LIP)) / C2.od : d / (C2.dial - (C2.insert ? 2 * REHAUT : 0));
 };
-var sizeFor = (key, d, outer = null, body = 0) => Math.max(fitFor(key, d, outer), body > 0 ? body / (CASES[key] || CASES.dress).od : 0);
-var bodyFit = (key, d, outer = null) => fitFor(key, d, outer) * (CASES[key] || CASES.dress).od;
+var sizeFor = (key, d, outer = null, body = 0, melt = false) => Math.max(fitFor(key, d, outer, melt), body > 0 ? body / (CASES[key] || CASES.dress).od : 0);
+var bodyFit = (key, d, outer = null, melt = false) => fitFor(key, d, outer, melt) * (CASES[key] || CASES.dress).od;
 var CASE_LIP = 0.65;
 var LIVE = null;
-var live_case = (C2) => LIVE ? Object.assign(C2, { opening: LIVE.outer, glassR: LIVE.glass, dialR: LIVE.dial / 2, dial: LIVE.dial, insert: null, bands: [] }) : C2;
+var live_case = (C2) => LIVE ? Object.assign(C2, { opening: LIVE.outer, glassR: LIVE.glass, dialR: LIVE.dial / 2, dial: LIVE.dial, insert: null, bands: [], melt: LIVE.melt }) : C2;
 var caseBox = (key, size) => {
   const C2 = scaleCase(CASES[key], size);
   return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.rails ? Math.max(C2.od, C2.lugw + 2 * C2.lugT) : C2.od) + 2 * C2.crown.h, dial: C2.dial };
@@ -8665,7 +8667,7 @@ function draw(o) {
   use(o.style || "artisan");
   const STYLE_ = STYLES[STYLE];
   OUTLINE_ON = o.outline !== false;
-  LIVE = o.case ? { outer: o.case.outer, glass: o.case.glass ?? o.case.outer, dial: o.d } : null;
+  LIVE = o.case ? { outer: o.case.outer, glass: o.case.glass ?? o.case.outer, dial: o.d, melt: !!o.case.melt } : null;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
   SOFT = Boolean(o.blurs);
   GRADIENTS = o.gradients !== false;
@@ -9544,7 +9546,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.79 beta";
+var VERSION = "v1.1.80 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9971,6 +9973,8 @@ var DEFAULTS = {
   bz_insert_c: [0.17, 0.17, 0.19, 1],
   bz_marks: 0,
   // bz_c is dead (R8): the bezel is case material (case_metal)
+  bz_melt: false,
+  // a fixed bezel melted into the case (#599; Okay, 11 Nov 2026: "a bezel that melts into the case, seemlessly, on off style"): one piece with the body — no seat, no step, no line. Read through bezel_melted()
   bz_teeth_n: 60,
   bz_teeth_depth: 0.5,
   bz_teeth_fill: 0.62,
@@ -11053,8 +11057,10 @@ var LINK_KEYS = [
   // v1.1.76 beta: appended; Fit and no disc to start, as every older link (w_body stays out of links, NOT_IN_LINK)
   "engrave",
   "rh_engrave",
-  "bz_engrave"
+  "bz_engrave",
   // v1.1.76 beta: appended; painted to start, as every older link
+  "bz_melt"
+  // v1.1.80 beta (#599): appended; a bezel seated on the case to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -11139,8 +11145,13 @@ function un_base32(text) {
   }
   return Uint8Array.from(out);
 }
+var WATCH_MARK = ".3d.";
+var link_dial = (text) => {
+  const t = String(text || ""), i2 = t.indexOf(WATCH_MARK);
+  return i2 < 0 ? t : t.slice(0, i2);
+};
 function link_kind(hash) {
-  const h = (hash || "").replace(/^#/, "");
+  const h = link_dial(hash).replace(/^#/, "");
   if (/^[2-9][0-9A-Za-z]+$/.test(h)) return { scheme: +h[0], letters: h.slice(1) };
   if (/^[01]\.[A-Za-z0-9_~-]+$/.test(h)) return { scheme: +h[0] };
   return null;
@@ -11949,6 +11960,8 @@ var engraved_colour = (S, ring) => {
   return [...g.slice(0, 3).map((v) => v * 0.55), 1];
 };
 var BEZEL_MARKS = ["Insert", "Metal"];
+var bezel_melted = (S) => !!(S.bz_on && S.bz_melt && BEZEL_KINDS[S.bz_kind] === "Fixed");
+var bezel_seat = (S) => bezel_melted(S) ? 0 : S.bz_seat;
 var BEZEL_KINDS = ["Rotating", "Fixed"];
 var rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);
 var rehaut_h = (S) => +(S.rh_len * cos(S.rh_deg * PI / 180)).toFixed(4);
@@ -13058,7 +13071,8 @@ var case_record = (S) => ({
     insert: hex(S.bz_insert_c),
     teeth: { n: S.bz_teeth_n, depth: S.bz_teeth_depth, fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer },
     dial_up: S.bz_dial_up,
-    seat: S.bz_seat,
+    seat: bezel_seat(S),
+    melt: bezel_melted(S) || void 0,
     h: S.bz_h,
     lip: S.bz_lip,
     rim: S.bz_rim,
@@ -13068,7 +13082,7 @@ var case_record = (S) => ({
   body: S.w_body > 0 ? Math.max(body_fit(S), S.w_body) : null
   // the body's Ø, mm, when it isn't Fit (Okay, 11 Nov 2026: Body Ø)
 });
-var body_fit = (S) => bodyFit(CASE_OF_BEZEL[S.bezel] || "dress", S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null);
+var body_fit = (S) => bodyFit(CASE_OF_BEZEL[S.bezel] || "dress", S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, bezel_melted(S));
 var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), { dial: dial_attrs(S.dial_d) + case_attrs(case_record(S)) });
 function options(S, items, effects) {
   const style = STYLE_NAMES2[S.w_style] || "artisan", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
@@ -13077,10 +13091,10 @@ function options(S, items, effects) {
     style,
     key: kind,
     d: S.dial_d,
-    size: sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, S.w_body),
-    fit: fitFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null),
+    size: sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, S.w_body, bezel_melted(S)),
+    fit: fitFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, bezel_melted(S)),
     view: VIEW_NAMES[S.w_view] || "detail",
-    case: S.rh_on || S.bz_on ? { outer: reach_mm(S), glass: case_spans(S).bezel ? case_spans(S).bezel[0] : reach_mm(S) } : null,
+    case: S.rh_on || S.bz_on ? { outer: reach_mm(S), melt: bezel_melted(S), glass: case_spans(S).bezel ? case_spans(S).bezel[0] : reach_mm(S) } : null,
     // glass: the crystal's edge — inside the bezel, not over it (Okay, 11 Nov 2026: "the glass is drawn over the bezel now somehow")      // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
     items: items.flatMap((x2) => {
       const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null;
@@ -13193,7 +13207,7 @@ var GRADIENTS2 = [
   ["Ink", "#0e0f14", "#3b4256"]
 ];
 function fit_zoom(tool2, w, h) {
-  const S = tool2.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, size = sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, S.w_body), cb = caseBox(kind, size);
+  const S = tool2.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, size = sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null, S.w_body, bezel_melted(S)), cb = caseBox(kind, size);
   if (S.w_view === 2) return Math.min(w, h) / page_mm(S);
   const [bw, bh] = S.w_view === 1 ? fullBox(kind, size, kind === "diver" && (S.strap === 2 || S.strap === 4)) : [cb.w, cb.h];
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
@@ -15047,6 +15061,8 @@ ROWS.Dial = [
     custom("case_preset", { show: (T, S) => S.bz_on }),
     seg("bz_kind", "Kind", BEZEL_KINDS, { show: (T, S) => S.bz_on }),
     seg("bz_marks", "Markings", BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    chk("bz_melt", "Melt into case", { show: (T, S) => S.bz_on && BEZEL_KINDS[S.bz_kind] === "Fixed" }),
+    // #599: one piece with the body; a rotating ring is a part of its own (R16)
     seg("bz_engrave", "Finish", FINISHES, { show: (T, S) => bezel_marks_on_metal(S) }),
     // markings on the metal painted on or cut in (Okay, 11 Nov 2026)      // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
     custom("case_detail", { show: (T, S) => S.bz_on }),
@@ -15063,7 +15079,8 @@ ROWS.Dial = [
     hdr("Heights", { folded: true, show: (T, S) => S.bz_on }),
     info("Seen in the section and in show mode, not in the plan.", { show: (T, S) => S.bz_on }),
     num2("bz_dial_up", "Dial over band", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
-    num2("bz_seat", "Seat", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
+    num2("bz_seat", "Seat", 0, 2, 0.05, { show: (T, S) => S.bz_on && !bezel_melted(S) }),
+    // a melted bezel has no seat (R16)
     num2("bz_h", "Ring height", 0.3, 6, 0.05, { show: (T, S) => S.bz_on }),
     num2("bz_lip", "Lip", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
     num2("bz_rim", "Crystal rim", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
@@ -21949,7 +21966,7 @@ var CASE_PRESETS = [
 ];
 function case_section(S) {
   const sp = case_spans(S), R = S.dial_d / 2, out = [];
-  const z_dial = S.bz_dial_up, z0 = S.bz_seat, z1 = z0 + S.bz_h, lip = S.bz_lip, ch = S.bz_chamfer;
+  const z_dial = S.bz_dial_up, z0 = bezel_seat(S), z1 = z0 + S.bz_h, lip = S.bz_lip, ch = S.bz_chamfer;
   out.push({ part: "dial", line: true, pts: [[R - 1.5, z_dial], [R, z_dial]], fill: S.c_plate });
   if (sp.rehaut) {
     const WALL = 0.4, w = rehaut_w(S), h = rehaut_h(S);
@@ -21965,6 +21982,9 @@ function case_section(S) {
         const d = S.bz_teeth_depth, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
         out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: case_metal(S) });
       }
+    } else if (bezel_melted(S)) {
+      const rim2 = r0 - S.bz_rim, BODY = 1.2;
+      out.push({ part: "bezel", pts: [[r0, -BODY], [r1, -BODY], [r1, z1], [r1 - ch, z1 + ch], [rim2 + 0.3, z1 + lip], [rim2, z1 + lip - 0.15], [rim2, z1 - 0.3], [r0, z1 - 0.3]], fill: case_metal(S) });
     } else {
       const rim2 = r0 - S.bz_rim;
       out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim2 + 0.3, z1 + lip], [rim2, z1 + lip - 0.15], [rim2, z1 - 0.3], [r0, z1 - 0.3]], fill: case_metal(S) });
@@ -22847,10 +22867,10 @@ var PREVIEW = {
   /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
    *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
   draw_bezel() {
-    const S = this.S, outer = S.rh_on || S.bz_on ? reach_mm(S) : null, key = S.ui_case ? `${S.bezel || 0}/${S.dial_d}/${outer}/${S.w_body}` : "";
+    const S = this.S, outer = S.rh_on || S.bz_on ? reach_mm(S) : null, melt = bezel_melted(S), key = S.ui_case ? `${S.bezel || 0}/${S.dial_d}/${outer}/${S.w_body}/${melt}` : "";
     if (key === this.bezel_key) return;
     this.bezel_key = key;
-    this.bezel_g.innerHTML = S.ui_case ? frame({ kind: CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, outer, body: S.w_body }) : "";
+    this.bezel_g.innerHTML = S.ui_case ? frame({ kind: CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, outer, body: S.w_body, melt }) : "";
   },
   /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. No case
    *  to start (ui_case; Okay, 23 Oct 2026: "On main default is caseless"); the kind is show mode's too. No strap here: the
@@ -23694,7 +23714,7 @@ var GUIDES = {
       surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
     }
     if (plate_at >= 0 && (S.rh_on || S.bz_on)) {
-      const R = S.dial_d / 2, rw = S.rh_on ? rehaut_w(S) : 0, rh = S.rh_on ? rehaut_h(S) : 0, zb = S.bz_on ? Math.max(0, S.bz_seat + S.bz_h - S.bz_dial_up) : 0, edge = R + rw, z = Math.max(rh, zb);
+      const R = S.dial_d / 2, rw = S.rh_on ? rehaut_w(S) : 0, rh = S.rh_on ? rehaut_h(S) : 0, zb = S.bz_on ? Math.max(0, bezel_seat(S) + S.bz_h - S.bz_dial_up) : 0, edge = R + rw, z = Math.max(rh, zb);
       const circle3 = (r) => `M${f2(-r)} 0A${f2(r)} ${f2(r)} 0 1 0 ${f2(r)} 0A${f2(r)} ${f2(r)} 0 1 0 ${f2(-r)} 0Z`, field = (r) => `M-999 -999H999V999H-999Z${circle3(r)}`;
       const first = items.findIndex((x2) => x2.role === "hand" || x2.role === "cap" || x2.role === "guide"), before = first >= 0 ? nodes[first] : null, metal = [...case_metal(S).slice(0, 3), 1];
       const wall = (name, outline, dz) => {

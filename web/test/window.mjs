@@ -1203,6 +1203,21 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   await frame();
 }
 // THE FINISH SWITCH (Okay, 11 Nov 2026: "I need the ability to add these engravings instead of paint on metal, needs a switch"): Paint ·
+// a bezel that melts into the case (#599): the tick on a fixed bezel only; on, no Seat row, the section one shape down into the body, show mode's body rim at the bezel's edge
+{
+  const m = await page.evaluate(async () => { const t = window.dial_tool, S = t.S, was = JSON.parse(JSON.stringify(S)), tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    const rows = () => [...document.querySelectorAll(".form .row")].filter((r) => !r.hidden && r.offsetParent).map((r) => r.querySelector("label")?.textContent.trim()).filter(Boolean);
+    const low = () => { const d = document.querySelector(".casedetail path.bezel")?.getAttribute("d") || ""; return Math.max(...[...d.matchAll(/[ML]?([-\d.]+) ([-\d.]+)/g)].map((q) => +q[2])); };      // the section's lowest point (y down)
+    S.ui_section = 0; t.show_section(); S.ui_dial_tab = 2; t.set_value("global", "bz_on", true); t.set_value("global", "bz_kind", 0); t.changed(true); await tick(); const turning = rows();
+    t.set_value("global", "bz_kind", 1); t.changed(true); await tick(); const fixed = rows(), seated = low();
+    t.set_value("global", "bz_melt", true); t.changed(true); await tick(); const melted = rows(), down = low();
+    const G_fit = [t.S.bz_melt, document.querySelector("#global-bz-melt-Melt-into-case, [id^='global-bz-melt']")?.checked];
+    Object.assign(S, was); for (const k of Object.keys(S)) if (!(k in was)) delete S[k]; t.static_dirty = true; t.changed(true); t.show_section(); await tick();
+    return { turning: turning.includes("Melt into case"), fixed: fixed.includes("Melt into case"), seat0: fixed.includes("Seat"), seat1: melted.includes("Seat"), seated, down, ticked: G_fit[1] }; });
+  check(!m.turning && m.fixed && m.seat0 && !m.seat1 && m.down > m.seated + 0.5 && m.ticked === true,
+    `Melt into case: offered on a fixed bezel (${m.fixed}), not a rotating one (${m.turning}); ticked, the Seat row goes (${m.seat0} → ${m.seat1}) and the section runs down into the body (its foot ${m.seated} → ${m.down} mm under the band's top) (Okay: "a bezel that melts into the case, seemlessly, on off style" — "No step, one piece")`);
+}
+
 // Engrave on the Base tab once the plate is bare, on the Rehaut tab, on the Bezel tab once its markings are on its metal
 { const own = await (await visitor()).newPage();
   await own.goto("file://" + process.cwd() + "/dial-tool.html");

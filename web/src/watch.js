@@ -381,8 +381,8 @@ function caseEngineer(C, v, L) {
     out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d8d6cf"/>`);
     out.push(stroke(circle(ro)), stroke(circle(I.id / 2)));
   }
-  out.push(glint(C.cushion ? C.cushion.a - 0.7 : C.od / 2 - 0.5, L), glint(C.opening + 0.5, L, 0.4, 0.5, 20));
-  out.push(shape(circle(C.opening), T[2], 0.15));                                                  // the crystal's seat, then the dial
+  out.push(glint(C.cushion ? C.cushion.a - 0.7 : C.od / 2 - 0.5, L), C.melt ? "" : glint(C.opening + 0.5, L, 0.4, 0.5, 20));
+  out.push(C.melt ? `<path d="${circle(C.opening)}" fill="${T[1]}"/>` : shape(circle(C.opening), T[2], 0.15));                                                  // the crystal's seat, then the dial
   if (DIAL_IN) out.push(`<g clip-path="url(#dial-${C.key})">${dialSVG(C, v, L)}</g>`);
   if (C.insert) out.push(sloped(C.opening - REHAUT, C.opening, T, L, -1, 0.9), stroke(circle(C.opening - REHAUT), 0.15));      // the rehaut
   if (!DIAL_IN) return out.join("");
@@ -393,7 +393,7 @@ function caseEngineer(C, v, L) {
   // the crystal: a highlight crescent on the side facing the light, a faint one opposite
   const g = (a, r, w, o) => `<path d="M${f(Math.cos(rad(a - 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 28 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 28 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, o * GLASS.op))}" stroke-width="${f(w * GLASS.fat)}" stroke-linecap="round"/>`;
   out.push(`<g clip-path="url(#glass-${C.key})">` + g(L, shineR(C) - 0.9, 0.8, 0.55) + g(L + 180, shineR(C) - 0.9, 0.4, 0.22) + `</g>`);      // the glass's shine: white, and the dial never white, so it always shows
-  out.push(stroke(circle(C.opening), 0.2));
+  if (!C.melt) out.push(stroke(circle(C.opening), 0.2));      // a melted bezel: no line where it leaves the body
   return out.join("");
 }
 function caseArtisan(C, v, L) {
@@ -433,10 +433,11 @@ function caseArtisan(C, v, L) {
       out.push(`<path d="${circle(r1)}${circle(r0)}" fill-rule="evenodd" fill="${T[1]}"/><path d="${arc(L, 55)}" fill="none" stroke="${T[0]}" stroke-width="${f(wd * 0.6)}" stroke-linecap="round"/><path d="${arc(L + 180, 55)}" fill="none" stroke="${T[2]}" stroke-width="${f(wd * 0.6)}" stroke-linecap="round"/>`); }      // the thin metal ring between the insert and the dial
     for (let m = 5; m < 60; m += 5) { const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.6, r1 = I.id / 2 + 2.5; out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#bfbcb4" stroke-width="0.7" stroke-linecap="round"/>`); }
     out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d0cdc5"/>`);
-  } else if (!C.cushion) out.push(castBy(R - 1.0, circle(R)), blob(circle(R - 1.0), T, L, 0.6, 1.1));       // the bezel: a second rounded step, and its shadow
+  } else if (C.melt) { /* one piece: the body's top runs flat to the tool's bezel, no step of the published case's between */ }
+  else if (!C.cushion) out.push(castBy(R - 1.0, circle(R)), blob(circle(R - 1.0), T, L, 0.6, 1.1));       // the bezel: a second rounded step, and its shadow
   else out.push(castBy(C.bands[0][0], P(cushionPts(C.cushion.a, C.cushion.n))), blob(circle(C.bands[0][0]), T, L, 0.6, 1.1));
   out.push(glint(C.cushion ? C.cushion.a - 0.8 : C.od / 2 - 0.6, L, 0.8, 0.55, 24));
-  out.push(`<path d="${circle(C.opening)}" fill="${T[2]}"/>`);
+  out.push(`<path d="${circle(C.opening)}" fill="${C.melt ? T[1] : T[2]}"/>`);
   if (!DIAL_IN) return out.join("");
   out.push(`<g clip-path="url(#dial-${C.key})">${dialSVG(C, v, L)}</g>`);
   if (C.insert) { const r0 = C.opening - REHAUT, r1 = C.opening, rm = (r0 + r1) / 2, wd = r1 - r0, arc = (a, sp) => `M${f(Math.cos(rad(a - sp)) * rm)} ${f(Math.sin(rad(a - sp)) * rm)}A${f(rm)} ${f(rm)} 0 0 1 ${f(Math.cos(rad(a + sp)) * rm)} ${f(Math.sin(rad(a + sp)) * rm)}`;
@@ -791,8 +792,8 @@ const GREYS = ["#504f4f", "#444442", "#373735"];      // light, body, dark: char
 export function frame(o) {
   const kind = o.kind in CASES ? o.kind : "dress";
   use("engineer"); NO_LINES = true; INK = "none"; DIAL_IN = false; GLINT = "off"; CLIPS = []; SUN_H = 40;
-  LIVE = o.outer ? { outer: o.outer, dial: o.d } : null;
-  const C = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer, o.body), fitFor(kind, o.d, o.outer)), key: kind, metal: GREYS }), was = INSERT;
+  LIVE = o.outer ? { outer: o.outer, dial: o.d, melt: !!o.melt } : null;
+  const C = live_case({ ...scaleCase(CASES[kind], sizeFor(kind, o.d, o.outer, o.body, o.melt), fitFor(kind, o.d, o.outer, o.melt)), key: kind, metal: GREYS }), was = INSERT;
   INSERT = { top: GREYS[2], bottom: GREYS[2] };      // a diver's insert in the dark grey too
   const body = caseSVG(C, "own", 225);
   NO_LINES = false; INSERT = was; DIAL_IN = true; use("engineer");
@@ -801,7 +802,7 @@ export function frame(o) {
 /** the case, lugs and crown as one shape: the edge of every part of the case joined (Artisan's painter keeps each part's
  *  outline, blob), drawn without its dial, glass or flare; SVG path data in the drawing's space (mm, y down) */
 function silhouetteOf(key, size) {
-  use("artisan"); DIAL_IN = false; GLINT = "off"; OUTLINE_ON = false;
+  use("artisan"); DIAL_IN = false; GLINT = "off"; OUTLINE_ON = false; LIVE = null;      // the published case as it is: not opened to the dial in hand's own bezel (a cushion has no bands to give up)
   const kind = key in CASES ? key : "dress";
   METALS.custom = METALS.steel; LEATHER.custom = LEATHER.brown;
   sheet(kind, "leather-custom", "own", 225, true, 40, "live", "custom", size);
@@ -846,23 +847,25 @@ export function presets(style) { use(style); return { floor: STYLES[style].floor
 export const edge = (floor, view, style) => (view === "detail" ? hsl(floor, STYLES[style].ramp[2]) : floor);
 /** the size that puts a case round a dial of diameter `d` (Okay, 22 Oct 2026: "Cases snap to dials. Size of dial determines"): the
  *  published case's opening — less the rehaut on a diver — scaled to the dial */
-export const fitFor = (key, d, outer = null) => { const C = CASES[key] || CASES.dress; return outer ? (2 * outer + 2 * CASE_LIP) / C.od : d / (C.dial - (C.insert ? 2 * REHAUT : 0)); };
+export const fitFor = (key, d, outer = null, melt = false) => { const C = CASES[key] || CASES.dress; return outer ? (2 * outer + 2 * (melt ? 0 : CASE_LIP)) / C.od : d / (C.dial - (C.insert ? 2 * REHAUT : 0)); };
 /** the body's scale: Fit (body 0), or the body Ø asked for, never inside Fit (the opening would outgrow it) */
-export const sizeFor = (key, d, outer = null, body = 0) => Math.max(fitFor(key, d, outer), body > 0 ? body / (CASES[key] || CASES.dress).od : 0);
+export const sizeFor = (key, d, outer = null, body = 0, melt = false) => Math.max(fitFor(key, d, outer, melt), body > 0 ? body / (CASES[key] || CASES.dress).od : 0);
 /** the body's Ø at Fit, mm */
-export const bodyFit = (key, d, outer = null) => fitFor(key, d, outer) * (CASES[key] || CASES.dress).od;      // with the tool's own case (#582): the body's rim CASE_LIP outside the tool's bezel
+export const bodyFit = (key, d, outer = null, melt = false) => fitFor(key, d, outer, melt) * (CASES[key] || CASES.dress).od;      // with the tool's own case (#582): the body's rim CASE_LIP outside the tool's bezel
 // the tool's own rehaut and bezel (#582; Okay, 10 Nov 2026: "The bezel and rehault should apply to showcase as they are"): when the
 // dial side has them, they come in with the dial's items, drawn flat in their colours, and the published case gives up its own
 // insert, rehaut and bands — its opening widens to the tool's outer edge, the body's rim CASE_LIP outside it, the lugs and crown
 // as the chosen case has them. LIVE: { outer, dial } in dial mm, set by draw() and frame(); null for a dial without a case
-const CASE_LIP = 0.65;      // the 3D exercise's `inset`: the ring's outer radius this far inside the body's
+const CASE_LIP = 0.65;      // the 3D exercise's `inset`: the ring's outer radius this far inside the body's. A MELTED bezel (#599; Okay, 11 Nov 2026: "a bezel that
+// melts into the case, seemlessly") is the body's own metal: no lip (the body's rim stands at the bezel's outer edge), and nothing drawn where they meet —
+// no line, no seat's shade, no step (LIVE.melt)
 let LIVE = null;
-const live_case = (C) => (LIVE ? Object.assign(C, { opening: LIVE.outer, glassR: LIVE.glass, dialR: LIVE.dial / 2, dial: LIVE.dial, insert: null, bands: [] }) : C);      // glassR: the crystal's edge, the bezel's inner one
+const live_case = (C) => (LIVE ? Object.assign(C, { opening: LIVE.outer, glassR: LIVE.glass, dialR: LIVE.dial / 2, dial: LIVE.dial, insert: null, bands: [], melt: LIVE.melt }) : C);      // glassR: the crystal's edge, the bezel's inner one
 export const caseBox = (key, size) => { const C = scaleCase(CASES[key], size); return { h: C.l2l, w: (C.cushion ? 2 * C.cushion.a : C.rails ? Math.max(C.od, C.lugw + 2 * C.lugT) : C.od) + 2 * C.crown.h, dial: C.dial }; };
 export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 export function draw(o) {
   use(o.style || "artisan"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
-  LIVE = o.case ? { outer: o.case.outer, glass: o.case.glass ?? o.case.outer, dial: o.d } : null;
+  LIVE = o.case ? { outer: o.case.outer, glass: o.case.glass ?? o.case.outer, dial: o.d, melt: !!o.case.melt } : null;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
   SOFT = Boolean(o.blurs); GRADIENTS = o.gradients !== false; HEIGHTS = o.heights || {}; HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;
   // a colour that is one of the engine's own keeps that entry's three tones; any other gets three made from it

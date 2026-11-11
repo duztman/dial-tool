@@ -1,5 +1,18 @@
 # Dial Tool — changelog
 
+## v1.1.80 beta · 11 Nov 2026 — a bezel that melts into the case; a watch link opens its dial
+
+Okay, 11 Nov 2026, 22:24: "I also need a bezel that melts into the case, seemlessly, on off style … I need a way to keep showc 3ds edited watches." — chosen 22:50: "No step, one piece", "Dial Tool, Bezel tab", "A link". 23:02: "Build #599 (melted bezel) and #600 (watch link)."
+
+- **Melt into case** (#599): a tick on the Bezel tab under Kind, on a **fixed** bezel only — a rotating ring is a part of its own (R16). `bz_melt`, off to start, in the link (appended, R9); read through `bezel_melted(S)`.
+  - **The rows**: Seat goes (a melted bezel has none; `bezel_seat(S)` is 0).
+  - **The section**: one shape — the ring's outer wall runs straight down into the body (1.2 mm of it drawn), no seat's line.
+  - **Show mode and the Case view**: the body's rim stands at the bezel's outer edge (no 0.65 mm lip), with no line, no seat's shade and no step where they meet; both paints. With a Body Ø of its own the body's top runs flat to the bezel.
+  - **The file for 3D**: `data-case` says `melt` (and seat 0); Show Case 3D follows it (Pro, round 114).
+- **A watch link** (#600): Show Case 3D keeps a watch as the dial's link, then `.3d.`, then its own settings. `link_kind` reads the dial's part and leaves the tail (`link_dial`, `link_tail`, `WATCH_MARK` in `geometry.js`), so the same link opened here shows its dial — it was "not a link".
+- **Mended on the way**: show mode opened from a session with the Case view and the tool's bezel on stopped at a cushion case's tile (the tile was drawn through the dial's own case: `silhouetteOf` now draws the published case).
+- **Tests**: `linktrip.mjs` — a melted bezel there and back, a watch link read as its dial; `window.mjs` — Melt into case offered on a fixed bezel, the Seat row gone, the section down into the body.
+
 ## v1.1.79 beta · 11 Nov 2026 — the case's wall shades the dial in the edit view
 
 Okay, 11 Nov 2026, 21:53: "Bezel and rehault needs shadows in dial tool main to gauge the height there."

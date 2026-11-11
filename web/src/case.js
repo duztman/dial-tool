@@ -20,7 +20,7 @@ export const CASE_PRESETS = [
  *  profiles (buildBezel), the dial's plate added. [{ part, pts, fill }] bottom first; a part that is off is left out. */
 export function case_section(S) {
   const sp = G.case_spans(S), R = S.dial_d / 2, out = [];
-  const z_dial = S.bz_dial_up, z0 = S.bz_seat, z1 = z0 + S.bz_h, lip = S.bz_lip, ch = S.bz_chamfer;
+  const z_dial = S.bz_dial_up, z0 = G.bezel_seat(S), z1 = z0 + S.bz_h, lip = S.bz_lip, ch = S.bz_chamfer;
   // the dial as a line (Okay, 10 Nov 2026: "just give them dial as a line and section shape"): its face, drawn as a stroke
   out.push({ part: "dial", line: true, pts: [[R - 1.5, z_dial], [R, z_dial]], fill: S.c_plate });
   if (sp.rehaut) {      // the wall leaning rh_deg from upright, rh_len long, a slab WALL thick, rising from the dial's edge
@@ -37,6 +37,9 @@ export function case_section(S) {
         const d = S.bz_teeth_depth, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
         out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: G.case_metal(S) });
       }
+    } else if (G.bezel_melted(S)) {      // one piece with the case (#599): no seat and no outer wall of its own — the body's wall runs up into the ring's, so the body's metal is drawn under it, BODY mm of it
+      const rim = r0 - S.bz_rim, BODY = 1.2;
+      out.push({ part: "bezel", pts: [[r0, -BODY], [r1, -BODY], [r1, z1], [r1 - ch, z1 + ch], [rim + 0.3, z1 + lip], [rim, z1 + lip - 0.15], [rim, z1 - 0.3], [r0, z1 - 0.3]], fill: G.case_metal(S) });
     } else {      // a plain bezel, closed over the top, sloping from the chamfer in to the crystal's rim
       const rim = r0 - S.bz_rim;
       out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim + 0.3, z1 + lip], [rim, z1 + lip - 0.15], [rim, z1 - 0.3], [r0, z1 - 0.3]], fill: G.case_metal(S) });
