@@ -1,7 +1,7 @@
 # Dial Show Case
 
 A dial from a Dial Tool link shown in a whole watch (case, crown, strap or bracelet), under a light that can come
-from any side and height, in two drawing styles, **Engineer** and **Miyazaki**, with its own PNG and PDF export.
+from any side and height, in two drawing styles, **Engineer** and **Artisan**, with its own PNG and PDF export.
 Live at <https://duztman.github.io/dial-tool/show-case/>; the app is `app/` (its README says how it is built).
 
 **Its engine is Dial Tool's own module, `web/src/watch.js`** (22 Oct 2026, build list #508): one geometry, two paints.
@@ -10,14 +10,14 @@ column into the app. Nothing here duplicates the app's code any more: this folde
 (`app/src/main.js`, `app/src/bar.js`, `app/src/extra.css`), its build, and the three dials it opens with (`src/links.txt`,
 links of the current scheme — rewrite them with `node web/links.mjs` when the scheme changes, R31).
 
-## The two styles (both accepted, 20 Oct 2026; Miyazaki "locked", 18:16)
+## The two styles (both accepted, 20 Oct 2026; Artisan "locked", 18:16)
 
 **Engineer** — a technical drawing. Every part outlined in dark ink (0.22 mm), each facet in one of
 three tones (light · body · shade) chosen by where the light comes from, a hard block shadow pushed away from the
 light, the case's shadow on the dial (a hard crescent on the light's side, longer the lower the sun), and on the
 dramatic view a blurred white arc for the flare.
 
-**Miyazaki** — no lines. Each part one base colour cut by two crescents: a dark one away from the
+**Artisan** — no lines. Each part one base colour cut by two crescents: a dark one away from the
 light and a light one toward it, drawn as even-odd cut-outs (no masks — an iPad PDF viewer drew the masks' skeletons,
 18:06). Colours a step deeper (saturation × 1.25, lightness × 0.86; greys stay grey), harsher shadows, a hard shadow of
 each bezel ring on the case and of the bezel wall on the dial, round crowns with plain knurling, and one outline round
@@ -56,12 +56,12 @@ Okay's notes of 20 Oct 2026, 20:11 (for the future):
 
 - **Flares** take a slight tint of the case metal's hue, still bright; grey metals get white flares. *(tried on the diver check, `INK`/`HB`/`POINT` env switches)*
 - **The divers' top end links are wrong; the bottom ones are right** — copy the bottom to the top.
-- **Miyazaki bracelets are never lit from directly right or left** (0° or 180°; Okay, 20:21: "banned there"); prefer higher or lower suns for bracelets in both styles.
-- **20:21, materials check 2**: ink heights up (level 6 shown: shadow 0.21 mm, highlight 0.15 mm); Miyazaki's ink relief at higher contrast (shadow 62 %, highlight 80 %); Miyazaki's dot flare with a larger core and a softer, wider glow.
+- **Artisan bracelets are never lit from directly right or left** (0° or 180°; Okay, 20:21: "banned there"); prefer higher or lower suns for bracelets in both styles.
+- **20:21, materials check 2**: ink heights up (level 6 shown: shadow 0.21 mm, highlight 0.15 mm); Artisan's ink relief at higher contrast (shadow 62 %, highlight 80 %); Artisan's dot flare with a larger core and a softer, wider glow.
 - **Bracelet ends**: nothing there now. Draw them as wrapped round a wrist: the closed bracelet's loop seen from three-quarters is a sausage, half of it below the ground; half the closed bracelet shows. Bracelets get no open (flat) views. **Parked** (20:11).
 - **Ink heights**: printed ink a hair proud of the dial — a tiny inset inner shadow on the side away from the light and a highlight on the side facing it (a highlight may be a one-pixel dot); the shadow the stronger. One value to lock (levels 1–4 shown on the diver check, `INK=1..4`: shadow 0.035 mm a step, highlight 0.025).
 - **Hand bevels** on in the previews (the app's Bevels: the hand's half on the light's side lighter, the other darker, 0.22 / 0.26); on the PDF set, on for about half, where it makes sense (`HB=1`).
-- **Miyazaki gets a point light** for the dramatic view (`POINT=1`: a 21 mm spot pushed 15 mm toward the light).
+- **Artisan gets a point light** for the dramatic view (`POINT=1`: a 21 mm spot pushed 15 mm toward the light).
 
 - **Ink thicknesses** (Okay, 19:04: "You can tackle ink thicknesses next") — the Engineer drawing's line weights.
 - **Dial Show Case** into Dial Tool (build list group K, #489): phase 2 done (watch.js); phase 3 is show mode in the app.

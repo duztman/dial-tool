@@ -20,13 +20,13 @@ export const NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", 
 const SOLID_NATO = "#2a3550";      // a solid NATO's colour to start: the regimental's navy
 /** a NATO's three stripe colours as drawn: your own (c_nato), else the pattern's, in the style's tones; a solid one's, three of one */
 export function nato_colours(S) {
-  const name = NATO_NAMES[S.w_nato], P = WATCH.presets(STYLE_NAMES[S.w_style] || "miyazaki");
+  const name = NATO_NAMES[S.w_nato], P = WATCH.presets(STYLE_NAMES[S.w_style] || "artisan");
   if (S.c_nato) return S.c_nato.map(hex);
   return name === "solid" ? [SOLID_NATO, SOLID_NATO, SOLID_NATO] : P.nato[name] || P.nato.regimental;
 }
 export const INSERTS = [["#2b2c30", "#2b2c30"], ["#1f3a6e", "#1f3a6e"], ["#1f5a3a", "#1f5a3a"], ["#23407a", "#a8262e"], ["#222326", "#22457e"], ["#222326", "#a3232b"], ["#2a2420", "#6b3f24"], ["#222326", "#2f7a3c"]];
 /** a metal's picture for its tile: a disc in its colour, lit on one side as a case is */
-export const metal_picture = (i) => { const c = WATCH.presets("miyazaki").metals[METAL_NAMES[i]] || "#9a9a9a";
+export const metal_picture = (i) => { const c = WATCH.presets("artisan").metals[METAL_NAMES[i]] || "#9a9a9a";
   return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><circle r="11" fill="${c}"/><path d="M-11 0A11 11 0 0 1 11 0A11 8 0 0 0 -11 0Z" fill="#fff" fill-opacity="0.3"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`; };
 /** an insert's picture for its tile: a ring, its top half in its first colour, its bottom half in its second */
 export const insert_picture = (i) => { const [a, b] = INSERTS[i] || INSERTS[0];
@@ -61,7 +61,7 @@ export const svg_facts = (S) => Object.assign((x) => P.part_attrs(part_record(S,
 
 /** what watch.js draws for this dial and these settings — the Show Case's `options()` */
 export function options(S, items, effects) {
-  const style = STYLE_NAMES[S.w_style] || "miyazaki", kind = G.CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
+  const style = STYLE_NAMES[S.w_style] || "artisan", kind = G.CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P = WATCH.presets(style), lit = effects;
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? G.reach_mm(S) : null), view: VIEW_NAMES[S.w_view] || "detail",
@@ -88,10 +88,10 @@ export function options(S, items, effects) {
 }
 
 const rgba = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).concat(1);
-/** Backdrop › Auto (#510): the paint's own ground (watch.js presets().floor — Engineer Stone, Miyazaki Umber), as a colour */
-export const auto_ground = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "miyazaki").floor);
+/** Backdrop › Auto (#510): the paint's own ground (watch.js presets().floor — Engineer Stone, Artisan Umber), as a colour */
+export const auto_ground = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "artisan").floor);
 /** the metal's preset colour, for the Case colour row when none of your own is set */
-export const metal_colour = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
+export const metal_colour = (S) => rgba(WATCH.presets(STYLE_NAMES[S.w_style] || "artisan").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
 
 /** Night (the Light tab's Time pill): the drawing under the night filter with its lume glowing, by the Moon's Strength and Lume decay (night.js) */
 const at_night = (S, svg) => (S.w_night ? night(svg, S.w_moon, S.w_decay, Boolean(S.ui_effects && S.sh_blur)) : svg);      // Blurs on: the halo a real blur, one small filter a shape (Okay, 19:18: "blurs on makes them glow?")

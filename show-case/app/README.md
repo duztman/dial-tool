@@ -23,7 +23,7 @@ The column on the right has four tabs:
     Case colour, and the diver's insert.
   - **Strap**: Leather or NATO; Bracelet on the diver only.
   - **Reset**: its button on the pane's line.
-- **Light**: two fixed lines on top, **Style** (Engineer · Miyazaki) and **Lighting** (Dramatic · Flat). Then four
+- **Light**: two fixed lines on top, **Style** (Engineer · Artisan) and **Lighting** (Dramatic · Flat). Then four
   panes: Sun, Shadows, Flare (Blurs and Flare ticks on one line), Glass reflection.
 - **Export**: PNG and PDF.
 
@@ -33,7 +33,7 @@ The canvas has two controls at the bottom left, stacked: the zoom pill (− + Fi
 ## Rules Okay set (keep them)
 
 - **The opener** (Okay, 21 Oct 2026, 02:40): the first dial from `show-case/src/links.txt`, Dress, Au, brown leather,
-  Detail, Miyazaki, Dramatic, the sun from 225° at 40° high, on the **Ember** gradient (#2a1a17 → #b4533a). Opening a
+  Detail, Artisan, Dramatic, the sun from 225° at 40° high, on the **Ember** gradient (#2a1a17 → #b4533a). Opening a
   link returns the background to its automatic one (from the drawing), unless the background was picked by hand.
 - **View is zoom only.** Lighting (Dramatic/Flat) is its own choice on the Light tab.
 - **Fit**:

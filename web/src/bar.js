@@ -101,6 +101,10 @@ export const BAR = {
   },
 
   set_time(t) {
+    // a time past midnight carries the day with it (Okay, 11 Nov 2026: the calendar hands "don't move with time"): the date
+    // moves on a day — or back — as a watch's date wheel does, so Date · Day · Month hands and windows follow the clock
+    const days = Math.floor(t / 86400);
+    if (days) { t -= days * 86400; this.step_day(days); }
     this.S.t = t;
     if (this.playing) this.play_from = [performance.now(), t];     // Play carries on from the new time
     this.sync_time();

@@ -619,7 +619,7 @@ ROWS.Light = [
   hdr("Light", { pin: true, headless: true }),      // the Show Case's fixed lines: Style and Lighting stay put under the tabs, no heading (Okay, 21 Oct 2026, 01:50); everything else in show mode scrolls, so the top band is small
   seg("w_night", "Time", ["Day", "Night"]),      // first (Okay, 3 Nov 2026, 01:06: "Light gets another pill selector, top: day/night. Night is lume mode"); the drawing: night.js
   num("w_decay", "Lume decay %", 0, 100, 1, { whole: true, show: (S) => S.w_night === 1 }),      // "Lume mode opens up a slider below for lume decay": 0 freshly charged, 100 gone
-  seg("w_style", "Style", ["Engineer", "Miyazaki"]),
+  seg("w_style", "Style", ["Engineer", "Artisan"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
   hdr("Sun", { folded: false, title: (S) => (S.w_night === 1 ? "Moon" : "Sun") }),      // at night the pane is the Moon's ("Sun is replaced by the "moon" below"): the same light, its own Strength
   chk("w_sun_lock", "Lock", { head: true }),      // on the Sun heading line (Okay, 2 Nov 2026, 17:24: "Sun needs a lock accessible from its first line"): drags leave the sun where it is

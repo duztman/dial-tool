@@ -39,7 +39,6 @@ export const WINDOWS = {
    *  content"). The menus are the rows' menus (menu_arrow, R34) on the bar's dark; built once, hidden. */
   date_pop_box() {
     const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const weekday = el("span", { className: "popword weekday", id: "date-pop-weekday" });
     const shown = () => new Date(G.shown_day(this.S) + "T12:00:00");
     const put = (d) => this.set_value("global", "date", `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
     // one group: its value as a word over the browser's own menu, unseen, with the boxed arrow; `set` moves the date
@@ -49,24 +48,22 @@ export const WINDOWS = {
       select.onchange = () => { const d = shown(); set(d, +select.value); put(d); this.date_pop_sync(); };
       return { select, word, el: el("span", { className: "popgroup pop-" + name }, word, menu_arrow(select)) };
     };
+    // the weekday as a menu too (Okay, 11 Nov 2026: "Weekday choosable too"): a weekday picked moves the date within its week, Monday first
+    const WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], wd = (d) => (d.getDay() + 6) % 7;
+    const weekday = group("weekday", (d, v) => d.setDate(d.getDate() + v - wd(d)));
+    WEEK.forEach((w, i) => weekday.select.append(el("option", { value: i, textContent: w })));
     const day = group("day", (d, v) => d.setDate(v));
     const month = group("month", (d, v) => { const keep = d.getDate(); d.setDate(1); d.setMonth(v); d.setDate(Math.min(keep, new Date(d.getFullYear(), v + 1, 0).getDate())); });
     const year = group("year", (d, v) => { const keep = d.getDate(), m = d.getMonth(); d.setDate(1); d.setFullYear(v); d.setDate(Math.min(keep, new Date(v, m + 1, 0).getDate())); });
     MONTHS.forEach((m, i) => month.select.append(el("option", { value: i, textContent: m })));
     const step = (sign) => el("button", { type: "button", className: "popstep", innerHTML: sign < 0 ? STEP.minus : STEP.plus, ariaLabel: sign < 0 ? "A day earlier" : "A day later", onclick: () => this.step_day(sign) });
     this.date_pop = el("div", { className: "barpop datepop", id: "date-pop", hidden: true },
-      el("div", { className: "popline" }, weekday, day.el, month.el, year.el, el("span", { className: "popsteps" }, step(-1), step(1))));
+      el("div", { className: "popline" }, weekday.el, day.el, month.el, year.el, el("span", { className: "popsteps" }, step(-1), step(1))));
     this.date_pop.onkeydown = (e) => { if (e.key === "Escape") this.date_pop_open(false); };
     this.date_pop_sync = () => {
       if (!this.date_pop || this.date_pop.hidden) return;
       const d = shown(), y = d.getFullYear(), m = d.getMonth(), last = new Date(y, m + 1, 0).getDate();
-      const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      weekday.textContent = DAYS[d.getDay()];
-      if (!weekday.style.width) {      // as wide as the widest weekday, measured in its own type, so the popup never changes size (#412: "size fixed, no movements by change in content")
-        const pen = document.createElement("canvas").getContext("2d"), c = getComputedStyle(weekday);
-        pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
-        weekday.style.width = Math.ceil(Math.max(...DAYS.map((x) => pen.measureText(x).width))) + "px";
-      }
+      weekday.word.textContent = WEEK[wd(d)]; weekday.select.value = wd(d);
       if (day.select.options.length !== last) day.select.replaceChildren(...Array.from({ length: last }, (_, i) => el("option", { value: i + 1, textContent: i + 1 })));
       if (+(year.select.options[0] || {}).value !== y - 50) year.select.replaceChildren(...Array.from({ length: 101 }, (_, i) => el("option", { value: y - 50 + i, textContent: y - 50 + i })));
       day.select.value = d.getDate(); month.select.value = m; year.select.value = y;

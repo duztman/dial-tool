@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.67 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.68 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -336,7 +336,7 @@ export const DEFAULTS = {
   bezel: 0,                                        // the case round the dial (watch.js, CASE_OF_BEZEL): the list only grows (R9). 0 dress, 1 diver, 2 field, 3 dress, 4 field, 5 emre01 — 2 and 4 were the pilot and sport sketches, 0 "no case": no watch is caseless now (Okay, 22 Oct 2026). Preview only (R26)
   // ── w_: the watch round the dial in show mode (22 Oct 2026, build list #509; R7). Kept in the settings file and the
   // session, never in a link (R31: these keys are not in LINK_KEYS). Lists only grow at their end (R9).
-  w_style: 1,            // the paint: 0 Engineer, 1 Miyazaki (watch.js). The dial side draws Engineer, flat, whatever this says
+  w_style: 1,            // the paint: 0 Engineer, 1 Artisan (watch.js). The dial side draws Engineer, flat, whatever this says
   w_lighting: 0,         // 0 dramatic (the spotlight pool and the flare), 1 flat
   w_view: 0,             // what Fit shows in show mode: 0 the detail (lug tip to lug tip), 1 the whole watch, 2 the dial as the dial side
   w_metal: 1,            // 0 steel, 1 gold, 2 aluminium, 3 bronze, 4 titanium, 5 black
@@ -352,7 +352,7 @@ export const DEFAULTS = {
   w_fl_size: 100, w_fl_tint: 45, w_fl_bright: 100,      // the flare: size %, how close to the case's colour %, brightness %
   w_glass_fat: 100, w_glass_len: 100, w_glass_op: 100,      // the shine on the glass: width %, length %, opacity %
   w_grounds: [],         // show mode's backdrops of your own (#510; Okay, 25 Oct 2026: "Adding colors or gradients by user possible, save file carries those too"): each [colour] or [first, second], colours as c_backdrop's; added at the end
-  w_ground_auto: false,  // Backdrop › Auto: the ground follows the paint's own (Engineer Stone, Miyazaki Umber; watch.js presets().floor), as the Show Case's opener did; picking any other backdrop turns it off
+  w_ground_auto: false,  // Backdrop › Auto: the ground follows the paint's own (Engineer Stone, Artisan Umber; watch.js presets().floor), as the Show Case's opener did; picking any other backdrop turns it off
   c_backdrop2: null,     // a second backdrop colour: a gradient at 45°, the backdrop's colour at the top left, this at the bottom right; null = one colour
   out_watch_px: 3000,    // the watch's PNG or PDF, pixels along its longer side
   ui_show: false,        // show mode on (the panel on the right with the show tabs, the watch round the dial)
@@ -1649,9 +1649,9 @@ export function placed(S, ring) {
 }
 /** the case's metal as a colour: a colour of your own (c_metal) or the chosen metal's preset in the chosen paint (show.js keeps
  *  the same lists). The bezel is always case material (Okay, 10 Nov 2026: "bezel is always case material for now. link and lock") */
-export const STYLE_NAMES = ["engineer", "miyazaki"], METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];      // R9: appended only
+export const STYLE_NAMES = ["engineer", "artisan"], METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];      // R9: appended only
 const hex_rgba = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).concat(1);
-export const case_metal = (S) => S.c_metal || hex_rgba(WATCH_PRESETS(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
+export const case_metal = (S) => S.c_metal || hex_rgba(WATCH_PRESETS(STYLE_NAMES[S.w_style] || "artisan").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
 /** the rehaut's shading in plan (Okay, 10 Nov 2026: "Rehault might need shadows hightilghts to sell it"): the wall leans out, so
  *  its inner face is lit where it faces the sun — the far side from the sun's clock angle — and dark under the sun; N
  *  sectors of the ring, each tinted toward white or black by REHAUT_SHADE at most, as a drawing of a turned wall is */

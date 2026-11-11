@@ -126,7 +126,7 @@ class DialTool {
         if (at && at.closest && at.closest("input, textarea, select, [contenteditable='true']")) return;
         if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
           const step = (e.shiftKey ? 3600 : 60) * (e.key === "ArrowLeft" ? -1 : 1);
-          tool.set_time(((tool.S.t + step) % 86400 + 86400) % 86400);
+          tool.set_time(tool.S.t + step);      // past midnight the day moves with it (set_time)
           e.preventDefault();
         } else if (e.key === " " && !e.repeat) {
           tool.play(!tool.playing);

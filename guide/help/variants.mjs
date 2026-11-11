@@ -142,7 +142,7 @@ const shoot = async (file, caption, set) => {
 };
 const B = { dress: 3, field: 2, diver: 1, emre01: 5 };
 for (const [k, c] of [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"], ["emre01", "Emre"]]) await shoot(`v-case-${k}`, c, { bezel: B[k], strap: 1, w_view: 0, w_style: 1, w_lighting: 0 });
-for (const [st, l, c] of [[1, 0, "Miyazaki · Dramatic"], [0, 0, "Engineer · Dramatic"], [1, 1, "Miyazaki · Flat"], [0, 1, "Engineer · Flat"]]) await shoot(`v-style-${st}${l}`, c, { bezel: 1, strap: 1, w_view: 0, w_style: st, w_lighting: l });
+for (const [st, l, c] of [[1, 0, "Artisan · Dramatic"], [0, 0, "Engineer · Dramatic"], [1, 1, "Artisan · Flat"], [0, 1, "Engineer · Flat"]]) await shoot(`v-style-${st}${l}`, c, { bezel: 1, strap: 1, w_view: 0, w_style: st, w_lighting: l });
 for (const [st, c] of [[1, "leather"], [3, "NATO"], [2, "bracelet"], [4, "links"]]) await shoot(`v-strap-${c.toLowerCase()}`, c, { bezel: 1, strap: st, w_view: 1, w_style: 1, w_lighting: 0, out_watch_px: 1200 });
 // the straps on the page: one square crop each, the same size and place, on the strap under the case (Okay, 26 Oct 2026:
 // "zoom into crops on straps, all same square crops. Click to lightbox the full images"); the whole watch stays for the lightbox.

@@ -99,13 +99,13 @@
   /* a popup on the bar (barpop): the date's (#402, #412, #432) and, on a phone, the zoom's (#445). Okay's drawing,
      final (20 Oct 2026, 01:05: "popup drawing and final decisions made in photoshop. other than tue (font rendering)
      which should be default dark interface text, all else is pixel perfect. gaps, placements within blocks, block sizes"),
-     measured from it: a light ground framed by the bar's dark; inside, 8 round and 10 before the weekday; the weekday in
-     the panel's dark type; the boxes the bar's dark, a control high, the bar's light hairline; their values white and
+     measured from it: a light ground framed by the bar's dark; inside, 8 round and 10 before the weekday's box, 8 after it; the boxes the bar's dark, a control high, the bar's light hairline; their values white and
      semibold, each cell its drawn width (day 30, month 39, year 44, ⌄ 16); 2 between boxes, 4 before − +; − and + a
      control wide each. A press on a value opens its menu; the day's word opens the system's picker */
   .bar .barpop { box-shadow: var(--shadow-pop); position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); padding-left: var(--datepop-lead); border: var(--hair) solid var(--bar); border-radius: var(--round-small); background: var(--datepop-ground); color: var(--ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; box-shadow: var(--shadow); }
   .bar .barpop .popline { display: flex; align-items: center; gap: var(--datepop-gap); height: var(--control); }
-  .bar .barpop .weekday { margin-right: calc(var(--datepop-pad) - var(--datepop-gap)); color: var(--ink); }      /* the weekday, then 8 to the day's box */
+  .bar .barpop .pop-weekday { margin-right: calc(var(--datepop-pad) - var(--datepop-gap)); }      /* the weekday's box, then 8 to the day's (Okay, 11 Nov 2026: "Weekday choosable too") */
+  .bar .barpop .pop-weekday .popword { width: var(--datepop-month); }      /* three letters, as the month's box */
   .bar .barpop .popgroup { position: relative; display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
   .bar .barpop .popgroup .popword { display: grid; place-items: center; padding: 0; color: var(--bar-ink); font-weight: 600; }
   @media (hover: hover) { .bar .barpop .popgroup:hover { background: var(--bar-field); } }

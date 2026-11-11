@@ -5,7 +5,7 @@
 // cushion, Seiko SPB143, Emre's prototype), scaled to the dial. Two paints over it, chosen by `STYLE`:
 //   engineer — a technical drawing: every part outlined in ink, each facet in one of three tones (light · body · shade)
 //              by where the light comes from, hard shadows;
-//   miyazaki — no lines: each part one base colour cut by two crescents, a dark one away from the light and a light
+//   artisan — no lines: each part one base colour cut by two crescents, a dark one away from the light and a light
 //              one toward it; deeper colours; a flare; one outline round the metal.
 // Shared by both: the shadow rule (black at one opacity, the casting shape swept along the light — sweep()), the dial
 // (Dial Tool's own shapes, with ink relief and hand bevels), the textures, the bracelets.
@@ -16,7 +16,7 @@ let PK = null;
 export function attach(pk) { PK = pk; }
 
 // ── state of one drawing: set by draw(), read everywhere ──
-let STYLE = "miyazaki";
+let STYLE = "artisan";
 let SOFT = false;      // Blurs (sh_blur, show mode): every shadow with the dial side's one soft edge (#507)
 let GLINT = "plain", INK_K = 6, INK_N = 0, HAND_BEVEL = false, FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OP = 0.3, FLARE_KIND = "arc", GRADIENTS = true, HEIGHTS = {};
 let BRACELET_KIND = "vault";      // which bracelet the diver wears: vault (Oyster) or links (Emre's)
@@ -45,7 +45,7 @@ function clampL(h) {
 }
 
 // ── colours: light · body · shade for every metal, leather and nylon, one table per style ──
-// Engineer's are the published drawing's; Miyazaki's a step deeper (saturation × 1.25, lightness × 0.86; greys stay
+// Engineer's are the published drawing's; Artisan's a step deeper (saturation × 1.25, lightness × 0.86; greys stay
 // grey; steel a step darker still), as locked on 20 Oct 2026.
 const tri = (a) => [a, a, a];
 
@@ -67,7 +67,7 @@ const TONES = {
   khaki: [["#a99a72", "#8f815e", "#76694b"], ["#4b5a3a", "#3e4b30", "#323c27"], ["#a99a72", "#8f815e", "#76694b"]],
   blackgrey: [["#3a3b3d", "#2f3032", "#252628"], ["#8e9093", "#76787b", "#5f6164"], ["#3a3b3d", "#2f3032", "#252628"]],
 } },
-  miyazaki: { INK: "#262626", INKB: null, ink: [0.62, 0.8],
+  artisan: { INK: "#262626", INKB: null, ink: [0.62, 0.8],
     METALS: { steel: ["#cfd1cd", "#8a8c88", "#6b6d6a"], gold: ["#dcc18a", "#9c8250", "#7a653d"], alu: ["#c2c6c9", "#82868a", "#676b6f"], bronze: ["#cf9d6c", "#8f6440", "#6a472c"], titanium: ["#bdbcb6", "#7f7e78", "#62615c"], black: ["#4a4b4f", "#26272a", "#17181a"] },
     LEATHER: { tan: ["#a2764f", "#83603f", "#674a30"], brown: ["#74533b", "#5c412e", "#463123"], black: ["#434243", "#323132", "#242324"] },
     NATO_SETS: { bond: [["#46506a", "#3a4459", "#30384a"], ["#8a4148", "#74343b", "#5e2a30"], ["#aeaba3", "#99968f", "#83817b"]], g10: [["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"], ["#4d596b", "#414c5d", "#363f4e"]] },
@@ -79,7 +79,7 @@ const TONES = {
   blackgrey: [["#3a3b3d", "#2f3032", "#252628"], ["#8e9093", "#76787b", "#5f6164"], ["#3a3b3d", "#2f3032", "#252628"]],
 } },
 };
-{ const T = TONES.miyazaki; T.METALS.steel.forEach((c, i) => { const [h, sat, l] = hex2hsl(c); T.METALS.steel[i] = hsl2hex([h, sat, l * 0.85]); });      // steel a step darker (18:26)
+{ const T = TONES.artisan; T.METALS.steel.forEach((c, i) => { const [h, sat, l] = hex2hsl(c); T.METALS.steel[i] = hsl2hex([h, sat, l * 0.85]); });      // steel a step darker (18:26)
   for (const tab of [T.METALS, T.LEATHER, T.NATO_SETS, T.NATO_MORE]) for (const k in tab) { const v = tab[k]; if (typeof v[0] === "string") v.forEach((c, i) => (v[i] = deepen(c))); else v.forEach((U) => U.forEach((c, i) => (U[i] = deepen(c)))); } }
 let INK, INKB, METALS, LEATHER, NATO_SETS, NATO_MORE;
 function use(style) { STYLE = style; ({ INK, INKB, METALS, LEATHER, NATO_SETS, NATO_MORE } = TONES[style]); }
@@ -162,7 +162,7 @@ const CASE_H = { dress: 0.22, field: 0.28, diver: 0.32 };
 const LOW_SUN = 20, longer = (h) => Math.tan(rad(40)) / Math.tan(rad(Math.max(LOW_SUN, h)));
 const LW = 0.22;                                         // every dark outline this wide; no line on a drawing thinner
 const strokeInk = (d, sw = LW, extra = "") => NO_LINES ? "" : `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
-const stroke = (...a) => (STYLE === "engineer" ? strokeInk(...a) : "");      // Miyazaki draws no lines
+const stroke = (...a) => (STYLE === "engineer" ? strokeInk(...a) : "");      // Artisan draws no lines
 const shape = (d, c, sw = LW, inner = null) => {
   sw = LW;
   if (NO_LINES) return c === "none" ? "" : `<path d="${d}" fill="${c}"/>`;
@@ -190,7 +190,7 @@ function sloped(r0, r1, T, L, out = 1, tilt = 1, N = 96) {
   return html + stroke(circle(r0), 0.12) + stroke(circle(r1), 0.12);
 }
 
-// ── Miyazaki's marks: a part is its outline in the body tone, cut by two crescents (no masks, even-odd cut-outs) ──
+// ── Artisan's marks: a part is its outline in the body tone, cut by two crescents (no masks, even-odd cut-outs) ──
 function blob(d, T, L, a = 0.9, b = 2.0, away = null) {      // away: a shape the light crescent stays out of
   OUTT.push(d);
   const id = "b" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
@@ -209,7 +209,7 @@ function blobOver(d, L, a = 0.9, b = 2.0) {
   const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-500 -500H500V500H-500Z${d}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
   return `<g clip-path="url(#${id}c)">${cut(u[0] * b * 1.3, u[1] * b * 1.3, "#000", 0.36)}${cut(-u[0] * a, -u[1] * a, "#fff", 0.16)}</g>`;
 }
-/** one part in the style at hand: outlined and shaded (Engineer) or a blob (Miyazaki) */
+/** one part in the style at hand: outlined and shaded (Engineer) or a blob (Artisan) */
 const part = (d, T, L, a, b) => (STYLE === "engineer" ? shape(d, T[1], LW, T[2]) : blob(d, T, L, a, b));
 const TEXTURES = (() => {
   let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -226,7 +226,7 @@ const TEXTURES = (() => {
 const glint = (r, L, w = 0.55, o = 0.6, span = 26) => {
   if (GLINT === "off") return "";
   if (GLINT !== "flare") return `<path d="M${f(Math.cos(rad(L - span)) * r)} ${f(Math.sin(rad(L - span)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span)) * r)} ${f(Math.sin(rad(L + span)) * r)}" fill="none" stroke="#fff" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
-  // the flare (Detail's bright bloom on the case's edge): Engineer a soft bow; Miyazaki a bow or a dot (a big soft bloom, a small bright core)
+  // the flare (Detail's bright bloom on the case's edge): Engineer a soft bow; Artisan a bow or a dot (a big soft bloom, a small bright core)
   if (STYLE === "engineer") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.25)) * r)} ${f(Math.sin(rad(L - span * 1.25)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.25)) * r)} ${f(Math.sin(rad(L + span * 1.25)) * r)}" fill="none" stroke="${FLARE_TINT}" stroke-opacity="${f(Math.min(1, o * 0.45 * FLARE_SCALE * FL.bright))}" stroke-width="${f(w * 5 * FL.size)}" stroke-linecap="round"/>`;
   const x = Math.cos(rad(L)) * r, y = Math.sin(rad(L)) * r;
   if (FLARE_KIND === "arc") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.6)) * r)} ${f(Math.sin(rad(L - span * 1.6)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.6)) * r)} ${f(Math.sin(rad(L + span * 1.6)) * r)}" fill="none" stroke="${FLARE_TINT}" stroke-opacity="${f(Math.min(1, o * 0.9 * FL.bright))}" stroke-width="${f(w * 3.5 * FL.size)}" stroke-linecap="round"/>`;
@@ -358,7 +358,7 @@ function caseEngineer(C, v, L) {
     out.push(stroke(P(i), 0.12), stroke(P(o), 0.2));
   } else out.push(C.insert ? `<path d="${circle(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>` : "", shape(C.insert ? notchedPath(R, C.insert.coin, 0.5) : circle(R), T[1], 0.2, T[2]));      // the divots show dark metal (18:26)
   for (const [r1, r0, dir, tilt] of C.bands) out.push(sloped(r0, r1, T, L, dir, tilt));
-  if (C.insert) {      // the dive bezel, drawn as Miyazaki's (Okay, 23 Oct 2026: "Miyazaki's"): the toothed rim, each tooth lit by the way it faces, straight in to the insert; the insert out to its own edge; the five-minute ticks and the triangle
+  if (C.insert) {      // the dive bezel, drawn as Artisan's (Okay, 23 Oct 2026: "Artisan's"): the toothed rim, each tooth lit by the way it faces, straight in to the insert; the insert out to its own edge; the five-minute ticks and the triangle
     const I = C.insert, ro = I.od / 2 - 0.9;
     { const id = "nc" + clipN++; CLIPS.push(`<clipPath id="${id}"><path d="${notchedPath(R, I.coin, 0.5)}"/></clipPath>`);
       out.push(`<g clip-path="url(#${id})">` + teeth(R, I.coin, 0.5).map((t) => `<path d="${t.d}" fill="${tone(T, t.phi, 0.9, L)}"/>`).join("") + `</g>`); }
@@ -387,7 +387,7 @@ function caseEngineer(C, v, L) {
   out.push(stroke(circle(C.opening), 0.2));
   return out.join("");
 }
-function caseMiyazaki(C, v, L) {
+function caseArtisan(C, v, L) {
   FLARE_TINT = flareColour(C.metal);
   const R = C.cushion ? C.cushion.a : C.od / 2, T = C.metal, out = [];
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C.cushion ? cushionLug(C, sx, sy) : lugPath(C, sx, sy), T, L, 0.5, 1.0, C.cushion || C.rails ? null : circle(R + 0.6)));      // a lug's light edge stops short of the case: at the join it peeked out as a sliver (Okay, 23 Oct 2026: "this tiny unnecessary shine")
@@ -439,7 +439,7 @@ function caseMiyazaki(C, v, L) {
   out.push(`<path d="M${f(Math.cos(rad(a - 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 35 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 35 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, 0.5 * GLASS.op))}" stroke-width="${f(1.6 * GLASS_K * GLASS.fat)}" stroke-linecap="round"/>`);
   return out.join("");
 }
-const caseSVG = (C, v, L) => (STYLE === "engineer" ? caseEngineer(C, v, L) : caseMiyazaki(C, v, L));
+const caseSVG = (C, v, L) => (STYLE === "engineer" ? caseEngineer(C, v, L) : caseArtisan(C, v, L));
 
 // ── straps ──
 function leatherPiece(y0, y1, w0, w1, T, L, tip = 0, holes = []) {
@@ -523,7 +523,7 @@ function natoEngineer(C, L, set, open, span) {
   for (let y = half + 165 - 25; y > half + 100; y -= 7) h += `<ellipse cx="0" cy="${f(y)}" rx="0.85" ry="0.65" fill="${INK}" fill-opacity="0.75"/>`;
   return h;
 }
-function natoMiyazaki(C, L, set, open, span) {
+function natoArtisan(C, L, set, open, span) {
   const S = NATO_SETS[set] || NATO_MORE[set], w = C.lugw - 0.3, x0 = -w / 2, half = C.l2l / 2;
   const stripes = STRIPES[set] || [[0, 1, 0]];
   const y0 = open ? -(half + 70) : -span, y1 = open ? half + 165 : span, band = rrect(x0, y0, -x0, y1, 1.2);
@@ -535,7 +535,7 @@ function natoMiyazaki(C, L, set, open, span) {
   else { const B = buckle(y0 + 1, w, C.metal, L); h += B.frame + B.tongue + keeper(-(half + 58), w, C.metal, L, 3.6) + keeper(half + 12, w, C.metal, L, 3.6) + keeper(half + 87, w, C.metal, L, 3.6); for (let y = y1 - 25, n = 0; n < 9; y -= 7, n++) h += `<circle cx="0" cy="${f(y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`; }
   return h;
 }
-const natoSVG = (...a) => (STYLE === "engineer" ? natoEngineer(...a) : natoMiyazaki(...a));
+const natoSVG = (...a) => (STYLE === "engineer" ? natoEngineer(...a) : natoArtisan(...a));
 
 // ── bracelets: rows of vaulted links in hard bands (the diver's Oyster type) or Emre's H-links ──
 function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
@@ -559,7 +559,7 @@ function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   s += `<g fill="${ramp[0]}">${vx(!litL)}${hz(!litT)}</g><g fill="${ramp[ramp.length - 1]}">${vx(litL)}${hz(litT)}</g>`;
   return s + `</g>`;
 }
-function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
+function barrelArtisan(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   // a steep vault in hard bands (17:40): the curve over the wrist cut into 7 strips, each strip one of the ramp's six
   // tones for how much it faces the light — no gradients, a blocky palette; then an L of light on the two edges that
   // face the light and a reverse L of dark on the other two, like a bevel
@@ -577,7 +577,7 @@ function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   s += `<g fill="${ramp[0]}">${vx(!litL)}${hz(!litT)}</g><g fill="${ramp[ramp.length - 1]}">${vx(litL)}${hz(litT)}</g>`;
   return s + `</g>`;
 }
-const barrel = (...a) => (STYLE === "engineer" ? barrelEngineer(...a) : barrelMiyazaki(...a));
+const barrel = (...a) => (STYLE === "engineer" ? barrelEngineer(...a) : barrelArtisan(...a));
 function vaultEngineer({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
   const lv0 = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
   const pitch = 6.4, out = [];
@@ -607,7 +607,7 @@ function vaultEngineer({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, r
   }
   return out.join("");
 }
-function vaultMiyazaki({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
+function vaultArtisan({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, deep = false, endShape = null, wrap = FLAT_WRAP }) {
   const lv0 = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
   const pitch = 6.4, out = [];
   for (let k = 0, y = y0; y + pitch <= span + 0.01; k++, y += pitch) {
@@ -631,7 +631,7 @@ function vaultMiyazaki({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, r
   }
   return out.join("");
 }
-const vaultBracelet = (o) => (STYLE === "engineer" ? vaultEngineer(o) : vaultMiyazaki(o));
+const vaultBracelet = (o) => (STYLE === "engineer" ? vaultEngineer(o) : vaultArtisan(o));
 function linksBracelet({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22, wrap = FLAT_WRAP }) {
   const lv0 = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
   const h = 4.4, g = 0.15, mid = W * 0.46, out = [`<rect x="${f(-W / 2 + 0.3)}" y="${f(Math.min(sy * wrap.map(y0), sy * wrap.map(span)))}" width="${f(W - 0.6)}" height="${f(Math.abs(wrap.map(span) - wrap.map(y0)))}" fill="${ramp[0]}"/>`];      // the pins and the dark between the barrels: no floor shows through
@@ -764,7 +764,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
 
-${strapSVG}${strap === "bracelet" ? "" : contact(C, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
+${strapSVG}${strap === "bracelet" ? "" : contact(C, L, strap, span, STYLE === "artisan")}${caseStr}${STYLE === "artisan" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
 </svg>`;
 }
 
@@ -783,10 +783,10 @@ export function frame(o) {
   NO_LINES = false; INSERT = was; DIAL_IN = true; use("engineer");
   return `<g transform="scale(1 -1)"><defs>${CLIPS.join("")}</defs>${body}</g>`;
 }
-/** the case, lugs and crown as one shape: the edge of every part of the case joined (Miyazaki's painter keeps each part's
+/** the case, lugs and crown as one shape: the edge of every part of the case joined (Artisan's painter keeps each part's
  *  outline, blob), drawn without its dial, glass or flare; SVG path data in the drawing's space (mm, y down) */
 function silhouetteOf(key, size) {
-  use("miyazaki"); DIAL_IN = false; GLINT = "off"; OUTLINE_ON = false;
+  use("artisan"); DIAL_IN = false; GLINT = "off"; OUTLINE_ON = false;
   const kind = key in CASES ? key : "dress";
   METALS.custom = METALS.steel; LEATHER.custom = LEATHER.brown;
   sheet(kind, "leather-custom", "own", 225, true, 40, "live", "custom", size);
@@ -819,7 +819,7 @@ export const fullBox = (kind = null, size = 1, bracelet = false) => {
 };
 const STYLES = {
   engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
-  miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` },
+  artisan: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` },
 };
 const hsl = (h, k) => { const [hh, s, l] = hex2hsl(h); return hsl2hex([hh, s, Math.min(0.97, l * k)]); };
 const tones = (h, [up, down]) => [hsl(h, up), h, hsl(h, down)];
@@ -842,7 +842,7 @@ const live_case = (C) => (LIVE ? Object.assign(C, { opening: LIVE.outer, dial: L
 export const caseBox = (key, size) => { const C = scaleCase(CASES[key], size); return { h: C.l2l, w: (C.cushion ? 2 * C.cushion.a : C.rails ? Math.max(C.od, C.lugw + 2 * C.lugT) : C.od) + 2 * C.crown.h, dial: C.dial }; };
 export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 export function draw(o) {
-  use(o.style || "miyazaki"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
+  use(o.style || "artisan"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
   LIVE = o.case ? { outer: o.case.outer, dial: o.d } : null;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
   SOFT = Boolean(o.blurs); GRADIENTS = o.gradients !== false; HEIGHTS = o.heights || {}; HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;

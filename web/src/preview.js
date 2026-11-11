@@ -428,7 +428,10 @@ export const PREVIEW = {
     try {
       if (this.playing) {
         const [wall, t] = this.play_from;
-        this.S.t = (t + (performance.now() - wall) / 1000 * this.speed) % 86400;
+        let now = t + (performance.now() - wall) / 1000 * this.speed;
+        const days = Math.floor(now / 86400);      // Play past midnight moves the day on (set_time's rule): the calendar hands turn with it
+        if (days) { now -= days * 86400; this.play_from = [performance.now(), now]; this.step_day(days); }
+        this.S.t = now;
         this.sync_time();
         this.pulse(this.S.t, performance.now() / 1000);
         this.render();

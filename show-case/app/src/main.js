@@ -1,9 +1,9 @@
 // Dial Show Case — a dial from Dial Tool put in a whole watch, under a light, in one of two drawing styles
-// (Engineer · Miyazaki); its colours changed; time run with Dial Tool's bar; saved as PNG or PDF.
+// (Engineer · Artisan); its colours changed; time run with Dial Tool's bar; saved as PNG or PDF.
 //
 // How it fits together:
 //   a link  → Dial Tool's own engine (geometry.js) opens it and draws the dial's shapes, as on Dial Tool's preview
-//   shapes  → the cases-and-straps engine (engineer.js / miyazaki.js) draws the watch round them, as one SVG
+//   shapes  → the cases-and-straps engine (engineer.js / artisan.js) draws the watch round them, as one SVG
 //   time    → the hands are turned in place each frame; the watch is drawn again only when something else changes
 import PathKitInit from "pathkit-wasm/bin/pathkit.js";
 import * as HarfBuzz from "harfbuzzjs";
@@ -22,7 +22,7 @@ const FONT_BASE = "__FONT_BASE__";
 const S = { t: 10 * 3600 + 10 * 60, date: "" };
 const metal_strap = () => W.strap === "bracelet" || W.strap === "links";      // a bracelet of the case's metal
 const W = {
-  style: "miyazaki", key: "dress", size: 1, strap: "leather", nato: "regimental", view: "detail", flare: "arc",
+  style: "artisan", key: "dress", size: 1, strap: "leather", nato: "regimental", view: "detail", flare: "arc",
   metal_preset: "gold", metal: null, leather_preset: "brown", leather: null, nato_colours: null,
   floor: "#2a1a17", floor2: "#b4533a",      // the ground: one colour, or two for a gradient at 45°. The opener stands on Ember (Okay, 21 Oct 2026, 02:40)
   ground_set: false,      // the background chosen by hand: then an opened link keeps it; otherwise it goes back to its own (null)
@@ -531,10 +531,10 @@ function panel() {
 
   // the flare: Detail's bright bloom on the case's edge. Blurs off is the flat version: no blur anywhere, so no flare.
   const flare_shown = () => W.blurs && W.flare_on;
-  const flare = pane("Flare", true, () => (!W.blurs ? "blurs off" : !W.flare_on ? "off" : `${W.style === "miyazaki" ? W.flare + " · " : ""}${Math.round(W.fl.size * 100)} %`));
+  const flare = pane("Flare", true, () => (!W.blurs ? "blurs off" : !W.flare_on ? "off" : `${W.style === "artisan" ? W.flare + " · " : ""}${Math.round(W.fl.size * 100)} %`));
   flare.body.append(
     chk_pair(["Blurs", () => W.blurs, (v) => { W.blurs = v; }], ["Flare", () => W.flare_on, (v) => { W.flare_on = v; }, () => W.blurs]),
-    seg("Kind", [["arc", "Arc"], ["dot", "Dot"]], () => W.flare, (v) => { W.flare = v; }, () => flare_shown() && W.style === "miyazaki"),
+    seg("Kind", [["arc", "Arc"], ["dot", "Dot"]], () => W.flare, (v) => { W.flare = v; }, () => flare_shown() && W.style === "artisan"),
     pct("Size %", 20, 300, () => W.fl, "size", flare_shown),
     pct("Case colour %", 0, 100, () => W.fl, "tint", flare_shown),
     pct("Brightness %", 0, 300, () => W.fl, "bright", flare_shown),
@@ -560,7 +560,7 @@ function panel() {
   const title = el("div", { className: "title" }, name, el("span", { className: "quiet", textContent: VERSION }), el("a", { className: "quiet help", href: "https://duztman.github.io/dial-tool/guide/", target: "_blank", rel: "noopener", textContent: "Help" }));
   // tabs at the top, as Dial Tool's (01:07): Dial · Watch · Light (the sun, shadows, flare, glass) · Export
   // the Light tab's persistent line: the drawing's Style, kept above the panes as they scroll (01:43)
-  const style_line = el("div", { className: "pinline" }, seg("Style", [["engineer", "Engineer"], ["miyazaki", "Miyazaki"]], () => W.style, (v) => { W.style = v; }),
+  const style_line = el("div", { className: "pinline" }, seg("Style", [["engineer", "Engineer"], ["artisan", "Artisan"]], () => W.style, (v) => { W.style = v; }),
     seg("Lighting", [["dramatic", "Dramatic"], ["flat", "Flat"]], () => W.lighting, (v) => { W.lighting = v; }));
   const TABS = [["Dial", [dial]], ["Watch", [watch, strap, reset]], ["Light", [light, shade, flare, glass]], ["Export", [out]]];
   const tabs = el("nav", { className: "tabs" });

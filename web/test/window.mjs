@@ -2633,6 +2633,8 @@ await shot("10-bar");
   await page.selectOption("#date-pop-day", "3"); await frame();
   await page.selectOption("#date-pop-year", "2031"); await frame();
   const picked = [await S("S.date"), (await look()).words];
+  await page.selectOption("#date-pop-weekday", "4"); await frame();      // Friday of that week (Okay, 11 Nov 2026: "Weekday choosable too")
+  const friday = [await S("S.date"), (await look()).words];
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "date", "2026-05-31"); t.date_pop_sync(); });
   await page.selectOption("#date-pop-month", "1"); await frame();      // 31 May to February: the month's last day
   const clamped = await S("S.date");
@@ -2642,11 +2644,26 @@ await shot("10-bar");
   await page.mouse.click(700, 300); await frame();      // a press elsewhere puts it away
   const away = await page.evaluate(() => document.querySelector("#date-pop").hidden);
   await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "date", v[0]); t.set_time(v[1]); }, was);
-  check(open.shown && open.words === "Mon 19 Oct 2026 " && open.over && open.face && open.lines === 1 && open.steps === 2 && open.menus === "date-pop-day date-pop-month date-pop-year" && open.centred
+  check(open.shown && open.words === "Mon 19 Oct 2026 " && open.over && open.face && open.lines === 1 && open.steps === 2 && open.menus === "date-pop-weekday date-pop-day date-pop-month date-pop-year" && friday[0] === "2031-02-07" && friday[1] === "Fri 7 Feb 2031 " && open.centred
     && later.words === "Tue 20 Oct 2026 " && picked[0] === "2031-02-03" && picked[1] === "Mon 3 Feb 2031 " && clamped === "2026-02-28" && wide.w === open.w && wide.h === open.h && away,
-    `the bar's date opens its popup over the box, in the panel's type at its size (Okay, 23:46: "remove barlow"): one line, no time — the weekday, then day · month · year as menus, then − and + together (${open.words}| ${open.menus}); + a day (${later.words}); the menus pick a day (${picked.join(" · ")}), a short month keeps the date in it (${clamped}); its size the same whatever the date reads (${open.w}×${open.h}, ${wide.w}×${wide.h}); a press elsewhere closes it (${away})`);
+    `the bar's date opens its popup over the box, in the panel's type at its size (Okay, 23:46: "remove barlow"): one line, no time — the weekday, then day · month · year as menus, then − and + together (${open.words}| ${open.menus}); + a day (${later.words}); the menus pick a day (${picked.join(" · ")}), a short month keeps the date in it (${clamped}); the weekday a menu too, Friday of that week (${friday.join(" · ")}); its size the same whatever the date reads (${open.w}×${open.h}, ${wide.w}×${wide.h}); a press elsewhere closes it (${away})`);
 }
 
+{ // the calendar hands move with time (Okay, 11 Nov 2026: "They don't move with time"): the clock past midnight moves the day on — a step, a key, Play
+  const was = await page.evaluate(() => JSON.stringify([window.dial_tool.S.date, window.dial_tool.S.t]));
+  const r = await page.evaluate(async () => { const t = window.dial_tool, S = t.S, out = [];
+    t.set_value("global", "date", "2026-11-11"); t.set_time(86400 - 60);
+    const A = () => t.items.filter((x) => x.role === "hand" && x.name === "date")[0]?.angle;
+    S.ha_date.added = true; S.ha_date.on = true; t.render(); await new Promise((f) => requestAnimationFrame(() => requestAnimationFrame(f)));
+    out.push(S.date, A());
+    t.set_time(S.t + 120); out.push(S.date, Math.round(S.t)); await new Promise((f) => requestAnimationFrame(() => requestAnimationFrame(f))); out.push(A());
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", shiftKey: true })); out.push(S.date, Math.round(S.t));
+    t.speed = 720; t.set_time(86400 - 2); t.play(true); await new Promise((f) => setTimeout(f, 400)); t.play(false); out.push(S.date, S.t < 86400);
+    S.ha_date.added = false; S.ha_date.on = false; t.speed = 1; t.render(); return out; });
+  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "date", v[0]); t.set_time(v[1]); }, was);
+  check(r[0] === "2026-11-11" && r[2] === "2026-11-12" && r[3] === 60 && Math.abs(r[4] - 11 / 31 * 360) < 1e-6 && Math.abs(r[1] - 10 / 31 * 360) < 1e-6 && r[5] === "2026-11-11" && r[6] === 82860 && r[7] === "2026-11-12" && r[8],
+    `"They don't move with time": two minutes past 23:59 the date is the 12th and the Date hand jumps a place (${r[1].toFixed(1)}° → ${r[4].toFixed(1)}°); ⇧← back over midnight the 11th again (${r[5]}, ${r[6]} s); Play at 720× past midnight the 12th (${r[7]})`);
+}
 { // show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in … Only the colors of the dial is editable here"; "Showcase has no caseless watches"; "Cases snap to dials")
   const q = () => page.evaluate(() => { const t = window.dial_tool, app = document.querySelector("#app"), panel = document.querySelector(".panel"), main = document.querySelector("main");
     return { on: Boolean(t.S.ui_show), showing: app.classList.contains("showing"), away: app.classList.contains("away"), section: t.S.ui_section, tabs: [...document.querySelectorAll(".tabs button")].filter((b) => !b.hidden).map((b) => b.dataset.tab).join(" "),
@@ -3136,7 +3153,7 @@ await shot("10-bar");
     t.date_pop_open(false); t.set_value("global", "sh_bevel", was[0]); S.ui_section = was[1]; t.show_section(); t.sync_rows();
     return { mids, gaps, bar: +(n.left - d.right).toFixed(2) };
   });
-  check(r.mids.length === 1 && r.mids.every((m) => m < 1.5) && r.gaps.join(" ") === "2 2 4", `the Show box's tick on its word's middle (Show alone: Okay, 2 Nov 2026, 22:09) (${r.mids.map((m) => m.toFixed(1)).join(" ")}); the date popup's gaps as Okay drew them, 2 between boxes, 4 before − + (${r.gaps.join(" ")}; 20 Oct 2026, 01:05)`);
+  check(r.mids.length === 1 && r.mids.every((m) => m < 1.5) && r.gaps.join(" ") === "8 2 2 4", `the Show box's tick on its word's middle (Show alone: Okay, 2 Nov 2026, 22:09) (${r.mids.map((m) => m.toFixed(1)).join(" ")}); the date popup's gaps as Okay drew them, 8 after the weekday's box, 2 between boxes, 4 before − + (${r.gaps.join(" ")}; 20 Oct 2026, 01:05; 11 Nov 2026)`);
 }
 { // what stays put ends on the thick line on every tab (Okay, 15 Oct 2026, 06:20)
   const ends = [];
