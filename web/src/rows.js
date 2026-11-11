@@ -577,6 +577,12 @@ ROWS["Show dial"] = [
   // Colours by what a part is, Inks by what a printer sees, Hands with their heights; a swatch in any of them is the
   // same colour ("All colors editable … via different places, through inks and colors"; "colors also editable on hands
   // pane everywhere")
+  // the plate itself, as the Base tab's (#601; Okay, 11 Nov 2026: "Dial itself, material color etc. if showcase 2d does not have this, add there"):
+  // the same three settings, shown here too — its Material, its Paint (No colour leaves the metal bare), a bare plate's Finish
+  hdr("Material", { id: "show-material-head" }),
+  seg("material", "Material", G.PLATE_METALS, { id: "show-material", free: true }),      // free pills: four words are wider than the column
+  col("c_plate", "Paint", { none: "paint", id: "show-paint" }),
+  seg("engrave", "Finish", G.FINISHES, { id: "show-engrave", show: (S) => S.paint === false }),
   hdr("Colours", { summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
   hdr("Inks", { folded: false }),
@@ -694,26 +700,32 @@ ROWS.Dial = [
     hdr("Bezel", { headless: true }),
     chk("bz_on", "Bezel", {}),      // starts flat (G.BEZEL_START, set in app.js set_value)
     custom("case_preset", { show: (T, S) => S.bz_on }),
-    seg("bz_kind", "Kind", G.BEZEL_KINDS, { show: (T, S) => S.bz_on }),
-    seg("bz_marks", "Markings", G.BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    chk("bz_melt", "Melt into case", { show: (T, S) => S.bz_on && G.BEZEL_KINDS[S.bz_kind] === "Fixed" }),      // #599: one piece with the body; a rotating ring is a part of its own (R16)
-    seg("bz_engrave", "Finish", G.FINISHES, { show: (T, S) => G.bezel_marks_on_metal(S) }),      // markings on the metal painted on or cut in (Okay, 11 Nov 2026)      // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
+    // THE BEZEL'S ROWS, in one order and by one set of names here and in Show Case 3D (Okay, 12 Nov 2026: "sync names and setting all
+    // places"): Kind · Markings · Melt · Finish, then the ring — Width · Height · Chamfer — its insert, its coin edge, then the
+    // heights round it. What a state rules out is not offered (R16): a melted bezel has no markings' choice, insert, coin edge or
+    // seat; a bezel with a coin edge is not offered Melt ("Teethed bezels cant melt melted bezels cant teeth")
+    seg("bz_kind", "Kind", G.BEZEL_KINDS, { show: (T, S) => S.bz_on && !G.bezel_melted(S) }),
+    seg("bz_marks", "Markings", G.BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 && !G.bezel_melted(S) }),
+    chk("bz_melt", "Melt into case", { show: (T, S) => S.bz_on && (G.bezel_melted(S) || !G.bezel_coin(S)) }),      // #599: one piece with the body, the case's own metal
+    seg("bz_engrave", "Finish", G.FINISHES, { show: (T, S) => G.bezel_marks_on_metal(S) }),      // markings on the metal painted on or cut in (Okay, 11 Nov 2026)
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
+    num("bz_h", "Height", 0.3, 6, 0.05, { ...CS, show: (T, S) => S.bz_on }),      // the ring's own height over its seat (Okay, 12 Nov 2026: "i could not find a bezel height")
     num("bz_chamfer", "Chamfer", 0, 2, 0.05, { ...CS, show: (T, S) => S.bz_on }),
-    num("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
-    num("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
-    col("bz_insert_c", "Insert", { ...CS, show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
-    hdr("Coin edge", { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num("bz_teeth_n", "Scallops", 12, 180, 1, { whole: true, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num("bz_teeth_depth", "Depth", 0, 2, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num("bz_teeth_fill", "Fill", 0.1, 0.95, 0.01, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num("bz_teeth_chamfer", "Chamfer", 0, 1, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => G.bezel_insert(S) }),
+    num("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => G.bezel_insert(S) }),
+    col("bz_insert_c", "Insert", { ...CS, show: (T, S) => G.bezel_insert(S) }),
+    // the coin edge, a tick that brings its numbers in (Okay, 11 Nov 2026: "toothles bezel is an option teeth on brings in the sliders"):
+    // ticked, the depth starts at COIN_DEPTH; unticked, it is 0 — the depth is the one setting, the tick its reading
+    chk("bz_teeth_depth", "Coin edge", { id: "global-bz-coin", show: (T, S) => S.bz_on && S.bz_kind === 0 && !G.bezel_melted(S), get: (S) => G.bezel_coin(S) > 0, put: (tool, v) => tool.set_value("global", "bz_teeth_depth", v ? G.COIN_DEPTH : 0) }),
+    num("bz_teeth_n", "Scallops", 12, 180, 1, { whole: true, show: (T, S) => G.bezel_coin(S) > 0 }),
+    num("bz_teeth_depth", "Depth", 0.05, 2, 0.05, { show: (T, S) => G.bezel_coin(S) > 0 }),
+    num("bz_teeth_fill", "Fill", 0.1, 0.95, 0.01, { show: (T, S) => G.bezel_coin(S) > 0 }),
+    num("bz_teeth_chamfer", "Chamfer", 0, 1, 0.05, { show: (T, S) => G.bezel_coin(S) > 0 }),
     hdr("Heights", { folded: true, show: (T, S) => S.bz_on }),
     info("Seen in the section and in show mode, not in the plan.", { show: (T, S) => S.bz_on }),
     num("bz_dial_up", "Dial over band", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
     num("bz_seat", "Seat", 0, 2, 0.05, { show: (T, S) => S.bz_on && !G.bezel_melted(S) }),      // a melted bezel has no seat (R16)
-    num("bz_h", "Ring height", 0.3, 6, 0.05, { show: (T, S) => S.bz_on }),
     num("bz_lip", "Lip", 0, 2, 0.05, { show: (T, S) => S.bz_on }),
     num("bz_rim", "Crystal rim", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
     num("bz_up", "Crystal up", 0, 3, 0.05, { show: (T, S) => S.bz_on }),

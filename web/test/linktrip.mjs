@@ -131,12 +131,25 @@ check(G.link_kind("#1.fZLRjtsgEEV_~x")?.scheme === 1 && G.link_kind("0.abc")?.sc
 // a melted bezel travels (#599); a watch link from Show Case 3D opens as its dial (#600)
 {
   const S = G.fresh_settings({ bz_on: true, bz_kind: 1, bz_melt: true }), l = link(S), back = G.fresh_settings(read(l));
-  const turning = G.fresh_settings({ bz_on: true, bz_kind: 0, bz_melt: true });
-  check(back.bz_melt === true && G.bezel_melted(back) && G.bezel_seat(back) === 0 && !G.bezel_melted(turning) && G.bezel_seat(turning) === turning.bz_seat && !G.bezel_melted(G.fresh_settings({})),
-    'a melted bezel in a link, there and back: one piece, no seat; a rotating ring does not melt; off to start (Okay: "a bezel that melts into the case, seemlessly, on off style")');
+  const turning = G.fresh_settings({ bz_on: true, bz_kind: 0, bz_teeth_depth: 0.5 }), both = G.fresh_settings({ bz_on: true, bz_kind: 0, bz_teeth_depth: 0.5, bz_melt: true });
+  check(back.bz_melt === true && G.bezel_melted(back) && G.bezel_seat(back) === 0 && !G.bezel_melted(G.fresh_settings({}))
+    && G.bezel_coin(turning) === 0.5 && G.bezel_insert(turning) && G.bezel_coin(both) === 0 && !G.bezel_insert(both) && G.bezel_marks_on_metal(both) && G.case_spans(both).outer === G.case_spans(both).bezel[1],
+    'a melted bezel in a link, there and back: one piece, no seat; melted, a rotating bezel has no coin edge and no insert, its markings on the metal (Okay: "Teethed bezels cant melt melted bezels cant teeth. Melted bezel loses inset ring")');
   const watch = l + G.WATCH_MARK + "eJyrVipTsjLUUSpWsqpWSs7PS0lMUbIy0FFKL0rMS1ayMqoFAJ0RCZ8_-x", again = read(watch);
   check(G.link_tail(watch) === "eJyrVipTsjLUUSpWsqpWSs7PS0lMUbIy0FFKL0rMS1ayMqoFAJ0RCZ8_-x" && G.link_dial(watch) === l && again && differences(S, G.fresh_settings(again)).length === 0 && G.link_tail(l) === "" && G.link_kind(G.WATCH_MARK + "abc") === null,
     'a watch link (the dial\'s link, ".3d.", Show Case 3D\'s settings) reads as its dial; the tail is handed over whole; a tail alone is no dial (Okay: "I need a way to keep showc 3ds edited watches")');
+}
+
+// an ink made as an applied part (#602): taller than a print, shown in its metal, said in the part's record; never in a link (show mode's, R31)
+{
+  const { part_record } = await import("../src/show.js");
+  const S = G.fresh_settings({ rings: [{ kind: "numerals", c: [1, 0, 0, 1], stroke: 1, stroke_w: 0.2, stroke_c: [0, 0, 1, 1] }] });
+  S.w_inks = { "#FF0000": { h: 1.2, ap: true, mat: 1, edge: 2 }, "#0000FF": { h: 1.2 } };
+  const fill = { role: "ring", fill: [1, 0, 0, 1], ring: { ring: S.rings[0] } }, line = { role: "ring stroke", fill: [0, 0, 1, 1], ring: { ring: S.rings[0] } };
+  const rec = part_record(S, { ...fill, path: { svg: () => "" } }), printed = part_record(S, { ...line, path: { svg: () => "" } });
+  check(G.ink_mm(S, fill) === 1.2 && G.ink_mm(S, line) === G.INK_MOST && G.ink_shown(S, fill) === G.INK_MATERIAL_COLOURS[1] && G.ink_shown(S, line) === line.fill
+    && rec.make === "applied" && rec.height === 1.2 && rec.edge === "round" && rec.material === "brass" && printed.make === "printed" && !("w_inks" in G.lean(S)),
+    `an ink made Applied stands ${G.ink_mm(S, fill)} mm (a print stops at ${G.ink_mm(S, line)}), shows in its metal and says so in its record (${rec.make} · ${rec.material} · ${rec.edge}); its stroke, another ink, stays a print (Okay: "the outline to be brass but inside fill of the numbers stay in as flat")`);
 }
 
 // the key table: every key of the settings has a code, and the table only grows (its first 156 keys stay as they are)

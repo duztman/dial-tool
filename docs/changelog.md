@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## v1.1.81 beta · 12 Nov 2026 — the bezel's rows in one order; teeth or melt; inks as applied parts; the plate in show mode
+
+Okay, 12 Nov 2026, 00:21: "Teethed bezels cant melt melted bezels cant teeth. Melted bezel loses inset ring if there is one. It is one and same with case material. The last bits i asked for that went to the build list, do them immediately. Also on dial tool i could not find a bezel height (called ring height on sc3d) sync names and setting all places."
+
+- **The bezel's rows** (`rows.js`), the same names and order as Show Case 3D's Bezel pane: Kind · Markings · Melt into case · Finish, then **Width · Height · Chamfer** (Height was Ring height, folded away under Heights), Insert in · out · Insert, **Coin edge** (a tick) with Scallops · Depth · Fill · Chamfer, then Heights: Dial over band · Seat · Lip · Crystal rim · Crystal up · Dome.
+- **Coin edge is a tick** that brings its four numbers in: ticked, the depth starts at 0.5 mm; unticked, it is 0. No new setting: the depth is the setting, the tick its reading.
+- **Teeth or melt, never both** (`geometry.js`: `bezel_melted`, `bezel_coin`, `bezel_insert` — the three states, read there and nowhere else): a bezel with a coin edge is not offered Melt; a melted bezel is offered no Kind, Markings, insert, Coin edge or Seat, and is the case's metal. The plan, the section, show mode and the file for 3D all read the three.
+- **Inks as applied parts** (#602; show mode → Dial → Inks): under each ink's parts, **Made** Printed · Applied. Applied: the ink may stand up to 2 mm (a print stops at 0.5), with **Material** Colour · Brass · Bronze · Steel · Silver · Gold · Lume and **Edge** Sharp · Chamfer · Round. A metal shows in the metal's colour; the taller part throws the longer shadow. A ring's stroke is an ink of its own colour, so an outline and its fill are made apart. In `w_inks` (`ap`, `mat`, `edge`): the file and the session, not a link (R31). The saved SVG says `applied`, its height, edge and material for Show Case 3D.
+- **The plate in show mode** (#601): Material, Paint and a bare plate's Finish head show mode's Dial tab — the Base tab's own three settings, in both places.
+- **Tests**: `linktrip.mjs` — the three bezel states; an applied ink's height, colour and record. `window.mjs` — Height under Width, Coin edge and Melt ruling each other out; show mode's Material pane, an ink made Applied.
+- Not drawn in 2D: an applied part's edge (the 3D page's to show); Lume as a material looks as its colour by day.
+
 ## v1.1.80 beta · 11 Nov 2026 — a bezel that melts into the case; a watch link opens its dial
 
 Okay, 11 Nov 2026, 22:24: "I also need a bezel that melts into the case, seemlessly, on off style … I need a way to keep showc 3ds edited watches." — chosen 22:50: "No step, one piece", "Dial Tool, Bezel tab", "A link". 23:02: "Build #599 (melted bezel) and #600 (watch link)."

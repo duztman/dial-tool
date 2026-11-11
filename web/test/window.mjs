@@ -1135,8 +1135,8 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
     const box = [...document.querySelectorAll(".casedetail")].find((x) => !x.hidden), svg = box && box.querySelector("svg.section"), r = (e) => e.getBoundingClientRect();
     const side = [...document.querySelectorAll(".row.side")].filter((x) => !x.hidden && x.checkVisibility());
     return { on: S.bz_on, rows: rows.slice(0, 10).join(), parts: svg ? [...svg.querySelectorAll("path")].map((p) => p.className.baseVal.replace(" focus", "")).join() : null, focus: svg ? [...svg.querySelectorAll("path.focus")].length : 0, beside: Boolean(box && side.length && Math.abs(r(box).top - r(side[0]).top) < 2 && r(side[0]).left > r(box).right), grounds: t.items.filter((x) => ["bezel", "insert", "bezel chamfer"].includes(x.role)).map((x) => x.role).join(), page: Math.round(t.constructor.G ? 0 : 0), reach: +(t.S.dial_d / 2 + t.S.bz_w + t.S.bz_teeth_depth).toFixed(2) }; });
-  check(bz.on && bz.rows === "Bezel,Preset,Kind,Markings,Width,Chamfer,Insert in,Insert out,Insert,Scallops" && bz.parts === "dial line,bezel,insert" && bz.focus === 2 && bz.beside && bz.grounds === "bezel,bezel chamfer,insert",
-    `Bezel ticked: the rows Bezel · Preset · Kind · Markings, then Width · Chamfer · Insert in · out · Insert beside the section (no Metal: the bezel is case material, "link and lock") (${bz.rows}); the section draws the dial's line and the bezel alone — ${bz.parts} — the bezel's parts in ink (${bz.focus}); the plan gets the ring, its chamfer and the insert (${bz.grounds}), the page out to ${bz.reach} mm`);
+  check(bz.on && bz.rows === "Bezel,Preset,Kind,Markings,Melt into case,Width,Height,Chamfer,Insert in,Insert out" && bz.parts === "dial line,bezel,insert" && bz.focus === 2 && bz.beside && bz.grounds === "bezel,bezel chamfer,insert",
+    `Bezel ticked: the rows Bezel · Preset · Kind · Markings · Melt into case, then Width · Height · Chamfer · Insert in · out beside the section (no Metal: the bezel is case material, "link and lock") (${bz.rows}); the section draws the dial's line and the bezel alone — ${bz.parts} — the bezel's parts in ink (${bz.focus}); the plan gets the ring, its chamfer and the insert (${bz.grounds}), the page out to ${bz.reach} mm`);
   // a bezel starts flat (Okay, 11 Nov 2026: "Default bezel is mostly off on all sliders, 1mm height"); a dial saved with a bezel keeps its own numbers
   const flat = await S("[S.bz_h, S.bz_w, S.bz_chamfer, S.bz_teeth_depth, S.bz_seat, S.bz_lip, S.bz_dome, S.bz_up].join()");
   const kept = await S("(() => { const was = JSON.parse(JSON.stringify(S)); S.bz_on = false; S.bz_h = 2.5; t.set_value('global', 'bz_on', true); const h = S.bz_h; Object.assign(S, was); return h; })()");
@@ -1203,19 +1203,22 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   await frame();
 }
 // THE FINISH SWITCH (Okay, 11 Nov 2026: "I need the ability to add these engravings instead of paint on metal, needs a switch"): Paint ·
-// a bezel that melts into the case (#599): the tick on a fixed bezel only; on, no Seat row, the section one shape down into the body, show mode's body rim at the bezel's edge
+// a bezel that melts into the case (#599) and its coin edge: each rules the other out; melted, no Kind, Markings, insert, Coin edge or Seat
 {
   const m = await page.evaluate(async () => { const t = window.dial_tool, S = t.S, was = JSON.parse(JSON.stringify(S)), tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
-    const rows = () => [...document.querySelectorAll(".form .row")].filter((r) => !r.hidden && r.offsetParent).map((r) => r.querySelector("label")?.textContent.trim()).filter(Boolean);
+    const rows = () => [...document.querySelectorAll(".form .row")].filter((r) => !r.hidden && r.offsetParent).map((r) => (r.querySelector("label .words") || r.querySelector("label"))?.textContent.trim()).filter(Boolean);
     const low = () => { const d = document.querySelector(".casedetail path.bezel")?.getAttribute("d") || ""; return Math.max(...[...d.matchAll(/[ML]?([-\d.]+) ([-\d.]+)/g)].map((q) => +q[2])); };      // the section's lowest point (y down)
-    S.ui_section = 0; t.show_section(); S.ui_dial_tab = 2; t.set_value("global", "bz_on", true); t.set_value("global", "bz_kind", 0); t.changed(true); await tick(); const turning = rows();
-    t.set_value("global", "bz_kind", 1); t.changed(true); await tick(); const fixed = rows(), seated = low();
-    t.set_value("global", "bz_melt", true); t.changed(true); await tick(); const melted = rows(), down = low();
-    const G_fit = [t.S.bz_melt, document.querySelector("#global-bz-melt-Melt-into-case, [id^='global-bz-melt']")?.checked];
+    const open = () => document.querySelectorAll(".form .pane.folded > .fold, .form .head.folded button").forEach((b) => b.click());
+    S.ui_section = 0; t.show_section(); S.ui_dial_tab = 2; t.set_value("global", "bz_on", true); t.set_value("global", "bz_kind", 0); t.changed(true); await tick(); const plain = rows();
+    document.querySelector("#global-bz-coin").click(); await tick(); const coin = rows(), depth = t.S.bz_teeth_depth;
+    document.querySelector("#global-bz-coin").click(); await tick(); const seated = low();
+    t.set_value("global", "bz_melt", true); t.changed(true); await tick(); const melted = rows(), down = low(), outer = [window.dial_tool.S.bz_melt];
     Object.assign(S, was); for (const k of Object.keys(S)) if (!(k in was)) delete S[k]; t.static_dirty = true; t.changed(true); t.show_section(); await tick();
-    return { turning: turning.includes("Melt into case"), fixed: fixed.includes("Melt into case"), seat0: fixed.includes("Seat"), seat1: melted.includes("Seat"), seated, down, ticked: G_fit[1] }; });
-  check(!m.turning && m.fixed && m.seat0 && !m.seat1 && m.down > m.seated + 0.5 && m.ticked === true,
-    `Melt into case: offered on a fixed bezel (${m.fixed}), not a rotating one (${m.turning}); ticked, the Seat row goes (${m.seat0} → ${m.seat1}) and the section runs down into the body (its foot ${m.seated} → ${m.down} mm under the band's top) (Okay: "a bezel that melts into the case, seemlessly, on off style" — "No step, one piece")`);
+    const has = (l, w) => l.includes(w);
+    return { height: plain.indexOf("Height") === plain.indexOf("Width") + 1, plain: has(plain, "Melt into case") && has(plain, "Coin edge") && !has(plain, "Scallops"), coin: !has(coin, "Melt into case") && has(coin, "Scallops") && has(coin, "Depth"), depth,
+      melted: ["Kind", "Markings", "Coin edge", "Scallops", "Insert in", "Seat"].filter((w) => has(melted, w)).join() || "none", seated, down }; });
+  check(m.height && m.plain && m.coin && m.depth === 0.5 && m.melted === "none" && m.down > m.seated + 0.5,
+    `the bezel's Height stands under its Width (${m.height}; Okay: "i could not find a bezel height"); Coin edge a tick that brings its numbers in, its depth ${m.depth} (${m.plain}); with a coin edge Melt is not offered (${m.coin}); melted, no Kind, Markings, insert, Coin edge or Seat (left: ${m.melted}) and the section runs down into the body (${m.seated} → ${m.down}) (Okay: "Teethed bezels cant melt melted bezels cant teeth. Melted bezel loses inset ring if there is one")`);
 }
 
 // Engrave on the Base tab once the plate is bare, on the Rehaut tab, on the Bezel tab once its markings are on its metal
@@ -2889,8 +2892,17 @@ await shot("10-bar");
       return [y0 / 2, (line - (y1 + 1)) / 2];      // CSS px: ink top from the line above (the row's top), ink bottom to the line below
     }, (await page.locator(".inklist .row.showsub").first().screenshot()).toString("base64"));
     r.centred = Math.abs(gaps[0] - gaps[1]) <= 1 && gaps[0] >= 11 && gaps[1] >= 11;
-    check(r.panes.join() === "Colours,Inks,Hands,Heights" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
-      `show mode's Dial tab is Colours · Inks · Hands · Heights (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands"; #580: "a pane at the end of this whole column")`);
+    check(r.panes.join() === "Material,Colours,Inks,Hands,Heights" && r.subs.includes("Rings") && r.subs.includes("Hands") && r.colours_boxes === 0 && r.head.length === 2,
+      `show mode's Dial tab is Material · Colours · Inks · Hands · Heights (${r.panes.join(" · ")}), Colours by part under ${r.subs.join(" · ")}, colours only; Inks and Hands headed Height mm (Okay: "Colours · Inks · Hands"; #580: "a pane at the end of this whole column")`);
+    { // the plate's Material and Paint here too (#601); an ink made Applied brings its Material and Edge (#602)
+      const a = await page.evaluate(async () => { const t = window.dial_tool, S = t.S, wait = (ms) => new Promise((ok) => setTimeout(ok, ms)), was = JSON.stringify(S.w_inks || {});
+        const labels = () => [...document.querySelectorAll(".form .row")].filter((x) => !x.hidden && x.offsetParent).map((x) => x.querySelector("label")?.textContent.trim()).filter(Boolean);
+        const first = labels(); document.querySelector("[id$='-made']").querySelectorAll("button")[1].click(); await wait(300);
+        const applied = labels(), hex = Object.keys(S.w_inks).find((k) => S.w_inks[k].ap); document.querySelector("[id$='-mat']").querySelectorAll("button")[3].click(); await wait(200);
+        const kept = { ...S.w_inks[hex] }; S.w_inks = JSON.parse(was); document.querySelector(".inklist").dataset.list = ""; t.changed(true); await wait(300);
+        return { plate: first.includes("Material") && first.includes("Paint"), before: first.filter((w) => w === "Edge").length, after: applied.filter((w) => w === "Edge").length, kept }; });
+      check(a.plate && a.before === 0 && a.after === 1 && a.kept.ap === true && a.kept.mat === 3,
+        `show mode's Dial tab holds the plate's Material and Paint (${a.plate}; Okay: "Dial itself, material color etc. if showcase 2d does not have this, add there"); an ink switched to Applied brings Material and Edge (${a.before} → ${a.after}), Steel chosen is kept (${JSON.stringify(a.kept)}) (Okay: "Ink heights can become applied 3d shapes … swap colors into materials")`); }
     // the Heights pane (#580; Okay, 3 Nov 2026, 02:34: "Hand height screen and settings should also be added as a pane at the end
     // of this whole column"): the Shadows pane's parts block — Cap · Seconds · Minutes · Hours · Plate and the diagram, no
     // sliders in the narrower column; a row pointed at lights its part in the diagram; its number is the Shadows pane's

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.80 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.81 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -297,7 +297,7 @@ export const DEFAULTS = {
   // in show mode; the plan does not see them
   rh_on: false, rh_deg: 24, rh_len: 1.5, rh_c: [0.78, 0.78, 0.76, 1],      // 24° and 1.5 mm: the 3D exercise's wall, 0.6 out over 1.35 up. rh_w is dead (R8): nothing reads it
   bz_on: false, bz_kind: 0, bz_w: 3.3, bz_chamfer: 0.45, bz_in_in: 0.4, bz_in_out: 0.6, bz_c: [0.80, 0.80, 0.78, 1], bz_insert_c: [0.17, 0.17, 0.19, 1], bz_marks: 0,      // bz_c is dead (R8): the bezel is case material (case_metal)
-  bz_melt: false,                                  // a fixed bezel melted into the case (#599; Okay, 11 Nov 2026: "a bezel that melts into the case, seemlessly, on off style"): one piece with the body — no seat, no step, no line. Read through bezel_melted()
+  bz_melt: false,                                  // a bezel melted into the case (#599; Okay, 11 Nov 2026: "a bezel that melts into the case, seemlessly, on off style"): one piece with the body — no seat, no step, no line. Read through bezel_melted()
   bz_teeth_n: 60, bz_teeth_depth: 0.5, bz_teeth_fill: 0.62, bz_teeth_chamfer: 0.45,
   bz_dial_up: 0.7, bz_seat: 0.3, bz_h: 2.3, bz_lip: 0.55, bz_rim: 0.4, bz_up: 0.65, bz_dome: 1.35,
   ui_dial_tab: 0,                                  // the Dial tab's own tabs: Dial · Rehaut · Bezel (#582; ui_case is the canvas's Case view)
@@ -1698,14 +1698,21 @@ const disc_span = (S, name) => { const r = max(S["ha_" + name].disc_d, 0.1) / 2;
 export const rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
 export const FINISHES = ["Paint", "Engrave"];      // how a marking on bare metal is made (Okay, 11 Nov 2026). R9: appended only
 /** the bezel's markings lie on its metal: a fixed bezel's always, a rotating one's when Markings is Metal */
-export const bezel_marks_on_metal = (S) => S.bz_on && (BEZEL_KINDS[S.bz_kind] === "Fixed" || BEZEL_MARKS[S.bz_marks] === "Metal");
+export const bezel_marks_on_metal = (S) => S.bz_on && !bezel_insert(S);
 /** a ring cut into the metal it lies on, not painted: the bare plate's with Finish Engrave, the rehaut's, the bezel's on its metal */
 export const ring_engraved = (S, ring) => { const s = ring_surface(S, ring); return s === 0 ? S.paint === false && FINISHES[S.engrave] === "Engrave" : s === 1 ? FINISHES[S.rh_engrave] === "Engrave" : s === 2 ? bezel_marks_on_metal(S) && FINISHES[S.bz_engrave] === "Engrave" : false; };
 /** the colour an engraved ring shows: its ground's, in shadow — the cut's floor and walls, darker than the face round it */
 export const engraved_colour = (S, ring) => { const s = ring_surface(S, ring), g = s === 0 ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : s === 1 ? S.rh_c : case_metal(S); return [...g.slice(0, 3).map((v) => v * 0.55), 1]; };
 export const BEZEL_MARKS = ["Insert", "Metal"];      // where a rotating bezel's markings are: on an insert set in it, or on its metal (Okay, 11 Nov 2026: "for bezels, add markings on metal instead of inset ring"); a fixed bezel's are always on its metal. R9: appended only
-/** the bezel is one piece with the case (#599): a fixed bezel with Melt on. A rotating ring is a part of its own, so it can't melt */
-export const bezel_melted = (S) => !!(S.bz_on && S.bz_melt && BEZEL_KINDS[S.bz_kind] === "Fixed");
+/** THE BEZEL'S THREE STATES, each read here and nowhere else (Okay, 12 Nov 2026: "Teethed bezels cant melt melted bezels cant teeth.
+ *  Melted bezel loses inset ring if there is one. It is one and same with case material"):
+ *  MELTED — one piece with the case (#599): Melt ticked. It has no seat, no coin edge and no insert, whatever its Kind says.
+ *  COIN EDGE — a rotating bezel's teeth, `bz_teeth_depth` deep; none at depth 0, on a fixed bezel or a melted one. → the depth, mm.
+ *  INSERT — a rotating bezel's own ring for its markings, unless Markings is Metal or the bezel is melted. */
+export const bezel_melted = (S) => !!(S.bz_on && S.bz_melt);
+export const bezel_coin = (S) => (S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && !S.bz_melt ? max(0, +S.bz_teeth_depth || 0) : 0);
+export const bezel_insert = (S) => !!(S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && BEZEL_MARKS[S.bz_marks] !== "Metal" && !S.bz_melt);
+export const COIN_DEPTH = 0.5;      // the depth a coin edge starts at when its tick is set (the Diver preset's)
 /** the ring's seat over the band's top, mm: none when the bezel is the case's own metal rising */
 export const bezel_seat = (S) => (bezel_melted(S) ? 0 : S.bz_seat);
 export const BEZEL_KINDS = ["Rotating", "Fixed"];      // rotating: a turning ring with an insert and a coin edge · fixed: a plain pressed ring
@@ -1718,10 +1725,9 @@ export const rehaut_h = (S) => +(S.rh_len * cos(S.rh_deg * PI / 180)).toFixed(4)
 export function case_spans(S) {
   const R = S.dial_d / 2, rh = S.rh_on ? [R, R + rehaut_w(S)] : null, b0 = rh ? rh[1] : R;
   const bz = S.bz_on ? [b0, b0 + S.bz_w] : null;
-  const rotating = bz && S.bz_kind === 0;
-  const insert = rotating && S.bz_marks !== 1 ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
+  const insert = bezel_insert(S) ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
   const marks = insert ?? (bz ? [b0, bz[1] - S.bz_chamfer] : null);      // where the bezel's rings stand: its insert, or its metal inside the chamfer
-  const teeth = rotating && S.bz_teeth_depth > 0 ? bz[1] + S.bz_teeth_depth : bz ? bz[1] : null;
+  const teeth = bz ? bz[1] + bezel_coin(S) : null;
   return { dial: [0, R], rehaut: rh, bezel: bz, insert, outer: teeth ?? (rh ? rh[1] : R), chamfer: bz ? [bz[1] - S.bz_chamfer, bz[1]] : null, marks };
 }
 /** the radius the drawing reaches, mm: the dial's, or the case's outer edge (the page and the view fit it) */
@@ -1768,7 +1774,7 @@ function build_case_grounds(S) {
   const sp = case_spans(S), out = [], ring_shape = (a, b) => circle(2 * b).difference(circle(2 * a));
   const lighter = (c, k) => [...c.slice(0, 3).map((v) => min(1, v + (1 - v) * k)), c[3]], darker = (c, k) => [...c.slice(0, 3).map((v) => v * (1 - k)), c[3]];
   if (sp.bezel) {
-    const [b0, b1] = sp.bezel, T = { n: max(3, round(S.bz_teeth_n) || 60), depth: S.bz_kind === 0 ? max(0, S.bz_teeth_depth) : 0, fill: min(max(S.bz_teeth_fill, 0.05), 0.95) };
+    const [b0, b1] = sp.bezel, T = { n: max(3, round(S.bz_teeth_n) || 60), depth: bezel_coin(S), fill: min(max(S.bz_teeth_fill, 0.05), 0.95) };
     let outer;
     if (T.depth > 0) {      // the scalloped outline, 28 points a pitch, as the 3D wall's stations
       const R = b1 + T.depth, pitch = 2 * PI / T.n, a = R * pitch * T.fill / 2, rd = (a * a + T.depth * T.depth) / (2 * T.depth), per = 28, N = T.n * per, pts = [];
@@ -2498,7 +2504,19 @@ export const ink_hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min
 //   there, that's the baseline"). All inks at once (w_ink_all) adds the same mm to every printed height.
 export const INK_MM = 0.21, INK_STEP_MM = 0.035, INK_START = 6, INK_MOST = 0.5;      // 0.21 = the 6 steps of 0.035 mm an ink stood at; the most a height can be
 /** one ink's settings, with what is not set filled in */
-export const ink_of = (S, hex) => { const e = (S.w_inks || {})[hex] || {}; const h = e.h ?? INK_MM; return { h, two: Boolean(e.two), b: e.b ?? h }; };
+export const ink_of = (S, hex) => { const e = (S.w_inks || {})[hex] || {}; const h = e.h ?? INK_MM; return { h, two: Boolean(e.two), b: e.b ?? h, applied: Boolean(e.ap), mat: e.mat | 0, edge: e.edge | 0 }; };
+// AN INK MADE AS AN APPLIED PART (#602; Okay, 11 Nov 2026: "Ink heights can become applied 3d shapes, and can go taller obviously. Option
+// to swap colors into materials … the outline to be brass but inside fill of the numbers stay in as flat, maybe lume. This object could
+// get roundovers or sharp chamfer"): an ink's entry in w_inks may say `ap` (a solid piece set on the plate, not a print), `mat` (what it
+// is made of: its own colour, a metal, lume) and `edge` (its top edge). An applied ink stands up to APPLIED_MOST; a metal shows in the
+// metal's colour. A ring's stroke is an ink of its own colour, so an outline and its fill are made apart. R9: the lists only grow
+export const APPLIED_MOST = 2, INK_MATERIALS = ["Colour", "Brass", "Bronze", "Steel", "Silver", "Gold", "Lume"], INK_EDGES = ["Sharp", "Chamfer", "Round"];
+export const INK_MATERIAL_COLOURS = [null, ...PLATE_METAL_COLOURS, [0.83, 0.69, 0.34, 1], null];
+const DIAL_INK_ROLES = ["ring", "ring stroke", "date frame"];
+/** how a part of the dial's own inks is made — ink_of of its colour — or null for a part that is no dial ink */
+export const ink_made = (S, x) => (DIAL_INK_ROLES.includes(x.role) && Array.isArray(x.fill) ? ink_of(S, ink_hex(x.fill)) : null);
+/** the colour a part shows: an applied part of metal in the metal's, any other in its own */
+export const ink_shown = (S, x) => { const m = ink_made(S, x); return (m?.applied && INK_MATERIAL_COLOURS[m.mat]) || x.fill; };
 /** the dial's inks, in the order the Colours pane lists their parts (rings top first, then the windows' frames):
  *  [{ hex, colour, parts: [{ kind: "ring" | "frame", i, name, sectors }] }] — a band's sectors of one colour are one
  *  part of that ink, so a band of two colours is a part of two inks */
@@ -2547,7 +2565,7 @@ export function ink_mm(S, x) {
     const H = S["ha_" + x.name] || {}, own = x.role === "lume" ? H.op_ink_h : x.edge ? H.mark_stroke_ink_h : H.mark_ink_h;
     h = own ?? ink_of(S, ink_hex(x.fill)).h;
   }
-  return Math.max(0, Math.min(INK_MOST, h + (+S.w_ink_all || 0)));
+  return Math.max(0, Math.min(ink_made(S, x)?.applied ? APPLIED_MOST : INK_MOST, h + (+S.w_ink_all || 0)));
 }
 /** the inks a dial is printed in (#35): every shown ring's colour (each sector's of a band), every shown window's frame;
  *  in the order they lie, top first. → [#RRGGBB] */

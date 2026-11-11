@@ -6,7 +6,8 @@
 // A part's MAKE says how it is made, and so which numbers it has (all in mm):
 //   plate     the dial's plate                                  metal: its bare metal (brass · bronze · steel · silver) when unpainted
 //   printed   ink on the plate (a ring, its stroke, a frame)    ink: the ink's thickness
-//   applied   a solid piece set on the plate (an index, a logo) height, section
+//   applied   a solid piece set on the plate (an index, a logo; height, section, edge (sharp · chamfer · round), material
+//             an ink made Applied in show mode's Inks, #602)    (colour · brass · bronze · steel · silver · gold · lume)
 //   hand      a hand's blade                                    over (its underside over the plate's face), t, section, hw, boss
 //   on hand   ink on a hand (its lume, a painted mark)          — (flush in the hand's top)
 //   cap       the cap over the hands                            over (its TOP over the plate's face), t
@@ -47,7 +48,7 @@ export function part_attrs(p) {
   if (p.make === "printed" || (p.make === "on hand" && p.ink != null)) says.push(["ink", mm(p.ink)]);
   if (p.hand) says.push(["hand", p.hand]);
   if (p.make === "plate" && p.metal) says.push(["metal", p.metal]);
-  if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section]);
+  if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section], ["edge", p.edge || "sharp"], ["material", p.material || "colour"]);
   if (p.make === "hand") { says.push(["over", mm(p.over)], ["t", mm(p.t)], ["section", p.section], ["hw", mm(p.hw)]);
     if (p.section !== "flat") says.push(["bevel", 1]); if (p.section === "domed") says.push(["dome", 1]); if (p.boss) says.push(["boss", mm(p.boss)]); }
   if (p.make === "cap") says.push(["over", mm(p.over)], ["t", mm(p.t)]);
@@ -64,7 +65,7 @@ export function read_part(get) {
   const p = { role, make, hand };
   if (make === "plate" && get("metal")) p.metal = get("metal");      // bare: no paint over the metal (Okay, 11 Nov 2026: "Can 3d get these new bare metal dials?")
   if (make === "printed" || make === "on hand") { const ink = num("ink"); if (ink != null) p.ink = ink; }
-  if (make === "applied") { p.height = num("height") ?? 0.3; p.section = get("section") || "flat"; }
+  if (make === "applied") { p.height = num("height") ?? 0.3; p.section = get("section") || "flat"; p.edge = get("edge") || "sharp"; p.material = get("material") || "colour"; }
   if (make === "hand") { p.over = num("over"); p.t = num("t") ?? STACK.hand_t; p.hw = num("hw") ?? 0; p.boss = num("boss");
     p.section = get("section") || (num("dome") === 1 ? "domed" : num("bevel") === 1 ? "ridge" : "flat"); }
   if (make === "cap") { p.over = num("over"); p.t = num("t") ?? STACK.cap_t; }

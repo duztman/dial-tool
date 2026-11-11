@@ -39,7 +39,7 @@ const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut
 // one part of the scene as watch.js takes it: its role, which hand, its bevel, its path and colour, its ink height
 const one = (x, hand, H, S) => {
   // a disc hand is flat, as on the dial side (Okay, 3 Nov 2026, 02:11: "Disc hand does not get bevels")
-  return { role: x.role, hand, bevel: Boolean(H && x.role === "hand" && H.bevel && G.HAND_SHAPES[H.shape] !== "disc"), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) || x.role === "mark" ? G.ink_mm(S, x) / G.INK_STEP_MM : 0, metal: Boolean(x.metal) };
+  return { role: x.role, hand, bevel: Boolean(H && x.role === "hand" && H.bevel && G.HAND_SHAPES[H.shape] !== "disc"), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(G.ink_shown(S, x)), a: +x.fill[3], ink: PRINTED(x.role) || x.role === "mark" ? G.ink_mm(S, x) / G.INK_STEP_MM : 0, metal: Boolean(x.metal) };
 };      // a disc's painted mark is printed on it: an ink (02:11)      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
 
 /** what a saved SVG says of each part, beyond its shape and colour (#584; Okay, 10 Nov 2026: "i need you to get height and thickness
@@ -52,6 +52,8 @@ export const part_record = (S, x) => {
   if (x.metal) r.metal = (G.PLATE_METALS[S.material] || G.PLATE_METALS[0]).toLowerCase();      // a bare plate: its metal, for a 3D view to make it metal
   if (x.engrave) { r.make = "engraved"; return r; }      // cut in, not printed (Finish Engrave): no ink
   if (PRINTED(x.role) || x.role === "mark") r.ink = G.ink_mm(S, x);
+  const made = G.ink_made(S, x);      // an ink made as an applied part (#602): a solid, its height, its top edge and what it is made of
+  if (made?.applied) Object.assign(r, { make: "applied", height: r.ink, section: "flat", edge: G.INK_EDGES[made.edge].toLowerCase(), material: G.INK_MATERIALS[made.mat].toLowerCase() });
   if (r.make === "hand" && hand) Object.assign(r, { over: S["sh_" + hand] ?? S.sh_hour, t: P.STACK.hand_t, hw: p.hw, boss: G.hand_boss(H, hand) ? H.hub / 2 : null,
     section: !p.bevel ? "flat" : P.SECTIONS[1 + (H.bevel_look | 0)] ?? "ridge" });      // a hand's section in the Bevel words: Ridge · Faceted · Domed, flat with no Bevel
   if (r.make === "hand" && !hand) r.make = "printed";      // a hand the record has no name for (none today) stays a print, as before
@@ -62,8 +64,8 @@ export const part_record = (S, x) => {
 /** the case for a 3D view (parts.js case_attrs): the tool's rehaut and bezel, in mm, the bezel's metal the case's own */
 export const case_record = (S) => ({
   rehaut: S.rh_on ? { w: G.rehaut_w(S), h: G.rehaut_h(S), c: hex(S.rh_c) } : null,
-  bezel: S.bz_on ? { kind: G.BEZEL_KINDS[S.bz_kind] === "Fixed" ? "fixed" : "rotating", marks: G.BEZEL_KINDS[S.bz_kind] === "Fixed" || G.BEZEL_MARKS[S.bz_marks] === "Metal" ? "metal" : "insert", w: S.bz_w, chamfer: S.bz_chamfer, in_in: S.bz_in_in, in_out: S.bz_in_out, insert: hex(S.bz_insert_c),
-    teeth: { n: S.bz_teeth_n, depth: S.bz_teeth_depth, fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer }, dial_up: S.bz_dial_up, seat: G.bezel_seat(S), melt: G.bezel_melted(S) || undefined, h: S.bz_h, lip: S.bz_lip, rim: S.bz_rim, up: S.bz_up, dome: S.bz_dome } : null,
+  bezel: S.bz_on ? { kind: G.BEZEL_KINDS[S.bz_kind] === "Fixed" || G.bezel_melted(S) ? "fixed" : "rotating", marks: G.bezel_insert(S) ? "insert" : "metal", w: S.bz_w, chamfer: S.bz_chamfer, in_in: S.bz_in_in, in_out: S.bz_in_out, insert: hex(S.bz_insert_c),
+    teeth: { n: S.bz_teeth_n, depth: G.bezel_coin(S), fill: S.bz_teeth_fill, chamfer: S.bz_teeth_chamfer }, dial_up: S.bz_dial_up, seat: G.bezel_seat(S), melt: G.bezel_melted(S) || undefined, h: S.bz_h, lip: S.bz_lip, rim: S.bz_rim, up: S.bz_up, dome: S.bz_dome } : null,
   body: S.w_body > 0 ? Math.max(body_fit(S), S.w_body) : null,      // the body's Ø, mm, when it isn't Fit (Okay, 11 Nov 2026: Body Ø)
 });
 /** the body's Ø at Fit for this dial, mm (Body Ø's floor) */

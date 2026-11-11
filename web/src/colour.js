@@ -583,6 +583,11 @@ export const COLOUR = {
     const S = () => this.S;
     let rows = [];
     const sub = (text) => this.list_head(text, "group:" + text);      // a group's name, its chevron (01:27: "These rules are for all items in these panes with multiples")
+    // a choice of words on a line of its own under an ink's parts: how the ink is made, of what, with what edge (#602)
+    const pills = (id, label, words, get, put) => { const group = el("span", { className: "pillswitch" + (words.length > 3 ? " free" : ""), role: "radiogroup", ariaLabel: label, id });
+      const bs = words.map((w, i) => el("button", { type: "button", textContent: w, onclick: () => { put(i); wrap.dataset.list = ""; this.changed(true); } }));
+      group.append(...bs); rows.push({ refresh: () => bs.forEach((b, i) => b.classList.toggle("on", i === get())) });
+      return el("div", { className: "row inkmade" }, el("label", { textContent: label }), group); };
     const height = (id, text, get, put, lo = 0, hi = G.INK_MOST) => { const made = this.line_number(num(id, text, lo, hi, 0.01, { block: true, id, get, put: (app, v) => { put(clamp(v, lo, hi)); this.changed(); } })); rows.push(made); return made.el; };
     // a colour: one alone is a pill with its hex spelled out; several are squares (#546: "swatches, alone spelled out")
     const swatch = (id, title, read, write, pill = false, lume_only = false) => {
@@ -625,7 +630,7 @@ export const COLOUR = {
         ink.parts.forEach((p, m) => {
           const name = p.name + (p.sectors > 1 ? ` · ${p.sectors} sectors` : p.sectors === 1 ? " · 1 sector" : "");
           const own = () => this.part_own(p);
-          const box = height(`ink-${n}-part-${m}`, `${name}: its height`, () => (own() ?? G.ink_of(S(), now().hex).h) + all(), (v) => { const h = +(v - all()).toFixed(3); if (own() != null) this.part_own(p, h); else entry(now().hex).h = h; });
+          const box = height(`ink-${n}-part-${m}`, `${name}: its height`, () => (own() ?? G.ink_of(S(), now().hex).h) + all(), (v) => { const h = +(v - all()).toFixed(3); if (own() != null) this.part_own(p, h); else entry(now().hex).h = h; }, 0, G.ink_of(S(), ink.hex).applied ? G.APPLIED_MOST : G.INK_MOST);      // an applied part stands taller than a print can
           const kind = p.kind === "frame" ? PICS.window_mark : PICS.kind(S().rings[p.i].kind);
           const pill = swatch(`ink-${n}-${m}`, `${name}: its ink, every part of it`, () => now().colour, write, true);
           const line = el("div", { className: "row showline inkline part" + (above ? " haslink" : "") }, el("i"), mark(kind), el("label", { textContent: name }), pill, place(box));
@@ -633,6 +638,11 @@ export const COLOUR = {
           if (above) this.ink_link(above, name, () => own() == null, () => { this.part_own(p, own() != null ? null : G.ink_of(S(), now().hex).h); wrap.dataset.list = ""; this.changed(true); }, rows, `ink-${n}-link-${m}`);
           kids.push(line); above = line;
         });
+        // how this ink is made (#602; Okay, 11 Nov 2026: "Ink heights can become applied 3d shapes … swap colors into materials … roundovers
+        // or sharp chamfer"): Printed, or Applied — then what it is made of and its top edge. Back to Printed, its height comes down to a print's
+        const made = () => G.ink_of(S(), now().hex);
+        kids.push(pills(`ink-${n}-made`, "Made", ["Printed", "Applied"], () => +made().applied, (i) => { const e = entry(now().hex); e.ap = Boolean(i); if (!i) e.h = Math.min(e.h ?? G.INK_MM, G.INK_MOST); }));
+        if (made().applied) kids.push(pills(`ink-${n}-mat`, "Material", G.INK_MATERIALS, () => made().mat, (i) => { entry(now().hex).mat = i; }), pills(`ink-${n}-edge`, "Edge", G.INK_EDGES, () => made().edge, (i) => { entry(now().hex).edge = i; }));
       });
       // what is printed on the hands — a lume, a disc's painted mark and its stroke (#175, #574; Okay, 2 Nov 2026, 22:31:
       // "Lume height … only on showcase as an ink height"; 3 Nov 2026, 02:11: "all the hands that have other colors or lume
