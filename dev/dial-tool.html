@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.82 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.83 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9546,7 +9546,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.82 beta";
+var VERSION = "v1.1.83 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -11967,14 +11967,17 @@ var CUT_EDGE = 0.02;
 function cut_unions(S, items) {
   const all = { plate: null, bezel: null }, sp = case_spans(S);
   for (const x2 of items) {
-    const s = x2.ring?.ring ? ring_surface(S, x2.ring.ring) : 0, k = s === 0 ? "plate" : s === 2 ? "bezel" : null;
-    if (k && x2.path) all[k] = all[k] ? all[k].union(x2.path) : x2.path;
+    const s = x2.ring?.ring ? ring_surface(S, x2.ring.ring) : 0;
+    if (s === 1 || !x2.path) continue;
+    for (const k of ["plate", "bezel"]) all[k] = all[k] ? all[k].union(x2.path) : x2.path;
   }
   if (all.plate) all.plate = all.plate.intersection(circle2(S.dial_d - 2 * CUT_EDGE));
+  if (!sp.bezel) all.bezel = null;
   if (all.bezel && sp.bezel) {
     const a = sp.bezel[0] - S.bz_rim + 0.3 + CUT_EDGE, b = sp.bezel[1] - S.bz_chamfer - CUT_EDGE;
     all.bezel = b > a ? all.bezel.intersection(circle2(2 * b).difference(circle2(2 * a))) : null;
   }
+  for (const k of ["plate", "bezel"]) if (all[k] && !all[k].svg(3, true)) all[k] = null;
   return all;
 }
 var COIN_DEPTH = 0.5;
@@ -13025,6 +13028,7 @@ function part_attrs(p) {
   if (p.make === "printed" || p.make === "on hand" && p.ink != null) says.push(["ink", mm(p.ink)]);
   if (p.hand) says.push(["hand", p.hand]);
   if (p.make === "plate" && p.metal) says.push(["metal", p.metal]);
+  if (p.make === "plate" && p.material) says.push(["material", p.material]);
   if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section], ["edge", p.edge || "sharp"], ["material", p.material || "colour"]);
   if (p.make === "hand") {
     says.push(["over", mm(p.over)], ["t", mm(p.t)], ["section", p.section], ["hw", mm(p.hw)]);
@@ -13068,6 +13072,7 @@ var part_record = (S, x2) => {
   const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null, H2 = hand ? S["ha_" + hand] : null, p = one(x2, hand, H2, S);
   const r = { role: x2.role, make: make_of(x2.role, hand), hand };
   if (x2.metal) r.metal = (PLATE_METALS[S.material] || PLATE_METALS[0]).toLowerCase();
+  if (x2.role === "plate") r.material = (PLATE_METALS[S.material] || PLATE_METALS[0]).toLowerCase();
   if (x2.engrave) {
     r.make = "engraved";
     return r;
