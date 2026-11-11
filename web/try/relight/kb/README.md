@@ -1,5 +1,7 @@
 # Show Case 3D — the knowledge base
 
+**Closed here at round 102 (11 Nov 2026).** Show Case 3D is Dial Tool Pro's and goes on in a private repo; what is here stays MIT (Okay: "What we did until now for 3d can stay under mit, we’ll develop on it and make the rest private").
+
 What the 3D exercise of 4–5 Nov 2026 learnt about drawing a watch photographically, kept so the work can be picked up, rebuilt, edited and searched. Branch `try/relight`; nothing here is on `dev` or the pages.
 
 | Page | What it holds | Read it when |
