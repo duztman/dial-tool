@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.78 beta · 11 Nov 2026 — show mode with the tool's bezel: the shadow and the shine are the crystal's
+
+Okay, 11 Nov 2026, 21:39: "show case on 2d is still looking weird, glass seems larger covering bezel, bezel border looks like a wall."
+
+- **The wall's shadow** (the dark crescent on the light's side, both paints) is cast from the crystal's edge — the bezel's inner one — onto the rehaut and the dial. It was cast from the case's opening, which with the tool's bezel is the bezel's outer edge: the crescent lay on the bezel's own top and made the body's rim a wall round it (`watch.js`: the clip `glass-…`, `C.glassR`).
+- **The glass's shine** lies by the dial's edge, as on every published case (`shineR`: the dial's radius, 1.2 mm in for Artisan, 0.9 for Engineer), and is cut at the crystal's edge; it lay over the rehaut, against the bezel.
+- A watch without the tool's rehaut or bezel is drawn as before (the crystal's edge is the opening there).
+- **Tests**: `window.mjs` — with the tool's bezel the wall's shadow is the crystal's, the shine inside the dial's edge.
+- Part of #595; the bezel's own top is still a flat ground (no chamfer's light, no coin edge's teeth in show mode).
+
 ## v1.1.77 beta · 11 Nov 2026 — a list that opens is whole and on top
 
 Okay, 11 Nov 2026, 19:35: "We lost a lot of things, dropdowns behind ui elements, 3d loses lights while adjusting different things." — 19:57: "Fix all please. Do big tests, audit the css etc."

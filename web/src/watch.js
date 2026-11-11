@@ -389,10 +389,10 @@ function caseEngineer(C, v, L) {
   // the case's shadow on the dial (18:21): the bezel wall blocks the light on the side it comes from, a hard crescent,
   // longer the lower the sun
   { const uS = [Math.cos(rad(L)), Math.sin(rad(L))], sl = (C.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H))));
-    out.push(`<g clip-path="url(#dial-${C.key})"><g transform="translate(${f(-uS[0] * sl)} ${f(-uS[1] * sl)})"><path d="M-500 -500H500V500H-500Z${circle(C.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.4 * SHD))}"/></g></g>`); }
+    out.push(`<g clip-path="url(#glass-${C.key})"><g transform="translate(${f(-uS[0] * sl)} ${f(-uS[1] * sl)})"><path d="M-500 -500H500V500H-500Z${circle(C.glassR ?? C.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.4 * SHD))}"/></g></g>`); }
   // the crystal: a highlight crescent on the side facing the light, a faint one opposite
   const g = (a, r, w, o) => `<path d="M${f(Math.cos(rad(a - 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 28 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 28 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, o * GLASS.op))}" stroke-width="${f(w * GLASS.fat)}" stroke-linecap="round"/>`;
-  out.push(g(L, (C.glassR ?? C.opening) - 0.9, 0.8, 0.55), g(L + 180, (C.glassR ?? C.opening) - 0.9, 0.4, 0.22));      // the glass's shine: white, and the dial never white, so it always shows
+  out.push(`<g clip-path="url(#glass-${C.key})">` + g(L, shineR(C) - 0.9, 0.8, 0.55) + g(L + 180, shineR(C) - 0.9, 0.4, 0.22) + `</g>`);      // the glass's shine: white, and the dial never white, so it always shows
   out.push(stroke(circle(C.opening), 0.2));
   return out.join("");
 }
@@ -442,12 +442,18 @@ function caseArtisan(C, v, L) {
   if (C.insert) { const r0 = C.opening - REHAUT, r1 = C.opening, rm = (r0 + r1) / 2, wd = r1 - r0, arc = (a, sp) => `M${f(Math.cos(rad(a - sp)) * rm)} ${f(Math.sin(rad(a - sp)) * rm)}A${f(rm)} ${f(rm)} 0 0 1 ${f(Math.cos(rad(a + sp)) * rm)} ${f(Math.sin(rad(a + sp)) * rm)}`;
     out.push(`<path d="${circle(r1)}${circle(r0)}" fill-rule="evenodd" fill="${T[1]}"/><path d="${arc(L + 180, 70)}" fill="none" stroke="${T[0]}" stroke-width="${f(wd * 0.75)}" stroke-linecap="round"/><path d="${arc(L, 60)}" fill="none" stroke="${T[2]}" stroke-width="${f(wd * 0.75)}" stroke-linecap="round"/><path d="${circle(r0)}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="0.12"/>`); }      // the rehaut
   // the bezel's wall shades the dial on the light's side: a hard crescent (18:06)
-  out.push(`<g clip-path="url(#dial-${C.key})"><g transform="translate(${f(-uL[0] * (C.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))} ${f(-uL[1] * (C.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))})"><path d="M-500 -500H500V500H-500Z${circle(C.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.44 * SHD))}"/></g></g>`);
+  out.push(`<g clip-path="url(#glass-${C.key})"><g transform="translate(${f(-uL[0] * (C.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))} ${f(-uL[1] * (C.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))})"><path d="M-500 -500H500V500H-500Z${circle(C.glassR ?? C.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.44 * SHD))}"/></g></g>`);
   // the glass: one soft white blob on the light's side
-  const r = (C.glassR ?? C.opening) - 1.2, a = L;
-  out.push(`<path d="M${f(Math.cos(rad(a - 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 35 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 35 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, 0.5 * GLASS.op))}" stroke-width="${f(1.6 * GLASS_K * GLASS.fat)}" stroke-linecap="round"/>`);
+  const r = shineR(C) - 1.2, a = L;
+  out.push(`<g clip-path="url(#glass-${C.key})"><path d="M${f(Math.cos(rad(a - 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 35 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 35 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, 0.5 * GLASS.op))}" stroke-width="${f(1.6 * GLASS_K * GLASS.fat)}" stroke-linecap="round"/></g>`);
   return out.join("");
 }
+// WITH THE TOOL'S OWN CASE (Okay, 11 Nov 2026: "glass seems larger covering bezel, bezel border looks like a wall"). The crystal ends
+// at the bezel's inner edge (`glassR`); the published case's opening is then the bezel's OUTER edge, so anything measured from the
+// opening lands on the bezel. Two things are the crystal's, not the opening's: the wall's shadow — cast inward from the crystal's
+// edge onto the rehaut and the dial, never onto the bezel's own top (it read as a wall round the bezel) — and the shine, which lies
+// by the dial's edge as on every published case (`shineR`: the dial's radius where the tool gives one) and is cut at the crystal's
+const shineR = (C) => (C.glassR != null ? Math.min(C.glassR, (C.dialR ?? C.glassR)) : C.opening);
 const caseSVG = (C, v, L) => (STYLE === "engineer" ? caseEngineer(C, v, L) : caseArtisan(C, v, L));
 
 // ── straps ──
@@ -768,7 +774,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
   OUTL_C = []; OUTT = OUTL_C; const caseStr = caseSVG(C, v, L);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
-<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath>${TEXTURES}</defs>
+<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath><clipPath id="glass-${key}"><path d="${circle(C.glassR ?? C.opening)}"/></clipPath>${TEXTURES}</defs>
 <defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
@@ -851,7 +857,7 @@ export const bodyFit = (key, d, outer = null) => fitFor(key, d, outer) * (CASES[
 // as the chosen case has them. LIVE: { outer, dial } in dial mm, set by draw() and frame(); null for a dial without a case
 const CASE_LIP = 0.65;      // the 3D exercise's `inset`: the ring's outer radius this far inside the body's
 let LIVE = null;
-const live_case = (C) => (LIVE ? Object.assign(C, { opening: LIVE.outer, glassR: LIVE.glass, dial: LIVE.dial, insert: null, bands: [] }) : C);      // glassR: the crystal's edge, the bezel's inner one
+const live_case = (C) => (LIVE ? Object.assign(C, { opening: LIVE.outer, glassR: LIVE.glass, dialR: LIVE.dial / 2, dial: LIVE.dial, insert: null, bands: [] }) : C);      // glassR: the crystal's edge, the bezel's inner one
 export const caseBox = (key, size) => { const C = scaleCase(CASES[key], size); return { h: C.l2l, w: (C.cushion ? 2 * C.cushion.a : C.rails ? Math.max(C.od, C.lugw + 2 * C.lugT) : C.od) + 2 * C.crown.h, dial: C.dial }; };
 export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 export function draw(o) {

@@ -1188,6 +1188,16 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
       t.set_value("global", "w_body", fit + 6); t.changed(true); await tick(); await wait();
       return { start, fit, same: Math.abs(w1 - w0) < 0.2, r0, r1: clip_r(), w0, w2: wide() }; });
     check(body.start.join("|") === "0|Fit*,Own Ø" && body.fit > 30 && body.same && body.r0 === body.r1 && body.w2 > body.w0 + 3, `Body Ø: Fit to start (${body.start.join(" · ")}); Own Ø takes Fit's ${body.fit} mm and nothing moves; 6 mm more and the watch is wider (${body.w0} → ${body.w2}) while the opening stays at the bezel (r ${body.r0} → ${body.r1}) (Okay: "move independently from the dial size, default body fits the dial size snugly")`);
+    // THE CRYSTAL'S, NOT THE OPENING'S (v1.1.78; Okay, 11 Nov 2026: "glass seems larger covering bezel, bezel border looks like a wall"): with the
+    // tool's bezel the wall's shadow is cast from the crystal's edge (the bezel's inner one), not from the opening (its outer one) — nothing dark on the bezel's own top — and the shine lies inside the dial's edge
+    const crystal = await own.evaluate(() => { const t = window.dial_tool, S = t.S, g = t.watch_g, r_of = (q) => { const m = (g.querySelector(q)?.getAttribute("d") || "").match(/^M(-?[\d.]+)/); return m ? Math.abs(parseFloat(m[1])) : null; };
+      const open = r_of('clipPath[id^="dial-"] path'), glass = r_of('clipPath[id^="glass-"] path'), cut = [...g.querySelectorAll('g[clip-path^="url(#glass-"]')];
+      const shadow = cut.find((x) => x.querySelector('path[fill-rule="evenodd"][fill="#000"]')), shine = cut.map((x) => x.querySelector(':scope > path[stroke="#fff"]')).find(Boolean);
+      const hole = shadow ? (shadow.querySelector("path").getAttribute("d").match(/ZM(-?[\d.]+)/) || [])[1] : null, arc = shine ? +(shine.getAttribute("d").match(/A([\d.]+)/) || [])[1] : null;
+      const on_opening = [...g.querySelectorAll('g[clip-path^="url(#dial-"] > g > path[fill-rule="evenodd"][fill="#000"]')].filter((x) => x.getAttribute("d").startsWith("M-500 -500")).length;      // the wall's shadow is the whole field with a hole in it
+      return { open: open && +open.toFixed(2), glass: glass && +glass.toFixed(2), hole: hole && +Math.abs(parseFloat(hole)).toFixed(2), arc, dial: S.dial_d / 2, on_opening }; });
+    check(crystal.glass !== null && crystal.glass < crystal.open - 1 && crystal.hole === crystal.glass && crystal.on_opening === 0 && crystal.arc !== null && crystal.arc < crystal.dial,
+      `with the tool's bezel the wall's shadow is the crystal's (its edge r ${crystal.hole} = the bezel's inner edge ${crystal.glass}, inside the opening ${crystal.open}; none cast from the opening: ${crystal.on_opening}); the shine inside the dial's edge (r ${crystal.arc} < ${crystal.dial}) (Okay: "glass seems larger covering bezel, bezel border looks like a wall")`);
     await own.close(); }
   await page.evaluate(() => { const t = window.dial_tool, S = t.S; const R = S.rings[S.ui_ring]; R.surface = 0; R.r_from = 0; S.bz_on = false; S.rh_on = false; S.ui_dial_tab = 0; t.static_dirty = true; t.sync_rows(); t.render(); });      // the window as it was found: the case off, the Dial tab on Dial
   await frame();
