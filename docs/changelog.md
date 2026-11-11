@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.67 beta · 11 Nov 2026 — #589: the dial's parts, one record for the tool and the 3D view
+
+Okay, 11 Nov 2026: "3d is being made for pro. But the rules in dial tool and 3d should be synced, caps for hands, hand thicknesses etc can also be decided from dial tool. We can take the 3d to a private repo"; he chose "Steps 1–2 (contract + split)" for the session.
+
+- **`web/src/parts.js`**: a dial part's record — its **make** (plate · printed · applied · hand · on hand · cap · disc · in window · case) and the numbers that make has (a print's ink; an applied part's height and section; a hand's height, thickness, section, half-width, boss; the cap's height and thickness; a disc's depth) — and **`STACK`**, the stack's rules: hand 0.15 · cap 0.25 · boss step 0.05 · pipe wall 0.2 · pipe reach 0.4 · room to the crystal 0.4 mm. A section is in the Bevel words: flat · ridge · faceted · domed. `applied` is ready for applied indices; nothing makes one yet.
+- **Export → SVG** writes each part's record (`data-make`, `data-t`, `data-section` beside the attributes of #584, which stay) and the dial its stack (`data-parts`, `data-stack`), through `show.js` `svg_facts` → `parts.js` `part_attrs`. `read_part` reads a part back — a file of v1.1.63–66 too. Nothing on the screen changes; the print mask still carries none.
+- **Who reads it**: Show Case 3D (`try/relight`, round 101) reads every dial through `read_part` and stands its hands and cap by the stack's numbers, no longer its own.
+- **Tests**: `labels.mjs` — a part read back is the part written; an older file's hand reads as a ridge of the stack's thickness; the dial says the stack.
+
 ## v1.1.66 beta · 11 Nov 2026 — #588: a movement says its posts
 
 Okay, 11 Nov 2026, 00:18, on Show Case 3D's hands seen from the side: "gaps between hands seem filled with shapes. is that real life accurate?"; 00:25: "do the accurate hand pipes."

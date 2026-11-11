@@ -13,6 +13,7 @@
 import * as G from "./geometry.js";
 import { night } from "./night.js";      // the night laid over the watch's drawing (#175)
 import * as WATCH from "./watch.js";
+import * as P from "./parts.js";      // the dial's parts as a 3D view reads them, and the stack's rules (Okay, 11 Nov 2026: "the rules in dial tool and 3d should be synced")
 
 export const METAL_NAMES = G.METAL_NAMES;
 export const NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey", "solid"];      // solid: one colour, your own (#524; Okay, 24 Oct 2026: "One solid option")
@@ -43,23 +44,20 @@ const one = (x, hand, H, S) => {
 
 /** what a saved SVG says of each part, beyond its shape and colour (#584; Okay, 10 Nov 2026: "i need you to get height and thickness
  *  values as well, this preview depends on it") — so a 3D view built from the file stands every part where this dial puts it, with
- *  nothing guessed. → a function: a scene's part → its attributes, as text. They are `data-` attributes: a drawing program ignores them.
- *    data-role   what the part is, in the engine's word (plate, ring, ring stroke, date disc, date number, date frame, hand, lume, cap …)
- *    data-ink    a printed part's thickness, mm (its ink's height, as the Inks rows set it)
- *    data-hand   the hand a hand, its lume or its painted mark belongs to (hour, minute, second, gmt …)
- *    data-over   how high a hand or the cap stands over the plate's face, mm (the Shadows pane's heights)
- *    data-under  how deep a window's disc lies under the plate's face, mm
- *    data-bevel, data-dome   a bevelled hand, a domed one;  data-hw  half the hand's width, mm;  data-boss  its boss's radius, mm */
-export const svg_facts = (S) => (x) => {
+ *  nothing guessed. The part's record (parts.js: its make and its numbers, the stack's rules for what the dial does not set) as
+ *  `data-` attributes, which a drawing program ignores. → a function: a scene's part → its attributes, as text; `.dial` the dial's own */
+export const part_record = (S, x) => {
   const hand = (x.role === "hand" || x.role === "mark" || x.role === "lume") && G.HANDS.includes(x.name) ? x.name : null, H = hand ? S["ha_" + hand] : null, p = one(x, hand, H, S);
-  const says = [["role", x.role]], mm = (v) => +(+v).toFixed(3);
-  if (PRINTED(x.role) || x.role === "mark") says.push(["ink", mm(G.ink_mm(S, x))]);
-  if (hand) says.push(["hand", hand]);
-  if (x.role === "hand" && hand) { says.push(["over", mm(S["sh_" + hand] ?? S.sh_hour)], ["hw", mm(p.hw)]); if (p.bevel) says.push(["bevel", 1]); if (p.dome) says.push(["dome", 1]); if (G.hand_boss(H, hand)) says.push(["boss", mm(H.hub / 2)]); }
-  if (x.role === "cap") says.push(["over", mm(S.sh_cap)]);
-  if (x.role === "date disc") says.push(["under", mm(G.windows_of(S)[x.window]?.depth ?? S.sh_disc)]);
-  return says.map(([k, v]) => ` data-${k}="${v}"`).join("");
+  const r = { role: x.role, make: P.make_of(x.role, hand), hand };
+  if (PRINTED(x.role) || x.role === "mark") r.ink = G.ink_mm(S, x);
+  if (r.make === "hand" && hand) Object.assign(r, { over: S["sh_" + hand] ?? S.sh_hour, t: P.STACK.hand_t, hw: p.hw, boss: G.hand_boss(H, hand) ? H.hub / 2 : null,
+    section: !p.bevel ? "flat" : P.SECTIONS[1 + (H.bevel_look | 0)] ?? "ridge" });      // a hand's section in the Bevel words: Ridge · Faceted · Domed, flat with no Bevel
+  if (r.make === "hand" && !hand) r.make = "printed";      // a hand the record has no name for (none today) stays a print, as before
+  if (r.make === "cap") Object.assign(r, { over: S.sh_cap, t: P.STACK.cap_t });
+  if (r.make === "disc") r.under = G.windows_of(S)[x.window]?.depth ?? S.sh_disc;
+  return r;
 };
+export const svg_facts = (S) => Object.assign((x) => P.part_attrs(part_record(S, x)), { dial: P.dial_attrs(S.dial_d) });
 
 /** what watch.js draws for this dial and these settings — the Show Case's `options()` */
 export function options(S, items, effects) {

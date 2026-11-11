@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.66 beta · built 2026-11-10 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.67 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -8691,6 +8691,7 @@ function draw(o) {
 }
 
 // src/movements.js
+var HAND_T = 0.15;
 var MOVEMENTS = [
   {
     "id": "nh35",
@@ -9144,7 +9145,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.66 beta";
+var VERSION = "v1.1.67 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -12416,6 +12417,44 @@ function night(svg, moon, decay, blurs = false) {
   return out.replace(/^(<svg[^>]*>)/, "$1\n");
 }
 
+// src/parts.js
+var PARTS_V = 1;
+var STACK = {
+  hand_t: HAND_T,
+  // a hand's thickness
+  cap_t: 0.25,
+  // the cap's thickness (its height is its top)
+  boss_t: 0.05,
+  // a boss's step on its hand
+  pipe_wall: 0.2,
+  // a hand's own pipe round its post: its wall
+  pipe_len: 0.4,
+  // …and how far it reaches under the blade
+  clear: 0.4
+  // from the top of the stack to the crystal (Miyota's)
+};
+var SECTIONS = ["flat", "ridge", "faceted", "domed"];
+var CASE = ["rehaut", "bezel", "bezel chamfer", "insert"];
+var WINDOW = ["date number", "date picture", "disc print"];
+var make_of = (role, hand) => role === "plate" ? "plate" : role === "hand" ? "hand" : (role === "lume" || role === "mark") && hand ? "on hand" : role === "cap" ? "cap" : role === "date disc" ? "disc" : WINDOW.includes(role) ? "in window" : CASE.includes(role) ? "case" : role === "boss" ? "hand" : "printed";
+var mm = (v) => +(+v).toFixed(3);
+function part_attrs(p) {
+  const says = [["role", p.role], ["make", p.make]];
+  if (p.make === "printed" || p.make === "on hand" && p.ink != null) says.push(["ink", mm(p.ink)]);
+  if (p.hand) says.push(["hand", p.hand]);
+  if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section]);
+  if (p.make === "hand") {
+    says.push(["over", mm(p.over)], ["t", mm(p.t)], ["section", p.section], ["hw", mm(p.hw)]);
+    if (p.section !== "flat") says.push(["bevel", 1]);
+    if (p.section === "domed") says.push(["dome", 1]);
+    if (p.boss) says.push(["boss", mm(p.boss)]);
+  }
+  if (p.make === "cap") says.push(["over", mm(p.over)], ["t", mm(p.t)]);
+  if (p.make === "disc") says.push(["under", mm(p.under)]);
+  return says.map(([k, v]) => ` data-${k}="${v}"`).join("");
+}
+var dial_attrs = (d) => ` data-dial-d="${mm(d)}" data-parts="${PARTS_V}" data-stack="${Object.entries(STACK).map(([k, v]) => `${k}:${v}`).join(" ")}"`;
+
 // src/show.js
 var METAL_NAMES2 = METAL_NAMES;
 var NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey", "solid"];
@@ -12441,21 +12480,23 @@ var PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut",
 var one = (x2, hand, H2, S) => {
   return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0 };
 };
-var svg_facts = (S) => (x2) => {
+var part_record = (S, x2) => {
   const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null, H2 = hand ? S["ha_" + hand] : null, p = one(x2, hand, H2, S);
-  const says = [["role", x2.role]], mm = (v) => +(+v).toFixed(3);
-  if (PRINTED(x2.role) || x2.role === "mark") says.push(["ink", mm(ink_mm(S, x2))]);
-  if (hand) says.push(["hand", hand]);
-  if (x2.role === "hand" && hand) {
-    says.push(["over", mm(S["sh_" + hand] ?? S.sh_hour)], ["hw", mm(p.hw)]);
-    if (p.bevel) says.push(["bevel", 1]);
-    if (p.dome) says.push(["dome", 1]);
-    if (hand_boss(H2, hand)) says.push(["boss", mm(H2.hub / 2)]);
-  }
-  if (x2.role === "cap") says.push(["over", mm(S.sh_cap)]);
-  if (x2.role === "date disc") says.push(["under", mm(windows_of(S)[x2.window]?.depth ?? S.sh_disc)]);
-  return says.map(([k, v]) => ` data-${k}="${v}"`).join("");
+  const r = { role: x2.role, make: make_of(x2.role, hand), hand };
+  if (PRINTED(x2.role) || x2.role === "mark") r.ink = ink_mm(S, x2);
+  if (r.make === "hand" && hand) Object.assign(r, {
+    over: S["sh_" + hand] ?? S.sh_hour,
+    t: STACK.hand_t,
+    hw: p.hw,
+    boss: hand_boss(H2, hand) ? H2.hub / 2 : null,
+    section: !p.bevel ? "flat" : SECTIONS[1 + (H2.bevel_look | 0)] ?? "ridge"
+  });
+  if (r.make === "hand" && !hand) r.make = "printed";
+  if (r.make === "cap") Object.assign(r, { over: S.sh_cap, t: STACK.cap_t });
+  if (r.make === "disc") r.under = windows_of(S)[x2.window]?.depth ?? S.sh_disc;
+  return r;
 };
+var svg_facts = (S) => Object.assign((x2) => part_attrs(part_record(S, x2)), { dial: dial_attrs(S.dial_d) });
 function options(S, items, effects) {
   const style = STYLE_NAMES2[S.w_style] || "miyazaki", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
   const P2 = presets(style), lit = effects;
@@ -12639,10 +12680,10 @@ async function picture(tool2, px) {
 async function export_watch(tool2, kind, save) {
   const S = tool2.S, name = `${(S.name || "dial").replace(/[^\w-]+/g, "-").replace(/^-|-$/g, "") || "dial"}-${CASE_OF_BEZEL[S.bezel] || "dress"}-${STYLE_NAMES2[S.w_style]}`;
   tool2.log(`drawing the watch as ${kind.toUpperCase()}\u2026`);
-  const { canvas: canvas2, mm } = await picture(tool2, S.out_watch_px);
+  const { canvas: canvas2, mm: mm2 } = await picture(tool2, S.out_watch_px);
   if (kind === "png") return save(name + ".png", await new Promise((ok) => canvas2.toBlob(ok, "image/png")), "image/png");
   const jpeg = new Uint8Array(await (await new Promise((ok) => canvas2.toBlob(ok, "image/jpeg", 0.95))).arrayBuffer());
-  const pt = mm.map((v) => (v * 72 / 25.4).toFixed(2)), enc = new TextEncoder(), parts = [], offsets = [];
+  const pt = mm2.map((v) => (v * 72 / 25.4).toFixed(2)), enc = new TextEncoder(), parts = [], offsets = [];
   let size = 0;
   const put = (x2) => {
     const b = typeof x2 === "string" ? enc.encode(x2) : x2;
@@ -13000,7 +13041,7 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
     return ` id="${/^[a-z]/.test(slug) ? "" : "ring-"}${slug}${ids.get(slug) > 1 ? "-" + ids.get(slug) : ""}"`;
   };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
-  out.push(`<g id="dial"${facts ? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
+  out.push(`<g id="dial"${facts ? facts.dial ?? ` data-dial-d="${num(S.dial_d, 3)}"` : ""} transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
   for (const item of drawn(S, statik, t, preview, selected)) {
     const id = named(item) + (facts ? facts(item) : "");
     const text = live ? live_texts(S, statik, item) : null;
@@ -13234,7 +13275,7 @@ var path_ops = (p) => p.d.map((c) => {
 });
 var SPEC = { w: 297, h: 210, edge: 12, type: 2.6, head: 4, row: 4.6, line: 0.12, ink: "#111111", mark: "#C8102E", soft: "#8A8A86" };
 function spec_sheet(S, statik, t) {
-  const out = [], T = page_type(), mm = (v) => num(v, 2);
+  const out = [], T = page_type(), mm2 = (v) => num(v, 2);
   const words = (txt2, x2, y2, size = SPEC.type, fill = SPEC.ink) => {
     const p = text_path(String(txt2), T, size);
     if (p.d.length) out.push(`<path d="${p.translate(x2, -y2).svg(3, true)}" fill="${fill}"/>`);
@@ -13257,7 +13298,7 @@ function spec_sheet(S, statik, t) {
     const n = text_path(String(i2 + 1), T, 2.2), b = n.bounds();
     if (b) out.push(`<path d="${n.translate(px - (b[0] + b[2]) / 2, -py - (b[1] + b[3]) / 2).svg(3, true)}" fill="#FFFFFF"/>`);
   });
-  words(`Dial Tool \xB7 spec sheet \xB7 ${mm(S.dial_d)} mm dial \xB7 drawn at ${scale2}`, SPEC.edge, SPEC.edge + 4, SPEC.head);
+  words(`Dial Tool \xB7 spec sheet \xB7 ${mm2(S.dial_d)} mm dial \xB7 drawn at ${scale2}`, SPEC.edge, SPEC.edge + 4, SPEC.head);
   words(`${MADE_BY} \xB7 ${file_name(S, "json").replace(/^.*mm-|\.json$/g, "")} \xB7 every measure in mm`, SPEC.edge, SPEC.edge + 9, SPEC.type, SPEC.soft);
   const x0 = SPEC.edge + box3 + 10, cols = [0, 5, 29, 48, 62, 76, 90, 103], width = SPEC.w - SPEC.edge - x0;
   let y = SPEC.edge + 4;
@@ -13276,25 +13317,25 @@ function spec_sheet(S, statik, t) {
   line(["#", "Name", "Kind", "Radius", "Size", "Width", "Count", "Span\xB0"], SPEC.type, SPEC.soft);
   rings.forEach((ring, i2) => {
     const kind = kind_of(ring), text = kind === "numerals" || kind === "text";
-    line([i2 + 1, (ring.name || kind).slice(0, 16), kind, mm(ring.r), text ? mm(ring.size) : kind === "band" ? "" : mm(ring.len), text ? "" : kind === "band" ? mm(ring.width) : mm(ring.w), ring.count, num(ring.span, 1)]);
+    line([i2 + 1, (ring.name || kind).slice(0, 16), kind, mm2(ring.r), text ? mm2(ring.size) : kind === "band" ? "" : mm2(ring.len), text ? "" : kind === "band" ? mm2(ring.width) : mm2(ring.w), ring.count, num(ring.span, 1)]);
   });
   head("Hands");
   line(["", "Hand", "", "Length", "Width", "Tail", "Hub"], SPEC.type, SPEC.soft);
   for (const [key, name] of [["ha_hour", "Hour"], ["ha_minute", "Minute"], ["ha_second", "Seconds"]]) {
     const h = { ...HAND_BASE, ...S[key] || {} };
-    if (S.ha_on && h.on) line(["", name, "", mm(h.len), mm(h.w), mm(h.tail), h.hub ? mm(h.hub) : ""]);
+    if (S.ha_on && h.on) line(["", name, "", mm2(h.len), mm2(h.w), mm2(h.tail), h.hub ? mm2(h.hub) : ""]);
   }
-  if (S.ha_on && S.ha_cap > 0) line(["", "Cap", "", "", mm(S.ha_cap), "", ""]);
+  if (S.ha_on && S.ha_cap > 0) line(["", "Cap", "", "", mm2(S.ha_cap), "", ""]);
   const wins = windows_of(S).map((w, i2) => [w, i2]).filter(([w]) => w.on);
   if (wins.length) {
     head("Windows");
     line(["#", "Shows", "", "At", "Radius", "Width", "Height", "Frame"], SPEC.type, SPEC.soft);
-    for (const [w, i2] of wins) line([i2 + 1, WINDOW_KINDS[w.kind], "", window_place(w), mm(w.r), mm(w.w), mm(w.h), mm(w.frame)]);
+    for (const [w, i2] of wins) line([i2 + 1, WINDOW_KINDS[w.kind], "", window_place(w), mm2(w.r), mm2(w.w), mm2(w.h), mm2(w.frame)]);
   }
   head("Dial");
-  line(["", "Diameter", "", mm(S.dial_d)]);
-  if (S.dial_hole > 0) line(["", "Centre hole", "", mm(S.dial_hole)]);
-  line(["", "Page", "", `${mm(page_mm(S))} square (margin ${mm(S.margin)})`]);
+  line(["", "Diameter", "", mm2(S.dial_d)]);
+  if (S.dial_hole > 0) line(["", "Centre hole", "", mm2(S.dial_hole)]);
+  line(["", "Page", "", `${mm2(page_mm(S))} square (margin ${mm2(S.margin)})`]);
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<svg xmlns="http://www.w3.org/2000/svg" width="${SPEC.w}mm" height="${SPEC.h}mm" viewBox="0 0 ${SPEC.w} ${SPEC.h}">`,
@@ -14381,7 +14422,7 @@ ROWS["Show export"] = [
   info("The picture's longer side. The PDF is one page at the drawing's real size, the picture inside it.", {})
 ];
 var SHOW_SECTIONS = ["Show dial", "Watch", "Light", "Show export"];
-var SECTIONS = Object.keys(ROWS);
+var SECTIONS2 = Object.keys(ROWS);
 var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
 var on_tab = (n) => (rows) => rows.map((r) => r.pin ? r : { ...r, show: (T, S, app) => (S.ui_dial_tab || 0) === n && (!r.show || r.show(T, S, app)) });
 var CS = { side: true };
@@ -14427,7 +14468,7 @@ ROWS.Dial = [
     num2("bz_dome", "Dome", 0, 5, 0.05, { show: (T, S) => S.bz_on })
   ])
 ];
-for (const name of SECTIONS) for (const row of ROWS[name]) {
+for (const name of SECTIONS2) for (const row of ROWS[name]) {
   row.scope ??= name === "Rings" ? "ring" : "global";
   name_row(row);
 }
@@ -18898,8 +18939,8 @@ var PANEL = {
    *  which can be folded. Each section remembers how far it was scrolled. */
   show_section() {
     this.unselected = false;
-    if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
-    const name = SECTIONS[this.S.ui_section];
+    if (!(this.S.ui_section in SECTIONS2)) this.S.ui_section = 0;
+    const name = SECTIONS2[this.S.ui_section];
     if (this.section_shown) this.scrolls[this.section_shown] = this.form.scrollTop;
     this.pop_close();
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
@@ -18907,7 +18948,7 @@ var PANEL = {
     this.pinned.replaceChildren();
     this.ring_list = null;
     this.ring_line_holder = null;
-    this.font_scope = SECTIONS[this.S.ui_section] === "Date" ? "window" : "ring";
+    this.font_scope = SECTIONS2[this.S.ui_section] === "Date" ? "window" : "ring";
     this.rows = ROWS[name].map((row) => this.build_row(row));
     let pane = null;
     for (const r of this.rows) {
@@ -19088,7 +19129,7 @@ var PANEL = {
     const id = (row.id || `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-")) + (row.inpop ? "-pop" : "");
     const active = (e) => document.activeElement === e;
     if (row.kind === "hdr") {
-      out.fold = `${SECTIONS[this.S.ui_section]}/${row.text || row.name}`;
+      out.fold = `${SECTIONS2[this.S.ui_section]}/${row.text || row.name}`;
       const title = el("h2", { textContent: row.text || "" });
       out.eye = el("span", { className: "eye" });
       out.summary = el("span", { className: "summary quiet" });
@@ -20206,7 +20247,7 @@ var RINGS = {
    *  measures, a band its width and fill. The second says where: how many positions, and what departs from a whole
    *  turn — a start, a span, a give-way, nudged numerals. The names are the panes' and rows' own words. */
   ring_details(R) {
-    const kind = kind_of(R), len = (mm) => `${parseFloat(this.in_unit(mm, 2))}`, at = positions_of(R);
+    const kind = kind_of(R), len = (mm2) => `${parseFloat(this.in_unit(mm2, 2))}`, at = positions_of(R);
     const what = [], where = [["Positions", String(parseInt(R.count) || 1)]];
     if (kind === "numerals") {
       const labels = ring_labels(R);
@@ -20236,7 +20277,7 @@ var RINGS = {
    *  would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's size, a band's width.
    *  Lengths in Settings' unit, without trailing zeros. → {kind, size, r} as text */
   ring_summary(ring) {
-    const kind = kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = positions_of(ring).length;
+    const kind = kind_of(ring), len = (mm2) => String(parseFloat(this.in_unit(mm2, 2))), n = positions_of(ring).length;
     const one2 = has_text(ring) ? ring.size : kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
     const word = kind === "band" ? n === 1 ? "band" : "sectors" : kind === "text" ? n === 1 ? "text" : "texts" : n === 1 ? kind.slice(0, -1) : kind;
     return { kind: `${n} ${word}`, size: len(one2), r: len(ring.r) };
@@ -21186,7 +21227,7 @@ function case_section(S) {
   }
   return out;
 }
-var CASE = {
+var CASE2 = {
   /** the Dial tab's own tabs, always in view: Dial · Rehaut · Bezel (Okay, 9 Nov 2026: "Tab under dial. What we have now
    *  is a tab, bezel and rehault are tabs"), as the hand tabs are */
   row_case_tabs(wrap, out) {
@@ -22341,7 +22382,7 @@ var PREVIEW = {
   /** what is under a point of the preview: {kind, name, …} or null. kind: ring · hand · cap · date · plate.
    *  Used by the hover label and by the click, so they always agree. */
   piece_at(p, node) {
-    const S = this.S, mm = this.to_mm(p), r = Math.hypot(mm[0], mm[1]);
+    const S = this.S, mm2 = this.to_mm(p), r = Math.hypot(mm2[0], mm2[1]);
     const item = node && node.dataset && node.dataset.i !== void 0 ? this.items[+node.dataset.i] : null;
     const role = item ? item.role : null;
     if (role === "hand" || role === "mark" || role === "lume") return { kind: "hand", hand: HANDS.indexOf(item.name), name: hand_word(item.name), path: item.path, angle: item.angle };
@@ -22353,7 +22394,7 @@ var PREVIEW = {
     let d = role === "ring" || role === "ring stroke" ? item.ring : null;
     if (!d) {
       const slack = 4 / this.z;
-      const angle = Math.atan2(mm[0], mm[1]) * 180 / Math.PI;
+      const angle = Math.atan2(mm2[0], mm2[1]) * 180 / Math.PI;
       let best = Infinity;
       for (const x2 of this.statik.rings) {
         const R = x2.ring;
@@ -22373,7 +22414,7 @@ var PREVIEW = {
       d.parts.forEach((part2, k) => {
         const b = part2 && part2.bounds();
         if (!b) return;
-        const dist = Math.hypot((b[0] + b[2]) / 2 - mm[0], (b[1] + b[3]) / 2 - mm[1]);
+        const dist = Math.hypot((b[0] + b[2]) / 2 - mm2[0], (b[1] + b[3]) / 2 - mm2[1]);
         if (dist < best) {
           best = dist;
           piece.position = String(d.at[k]);
@@ -23372,7 +23413,7 @@ var CARDS = {
   gallery_way() {
     const go = el("button", { type: "button", className: "gallerypill", id: "to-gallery", textContent: "Gallery", title: "Dials to open and take apart" });
     go.onclick = () => {
-      const i2 = SECTIONS.indexOf("Export");
+      const i2 = SECTIONS2.indexOf("Export");
       if (this.S.ui_section !== i2) {
         this.S.ui_section = i2;
         this.show_section();
@@ -23731,9 +23772,9 @@ var CARDS = {
       cell.innerHTML = e.picture;
       cell.style.left = places[i2][0] + "px";
       cell.style.top = places[i2][1] + "px";
-      const mm = this.compare_real && this.compare_mm ? this.compare_mm.get(e.id ?? i2) : null;
-      if (mm) {
-        const d = Math.round(mm * px_mm);
+      const mm2 = this.compare_real && this.compare_mm ? this.compare_mm.get(e.id ?? i2) : null;
+      if (mm2) {
+        const d = Math.round(mm2 * px_mm);
         cell.style.width = cell.style.height = d + "px";
         cell.style.left = places[i2][0] + (D - d) / 2 + "px";
         cell.style.top = places[i2][1] + (D - d) / 2 + "px";
@@ -27695,8 +27736,8 @@ var EXPORT = {
     const text = el("span", { className: "quiet", id: "png-size" });
     wrap.append(el("span"), text);
     out.refresh = () => {
-      const mm = page_mm(this.S), px = Math.round(mm / 25.4 * this.S.out_dpi);
-      text.textContent = `${this.in_unit(mm, 1)} ${this.unit()[0]} at ${Math.round(this.S.out_dpi)} dpi = ${px} \xD7 ${px} px`;
+      const mm2 = page_mm(this.S), px = Math.round(mm2 / 25.4 * this.S.out_dpi);
+      text.textContent = `${this.in_unit(mm2, 1)} ${this.unit()[0]} at ${Math.round(this.S.out_dpi)} dpi = ${px} \xD7 ${px} px`;
     };
   },
   /** a settings file: the whole dial, every value, kept to open again (R31: a link is for sharing, a file for keeping).
@@ -27780,10 +27821,10 @@ var EXPORT = {
         if (lost.length) this.log(mask_says(lost));
       }
       if (!["json", "wearos"].includes(kind)) {
-        const T = thinnest(S), mm = (v) => `${+v.toFixed(3)} mm`;
+        const T = thinnest(S), mm2 = (v) => `${+v.toFixed(3)} mm`;
         const parts = [
-          T.lines.length ? `thinnest line: ${T.lines[0][0]}, ${mm(T.lines[0][1])}` : "",
-          T.gaps.length ? `narrowest gap: ${T.gaps[0][0]}, ${mm(T.gaps[0][1])}` : "",
+          T.lines.length ? `thinnest line: ${T.lines[0][0]}, ${mm2(T.lines[0][1])}` : "",
+          T.gaps.length ? `narrowest gap: ${T.gaps[0][0]}, ${mm2(T.gaps[0][1])}` : "",
           T.unmeasured.length ? `not measured (no stroke width to read): ${T.unmeasured.join(", ")}` : ""
         ].filter(Boolean);
         if (parts.length) this.log(parts.join(" \xB7 "));
@@ -27936,13 +27977,13 @@ var MODE = {
     const leaving = instant || $("#app").classList.contains("away") ? null : this.panel_copy();
     this.S.ui_show = on;
     this.iris_button.setAttribute("aria-pressed", String(on));
-    const first = SECTIONS.indexOf("Watch");
+    const first = SECTIONS2.indexOf("Watch");
     if (on) {
       this.S.ui_edit_section = this.S.ui_section;
-      this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_show_section]) ? this.S.ui_show_section : first;
+      this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS2[this.S.ui_show_section]) ? this.S.ui_show_section : first;
     } else {
       this.S.ui_show_section = this.S.ui_section;
-      this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_edit_section]) ? 0 : this.S.ui_edit_section;
+      this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS2[this.S.ui_edit_section]) ? 0 : this.S.ui_edit_section;
     }
     [...this.tabs.children].forEach((b) => {
       b.hidden = SHOW_SECTIONS.includes(b.dataset.tab) !== on;
@@ -28360,7 +28401,7 @@ var DialTool = class _DialTool {
     root.replaceChildren();
     this.tabs = el("nav", { className: "tabs" });
     [...TAB_ORDER, ...SHOW_SECTIONS].forEach((name) => {
-      const i2 = SECTIONS.indexOf(name);
+      const i2 = SECTIONS2.indexOf(name);
       const tab = el("button", { type: "button", onclick: () => {
         if (this.S.ui_section === i2) return;
         this.S.ui_section = i2;
@@ -28597,9 +28638,9 @@ var DialTool = class _DialTool {
     return UNITS[this.S.ui_unit] || UNITS[0];
   }
   /** a length in mm → the text of it in the chosen unit. */
-  in_unit(mm, places) {
+  in_unit(mm2, places) {
     const u = this.unit();
-    return (mm * u[2]).toFixed(Math.max(0, places + u[3]));
+    return (mm2 * u[2]).toFixed(Math.max(0, places + u[3]));
   }
   // thou takes a decimal away: never fewer than none
   /** a listener on the document or the window that belongs to this tool: taken off when the tool closes */
@@ -28769,7 +28810,7 @@ var DialTool = class _DialTool {
     console.log(message);
   }
 };
-Object.assign(DialTool.prototype, PANEL, RINGS, HANDS2, CASE, WINDOWS, COLOUR, FONTS, PREVIEW, GUIDES, BAR, CARDS, EXPORT, MODE);
+Object.assign(DialTool.prototype, PANEL, RINGS, HANDS2, CASE2, WINDOWS, COLOUR, FONTS, PREVIEW, GUIDES, BAR, CARDS, EXPORT, MODE);
 var tool = null;
 async function open_window(pathkit2, harfbuzz, font_bytes) {
   start(pathkit2, harfbuzz);

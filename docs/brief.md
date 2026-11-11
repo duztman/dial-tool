@@ -47,6 +47,7 @@ Numbers are never reused; a settled question is deleted here and its decision st
 
 1. **Movement** — which one? It fixes the real dial diameter, hand lengths, the date window's position and size (date wheel), and the feet positions (#89 waits on it). Since 10 Nov 2026 the tool is to offer five calibres and an imaginary Any (#586): the numbers are `docs/research/movements.json`, the research `docs/research/movements.md`.
 8. **Imported shapes with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours — to settle when import is built (#173).
+15. **Show Case 3D in the tool** — it is for Dial Tool Pro and may move to a private repo (Okay, 11 Nov 2026), and when it comes in, the 3D scene replaces show mode's look. Open: what of it ships in this MIT tool's show mode (a page's code is readable by anyone who loads it), and what stays Pro's. The tool owns the shared rules (`web/src/parts.js`, #589).
 14. **Okay's Mac clone** (`~/Desktop/dial-maker/dial-tool-github-repo/`): his; he pulls it himself when he wants it (Okay, 17 Oct 2026: "if you can reach mc do clone if not never bother anymore") — **not to be raised again**.
 
 ## 6 · Avenues (ideas, not commitments)

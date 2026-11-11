@@ -56,11 +56,24 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   const S = G.fresh_settings(OPENER); S.sh_minute = 0.42; S.rings[0].ink_h = 0.07;
   const st = G.build_static(S), plain = O.svg_document(S, st, 0, {}), told = O.svg_document(S, st, 0, { facts: SHOW.svg_facts(S) });
   const of = (id) => Object.fromEntries([...(told.match(new RegExp(`<path id="${id}"([^>]*?) d="`))?.[1] ?? "").matchAll(/ data-([a-z-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
-  const first = told.match(/<path id="([^"]+)" data-role="ring" data-ink="0\.07"/)?.[1];
+  const first = told.match(/<path id="([^"]+)" data-role="ring" data-make="printed" data-ink="0\.07"/)?.[1];
   check(told.replace(/ data-[a-z-]+="[^"]*"/g, "") === plain, "a saved SVG's facts are attributes only: without them the file is the plain one, letter for letter");
   check(of("minute-hand").over === "0.42" && of("minute-hand").hand === "minute" && of("cap").over === String(S.sh_cap) && of("plate").role === "plate" && Boolean(first) && /data-dial-d="34"/.test(told),
     `"height and thickness values as well": the minute hand says its height (${of("minute-hand").over} mm), the cap its own, the first ring its ink's thickness (0.07 mm, ${first}), the dial its Ø`);
   S.out_production = true; check(!/data-role/.test(O.svg_document(S, G.build_static(S), 0, { facts: SHOW.svg_facts(S) })), "a print mask carries no facts");
+}
+// the dial's parts (parts.js; Okay, 11 Nov 2026: "the rules in dial tool and 3d should be synced, caps for hands, hand thicknesses etc
+// can also be decided from dial tool"): a saved part's attributes read back to the same record; a file from before the record reads
+// with its make worked out and the stack's thicknesses; the dial says the stack's rules
+{
+  const P = await import("../src/parts.js"), SHOW = await import("../src/show.js"), O = await import("../src/output.js"), { OPENER } = await import("../src/opener.js");
+  const S = G.fresh_settings(OPENER); S.ha_hour.bevel = true; S.ha_hour.bevel_look = 2;
+  const svg = O.svg_document(S, G.build_static(S), 0, { facts: SHOW.svg_facts(S) }), attrs = (id) => Object.fromEntries([...(svg.match(new RegExp(`<path id="${id}"([^>]*?) d="`))?.[1] ?? "").matchAll(/ data-([a-z-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
+  const back = (id) => P.read_part((k) => attrs(id)[k] ?? null), hour = back("hour-hand"), cap = back("cap"), ring = back("numerals");
+  const old = P.read_part((k) => ({ role: "hand", hand: "minute", over: "0.85", bevel: "1" })[k] ?? null), stack = P.read_stack(svg.match(/data-stack="([^"]*)"/)?.[1]);
+  check(hour.make === "hand" && hour.section === "domed" && hour.t === P.STACK.hand_t && hour.over === S.sh_hour && cap.make === "cap" && cap.t === P.STACK.cap_t && ring.make === "printed" && ring.ink === 0.21
+    && old.make === "hand" && old.section === "ridge" && old.t === P.STACK.hand_t && stack.cap_t === P.STACK.cap_t && /data-parts="1"/.test(svg),
+    `"caps for hands, hand thicknesses … decided from dial tool": the hour hand reads back domed, ${hour.t} mm thick at ${hour.over}; the cap ${cap.t} thick; a ring printed ${ring.ink} mm; a file from before the record reads as a ridge hand of the stack's thickness; the dial says the stack (${Object.keys(stack).length} rules)`);
 }
 // #585, #587: the hands start at a real movement's heights, and every movement's heights come from the one record
 { const D = G.DEFAULTS, by = (id) => G.movement(id), m8 = by("miyota-8215").heights, T = G.HAND_T;
