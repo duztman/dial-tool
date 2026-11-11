@@ -260,7 +260,7 @@ export const HANDS = {
       }
       if (d.axis === "along") {      // up the hand in mm, turned into the number that moves the widest place
         const v = d.v0 + (d.lying ? dx : -dy) * d.widest.per_mm, R = d.row, step = R.step;
-        this.set_value("hand", d.key, +clamp(Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
+        this.set_value("hand", d.key, +clamp(Math.round(v / step) * step, R.lo, R.top ? Math.max(R.hi, R.top(this.S)) : R.hi).toFixed(4));
         return;
       }
       // how far the handle's own side moved outwards: the tip away from the centre, the tail the other way, an edge out
@@ -270,7 +270,7 @@ export const HANDS = {
       // snapping (#184; #85, Max Bill's hand tip on a ring's edge): a dragged Length lands on a ring's edge when within
       // SNAP_PX of it in the picture (d.scale: screen points per mm); a snapped length is kept whole, not stepped
       const s = d.key === "len" ? snap(v, G.snap_radii(this.S), SNAP_PX / d.scale) : { v, hit: false };
-      this.set_value("hand", d.key, +clamp(s.hit ? s.v : Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
+      this.set_value("hand", d.key, +clamp(s.hit ? s.v : Math.round(v / step) * step, R.lo, R.top ? Math.max(R.hi, R.top(this.S)) : R.hi).toFixed(4));      // top: a disc runs to the dial's edge
     });
     const end = () => {
       if (!this.hand_drag) return;

@@ -1149,15 +1149,15 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   const lean = await S("[S.rh_deg, S.rh_len, +(S.rh_len * Math.sin(S.rh_deg * Math.PI / 180)).toFixed(4), Math.max(...t.items.filter((x) => x.role === 'rehaut').map((x) => x.path.bounds()[2])) - S.dial_d / 2, [...document.querySelectorAll('.row')].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector('label')).map((x) => x.querySelector('label').querySelector('.whole')?.textContent || x.querySelector('label').textContent).filter((w) => /Angle|Length|Width/.test(w)).join()]");
   check(lean[0] === 24 && lean[1] === 1.5 && Math.abs(lean[3] - lean[2]) < 0.01 && lean[4] === "Angle °,Length", `the rehaut by its lean and length (Okay: "Rehault degree is what we need and length, not this control"): ${lean[0]}°, ${lean[1]} mm → ${lean[2]} mm out in plan (${lean[3].toFixed(4)}); the rows ${lean[4]}`);
   // a ring on a surface: Surface and Radius from in the Rings tab; Fit puts a band across the whole insert, Edge measures from the surface's inner edge
-  await tab("Rings");
-  await page.evaluate(() => { const t = window.dial_tool, S = t.S; const i = S.rings.findIndex((r) => r.name === "Markers"); S.ui_ring = i; const R = S.rings[i]; R.surface = 2; R.r_from = 2; t.static_dirty = true; t.sync_rows(); t.render(); });
+  // a ring put on the bezel is edited on the Bezel tab (Okay, 11 Nov 2026: "build a ring system under there as well"), the tab its surface
+  await page.evaluate(() => { const t = window.dial_tool, S = t.S; const i = S.rings.findIndex((r) => r.name === "Markers"); const R = S.rings[i]; R.surface = 2; R.r_from = 2; S.ui_ring = i; t.static_dirty = true; S.ui_section = 0; t.show_section(); document.querySelector("#case-tab-2").click(); t.render(); });
   await frame(); await frame();
-  const placed = await page.evaluate(() => { const t = window.dial_tool, S = t.S, R = S.rings[S.ui_ring];
+  const placed = await page.evaluate(() => { const t = window.dial_tool, S = t.S, R = S.rings.find((r) => r.name === "Markers");
     const built = t.statik.rings.find((x) => (x.raw || x.ring) === R); const b = built.path.bounds(); const rw = S.rh_len * Math.sin(S.rh_deg * Math.PI / 180), ins = [S.dial_d / 2 + rw + S.bz_in_in, S.dial_d / 2 + rw + S.bz_w - S.bz_in_out];
     const rows = [...document.querySelectorAll(".row")].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector("label")).map((x) => x.querySelector("label").textContent);
     return { outer: +b[3].toFixed(2), ins_out: +ins[1].toFixed(2), len: +(built.ring.len).toFixed(2), ins_w: +(ins[1] - ins[0]).toFixed(2), rows: rows.filter((x) => /Surface|Radius from/.test(x)).join(), raw_r: R.r, drawn_r: built.ring.r }; });
-  check(placed.rows === "Surface,Radius from" && Math.abs(placed.outer - placed.ins_out) < 0.02 && Math.abs(placed.len - placed.ins_w) < 0.02 && placed.raw_r !== placed.drawn_r,
-    `Markers put on the bezel, Fit: Surface and Radius from show; the marks reach the insert's outer edge (${placed.outer} = ${placed.ins_out}) and are as long as it is wide (${placed.len}); the ring's own radius is untouched (${placed.raw_r} → drawn at ${placed.drawn_r})`);
+  check(placed.rows === "Radius from" && Math.abs(placed.outer - placed.ins_out) < 0.02 && Math.abs(placed.len - placed.ins_w) < 0.02 && placed.raw_r !== placed.drawn_r,
+    `Markers put on the bezel, Fit, edited on the Bezel tab: Radius from shows (the tab is its surface); the marks reach the insert's outer edge (${placed.outer} = ${placed.ins_out}) and are as long as it is wide (${placed.len}); the ring's own radius is untouched (${placed.raw_r} → drawn at ${placed.drawn_r})`);
   // show mode takes the tool's case as it is (Okay, 10 Nov 2026, 00:51: "The bezel and rehault should apply to showcase as they are"): the
   // published case gives up its insert and rehaut, its opening widens to the tool's outer edge, the body's rim 0.65 outside; the grounds flat.
   // In a page of its own, so this window is left as it was found
@@ -2694,6 +2694,21 @@ await shot("10-bar");
   const on = await page.evaluate(() => window.dial_tool.S.paint);
   await page.keyboard.press("Escape"); await frame();
   check(off[0] === false && off[1] === "None" && off[2] && Boolean(off[3]) && on === true, `No colour: Paint off, the pill says ${off[1]}, the plate the metal with its sheen (${off[3]} on the sun's side); a palette colour paints it again (${on})`);
+}
+{ // the rings of the rehaut and the bezel (Okay, 11 Nov 2026: "Bezel ring allows up to three rings, build a ring system under there as well. Rehaut gets one ring only"; "Full editing in the tab", the Rings tab "only dial rings")
+  const was = await page.evaluate(() => JSON.stringify(window.dial_tool.S));
+  const r = await page.evaluate(() => { const t = window.dial_tool, S = t.S, n = (c) => [...document.querySelectorAll(".ringlist li.ring")].length;
+    S.ui_section = 0; t.show_section(); t.set_value("global", "bz_on", true); t.set_value("global", "rh_on", true); document.querySelector("#case-tab-2").click();
+    const empty = [n(), Boolean(document.querySelector(".ringlist")), [...document.querySelectorAll(".pane h2")].map((h) => h.textContent).includes("Bezel rings, top first")];
+    for (const k of ["numerals", "ticks", "band", "markers"]) t.ring_tool("add", k);
+    const bezel = [S.rings.filter((x) => x.surface === 2).length, n(), S.rings[S.ui_ring].surface, Boolean(document.querySelector("#global-r-from-Radius-from, [id*='r-from']"))];
+    document.querySelector("#case-tab-1").click(); t.ring_tool("add", "text"); t.ring_tool("add", "ticks");
+    const rehaut = [S.rings.filter((x) => x.surface === 1).length, n()];
+    S.ui_section = 1; t.show_section(); const rings_tab = [n(), S.rings[S.ui_ring].surface, S.rings.filter((x) => G_on(x)).length];
+    return { empty, bezel, rehaut, rings_tab }; function G_on(x) { return !(x.surface === 1 && S.rh_on) && !(x.surface === 2 && S.bz_on); } });
+  await page.evaluate((w) => { const t = window.dial_tool; t.reopen(JSON.parse(w)); }, was); await frame();
+  check(r.empty.join() === "0,true,true" && r.bezel.slice(0, 3).join() === "3,3,2" && r.rehaut.join() === "1,1" && r.rings_tab[0] === r.rings_tab[2] && r.rings_tab[1] === 0,
+    `"Bezel … up to three rings … Rehaut gets one ring only": the Bezel tab's list (${r.empty[2] ? "Bezel rings, top first" : "?"}) starts empty, takes three of four added (${r.bezel[0]}); the Rehaut one of two (${r.rehaut[0]}); the Rings tab lists the dial's own ${r.rings_tab[0]}, a dial ring chosen`);
 }
 { // show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in … Only the colors of the dial is editable here"; "Showcase has no caseless watches"; "Cases snap to dials")
   const q = () => page.evaluate(() => { const t = window.dial_tool, app = document.querySelector("#app"), panel = document.querySelector(".panel"), main = document.querySelector("main");

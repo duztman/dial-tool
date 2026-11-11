@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.72 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.73 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -1673,6 +1673,12 @@ export function ring_edges(ring) {
  *  while dragged"): every edge of every ring shown, but the ring being dragged (`except`, its index). Sorted, no doubles. */
 // ── the case: surfaces (#582) ────────────────────────────────
 export const SURFACES = ["dial", "rehaut", "bezel"], R_FROM = ["Centre", "Edge", "Fit"];      // R9: appended only
+/** how many rings a surface holds (Okay, 11 Nov 2026: "Bezel ring allows up to three rings … Rehaut gets one ring only") */
+export const SURFACE_MOST = [Infinity, 1, 3];
+/** the surface a ring is on now: its own, or the dial's when that part of the case is off */
+export const ring_surface = (S, ring) => (SURFACES[ring.surface] === "rehaut" && S.rh_on ? 1 : SURFACES[ring.surface] === "bezel" && S.bz_on ? 2 : 0);
+/** how many rings stand on a surface now */
+export const rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
 export const BEZEL_KINDS = ["Rotating", "Fixed"];      // rotating: a turning ring with an insert and a coin edge · fixed: a plain pressed ring
 /** the rehaut's reach in plan and its rise: a wall rh_len long leaning rh_deg from the vertical */
 export const rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);

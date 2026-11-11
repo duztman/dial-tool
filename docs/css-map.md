@@ -172,7 +172,7 @@
 | `--night-chip-rule` | `rgba(255, 255, 255, 0.28)` |  | 3-controls, 4e-colour |  |
 | `--night-field` | `#262624` |  | 3-controls ×2, 4a-panel ×5 | set by show.js |
 | `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview | 4c-rows `.heightsbox` → `var(--grey)` |
-| `--night-hover` | `#34342F` |  | 3-controls, 4a-panel, 6-preview |  |
+| `--night-hover` | `#34342F` |  | 3-controls, 4a-panel, 4e-colour, 6-preview |  |
 | `--night-rule` | `#4A4A46` |  | 3-controls ×3, 4a-panel, 5-chosen, 6-preview ×14 | 4c-rows `.heightsbox` → `var(--rule)` |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
 | `--nudge` · special | `2px` | the eyes stand this much right of the margin: a pane's eye and a ring row's alike | 4a-panel, 4e-colour ×2, 4f-rings ×2 |  |

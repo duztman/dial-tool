@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.73 beta · 11 Nov 2026 — a disc hand to the dial's edge; rings on the rehaut and the bezel
+
+Okay, 11 Nov 2026, 16:00: "Why is the disc hands radius limited, i should be able to reach the edges. Bezel ring allows up to three rings, build a ring system under there as well. Rehaut gets one ring only" — and "Full editing in the tab", the Rings tab "No, only dial rings".
+
+- **Disc Ø** runs to the dial's Ø (its slider's end follows the dial, `top`; the handle on the hand's picture too) — it stopped at 30 mm.
+- **The rings of a surface** (`rings.js` `ring_context`, `in_context`, `ring_fit_context`): the Rings tab lists the dial's rings; the Dial tab's **Rehaut** and **Bezel** tabs list theirs — the same list, tools and panes as the Rings tab (`rows.js`: the Rings rows once more, shown on those two tabs, scrolling with them; Surface left out, the tab being the surface). A list holds its own surface's rings: up · down and dragging move a ring among them; Delete may empty it. **The rehaut holds one ring, the bezel three** (`SURFACE_MOST`): the + says so past that, and the Rings tab's Surface no longer offers a full one. A new ring there starts fitted (Radius from · Fit), numerals and words sized to 0.6 of the surface's width. A ring pressed on the dial's picture opens the tab of its surface.
+- **Tests**: `window.mjs` — the Bezel tab's list takes three of four, the Rehaut's one of two, the Rings tab the dial's own; a ring put on the bezel edited on the Bezel tab.
+
 ## v1.1.72 beta · 11 Nov 2026 — No colour a pill; a bare plate says its metal
 
 Okay, 11 Nov 2026, 15:42: "No color is a pill. Can 3d get these new bare metal dials?"

@@ -722,7 +722,9 @@ export const PREVIEW = {
     const piece = this.piece_at(p, node), S = this.S;
     if (!piece) { this.unselected = true; this.render(); return this.words_unfold(); }      // a press on nothing: nothing selected — the selected ring's or window's guides, its handles and the picked numeral go (Okay, 23 Oct 2026: "DESELECT anything that is selected")
     this.unselected = false;
-    const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
+    const surface = piece.kind === "ring" && S.rings[piece.ring] ? G.ring_surface(S, S.rings[piece.ring]) : 0;      // a ring on the rehaut or the bezel is edited on the Dial tab's Rehaut or Bezel tab
+    if (surface) S.ui_dial_tab = surface;
+    const section = surface ? 0 : { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
     // a ring: a first press chooses it; a press on the ring already chosen chooses the numeral or mark pressed (4.78,
     // #349; Okay's notes 2: "a double click or tap selects the ring, a second what was clicked")
     const second = piece.kind === "ring" && same && S.ui_ring === piece.ring && piece.position !== undefined;

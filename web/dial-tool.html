@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.72 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.73 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9542,7 +9542,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.72 beta";
+var VERSION = "v1.1.73 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -11910,6 +11910,9 @@ function ring_edges(ring) {
 }
 var SURFACES = ["dial", "rehaut", "bezel"];
 var R_FROM = ["Centre", "Edge", "Fit"];
+var SURFACE_MOST = [Infinity, 1, 3];
+var ring_surface = (S, ring) => SURFACES[ring.surface] === "rehaut" && S.rh_on ? 1 : SURFACES[ring.surface] === "bezel" && S.bz_on ? 2 : 0;
+var rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
 var BEZEL_KINDS = ["Rotating", "Fixed"];
 var rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);
 var rehaut_h = (S) => +(S.rh_len * cos(S.rh_deg * PI / 180)).toFixed(4);
@@ -14373,7 +14376,8 @@ var ROWS = {
     // the ring's ground (#582; Okay, 9 Nov 2026: "Rings on rehault and bezel addable, stackable"; the radius "Both, and a
     // 'fit' option. If i am doing bands etc."): Dial · Rehaut · Bezel, the two shown once the case has them; on a surface
     // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
-    seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...S.rh_on ? [1] : [], ...S.bz_on ? [2] : []] }),
+    seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...S.rh_on && rings_on(S, 1) < SURFACE_MOST[1] ? [1] : [], ...S.bz_on && rings_on(S, 2) < SURFACE_MOST[2] ? [2] : []] }),
+    // a full surface is not offered (rehaut 1, bezel 3)
     seg("r_from", "Radius from", R_FROM, { show: (R, S) => R.surface > 0 && (R.surface === 1 && S.rh_on || R.surface === 2 && S.bz_on) }),
     num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num2("w", "\xD8", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
@@ -14535,7 +14539,8 @@ var ROWS = {
     }),
     num2("len", "Length", 0.5, 30, 0.05, { ...H, side: true, say: (T) => HAND_SHAPES[T.shape] === "disc" ? ["Marker at", "Marker at"] : ["Length", "Length"] }),
     // a disc's: where its marker's outer end is, and named so (#574; Okay, 2 Nov 2026, 22:18: "The distance of that dot from the center has its own slider")
-    num2("disc_d", "Disc \xD8", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
+    num2("disc_d", "Disc \xD8", 0.5, 30, 0.05, { ...H, side: true, top: (S) => S.dial_d, show: hand_is("disc") }),
+    // the slider runs to the dial's own Ø (Okay, 11 Nov 2026: "Why is the disc hands radius limited, i should be able to reach the edges")
     // the marker: cut out of the disc, named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it
     // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
     // its rows say which (say: their names as [whole, short], by the choice)
@@ -14962,7 +14967,21 @@ ROWS.Dial = [
     num2("bz_rim", "Crystal rim", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
     num2("bz_up", "Crystal up", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
     num2("bz_dome", "Dome", 0, 5, 0.05, { show: (T, S) => S.bz_on })
-  ])
+  ]),
+  // THE RINGS ON THE REHAUT AND THE BEZEL (Okay, 11 Nov 2026: "Bezel ring allows up to three rings, build a ring system under
+  // there as well. Rehaut gets one ring only"; "Full editing in the tab"): the Rings tab's own list and panes, once, on the
+  // Rehaut and Bezel tabs, listing that surface's rings (rings.js ring_context); its panes show while it has a ring. They
+  // scroll with the tab's rows (the pinned part holds Movement and the tabs). Surface is the tab here, so its row stays out
+  ...ROWS.Rings.filter((r) => r.key !== "surface").map((r) => {
+    const list = r.name === "ring_list" || r.kind === "hdr" && r.text === "Rings, top first";
+    return {
+      ...r,
+      scope: r.scope ?? "ring",
+      pin: false,
+      ...r.kind === "hdr" && r.text === "Rings, top first" ? { title: (S) => S.ui_dial_tab === 1 ? "Rehaut ring" : "Bezel rings, top first" } : {},
+      show: (T, S, app) => (S.ui_dial_tab === 1 || S.ui_dial_tab === 2) && app.ring_context() !== null && (list || app.in_context(S.ui_ring)) && (!r.show || r.show(T, S, app))
+    };
+  })
 ];
 for (const name of SECTIONS2) for (const row of ROWS[name]) {
   row.scope ??= name === "Rings" ? "ring" : "global";
@@ -19542,6 +19561,14 @@ var PANEL = {
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
+    if (this.ring_fit_context) {
+      this.ring_fit_context();
+      const c = this.ring_context();
+      if (c !== this.ring_ctx_shown) {
+        this.ring_ctx_shown = c;
+        this.fill_ring_list();
+      }
+    }
     if (this.case_sync) this.case_sync();
     if (this.xray_sync) this.xray_sync();
     this.sync_guides();
@@ -20514,13 +20541,34 @@ var RINGS = {
     };
   },
   /** the ring list: order = stacking order, top ring first. Its tools are on the pane's heading line (head_ring_tools). */
+  /** which surface's rings the panel lists (Okay, 11 Nov 2026: "Bezel ring allows up to three rings, build a ring system
+   *  under there as well. Rehaut gets one ring only"; "Full editing in the tab", the Rings tab "only dial rings"): the
+   *  Rings tab the dial's (0); the Dial tab's Rehaut and Bezel tabs theirs (1, 2) while that part of the case is on; null: none */
+  ring_context() {
+    const S = this.S, on_dial_tab = SECTIONS2[S.ui_section] === "Dial";
+    if (!on_dial_tab) return 0;
+    return S.ui_dial_tab === 1 && S.rh_on ? 1 : S.ui_dial_tab === 2 && S.bz_on ? 2 : null;
+  },
+  in_context(i2) {
+    const c = this.ring_context(), ring = this.S.rings[i2];
+    return Boolean(ring) && c !== null && ring_surface(this.S, ring) === c;
+  },
+  /** the selected ring is one of the context's, if it has any: → whether it has */
+  ring_fit_context() {
+    const c = this.ring_context();
+    if (c === null) return false;
+    if (this.in_context(this.S.ui_ring)) return true;
+    const i2 = this.S.rings.findIndex((r) => ring_surface(this.S, r) === c);
+    if (i2 >= 0) this.S.ui_ring = i2;
+    return i2 >= 0;
+  },
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
     this.ring_list = el("ol", { ariaLabel: "Rings, top first" });
     this.ring_list.setAttribute("role", "listbox");
     this.ring_list.onscroll = () => this.value_pop_close();
     wrap.append(this.ring_list);
-    this.list_grip();
+    if (SECTIONS2[this.S.ui_section] === "Rings") this.list_grip();
     this.fill_ring_list();
   },
   /** the ring list holds five rings and the drawer, then scrolls (4f-rings.css). With more rings than that a pill
@@ -20810,7 +20858,8 @@ var RINGS = {
     if (guide) wrap.style.setProperty("--guide", guide);
     else wrap.style.removeProperty("--guide");
     this.place_ring_line();
-    const none = { up: this.S.ui_ring === 0, down: this.S.ui_ring >= this.S.rings.length - 1, delete: this.S.rings.length <= 1 };
+    const mine = this.S.rings.map((r, k2) => k2).filter((k2) => this.in_context(k2)), at = mine.indexOf(this.S.ui_ring), c = this.ring_context() ?? 0;
+    const none = { up: at <= 0, down: at < 0 || at >= mine.length - 1, delete: c === 0 ? mine.length <= 1 : !mine.length };
     for (const [action, off] of Object.entries(none)) {
       const b = $("#ring-" + action);
       if (b) {
@@ -20844,7 +20893,9 @@ var RINGS = {
     if (!this.ring_list) return;
     this.sync_list_grip();
     this.ring_list.replaceChildren();
+    this.ring_fit_context();
     this.S.rings.forEach((ring, i2) => {
+      if (!this.in_context(i2)) return;
       const selected = i2 === this.S.ui_ring;
       const show = el("button", { type: "button", className: "eye", title: ring.on ? "Hide this ring" : "Show this ring", ariaLabel: `Show ${ring.name}`, onclick: (e) => {
         e.stopPropagation();
@@ -20882,6 +20933,7 @@ var RINGS = {
       const swatch = selected ? [] : [el("span", { className: "colour bare rowswatch", ariaHidden: "true" }, el("i", { className: "dot" }))];
       if (swatch.length) paint(swatch[0].firstChild, ring.c);
       const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...swatch, ...figs);
+      item.dataset.i = i2;
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", String(selected));
       item.onkeydown = (e) => {
@@ -20913,8 +20965,13 @@ var RINGS = {
   },
   /** the rings' rows in the list, top first (the list also holds the ring line, which is not one of them). */
   ring_rows() {
-    return this.ring_list ? [...this.ring_list.children].filter((li) => li.classList.contains("ring")) : [];
+    const out = [];
+    if (this.ring_list) {
+      for (const li of this.ring_list.children) if (li.classList.contains("ring")) out[+li.dataset.i] = li;
+    }
+    return out;
   },
+  // by the ring's place in S.rings: a ring of another surface is a gap
   /** show or hide ring i on the dial without selecting it (the eye's job; a click on the row selects). */
   show_ring(i2, on) {
     const ring = this.S.rings[i2];
@@ -20964,7 +21021,9 @@ var RINGS = {
    *  show mode's Colours list (#579) passes its own rows and what to rebuild after the drop. */
   drag_ring(e, from, where = null) {
     e.preventDefault();
-    const list = where ? where.list : this.ring_list, rows = where ? where.rows : this.ring_rows(), grip = e.currentTarget;
+    const list = where ? where.list : this.ring_list, all = where ? where.rows : this.ring_rows(), grip = e.currentTarget;
+    const at_ring = where ? all.map((_, k) => k) : all.map((_, k) => k).filter((k) => all[k]), rows = at_ring.map((k) => all[k]);
+    from = at_ring.indexOf(from);
     const line = el("div", { className: "dropline" });
     list.append(line);
     rows[from].classList.add("dragged");
@@ -20983,10 +21042,10 @@ var RINGS = {
       grip.onpointermove = grip.onpointerup = grip.onpointercancel = null;
       line.remove();
       rows[from].classList.remove("dragged");
-      if (to === from) return where ? void 0 : this.select_ring(from);
-      const rings = this.S.rings, [ring] = rings.splice(from, 1);
-      rings.splice(to, 0, ring);
-      this.S.ui_ring = to;
+      if (to === from) return where ? void 0 : this.select_ring(at_ring[from]);
+      const rings = this.S.rings, a = at_ring[from], b = at_ring[to], [ring] = rings.splice(a, 1);
+      rings.splice(b, 0, ring);
+      this.S.ui_ring = b;
       this.static_dirty = true;
       this.steady(() => {
         this.fill_ring_list();
@@ -21024,20 +21083,33 @@ var RINGS = {
     this.render();
   },
   ring_tool(action, kind) {
-    const rings = this.S.rings, i2 = this.S.ui_ring;
+    const rings = this.S.rings, c = this.ring_context() ?? 0, mine = rings.map((r, k) => k).filter((k) => this.in_context(k)), i2 = this.in_context(this.S.ui_ring) ? this.S.ui_ring : mine[0] ?? 0;
     if (action === "add") {
-      rings.splice(i2, 0, new_ring(kind, this.S, kind === "numerals" || kind === "text" ? rings.find((r) => kind_of(r) === "numerals") : null));
+      if (mine.length >= SURFACE_MOST[c]) return this.log(`The ${SURFACES[c]} holds ${SURFACE_MOST[c]} ring${SURFACE_MOST[c] > 1 ? "s" : ""} at most.`);
+      const ring = new_ring(kind, this.S, kind === "numerals" || kind === "text" ? rings.find((r) => kind_of(r) === "numerals") : null);
+      if (c > 0) {
+        ring.surface = c;
+        ring.r_from = R_FROM.indexOf("Fit");
+        const sp = case_spans(this.S), span = c === 1 ? sp.rehaut : sp.insert || sp.bezel;
+        if (span && "size" in ring && (kind_of(ring) === "numerals" || kind_of(ring) === "text")) ring.size = +Math.min(ring.size, 0.6 * (span[1] - span[0])).toFixed(2);
+      }
+      rings.splice(mine.length ? i2 : 0, 0, ring);
+      this.S.ui_ring = mine.length ? i2 : 0;
     } else if (action === "duplicate") {
+      if (!mine.length) return;
+      if (mine.length >= SURFACE_MOST[c]) return this.log(`The ${SURFACES[c]} holds ${SURFACE_MOST[c]} ring${SURFACE_MOST[c] > 1 ? "s" : ""} at most.`);
       const copy = JSON.parse(JSON.stringify(rings[i2]));
       copy.name += " copy";
       rings.splice(i2, 0, copy);
     } else if (action === "delete") {
-      if (rings.length === 1) return this.log("A dial keeps at least one ring: hide it instead.");
+      if (c === 0 && mine.length === 1) return this.log("A dial keeps at least one ring: hide it instead.");
+      if (!mine.length) return;
       rings.splice(i2, 1);
       this.S.ui_ring = Math.min(i2, rings.length - 1);
+      this.ring_fit_context();
     } else {
-      const j = i2 + (action === "up" ? -1 : 1);
-      if (j < 0 || j >= rings.length) return;
+      const at = mine.indexOf(i2), j = mine[at + (action === "up" ? -1 : 1)];
+      if (j === void 0) return;
       [rings[i2], rings[j]] = [rings[j], rings[i2]];
       this.S.ui_ring = j;
     }
@@ -21659,14 +21731,14 @@ var HANDS2 = {
       }
       if (d.axis === "along") {
         const v2 = d.v0 + (d.lying ? dx : -dy) * d.widest.per_mm, R2 = d.row, step2 = R2.step;
-        this.set_value("hand", d.key, +clamp(Math.round(v2 / step2) * step2, R2.lo, R2.hi).toFixed(4));
+        this.set_value("hand", d.key, +clamp(Math.round(v2 / step2) * step2, R2.lo, R2.top ? Math.max(R2.hi, R2.top(this.S)) : R2.hi).toFixed(4));
         return;
       }
       const out = { len: d.lying ? dx : -dy, tail: d.lying ? -dx : dy, w1: d.lying ? -dy : -dx, w2: d.lying ? dy : dx }[d.name];
       const v = d.v0 + (d.key === "w" || d.key === "disc_d" ? 2 * out : out);
       const R = d.row, step = R.step;
       const s = d.key === "len" ? snap(v, snap_radii(this.S), SNAP_PX / d.scale) : { v, hit: false };
-      this.set_value("hand", d.key, +clamp(s.hit ? s.v : Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
+      this.set_value("hand", d.key, +clamp(s.hit ? s.v : Math.round(v / step) * step, R.lo, R.top ? Math.max(R.hi, R.top(this.S)) : R.hi).toFixed(4));
     });
     const end = () => {
       if (!this.hand_drag) return;
@@ -23018,7 +23090,9 @@ var PREVIEW = {
       return this.words_unfold();
     }
     this.unselected = false;
-    const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
+    const surface = piece.kind === "ring" && S.rings[piece.ring] ? ring_surface(S, S.rings[piece.ring]) : 0;
+    if (surface) S.ui_dial_tab = surface;
+    const section = surface ? 0 : { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
     const second = piece.kind === "ring" && same && S.ui_ring === piece.ring && piece.position !== void 0;
     S.ui_section = section;
     if (piece.kind === "ring") {

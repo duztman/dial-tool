@@ -225,7 +225,7 @@ export const ROWS = {
     // the ring's ground (#582; Okay, 9 Nov 2026: "Rings on rehault and bezel addable, stackable"; the radius "Both, and a
     // 'fit' option. If i am doing bands etc."): Dial · Rehaut · Bezel, the two shown once the case has them; on a surface
     // the radius reads from the centre, from the surface's inner edge, or the ring fits the surface whole
-    seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...(S.rh_on ? [1] : []), ...(S.bz_on ? [2] : [])] }),
+    seg("surface", "Surface", ["Base", "Rehaut", "Bezel"], { show: (R, S) => S.rh_on || S.bz_on, offered: (R, S) => [0, ...(S.rh_on && G.rings_on(S, 1) < G.SURFACE_MOST[1] ? [1] : []), ...(S.bz_on && G.rings_on(S, 2) < G.SURFACE_MOST[2] ? [2] : [])] }),      // a full surface is not offered (rehaut 1, bezel 3)
     seg("r_from", "Radius from", G.R_FROM, { show: (R, S) => R.surface > 0 && ((R.surface === 1 && S.rh_on) || (R.surface === 2 && S.bz_on)) }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Ø", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
@@ -348,7 +348,7 @@ export const ROWS = {
     seg("lang", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...H, side: true, show: (T, S) => ["day", "month"].includes(G.HANDS[S.ui_hand]),
       put: (tool, v) => { const name = G.HANDS[tool.S.ui_hand]; tool.S["ha_" + name].lang = v; G.relabel_function(tool.S, name); tool.changed(true); } }),
     num("len", "Length", 0.5, 30, 0.05, { ...H, side: true, say: (T) => (G.HAND_SHAPES[T.shape] === "disc" ? ["Marker at", "Marker at"] : ["Length", "Length"]) }),      // a disc's: where its marker's outer end is, and named so (#574; Okay, 2 Nov 2026, 22:18: "The distance of that dot from the center has its own slider")
-    num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
+    num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, top: (S) => S.dial_d, show: hand_is("disc") }),      // the slider runs to the dial's own Ø (Okay, 11 Nov 2026: "Why is the disc hands radius limited, i should be able to reach the edges")
     // the marker: cut out of the disc, named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it
     // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
     // its rows say which (say: their names as [whole, short], by the choice)
@@ -711,6 +711,16 @@ ROWS.Dial = [
     num("bz_up", "Crystal up", 0, 3, 0.05, { show: (T, S) => S.bz_on }),
     num("bz_dome", "Dome", 0, 5, 0.05, { show: (T, S) => S.bz_on }),
   ]),
+  // THE RINGS ON THE REHAUT AND THE BEZEL (Okay, 11 Nov 2026: "Bezel ring allows up to three rings, build a ring system under
+  // there as well. Rehaut gets one ring only"; "Full editing in the tab"): the Rings tab's own list and panes, once, on the
+  // Rehaut and Bezel tabs, listing that surface's rings (rings.js ring_context); its panes show while it has a ring. They
+  // scroll with the tab's rows (the pinned part holds Movement and the tabs). Surface is the tab here, so its row stays out
+  ...ROWS.Rings.filter((r) => r.key !== "surface").map((r) => {
+    const list = r.name === "ring_list" || (r.kind === "hdr" && r.text === "Rings, top first");
+    return { ...r, scope: r.scope ?? "ring", pin: false,
+      ...(r.kind === "hdr" && r.text === "Rings, top first" ? { title: (S) => (S.ui_dial_tab === 1 ? "Rehaut ring" : "Bezel rings, top first") } : {}),
+      show: (T, S, app) => (S.ui_dial_tab === 1 || S.ui_dial_tab === 2) && app.ring_context() !== null && (list || app.in_context(S.ui_ring)) && (!r.show || r.show(T, S, app)) };
+  }),
 ];
 
 for (const name of SECTIONS) for (const row of ROWS[name]) { row.scope ??= name === "Rings" ? "ring" : "global"; name_row(row); }

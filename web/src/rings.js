@@ -5,7 +5,7 @@ import * as G from "./geometry.js";
 
 import { $, KEY, NUDGE_NEUTRAL, RING_ROWS, SNAP_DEG, clamp, el, paint } from "./ui.js";
 import { DENSE, KIND_PIC, LINE, PICS, SIGNS, TOOL_ICONS, eye, icon, round_sign, sw } from "./icons.js";
-import { STRIP_SHOWS, VALUE_PICS, chevron_box, num, radius_row, size_row } from "./rows.js";
+import { SECTIONS, STRIP_SHOWS, VALUE_PICS, chevron_box, num, radius_row, size_row } from "./rows.js";
 
 export const RINGS = {
   /** the numeral or mark Nudge works on, outlined on the dial in its ring's guide colour while the Nudge pane is open
@@ -104,13 +104,31 @@ export const RINGS = {
   },
 
   /** the ring list: order = stacking order, top ring first. Its tools are on the pane's heading line (head_ring_tools). */
+  /** which surface's rings the panel lists (Okay, 11 Nov 2026: "Bezel ring allows up to three rings, build a ring system
+   *  under there as well. Rehaut gets one ring only"; "Full editing in the tab", the Rings tab "only dial rings"): the
+   *  Rings tab the dial's (0); the Dial tab's Rehaut and Bezel tabs theirs (1, 2) while that part of the case is on; null: none */
+  ring_context() {
+    const S = this.S, on_dial_tab = SECTIONS[S.ui_section] === "Dial";
+    if (!on_dial_tab) return 0;
+    return S.ui_dial_tab === 1 && S.rh_on ? 1 : S.ui_dial_tab === 2 && S.bz_on ? 2 : null;
+  },
+  in_context(i) { const c = this.ring_context(), ring = this.S.rings[i]; return Boolean(ring) && c !== null && G.ring_surface(this.S, ring) === c; },
+  /** the selected ring is one of the context's, if it has any: → whether it has */
+  ring_fit_context() {
+    const c = this.ring_context(); if (c === null) return false;
+    if (this.in_context(this.S.ui_ring)) return true;
+    const i = this.S.rings.findIndex((r) => G.ring_surface(this.S, r) === c);
+    if (i >= 0) this.S.ui_ring = i;
+    return i >= 0;
+  },
+
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
     this.ring_list = el("ol", { ariaLabel: "Rings, top first" });
     this.ring_list.setAttribute("role", "listbox");      // its rows are options (#244)
     this.ring_list.onscroll = () => this.value_pop_close();      // the pop-up hangs where the ring line was
     wrap.append(this.ring_list);
-    this.list_grip();
+    if (SECTIONS[this.S.ui_section] === "Rings") this.list_grip();      // the Rings tab's list is pinned and has its pill; the Rehaut's and the Bezel's scroll with their tab
     this.fill_ring_list();
   },
 
@@ -347,7 +365,8 @@ export const RINGS = {
     if (guide) wrap.style.setProperty("--guide", guide); else wrap.style.removeProperty("--guide");
     this.place_ring_line();
     // a tool that can't act now shows inactive (R16, as undo does): up at the top, down at the bottom, delete with one ring
-    const none = { up: this.S.ui_ring === 0, down: this.S.ui_ring >= this.S.rings.length - 1, delete: this.S.rings.length <= 1 };
+    const mine = this.S.rings.map((r, k) => k).filter((k) => this.in_context(k)), at = mine.indexOf(this.S.ui_ring), c = this.ring_context() ?? 0;      // the list's own rings: one surface's
+    const none = { up: at <= 0, down: at < 0 || at >= mine.length - 1, delete: c === 0 ? mine.length <= 1 : !mine.length };
     for (const [action, off] of Object.entries(none)) { const b = $("#ring-" + action); if (b) { b.classList.toggle("none", off); b.setAttribute("aria-disabled", String(off)); } }
     const R = this.ring(), says = R ? this.ring_summary(R) : null;
     for (const [id, text] of [["#ring-size-fig", says && says.size], ["#ring-r-fig", says && says.r]]) { const f = $(id); if (f && f.textContent !== text) f.textContent = text; }
@@ -371,7 +390,9 @@ export const RINGS = {
     if (!this.ring_list) return;
     this.sync_list_grip();
     this.ring_list.replaceChildren();
+    this.ring_fit_context();
     this.S.rings.forEach((ring, i) => {
+      if (!this.in_context(i)) return;      // another surface's ring (the list of a tab: the dial's, the rehaut's or the bezel's)
       const selected = i === this.S.ui_ring;
       const show = el("button", { type: "button", className: "eye", title: ring.on ? "Hide this ring" : "Show this ring", ariaLabel: `Show ${ring.name}`, onclick: (e) => { e.stopPropagation(); this.show_ring(i, !ring.on); } });      // the eye only shows or hides: the selection stays, so the ring line doesn't move and the next eye stays under the pointer (#183)
       show.setAttribute("aria-pressed", String(ring.on));
@@ -404,6 +425,7 @@ export const RINGS = {
       const swatch = selected ? [] : [el("span", { className: "colour bare rowswatch", ariaHidden: "true" }, el("i", { className: "dot" }))];
       if (swatch.length) paint(swatch[0].firstChild, ring.c);
       const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...swatch, ...figs);
+      item.dataset.i = i;      // the ring's place in S.rings (the list may hold another surface's rings out)
       // a row is a choice in a list, reached with Tab and taken with Enter or Space (#244, 4.47.2: rows had no role and no way in from the keyboard)
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", String(selected));
@@ -426,7 +448,7 @@ export const RINGS = {
   },
 
   /** the rings' rows in the list, top first (the list also holds the ring line, which is not one of them). */
-  ring_rows() { return this.ring_list ? [...this.ring_list.children].filter((li) => li.classList.contains("ring")) : []; },
+  ring_rows() { const out = []; if (this.ring_list) for (const li of this.ring_list.children) if (li.classList.contains("ring")) out[+li.dataset.i] = li; return out; },      // by the ring's place in S.rings: a ring of another surface is a gap
 
   /** show or hide ring i on the dial without selecting it (the eye's job; a click on the row selects). */
   show_ring(i, on) {
@@ -468,7 +490,10 @@ export const RINGS = {
    *  show mode's Colours list (#579) passes its own rows and what to rebuild after the drop. */
   drag_ring(e, from, where = null) {
     e.preventDefault();
-    const list = where ? where.list : this.ring_list, rows = where ? where.rows : this.ring_rows(), grip = e.currentTarget;
+    const list = where ? where.list : this.ring_list, all = where ? where.rows : this.ring_rows(), grip = e.currentTarget;
+    // the rows shown, top first, and each one's ring: a list of one surface's rings moves a ring among them only
+    const at_ring = where ? all.map((_, k) => k) : all.map((_, k) => k).filter((k) => all[k]), rows = at_ring.map((k) => all[k]);
+    from = at_ring.indexOf(from);
     const line = el("div", { className: "dropline" });
     list.append(line);
     rows[from].classList.add("dragged");
@@ -487,10 +512,10 @@ export const RINGS = {
       grip.onpointermove = grip.onpointerup = grip.onpointercancel = null;
       line.remove();
       rows[from].classList.remove("dragged");
-      if (to === from) return where ? undefined : this.select_ring(from);
-      const rings = this.S.rings, [ring] = rings.splice(from, 1);
-      rings.splice(to, 0, ring);
-      this.S.ui_ring = to;
+      if (to === from) return where ? undefined : this.select_ring(at_ring[from]);
+      const rings = this.S.rings, a = at_ring[from], b = at_ring[to], [ring] = rings.splice(a, 1);
+      rings.splice(b, 0, ring);      // to the place of the ring it lands on: among the same surface's rings
+      this.S.ui_ring = b;
       this.static_dirty = true;
       this.steady(() => { this.fill_ring_list(); if (where) where.after(); this.sync_rows(); });
       this.render();
@@ -517,20 +542,32 @@ export const RINGS = {
   },
 
   ring_tool(action, kind) {
-    const rings = this.S.rings, i = this.S.ui_ring;
+    const rings = this.S.rings, c = this.ring_context() ?? 0, mine = rings.map((r, k) => k).filter((k) => this.in_context(k)), i = this.in_context(this.S.ui_ring) ? this.S.ui_ring : mine[0] ?? 0;
     if (action === "add") {
-      rings.splice(i, 0, G.new_ring(kind, this.S, kind === "numerals" || kind === "text" ? rings.find((r) => G.kind_of(r) === "numerals") : null));      // a new ring of words takes the top numerals ring's type
+      if (mine.length >= G.SURFACE_MOST[c]) return this.log(`The ${G.SURFACES[c]} holds ${G.SURFACE_MOST[c]} ring${G.SURFACE_MOST[c] > 1 ? "s" : ""} at most.`);      // (Okay, 11 Nov 2026: "Bezel ring allows up to three rings … Rehaut gets one ring only")
+      const ring = G.new_ring(kind, this.S, kind === "numerals" || kind === "text" ? rings.find((r) => G.kind_of(r) === "numerals") : null);      // a new ring of words takes the top numerals ring's type
+      if (c > 0) {      // on the rehaut or the bezel: fitted to it to start, words and figures sized to its width
+        ring.surface = c; ring.r_from = G.R_FROM.indexOf("Fit");
+        const sp = G.case_spans(this.S), span = c === 1 ? sp.rehaut : sp.insert || sp.bezel;
+        if (span && "size" in ring && (G.kind_of(ring) === "numerals" || G.kind_of(ring) === "text")) ring.size = +Math.min(ring.size, 0.6 * (span[1] - span[0])).toFixed(2);
+      }
+      rings.splice(mine.length ? i : 0, 0, ring);
+      this.S.ui_ring = mine.length ? i : 0;
     } else if (action === "duplicate") {
+      if (!mine.length) return;
+      if (mine.length >= G.SURFACE_MOST[c]) return this.log(`The ${G.SURFACES[c]} holds ${G.SURFACE_MOST[c]} ring${G.SURFACE_MOST[c] > 1 ? "s" : ""} at most.`);
       const copy = JSON.parse(JSON.stringify(rings[i]));
       copy.name += " copy";
       rings.splice(i, 0, copy);
     } else if (action === "delete") {
-      if (rings.length === 1) return this.log("A dial keeps at least one ring: hide it instead.");
+      if (c === 0 && mine.length === 1) return this.log("A dial keeps at least one ring: hide it instead.");
+      if (!mine.length) return;
       rings.splice(i, 1);
       this.S.ui_ring = Math.min(i, rings.length - 1);
+      this.ring_fit_context();
     } else {
-      const j = i + (action === "up" ? -1 : 1);
-      if (j < 0 || j >= rings.length) return;
+      const at = mine.indexOf(i), j = mine[at + (action === "up" ? -1 : 1)];      // the next ring of the same surface
+      if (j === undefined) return;
       [rings[i], rings[j]] = [rings[j], rings[i]];
       this.S.ui_ring = j;
     }
