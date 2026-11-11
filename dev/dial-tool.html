@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.74 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.75 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -8142,7 +8142,7 @@ function caseEngineer(C2, v, L) {
     out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f(-uS[0] * sl)} ${f(-uS[1] * sl)})"><path d="M-500 -500H500V500H-500Z${circle(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.4 * SHD))}"/></g></g>`);
   }
   const g = (a, r, w, o) => `<path d="M${f(Math.cos(rad(a - 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 28 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 28 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, o * GLASS.op))}" stroke-width="${f(w * GLASS.fat)}" stroke-linecap="round"/>`;
-  out.push(g(L, C2.opening - 0.9, 0.8, 0.55), g(L + 180, C2.opening - 0.9, 0.4, 0.22));
+  out.push(g(L, (C2.glassR ?? C2.opening) - 0.9, 0.8, 0.55), g(L + 180, (C2.glassR ?? C2.opening) - 0.9, 0.4, 0.22));
   out.push(stroke(circle(C2.opening), 0.2));
   return out.join("");
 }
@@ -8208,7 +8208,7 @@ function caseArtisan(C2, v, L) {
     out.push(`<path d="${circle(r1)}${circle(r0)}" fill-rule="evenodd" fill="${T[1]}"/><path d="${arc2(L + 180, 70)}" fill="none" stroke="${T[0]}" stroke-width="${f(wd * 0.75)}" stroke-linecap="round"/><path d="${arc2(L, 60)}" fill="none" stroke="${T[2]}" stroke-width="${f(wd * 0.75)}" stroke-linecap="round"/><path d="${circle(r0)}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="0.12"/>`);
   }
   out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f(-uL[0] * (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))} ${f(-uL[1] * (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H)))))})"><path d="M-500 -500H500V500H-500Z${circle(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.44 * SHD))}"/></g></g>`);
-  const r = C2.opening - 1.2, a = L;
+  const r = (C2.glassR ?? C2.opening) - 1.2, a = L;
   out.push(`<path d="M${f(Math.cos(rad(a - 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 35 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 35 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 35 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, 0.5 * GLASS.op))}" stroke-width="${f(1.6 * GLASS_K * GLASS.fat)}" stroke-linecap="round"/>`);
   return out.join("");
 }
@@ -8654,7 +8654,7 @@ var sizeFor = (key, d, outer = null) => {
 };
 var CASE_LIP = 0.65;
 var LIVE = null;
-var live_case = (C2) => LIVE ? Object.assign(C2, { opening: LIVE.outer, dial: LIVE.dial, insert: null, bands: [] }) : C2;
+var live_case = (C2) => LIVE ? Object.assign(C2, { opening: LIVE.outer, glassR: LIVE.glass, dial: LIVE.dial, insert: null, bands: [] }) : C2;
 var caseBox = (key, size) => {
   const C2 = scaleCase(CASES[key], size);
   return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.rails ? Math.max(C2.od, C2.lugw + 2 * C2.lugT) : C2.od) + 2 * C2.crown.h, dial: C2.dial };
@@ -8663,7 +8663,7 @@ function draw(o) {
   use(o.style || "artisan");
   const STYLE_ = STYLES[STYLE];
   OUTLINE_ON = o.outline !== false;
-  LIVE = o.case ? { outer: o.case.outer, dial: o.d } : null;
+  LIVE = o.case ? { outer: o.case.outer, glass: o.case.glass ?? o.case.outer, dial: o.d } : null;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
   SOFT = Boolean(o.blurs);
   GRADIENTS = o.gradients !== false;
@@ -9542,7 +9542,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.74 beta";
+var VERSION = "v1.1.75 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9961,6 +9961,7 @@ var DEFAULTS = {
   bz_in_out: 0.6,
   bz_c: [0.8, 0.8, 0.78, 1],
   bz_insert_c: [0.17, 0.17, 0.19, 1],
+  bz_marks: 0,
   // bz_c is dead (R8): the bezel is case material (case_metal)
   bz_teeth_n: 60,
   bz_teeth_depth: 0.5,
@@ -11033,8 +11034,10 @@ var LINK_KEYS = [
   "fit_d",
   // v1.1.69–70 beta (#590, #586): appended; Jump, the Imaginary Movement and the common fit to start, as every older link
   "material",
-  "paint"
+  "paint",
   // v1.1.71 beta: appended; brass under a painted plate to start, as every older link
+  "bz_marks"
+  // v1.1.75 beta: appended; the insert to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -11913,6 +11916,7 @@ var R_FROM = ["Centre", "Edge", "Fit"];
 var SURFACE_MOST = [Infinity, 1, 3];
 var ring_surface = (S, ring) => SURFACES[ring.surface] === "rehaut" && S.rh_on ? 1 : SURFACES[ring.surface] === "bezel" && S.bz_on ? 2 : 0;
 var rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
+var BEZEL_MARKS = ["Insert", "Metal"];
 var BEZEL_KINDS = ["Rotating", "Fixed"];
 var rehaut_w = (S) => +(S.rh_len * sin(S.rh_deg * PI / 180)).toFixed(4);
 var rehaut_h = (S) => +(S.rh_len * cos(S.rh_deg * PI / 180)).toFixed(4);
@@ -11920,13 +11924,14 @@ function case_spans(S) {
   const R = S.dial_d / 2, rh = S.rh_on ? [R, R + rehaut_w(S)] : null, b0 = rh ? rh[1] : R;
   const bz = S.bz_on ? [b0, b0 + S.bz_w] : null;
   const rotating = bz && S.bz_kind === 0;
-  const insert = rotating ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
+  const insert = rotating && S.bz_marks !== 1 ? [b0 + S.bz_in_in, b0 + S.bz_w - S.bz_in_out] : null;
+  const marks = insert ?? (bz ? [b0, bz[1] - S.bz_chamfer] : null);
   const teeth2 = rotating && S.bz_teeth_depth > 0 ? bz[1] + S.bz_teeth_depth : bz ? bz[1] : null;
-  return { dial: [0, R], rehaut: rh, bezel: bz, insert, outer: teeth2 ?? (rh ? rh[1] : R), chamfer: bz ? [bz[1] - S.bz_chamfer, bz[1]] : null };
+  return { dial: [0, R], rehaut: rh, bezel: bz, insert, outer: teeth2 ?? (rh ? rh[1] : R), chamfer: bz ? [bz[1] - S.bz_chamfer, bz[1]] : null, marks };
 }
 var reach_mm = (S) => case_spans(S).outer;
 function placed(S, ring) {
-  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? case_spans(S).insert || case_spans(S).bezel : null;
+  const span = SURFACES[ring.surface] === "rehaut" ? case_spans(S).rehaut : SURFACES[ring.surface] === "bezel" ? case_spans(S).marks : null;
   if (!span || !ring.r_from) return ring;
   const [a, b] = span, kind = kind_of(ring);
   if (R_FROM[ring.r_from] === "Edge") return { ...ring, r: a + ring.r };
@@ -12992,6 +12997,7 @@ var case_record = (S) => ({
   rehaut: S.rh_on ? { w: rehaut_w(S), h: rehaut_h(S), c: hex(S.rh_c) } : null,
   bezel: S.bz_on ? {
     kind: BEZEL_KINDS[S.bz_kind] === "Fixed" ? "fixed" : "rotating",
+    marks: BEZEL_KINDS[S.bz_kind] === "Fixed" || BEZEL_MARKS[S.bz_marks] === "Metal" ? "metal" : "insert",
     w: S.bz_w,
     chamfer: S.bz_chamfer,
     in_in: S.bz_in_in,
@@ -13017,8 +13023,8 @@ function options(S, items, effects) {
     d: S.dial_d,
     size: sizeFor(kind, S.dial_d, S.rh_on || S.bz_on ? reach_mm(S) : null),
     view: VIEW_NAMES[S.w_view] || "detail",
-    case: S.rh_on || S.bz_on ? { outer: reach_mm(S) } : null,
-    // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
+    case: S.rh_on || S.bz_on ? { outer: reach_mm(S), glass: case_spans(S).bezel ? case_spans(S).bezel[0] : reach_mm(S) } : null,
+    // glass: the crystal's edge — inside the bezel, not over it (Okay, 11 Nov 2026: "the glass is drawn over the bezel now somehow")      // the tool's own rehaut and bezel, as they are (#582): the published case opens to them
     items: items.flatMap((x2) => {
       const hand = (x2.role === "hand" || x2.role === "mark" || x2.role === "lume") && HANDS.includes(x2.name) ? x2.name : null;
       const H2 = hand ? S["ha_" + hand] : null;
@@ -14967,12 +14973,14 @@ ROWS.Dial = [
     chk("bz_on", "Bezel", {}),
     custom("case_preset", { show: (T, S) => S.bz_on }),
     seg("bz_kind", "Kind", BEZEL_KINDS, { show: (T, S) => S.bz_on }),
+    seg("bz_marks", "Markings", BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    // on an insert or on the metal (Okay, 11 Nov 2026: "add markings on metal instead of inset ring")
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num2("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
     num2("bz_chamfer", "Chamfer", 0, 2, 0.05, { ...CS, show: (T, S) => S.bz_on }),
-    num2("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    num2("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => S.bz_on && S.bz_kind === 0 }),
-    col("bz_insert_c", "Insert", { ...CS, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
+    num2("bz_in_in", "Insert in", 0, 3, 0.05, { ...CS, short: "Ins. in", show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
+    num2("bz_in_out", "Insert out", 0, 3, 0.05, { ...CS, short: "Ins. out", show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
+    col("bz_insert_c", "Insert", { ...CS, show: (T, S) => S.bz_on && S.bz_kind === 0 && S.bz_marks !== 1 }),
     hdr("Coin edge", { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
     num2("bz_teeth_n", "Scallops", 12, 180, 1, { whole: true, show: (T, S) => S.bz_on && S.bz_kind === 0 }),
     num2("bz_teeth_depth", "Depth", 0, 2, 0.05, { show: (T, S) => S.bz_on && S.bz_kind === 0 }),
@@ -17854,8 +17862,7 @@ var COLOUR = {
         this.S.c_plate = v;
         this.changed();
       }) });
-      if (show) lines.push({ sub: true, text: "Rings", colours: [] });
-      S.rings.forEach((ring, i2) => {
+      const ring_line = (ring, i2) => {
         const line = { text: ring.name || kind_of(ring), colours: this.ring_colours(i2) };
         if (show) {
           line.eye = { title: "Show or hide this ring", read: () => (this.S.rings[i2] || {}).on, write: (on) => this.show_ring(i2, on) };
@@ -17863,8 +17870,32 @@ var COLOUR = {
           line.grip = i2;
           if (line.colours.length > 1) line.note = `${line.colours.length} sectors`;
         }
-        lines.push(line);
+        return line;
+      };
+      if (show) lines.push({ sub: true, text: "Rings", colours: [] });
+      S.rings.forEach((ring, i2) => {
+        if (!show || ring_surface(S, ring) === 0) lines.push(ring_line(ring, i2));
       });
+      if (show && S.rh_on) {
+        lines.push({ sub: true, text: "Rehaut", colours: [] });
+        lines.push({ text: "Rehaut", colours: one2("rehaut", "Rehaut", () => this.S.rh_c, (v) => {
+          this.S.rh_c = v;
+          this.changed();
+        }) });
+        S.rings.forEach((ring, i2) => {
+          if (ring_surface(S, ring) === 1) lines.push(ring_line(ring, i2));
+        });
+      }
+      if (show && S.bz_on) {
+        lines.push({ sub: true, text: "Bezel", colours: [] });
+        if (case_spans(S).insert) lines.push({ text: "Insert", colours: one2("insert", "Insert", () => this.S.bz_insert_c, (v) => {
+          this.S.bz_insert_c = v;
+          this.changed();
+        }) });
+        S.rings.forEach((ring, i2) => {
+          if (ring_surface(S, ring) === 2) lines.push(ring_line(ring, i2));
+        });
+      }
       const cap = this.cap_colour();
       if (show) lines.push({ sub: true, text: "Hands", colours: [] });
       HANDS.forEach((h, k) => {
@@ -21823,7 +21854,7 @@ function case_section(S) {
   }
   if (sp.bezel) {
     const [r0, r1] = sp.bezel;
-    if (S.bz_kind === 0) {
+    if (S.bz_kind === 0 && S.bz_marks !== 1) {
       const ri = r0 + S.bz_in_in, ro = r1 - S.bz_in_out, top = z1 + lip;
       out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, top], [ro, top], [ro, z1], [ri, z1], [ri, top - 0.05], [ri - 0.2, top], [ri - 0.3, z1 - 0.3], [r0, z1 - 0.3]], fill: case_metal(S) });
       out.push({ part: "insert", pts: [[ri, z1], [ro, z1], [ro, z1 + 0.5], [ri, z1 + 0.5]], fill: S.bz_insert_c });
@@ -21834,6 +21865,10 @@ function case_section(S) {
     } else {
       const rim2 = r0 - S.bz_rim;
       out.push({ part: "bezel", pts: [[r0, z0], [r1, z0], [r1, z1], [r1 - ch, z1 + ch], [rim2 + 0.3, z1 + lip], [rim2, z1 + lip - 0.15], [rim2, z1 - 0.3], [r0, z1 - 0.3]], fill: case_metal(S) });
+      if (S.bz_kind === 0 && S.bz_teeth_depth > 0) {
+        const d = S.bz_teeth_depth, tch = S.bz_teeth_chamfer, mid = (z0 + z1) / 2;
+        out.push({ part: "teeth", pts: [[r1, z0], [r1 + d, z0], [r1 + d, z1 - tch], [r1 + d - tch, z1], [r1, z1], [r1, mid + 0.35], [r1 + d * 0.9, mid], [r1, mid - 0.35]], fill: case_metal(S) });
+      }
     }
   }
   return out;
