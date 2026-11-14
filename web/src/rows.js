@@ -176,11 +176,6 @@ const DIAL_ROWS = [
     seg("engrave", "Finish", G.FINISHES, { show: (T, S) => S.paint === false }),      // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
     num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
     chk("ui_scale", "Scale everything with it", { nest: true }),
-    // Weight (#88; atlas 6.19, Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the
-    // settings all at once"): every width on the dial at once, as Scale changes every measure — the panel's numbers
-    // stay true, since the widths themselves change; one undo takes it all back
-    num("ui_weight", "Weight %", 50, 200, 1, { whole: true }),
-    info("Every width on the dial at once — marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
     num("dial_hole", "Centre hole", 0, 6, 0.1),      // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
     custom("background"),
     // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
@@ -188,6 +183,12 @@ const DIAL_ROWS = [
     // fit in that line as tiny swatches. Default: compacted")
     hdr("Colours", { folded: true, summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),
     custom("colours"),
+    // under the colours' list (Okay, 14 Nov 2026: "From under base, move weight to under colors")
+    // Weight (#88; atlas 6.19, Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the
+    // settings all at once"): every width on the dial at once, as Scale changes every measure — the panel's numbers
+    // stay true, since the widths themselves change; one undo takes it all back
+    num("ui_weight", "Weight %", 50, 200, 1, { whole: true }),
+    info("Every width on the dial at once — marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
     // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
     // 2026, 10:46: "under the dial tab under colors. And a warning should be placed near it. Not under the dial like a
     // view option! That is dangerous"). Open, its button stands on the heading line and the warning under it; folded,

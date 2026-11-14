@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.91 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.92 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS, tones_of as WATCH_TONES } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -1888,11 +1888,21 @@ function build_case_grounds(S) {
     } else outer = ring_shape(b0, b1);
     const metal = case_metal(S);      // the bezel is case material, linked and locked (bz_c is unread: R8)
     out.push(["bezel", outer, metal]);      // the ring whole, its coin edge with it; its faces lie on it
-    for (const [role, a, b, tilt, facing, colour] of bezel_faces(S)) {
+    const faces = bezel_faces(S), one = S.ui_show && lit && S.sh_bezel > 0 ? faces.filter(([role, , , tilt, facing]) => role !== "insert" && tilt && facing > 0) : [];
+    if (one.length) {      // show mode: the bezel is one part with one pair of crescents from its outer edge, as the published case draws a step (watch.js blob) — each face that falls outward adds its depth to the pair (Okay, 14 Nov 2026: "shadows and case corners have thinned out and somehow gets partial repeats. the outline somehow doubled")
+      const a = min(...one.map((f) => f[1])), ring = ring_shape(a, b1), u = [sin(S.sh_from * PI / 180), cos(S.sh_from * PI / 180)], tones = show_tones(S, metal);
+      for (const side of [1, -1]) {
+        let d = 0;
+        for (const [, fa, fb, tilt, facing] of one) { const k = relief(S, tilt, facing, S.sh_from + (side > 0 ? 0 : 180), min(max(S.sh_bezel, 0), 100) / 100); d += (k > 0 ? min(k / CRESCENT_LIGHT, 1) : -min(-k / CRESCENT_DARK, 1)) * (fb - fa); }
+        if (abs(d) > 0.01) out.push(["bezel", ring.difference(circle(2 * b1).translate(-u[0] * min(abs(d), b1 - a) * side, -u[1] * min(abs(d), b1 - a) * side)), tones[d > 0 ? 0 : 1]]);
+      }
+    }
+    for (const [role, a, b, tilt, facing, colour] of faces) {
+      if (one.some((f) => f[1] === a && f[2] === b)) continue;
       if (role === "bezel chamfer" && !(lit && S.sh_bezel > 0)) { out.push([role, ring_shape(a, b), tinted(metal, 0.35)]); continue; }      // no light: the chamfer a lighter ring, as a drawing says an edge
       if (role === "insert" || (tilt && lit && S.sh_bezel > 0)) add(role, lit_band(S, a, b, tilt, facing, colour, S.sh_bezel));      // a flat metal face is the ring itself
     }
-    if (lit && S.sh_bezel > 0) {      // its edges, fine lines: each a face of its own, 45° — the top's turn down to the glass (facing in), the chamfer's start (facing out)
+    if (lit && S.sh_bezel > 0 && !S.ui_show) {      // its edges, fine lines (the edit view's; show mode draws a part by its crescents alone): each a face of its own, 45° — the top's turn down to the glass (facing in), the chamfer's start (facing out)
       add("bezel", lit_band(S, b0, min(b0 + EDGE_LINE, b1), 45, -1, metal, S.sh_bezel));
       if (sp.chamfer && sp.chamfer[0] > b0 + EDGE_LINE) add("bezel", lit_band(S, sp.chamfer[0] - EDGE_LINE / 2, sp.chamfer[0] + EDGE_LINE / 2, 45, 1, metal, S.sh_bezel));      // the metal's own colour: light only where the sun catches the edge, gone into the shade on the far side (Okay, 14 Nov 2026: "theres a border line that is lighter than the bezel at the shadowy end")
     }

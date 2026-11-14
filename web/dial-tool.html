@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.91 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.92 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9562,7 +9562,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.91 beta";
+var VERSION = "v1.1.92 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -12143,14 +12143,27 @@ function build_case_grounds(S) {
     } else outer = ring_shape(b0, b1);
     const metal = case_metal(S);
     out.push(["bezel", outer, metal]);
-    for (const [role, a, b, tilt, facing, colour] of bezel_faces(S)) {
+    const faces = bezel_faces(S), one2 = S.ui_show && lit && S.sh_bezel > 0 ? faces.filter(([role, , , tilt, facing]) => role !== "insert" && tilt && facing > 0) : [];
+    if (one2.length) {
+      const a = min(...one2.map((f2) => f2[1])), ring = ring_shape(a, b1), u = [sin(S.sh_from * PI / 180), cos(S.sh_from * PI / 180)], tones2 = show_tones(S, metal);
+      for (const side of [1, -1]) {
+        let d = 0;
+        for (const [, fa, fb, tilt, facing] of one2) {
+          const k = relief(S, tilt, facing, S.sh_from + (side > 0 ? 0 : 180), min(max(S.sh_bezel, 0), 100) / 100);
+          d += (k > 0 ? min(k / CRESCENT_LIGHT, 1) : -min(-k / CRESCENT_DARK, 1)) * (fb - fa);
+        }
+        if (abs(d) > 0.01) out.push(["bezel", ring.difference(circle2(2 * b1).translate(-u[0] * min(abs(d), b1 - a) * side, -u[1] * min(abs(d), b1 - a) * side)), tones2[d > 0 ? 0 : 1]]);
+      }
+    }
+    for (const [role, a, b, tilt, facing, colour] of faces) {
+      if (one2.some((f2) => f2[1] === a && f2[2] === b)) continue;
       if (role === "bezel chamfer" && !(lit && S.sh_bezel > 0)) {
         out.push([role, ring_shape(a, b), tinted(metal, 0.35)]);
         continue;
       }
       if (role === "insert" || tilt && lit && S.sh_bezel > 0) add(role, lit_band(S, a, b, tilt, facing, colour, S.sh_bezel));
     }
-    if (lit && S.sh_bezel > 0) {
+    if (lit && S.sh_bezel > 0 && !S.ui_show) {
       add("bezel", lit_band(S, b0, min(b0 + EDGE_LINE, b1), 45, -1, metal, S.sh_bezel));
       if (sp.chamfer && sp.chamfer[0] > b0 + EDGE_LINE) add("bezel", lit_band(S, sp.chamfer[0] - EDGE_LINE / 2, sp.chamfer[0] + EDGE_LINE / 2, 45, 1, metal, S.sh_bezel));
     }
@@ -14675,11 +14688,6 @@ var DIAL_ROWS = [
   num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),
   // typed past these it stops there and says so (#233: 0 and 1000 were taken)
   chk("ui_scale", "Scale everything with it", { nest: true }),
-  // Weight (#88; atlas 6.19, Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the
-  // settings all at once"): every width on the dial at once, as Scale changes every measure — the panel's numbers
-  // stay true, since the widths themselves change; one undo takes it all back
-  num2("ui_weight", "Weight %", 50, 200, 1, { whole: true }),
-  info("Every width on the dial at once \u2014 marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
   num2("dial_hole", "Centre hole", 0, 6, 0.1),
   // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
   custom("background"),
@@ -14688,6 +14696,12 @@ var DIAL_ROWS = [
   // fit in that line as tiny swatches. Default: compacted")
   hdr("Colours", { folded: true, summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
   custom("colours"),
+  // under the colours' list (Okay, 14 Nov 2026: "From under base, move weight to under colors")
+  // Weight (#88; atlas 6.19, Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the
+  // settings all at once"): every width on the dial at once, as Scale changes every measure — the panel's numbers
+  // stay true, since the widths themselves change; one undo takes it all back
+  num2("ui_weight", "Weight %", 50, 200, 1, { whole: true }),
+  info("Every width on the dial at once \u2014 marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
   // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
   // 2026, 10:46: "under the dial tab under colors. And a warning should be placed near it. Not under the dial like a
   // view option! That is dangerous"). Open, its button stands on the heading line and the warning under it; folded,

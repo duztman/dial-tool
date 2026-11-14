@@ -173,6 +173,13 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
     && Math.abs(r(top[3], 1, 0) + r(top[3], 1, 180)) < 0.02 && r(top[3], 1, 0) > 0.05 && Math.abs(r(45, 1, 0, 0.5) - r(45, 1, 0) / 2) < 1e-9 && n(S) > 200 && n(flat) === 3 && n(off) === 3,
     `the case's faces from the section's numbers, lit by one rule: the chamfer 45° facing out, the top ${top[3].toFixed(1)}° (0.55 lip less 0.30 chamfer over 2.10); toward the sun lighter (${r(top[3], 1, 0).toFixed(2)}), away darker (${r(top[3], 1, 180).toFixed(2)}), the rehaut's wall the other way round; Relief 0 or Shadows off draws each part flat (${n(flat)} shapes)`);
 }
+// show mode: the bezel one part, one pair of crescents (Okay, 14 Nov 2026, 19:29: "shadows and case corners have thinned out and somehow gets partial repeats. the outline somehow doubled on artisan")
+{ const S = { ...G.fresh_settings({ dial_d: 27, rh_on: true, rh_deg: 58, rh_len: 2.84, bz_on: true, bz_kind: 1, bz_w: 2.4, bz_chamfer: 0.3, bz_lip: 0.55, sh_from: 0, sh_rise: 49 }), ui_show: true };
+  const bz = G.case_grounds(S).filter((g) => g[0].startsWith("bezel")), b1 = G.case_spans(S).bezel[1], tall = (g) => { const b = g[1].bounds(); return [b[1], b[3]]; };
+  const [ring, light, dark] = bz, lum = (g) => g[2][0] + g[2][1] + g[2][2];
+  check(bz.length === 3 && lum(light) > lum(ring) && lum(dark) < lum(ring) && Math.abs(tall(light)[1] - b1) < 0.02 && Math.abs(tall(dark)[0] + b1) < 0.02 && tall(light)[0] > -2 && tall(dark)[1] < 2,
+    `show mode draws the bezel as one part: its ring, one light crescent on the sun's side and one dark on the far side, both from its outer edge (${bz.length} shapes; no second crescent on the chamfer, no edge lines)`);
+}
 // the plate's surface (#607; Okay, 14 Nov 2026, 18:52: "the research … has beautiful sunbursts done with svg. just implement that for now, park others")
 { const S = G.fresh_settings({ dial_d: 30, sh_from: 270, sh_rise: 35, c_plate: [0x14 / 255, 0x29 / 255, 0x4a / 255, 1] }), st = G.build_static(S), n = (T, preview = true) => G.scene(T, st, 0, preview).filter((x) => x.role === "finish");
   const sun = { ...S, plate_surface: 1 }, tones = n(sun), hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join(""), light = hex(G.sunburst_light(S.c_plate));

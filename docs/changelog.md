@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.92 beta · 14 Nov 2026 — show mode's bezel one part, one pair of crescents; Weight % under the colours
+
+Okay, 14 Nov 2026, 19:29: "Now debugging, shadows and case corners have thinned out and somehow gets partial repeats. the outline somehow doubled on artisan. Dial: From under base, move weight to under colors."
+
+- **The cause**: show mode drew a pair of crescents on each of the bezel's faces — the chamfer (0.3 mm) and the top — and a fine line on each edge, beside the published case's own pair on the lip. Three thin pairs side by side read as a thinned shadow, a repeated piece and a second outline. Measured on his dial: Relief 0 gave the picture of v1.1.85 back.
+- **Show mode draws the bezel as one part** (`build_case_grounds`): its ring and one pair of crescents from its outer edge, as the published case draws a step (`watch.js` `blob`). Each face that falls outward adds its depth to the pair (its relief × its width); no edge lines. On his dial: 3 shapes for the bezel where there were 148. A face that falls inward (the metal inside an insert) keeps its own pair. The edit view is as it was.
+- **Weight %** and its note stand in the Colours pane, under the colours' list; the pinned Material pane ends at Centre hole and the SVG's place.
+- `labels.mjs`: the bezel's three shapes in show mode. `window.mjs`: Weight % in the Colours pane.
+
 ## v1.1.91 beta · 14 Nov 2026 — the Fumé; the sunburst soft with Soft edges; Surface on the Material pane
 
 Okay, 14 Nov 2026, 19:07: "Ok, sunburst gets a low level of blur in blur on mode. Go on to fume. Surface finish moves up after the material, before paint, which can get transparency already, great."
