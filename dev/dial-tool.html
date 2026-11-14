@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.95 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.96 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9562,7 +9562,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.95 beta";
+var VERSION = "v1.1.96 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -13363,6 +13363,9 @@ function part_attrs(p) {
   if (p.hand) says.push(["hand", p.hand]);
   if (p.make === "plate" && p.metal) says.push(["metal", p.metal]);
   if (p.make === "plate" && p.material) says.push(["material", p.material]);
+  if (p.make === "plate" && p.surface) says.push(["surface", p.surface]);
+  if (p.make === "plate" && p.surface === "sunburst") says.push(["sheen", mm(p.sheen ?? 1)]);
+  if (p.make === "plate" && p.fume > 0) says.push(["fume", mm(p.fume)], ["fume-stops", (p.fume_stops || []).map(([at, dark]) => `${at}:${dark}`).join(" ")]);
   if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section], ["edge", p.edge || "sharp"], ["material", p.material || "colour"]);
   if (p.make === "hand") {
     says.push(["over", mm(p.over)], ["t", mm(p.t)], ["section", p.section], ["hw", mm(p.hw)]);
@@ -13407,8 +13410,13 @@ var part_record = (S, x2) => {
   const r = { role: x2.role, make: make_of(x2.role, hand), hand };
   if (x2.metal) r.metal = (PLATE_METALS[S.material] || PLATE_METALS[0]).toLowerCase();
   if (x2.role === "plate") r.material = (PLATE_METALS[S.material] || PLATE_METALS[0]).toLowerCase();
+  if (x2.role === "plate") Object.assign(r, { surface: SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? "sunburst" : "flat", sheen: Math.min(Math.max(S.plate_sheen, 0), 100) / 100, fume: Math.min(Math.max(S.plate_fume, 0), 100) / 100, fume_stops: FUME_STOPS2 });
   if (x2.engrave) {
     r.make = "engraved";
+    return r;
+  }
+  if (x2.polished) {
+    r.make = "polished";
     return r;
   }
   if (PRINTED(x2.role) || x2.role === "mark") r.ink = ink_mm(S, x2);
