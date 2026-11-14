@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.94 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.95 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9562,7 +9562,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.94 beta";
+var VERSION = "v1.1.95 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9975,6 +9975,8 @@ var DEFAULTS = {
   plate_fume: 0,
   movement: "any",
   // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
+  logo: null,
+  // THE LOGO's drawing (#609; Okay, 14 Nov 2026: "Make background into \"logo\", upload svg"): { name, cmds, wide } — one shape read from his SVG file, its height 1, its middle at 0 · 0, y up; `wide` its width for that height. In the settings file and the browser's store, not the link (R31: a drawing has no place in an address); the ring that shows it is a markers ring of shape "file" (logo_ring)
   dial_hole: 2.7,
   // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1],
@@ -10732,6 +10734,7 @@ function fresh_settings(over = null) {
   S.rings = S.rings.map((r) => complete(RING_BASE, r));
   for (const r of S.rings) if (![0, 3, 4].includes(+r.anchor)) r.anchor = 0;
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
+  file_shape_set(LOGO_FILE, S.logo && S.logo.cmds);
   if (S.engrave || S.rh_engrave || S.bz_engrave) {
     (over.rings || []).forEach((raw, i2) => {
       const r = S.rings[i2];
@@ -11219,7 +11222,7 @@ function differing(d, base) {
   for (const k in d) if (JSON.stringify(d[k]) !== JSON.stringify(base[k])) out[k] = d[k];
   return out;
 }
-var NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h", "da_frame_h"].includes(k);
+var NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h", "da_frame_h", "logo"].includes(k);
 function lean(S) {
   const out = {};
   for (const k in S) {
@@ -11490,6 +11493,15 @@ var Path = class _Path {
   }
   /** PathKit's path → ours, from its commands. A conic (a stroke's round cap) has no place in our commands: that path
    *  is read from PathKit's SVG text, where Skia turns conics into quadratics, as before. */
+  /** an SVG path's text → ours, through PathKit (arcs, relative steps, shorthand: all of the grammar), moved by a matrix [a b c d e f] as SVG writes one */
+  static from_svg(d, m = null) {
+    const a = PK2.FromSVGString(d || "");
+    if (!a) return new _Path();
+    if (m) a.transform(m[0], m[2], m[4], m[1], m[3], m[5], 0, 0, 1);
+    const p = _Path.parse(a.toSVGString());
+    a.delete();
+    return p;
+  }
   static _from_pk(a) {
     const cmds = a.toCmds();
     if (cmds.some((c) => c[0] === PK2.CONIC_VERB)) return _Path.parse(a.toSVGString());
@@ -11703,9 +11715,33 @@ function key_of(d, skip = ["c", "cs", "name", "guide"]) {
   for (const a of Object.keys(d).sort()) if (!skip.includes(a)) k[a] = d[a];
   return JSON.stringify(k);
 }
+var LOGO_FILE = "logo";
+var FILE_SHAPES = /* @__PURE__ */ new Map();
+function file_shape_set(name, cmds) {
+  if (cmds && cmds.length) FILE_SHAPES.set(name, new Path(cmds.map((c) => c.slice())));
+  else FILE_SHAPES.delete(name);
+}
 function file_shape(name) {
-  if (name) note(`imported shapes aren't in the web version yet: ${name} is drawn as a plain shape`);
+  const kept = FILE_SHAPES.get(name);
+  if (kept) return kept.copy();
+  if (name) note(name === LOGO_FILE ? "the logo's drawing is not in this dial (a link carries none): upload its SVG again under Dial \u203A Shape" : `no drawing for ${name}: it is drawn as a plain shape`);
   return null;
+}
+var logo_ring = (S) => S.rings.findIndex((r) => kind_of(r) === "markers" && SHAPES[r.shape] === "file" && r.file === LOGO_FILE);
+function logo_box(S) {
+  const r = S.rings[logo_ring(S)];
+  if (!r || !S.logo) return null;
+  const a = r.start * PI / 180;
+  return { x: r.r * sin(a), y: r.r * cos(a), w: r.len * S.logo.wide, h: r.len };
+}
+function logo_fit(S, x2, y, size = null) {
+  const r = S.rings[logo_ring(S)];
+  if (!r || !S.logo) return null;
+  const R = S.dial_d / 2, wide = S.logo.wide, full = 2 * R / Math.hypot(wide, 1);
+  const len = min(max(size ?? r.len, 0.2), full), reach = max(R - Math.hypot(len * wide, len) / 2, 0), d = Math.hypot(x2, y), k = d > reach && d > 0 ? reach / d : 1;
+  x2 *= k;
+  y *= k;
+  return { r: round(Math.hypot(x2, y) * 1e3) / 1e3, start: Math.hypot(x2, y) < 1e-6 ? r.start : round((Math.atan2(x2, y) * 180 / PI % 360 + 360) % 360 * 100) / 100, len: round(len * 1e3) / 1e3 };
 }
 var fonts = /* @__PURE__ */ new Map();
 var fallback_ps = null;
@@ -11804,18 +11840,18 @@ function has_chars(txt2, t) {
 }
 function glyph_outline(info2, t, codepoint) {
   return memo("glyph" + JSON.stringify([info2.ps, t.axes, codepoint]), () => {
-    const outline = new Path();
+    const outline2 = new Path();
     for (const c of info2.font.glyphToJson(codepoint)) {
       const v = c.values;
-      if (c.type === "M") outline.moveTo(v);
-      else if (c.type === "L") outline.lineTo(v);
-      else if (c.type === "C") outline.curveTo([v[0], v[1]], [v[2], v[3]], [v[4], v[5]]);
+      if (c.type === "M") outline2.moveTo(v);
+      else if (c.type === "L") outline2.lineTo(v);
+      else if (c.type === "C") outline2.curveTo([v[0], v[1]], [v[2], v[3]], [v[4], v[5]]);
       else if (c.type === "Q") {
-        const last2 = outline.d[outline.d.length - 1], px = last2[last2.length - 2], py = last2[last2.length - 1];
-        outline.curveTo([px + 2 / 3 * (v[0] - px), py + 2 / 3 * (v[1] - py)], [v[2] + 2 / 3 * (v[0] - v[2]), v[3] + 2 / 3 * (v[1] - v[3])], [v[2], v[3]]);
-      } else outline.closePath();
+        const last2 = outline2.d[outline2.d.length - 1], px = last2[last2.length - 2], py = last2[last2.length - 1];
+        outline2.curveTo([px + 2 / 3 * (v[0] - px), py + 2 / 3 * (v[1] - py)], [v[2] + 2 / 3 * (v[0] - v[2]), v[3] + 2 / 3 * (v[1] - v[3])], [v[2], v[3]]);
+      } else outline2.closePath();
     }
-    return outline.removeOverlap();
+    return outline2.removeOverlap();
   });
 }
 function shaped(txt2, t, size) {
@@ -11832,9 +11868,9 @@ function shaped(txt2, t, size) {
     const p = new Path(), starts = [];
     for (const g of buffer.getGlyphInfosAndPositions()) {
       starts.push([g.cluster, x2]);
-      const outline = glyph_outline(info2, t, g.codepoint).copy();
-      outline.scale(k).translate(x2 + (g.xOffset || 0) * k, (g.yOffset || 0) * k);
-      p.appendPath(outline);
+      const outline2 = glyph_outline(info2, t, g.codepoint).copy();
+      outline2.scale(k).translate(x2 + (g.xOffset || 0) * k, (g.yOffset || 0) * k);
+      p.appendPath(outline2);
       x2 += (g.xAdvance || 0) * k + tr;
     }
     return { path: p, width: x2, starts };
@@ -11890,19 +11926,23 @@ function mark_outline(ring, L, W2, shape3 = null, taper = null, grow = 0, solid2
   taper = taper === null ? ring.taper : taper;
   const wall = solid2 ? 0 : ring.wall;
   if (shape3 === "file") {
-    file_shape(ring.file);
+    const drawn2 = file_shape(ring.file);
+    if (drawn2) {
+      const p2 = drawn2.scale(L);
+      return grow > 0 ? p2.union(p2.expandStroke(2 * grow)) : p2;
+    }
     shape3 = "bar";
   }
-  const outline = (L2, W3, ro2, ri2) => {
+  const outline2 = (L2, W3, ro2, ri2) => {
     if (shape3 === "dot") return circle2(W3);
     const wi = shape3 === "bar" ? W3 : W3 * taper;
     if (wi < 1e-3) return poly([[0, -L2 / 2], [W3 / 2, L2 / 2], [-W3 / 2, L2 / 2]], [ri2, ro2, ro2]);
     return poly([[-wi / 2, -L2 / 2], [wi / 2, -L2 / 2], [W3 / 2, L2 / 2], [-W3 / 2, L2 / 2]], [ri2, ri2, ro2, ro2]);
   };
   const ro = ring.round_out, ri = ring.round_in;
-  let p = outline(L + 2 * grow, W2 + 2 * grow, ro + grow, ri + grow);
+  let p = outline2(L + 2 * grow, W2 + 2 * grow, ro + grow, ri + grow);
   if (wall > 0 && W2 - 2 * wall > 0.01 && (shape3 === "dot" || L - 2 * wall > 0.01)) {
-    p = p.difference(outline(L - 2 * wall, W2 - 2 * wall, max(ro - wall, 0), max(ri - wall, 0)));
+    p = p.difference(outline2(L - 2 * wall, W2 - 2 * wall, max(ro - wall, 0), max(ri - wall, 0)));
   }
   return p;
 }
@@ -11919,6 +11959,10 @@ function mark_at(ring, i2, a, grow = 0, solid2 = false) {
   const shape3 = own ? mark_outline(ring, L, W2, own, own === "wedge" && nudged ? 0 : null, grow, solid2) : style === "triangle" ? mark_outline(ring, L * 1.1, W2 * 2.4, "wedge", 0, grow, solid2) : mark_outline(ring, L, W2, null, null, grow, solid2);
   const b = shape3.bounds();
   if (!b) return null;
+  if (!own && SHAPES[ring.shape] === "file" && FILE_SHAPES.has(ring.file)) {
+    const at = (a + (n.da || 0)) * PI / 180, r = max(ring.r + (n.dr || 0), 0);
+    return shape3.translate(r * sin(at), r * cos(at));
+  }
   if (n.rot) shape3.rotate(-n.rot, [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);
   if (n.da) a += n.da;
   const extent = b[3] - b[1] - 2 * grow, width = b[2] - b[0] - 2 * grow;
@@ -14834,7 +14878,7 @@ var ROWS = {
     { ...RADIUS_ROWS.outer, menu: null, text: "Radius", show: kind_in("ticks", "markers", "band") },
     // its menu is on the heading's line (#419)
     { ...RADIUS_ROWS.numerals, menu: null, text: "Radius", id: "ring-r-text", show: with_text },
-    num2("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file"), id: "ring-w-resize" }),
+    num2("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge"), id: "ring-w-resize" }),
     // the Shapes pane's Width, here too (Okay, 20 Oct 2026, 00:34: "Replicate the same shapes-size button on resize rings but call it shapes width"; 01:05: "shapes width to the end")
     hdr("Sector colours", { folded: true, show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
@@ -14842,14 +14886,14 @@ var ROWS = {
     hdr("Shapes", { folded: true, show: kind_in("ticks", "markers") }),
     // "Shape box is called shapes now" (Okay, 20 Oct 2026, 00:34)
     pick("shape", "Shape", RHYTHM_SHAPES, PICS.shape, { show: kind_in("ticks", "markers") }),
-    num2("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file") }),
+    num2("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge") }),
     // a dot's Ø, and a mark's length, stand in Resize (4.47)
     num2("taper", "Inner width \xD7", 0, 2, 0.01, { show: marks_with("wedge") }),
     num2("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
     // the ends belong to the shape: nested under it, no pane of their own (Okay, 13 Oct 2026)
-    num2("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
-    num2("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
-    custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
+    num2("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge") }),
+    num2("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge") }),
+    custom("round_ends", { show: marks_with("bar", "wedge") }),
     // a stroke round each mark (#556; Okay, 31 Oct 2026, 03:31: "Also indices and markers get outlines"; 03:57, on the
     // drawing: "Place is good. Move up color after width"; 04:05: "Add them to bands as well"): a pane of its own after
     // Shapes (a band's after its Sector colours), On on its heading line, then the font box's Stroke rows — Width, Colour, Join, Side
@@ -18161,6 +18205,7 @@ var COLOUR = {
   },
   /** a setting changed outside set_value (a colour in a list): show it. shapes = the dial's shapes changed too. */
   changed(shapes = false) {
+    this.logo_keep();
     if (shapes) this.static_dirty = true;
     this.sync_rows();
     this.render();
@@ -21758,13 +21803,13 @@ var RINGS = {
       this.set_value("ring", "nudge", all);
     } });
     const colour = this.colour_pill("nudge-c", "This numeral's colour");
-    const colour_of = () => ({
+    const colour_of2 = () => ({
       alpha: true,
       read: () => sector_colour(this.ring(), +this.nudge_at),
       label: () => `${this.ring().name || "Numerals"} \xB7 ${pick2.selectedOptions[0]?.textContent.trim() || ""}`,
       write: (v) => this.set_value("ring", "cs", { ...this.ring().cs || {}, [this.nudge_at]: v })
     });
-    colour.onclick = () => this.pop_open(colour_of(), colour);
+    colour.onclick = () => this.pop_open(colour_of2(), colour);
     const font_row = el("div", { className: "row" }, el("label", { htmlFor: "nudge-font", textContent: "Font" }), el("span", { className: "btnline" }, font, same));
     const colour_row = el("div", { className: "row col" }, el("label", { htmlFor: "nudge-c", textContent: "Colour" }), colour);
     wrap.append(
@@ -22001,6 +22046,163 @@ var RINGS = {
       this.sync_rows();
       this.render();
     } }));
+  }
+};
+
+// src/logo.js
+var SHAPES2 = "path,rect,circle,ellipse,polygon,polyline,line";
+function outline(e) {
+  const n = (k) => parseFloat(e.getAttribute(k)) || 0, t = e.tagName.toLowerCase();
+  if (t === "path") return e.getAttribute("d") || "";
+  if (t === "rect") {
+    const [x2, y, w, h] = [n("x"), n("y"), n("width"), n("height")];
+    let rx = n("rx") || n("ry"), ry = n("ry") || n("rx");
+    rx = Math.min(rx, w / 2);
+    ry = Math.min(ry, h / 2);
+    return rx > 0 ? `M${x2 + rx} ${y}H${x2 + w - rx}A${rx} ${ry} 0 0 1 ${x2 + w} ${y + ry}V${y + h - ry}A${rx} ${ry} 0 0 1 ${x2 + w - rx} ${y + h}H${x2 + rx}A${rx} ${ry} 0 0 1 ${x2} ${y + h - ry}V${y + ry}A${rx} ${ry} 0 0 1 ${x2 + rx} ${y}Z` : `M${x2} ${y}H${x2 + w}V${y + h}H${x2}Z`;
+  }
+  if (t === "circle" || t === "ellipse") {
+    const rx = t === "circle" ? n("r") : n("rx"), ry = t === "circle" ? n("r") : n("ry"), cx = n("cx"), cy = n("cy");
+    return `M${cx - rx} ${cy}A${rx} ${ry} 0 1 0 ${cx + rx} ${cy}A${rx} ${ry} 0 1 0 ${cx - rx} ${cy}Z`;
+  }
+  if (t === "line") return `M${n("x1")} ${n("y1")}L${n("x2")} ${n("y2")}`;
+  const pts = (e.getAttribute("points") || "").trim().split(/[\s,]+/).map(Number).filter((v) => !Number.isNaN(v));
+  let d = "";
+  for (let i2 = 0; i2 + 1 < pts.length; i2 += 2) d += `${i2 ? "L" : "M"}${pts[i2]} ${pts[i2 + 1]}`;
+  return d && t === "polygon" ? d + "Z" : d;
+}
+var colour_of = (text) => {
+  const m = /rgba?\(([^)]+)\)/.exec(text || "");
+  if (!m) return null;
+  const v = m[1].split(/[,\s/]+/).map(Number);
+  return v.length > 3 && v[3] === 0 ? null : v.slice(0, 3).join(",");
+};
+function read_logo(text) {
+  const doc = new DOMParser().parseFromString(text, "image/svg+xml"), root = doc.documentElement;
+  if (!root || root.tagName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) return { refused: "this is not an SVG file" };
+  const count = (q) => root.querySelectorAll(q).length;
+  if (count("image")) return { refused: "it holds a picture (pixels): a logo is one flat shape" };
+  if (count("text")) return { refused: "it holds live text: turn the text into outlines first" };
+  const host = el("div");
+  host.style.cssText = "position:absolute;left:-9999px;top:0;width:0;height:0;overflow:hidden";
+  const live = document.importNode(root, true);
+  host.append(live);
+  document.body.append(host);
+  try {
+    const colours = /* @__PURE__ */ new Set(), parts = [];
+    for (const e of live.querySelectorAll(SHAPES2)) {
+      if (e.closest("defs,clipPath,mask,pattern,symbol,marker")) continue;
+      const cs = getComputedStyle(e);
+      if (cs.display === "none" || cs.visibility === "hidden") continue;
+      if (/url\(/.test(cs.fill) && cs.fill !== "none" || /url\(/.test(cs.stroke)) return { refused: "it holds a gradient or a pattern: a logo is one solid colour" };
+      const fill = parseFloat(cs.fillOpacity) === 0 ? null : colour_of(cs.fill), stroke2 = parseFloat(cs.strokeOpacity) === 0 ? null : colour_of(cs.stroke), weight = parseFloat(cs.strokeWidth) || 0;
+      const open = ["line", "polyline"].includes(e.tagName.toLowerCase()), d = outline(e);
+      if (!d) continue;
+      const m = e.getCTM(), M = m ? [m.a, m.b, m.c, m.d, m.e, m.f] : null, grown = M ? Math.sqrt(Math.abs(m.a * m.d - m.b * m.c)) : 1;
+      let shape3 = null;
+      if (fill && !open) {
+        shape3 = Path.from_svg(d, M);
+        colours.add(fill);
+      }
+      if (stroke2 && weight > 0) {
+        const line = Path.from_svg(d, M).expandStroke(weight * grown);
+        shape3 = shape3 ? shape3.union(line) : line;
+        colours.add(stroke2);
+      }
+      if (shape3 && !empty(shape3)) parts.push(shape3);
+    }
+    if (colours.size > 1) return { refused: `it holds ${colours.size} colours: a logo is one solid colour` };
+    if (!parts.length) return { refused: "nothing is drawn in it" };
+    const all = parts.length > 1 ? merge(parts) : parts[0], b = all.bounds();
+    if (!b || b[3] - b[1] <= 0 || b[2] - b[0] <= 0) return { refused: "nothing is drawn in it" };
+    const h = b[3] - b[1], cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2, tidy = (v) => Math.round(v * 1e5) / 1e5;
+    all.translate(-cx, -cy).scale(1 / h, -1 / h);
+    return { cmds: all.d.map((c) => [c[0], ...c.slice(1).map(tidy)]), wide: tidy((b[2] - b[0]) / h) };
+  } finally {
+    host.remove();
+  }
+}
+var LOGO = {
+  /** take a file's text as the logo: its drawing kept, its ring made if there is none (a ring of its own, named Logo, in the
+   *  middle of the upper half, a fifth of the dial tall), chosen in the list. → "" or why it was refused */
+  logo_take(text, name) {
+    const read = read_logo(text);
+    if (read.refused) return read.refused;
+    const S = this.S;
+    this.record?.();
+    S.logo = { name, cmds: read.cmds, wide: read.wide };
+    file_shape_set(LOGO_FILE, read.cmds);
+    if (logo_ring(S) < 0) {
+      const ring = new_ring("markers", S);
+      Object.assign(ring, { name: "Logo", count: 1, shape: SHAPES.indexOf("file"), file: LOGO_FILE, twelve: 0, wall: 0, r: 0, start: 0, len: S.dial_d / 5 });
+      S.rings.unshift(ring);
+    }
+    const i2 = logo_ring(S), fit = logo_fit(S, 0, S.dial_d / 4, S.rings[i2].len);
+    Object.assign(S.rings[i2], fit);
+    S.ui_ring = i2;
+    this.changed(true);
+    this.show_section?.();
+    this.sync_rows?.();
+    return "";
+  },
+  /** the logo and its ring gone */
+  logo_remove() {
+    const S = this.S, i2 = logo_ring(S);
+    this.record?.();
+    S.logo = null;
+    file_shape_set(LOGO_FILE, null);
+    if (i2 >= 0 && S.rings.length > 1) {
+      S.rings.splice(i2, 1);
+      S.ui_ring = Math.min(S.ui_ring || 0, S.rings.length - 1);
+    }
+    this.changed(true);
+    this.show_section?.();
+    this.sync_rows?.();
+  },
+  /** the row Logo, in the Shape pane: Upload (or Replace) · the file's name · Remove; what stopped a file, said in the row */
+  row_background(wrap) {
+    const file = el("input", { type: "file", accept: ".svg,image/svg+xml", hidden: true, id: "logo-file" });
+    const note2 = el("span", { className: "quiet", id: "background-note" }), up = el("button", { type: "button", className: "btn", id: "logo-upload" }), off = el("button", { type: "button", className: "btn", id: "logo-remove", textContent: "Remove" });
+    const sync = (why = "") => {
+      const L = this.S.logo;
+      up.textContent = L ? "Replace" : "Upload SVG";
+      off.hidden = !L;
+      note2.textContent = why || (L ? L.name : logo_ring(this.S) >= 0 ? "its drawing is not in a link: upload it again" : "one shape, one solid colour");
+      note2.classList.toggle("warn", Boolean(why));
+    };
+    up.onclick = () => file.click();
+    off.onclick = () => {
+      this.logo_remove();
+      sync();
+    };
+    file.onchange = async () => {
+      const f2 = file.files[0];
+      file.value = "";
+      if (!f2) return;
+      sync(this.logo_take(await f2.text(), f2.name));
+    };
+    wrap.append(el("label", { textContent: "Logo" }), el("span", { className: "tools" }, up, off, note2, file));
+    wrap.sync = () => sync();
+    sync();
+  },
+  /** after any change: the logo's size and place as near what they say as the dial's edge lets them be */
+  logo_keep() {
+    const S = this.S, b = logo_box(S);
+    if (!b) return;
+    const r = S.rings[logo_ring(S)], fit = logo_fit(S, b.x, b.y, r.len);
+    if (fit.len !== r.len || Math.abs(fit.r - r.r) > 11e-4) Object.assign(r, fit);
+  },
+  /** is this point of the dial (mm) on the logo? → true: a press there drags it (preview_events) */
+  logo_hit(mm2) {
+    const b = !this.S.ui_show && logo_box(this.S);
+    return Boolean(b) && Math.abs(mm2[0] - b.x) <= b.w / 2 && Math.abs(mm2[1] - b.y) <= b.h / 2;
+  },
+  /** drag it: its middle follows the pointer by the grip's offset, kept inside the dial */
+  logo_drag(mm2, grip) {
+    const S = this.S, i2 = logo_ring(S), fit = logo_fit(S, mm2[0] - grip[0], mm2[1] - grip[1]);
+    if (!fit) return;
+    Object.assign(S.rings[i2], fit);
+    this.changed();
   }
 };
 
@@ -23607,6 +23809,11 @@ var PREVIEW = {
       restart();
       if (pts.size === 1) {
         down.pan = e.button === 2;
+        if (!down.pan && e.button === 0 && this.logo_hit(this.to_mm(at(e)))) {
+          const mm2 = this.to_mm(at(e)), b = logo_box(this.S);
+          down.logo = [mm2[0] - b.x, mm2[1] - b.y];
+          down.moved = true;
+        }
         if (down.pan) down.moved = true;
         else if (this.S.ui_show) {
           down.moved = true;
@@ -23637,6 +23844,10 @@ var PREVIEW = {
         return this.place();
       }
       if (this.S.ui_show) return this.sun_at(p, down.p);
+      if (down.logo) {
+        this.hover(null);
+        return this.logo_drag(this.to_mm(p), down.logo);
+      }
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       if (e.pointerType === "touch") return;
       if (down.moved) {
@@ -23649,6 +23860,12 @@ var PREVIEW = {
     const up = (e) => {
       if (!pts.has(e.pointerId)) return;
       const click = pts.size === 1 && down && !down.moved && e.type === "pointerup";
+      if (down && down.logo) {
+        const i2 = logo_ring(this.S);
+        if (i2 >= 0) this.S.ui_ring = i2;
+        this.changed(true);
+        this.sync_rows();
+      }
       pts.delete(e.pointerId);
       if (click) this.clicked(at(e), document.elementFromPoint(e.clientX, e.clientY));
       restart();
@@ -24143,10 +24360,10 @@ var GUIDES = {
       return `rgb(${[0, 1, 2].map((k) => Math.round(255 * (1 - dark * (1 - (1 - a2) * (1 + a2 * c[k]))))).join(", ")})`;
     };
     hands.sort((p, q) => (p.item.fill?.[3] ?? 1) - (q.item.fill?.[3] ?? 1));
-    const surface = (name, before, outline, from_z) => {
+    const surface = (name, before, outline2, from_z) => {
       const g = part2(name, "g", this.dial), clip = part2(name + "/clip", "clipPath", shade.defs);
       clip.id = "shadow-clip-" + name;
-      outline.forEach(([d, turn], k2) => {
+      outline2.forEach(([d, turn], k2) => {
         const p = part2(`${name}/clip/${k2}`, "path", clip);
         set(p, "d", d);
         set(p, "transform", turn ? `rotate(${f2(-turn)})` : "");
@@ -24198,8 +24415,8 @@ var GUIDES = {
       const R = S.dial_d / 2, rw = S.rh_on ? rehaut_w(S) : 0, rh = S.rh_on ? rehaut_h(S) : 0, zb = S.bz_on ? Math.max(0, bezel_seat(S) + S.bz_h - S.bz_dial_up) : 0, edge = R + rw, z = Math.max(rh, zb);
       const circle3 = (r) => `M${f2(-r)} 0A${f2(r)} ${f2(r)} 0 1 0 ${f2(r)} 0A${f2(r)} ${f2(r)} 0 1 0 ${f2(-r)} 0Z`, field = (r) => `M-999 -999H999V999H-999Z${circle3(r)}`;
       const first = items.findIndex((x2) => x2.role === "hand" || x2.role === "cap" || x2.role === "guide"), before = first >= 0 ? nodes[first] : null, metal = [...case_metal(S).slice(0, 3), 1];
-      const wall = (name, outline, dz) => {
-        const s = surface(name, before, outline, 999);
+      const wall = (name, outline2, dz) => {
+        const s = surface(name, before, outline2, 999);
         s.cast(field(edge), 0, dz, metal);
         s.g.lastElementChild.setAttribute("fill-rule", "evenodd");
         return s;
@@ -30186,7 +30403,7 @@ var DialTool = class _DialTool {
     console.log(message);
   }
 };
-Object.assign(DialTool.prototype, PANEL, RINGS, HANDS2, CASE2, WINDOWS, COLOUR, FONTS, PREVIEW, GUIDES, BAR, CARDS, EXPORT, MODE);
+Object.assign(DialTool.prototype, PANEL, LOGO, RINGS, HANDS2, CASE2, WINDOWS, COLOUR, FONTS, PREVIEW, GUIDES, BAR, CARDS, EXPORT, MODE);
 var tool = null;
 async function open_window(pathkit2, harfbuzz, font_bytes) {
   start(pathkit2, harfbuzz);
