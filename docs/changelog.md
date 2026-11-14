@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## v1.1.95 beta · 14 Nov 2026 — the Logo
+
+Okay, 14 Nov 2026: "Make background into "logo", upload svg. only accept one color solid svgs. treat them as normal, stroke, weight size etc. placement is with mouse, limited to within dial and scale is possible." "One logo, gets it's own ring, the drawing can be filled, stroked, treat it as a shape as others. 3d has Applied indices, this should be able to translate." 21:47: "No the logo is straight only."
+
+- **Dial › Shape › Logo** (`logo.js`): Upload SVG · Replace · Remove and the file's name. One logo; a second upload replaces the drawing and keeps the ring's place and settings.
+- **The reader** (`read_logo`, the first place of #173's one mechanism, R23): paths, rects, circles, ellipses, polygons, polylines and lines, with their groups, styles and transforms, joined into one shape. A filled shape is its fill; a line is the outline of its stroke at its own weight. Refused, the reason said in the row: more than one colour · a gradient or a pattern · a picture · live text · nothing drawn · not an SVG.
+- **Its ring**: a markers ring of one mark named Logo, its shape the drawing (`SHAPES` "file", `file: "logo"`), on top of the list. So it has a ring's own Colour, Finish (Paint · Engrave · Polished), Stroke and weight, ink height and made-as. Its Length is its height. Width and the rounding rows are not shown for a drawing.
+- **Straight**: the drawing is not turned with its angle; its middle stands on the ring's radius.
+- **Placed with the mouse**: a press on the logo in the edit view takes hold of it and the drag moves it, not the dial; let go, its ring is the chosen one. `logo_fit` keeps it whole inside the dial's edge — its box's far corner may touch the edge — in a drag and after any row (`logo_keep`). Its height stops at the dial's width across the box's corners.
+- **Kept** in the settings file and the browser's store (`S.logo`), not in a link (R31): a link carries the ring, and the row and the Export notes say the drawing is to be uploaded again; until then the ring draws a bar (R17).
+- `labels.mjs`: the box, the fit, the link. `window.mjs`: the reader's six refusals, the ring, the row, the drag.
+
 ## v1.1.94 beta · 14 Nov 2026 — Finish each ring's own: Paint · Engrave · Polished
 
 Okay, 14 Nov 2026, 20:17: "Colour row becomes a Finish row with Paint · Engrave · Polished. B on the polished." 19:48: "engrave instead of paint should live under each pieces ring, somehow instead of color." "Also add "polished" to that list as well."

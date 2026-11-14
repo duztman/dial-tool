@@ -661,7 +661,7 @@ export const PREVIEW = {
       else if (pts.size >= 2) down = { ...pair(), moved: true };      // a pinch is never a click
       else down = null;
     };
-    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1) { down.pan = e.button === 2; if (down.pan) down.moved = true; else if (this.S.ui_show) { down.moved = true; this.sun_at(at(e), at(e)); } } });      // the right button moves the drawing, in both modes; in show mode one finger or the pointer is the sun, never a click
+    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1) { down.pan = e.button === 2; if (!down.pan && e.button === 0 && this.logo_hit(this.to_mm(at(e)))) { const mm = this.to_mm(at(e)), b = G.logo_box(this.S); down.logo = [mm[0] - b.x, mm[1] - b.y]; down.moved = true; }      /* a press on the logo takes hold of it: the drag moves it, not the dial (#609) */ if (down.pan) down.moved = true; else if (this.S.ui_show) { down.moved = true; this.sun_at(at(e), at(e)); } } });      // the right button moves the drawing, in both modes; in show mode one finger or the pointer is the sun, never a click
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
@@ -677,6 +677,7 @@ export const PREVIEW = {
       if (down.pan && !(e.buttons & 2)) { down.pan = false; return; }      // the button let go (outside the window too): the move ends
       if (down.pan) { this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; return this.place(); }
       if (this.S.ui_show) return this.sun_at(p, down.p);
+      if (down.logo) { this.hover(null); return this.logo_drag(this.to_mm(p), down.logo); }
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       // a finger alone doesn't move the dial: two do, with the pinch (Okay, 18 Oct 2026, notes 2: "on ipad and all touch
       // screens, you need two fingers to move as well. One finger drag sometimes confusing as reported"). The mouse drags.
@@ -686,6 +687,7 @@ export const PREVIEW = {
     const up = (e) => {
       if (!pts.has(e.pointerId)) return;
       const click = pts.size === 1 && down && !down.moved && e.type === "pointerup";
+      if (down && down.logo) { const i = G.logo_ring(this.S); if (i >= 0) this.S.ui_ring = i; this.changed(true); this.sync_rows(); }      // let go: the place is kept, its ring the chosen one
       pts.delete(e.pointerId);
       if (click) this.clicked(at(e), document.elementFromPoint(e.clientX, e.clientY));
       restart();

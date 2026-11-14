@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.94 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.95 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS, tones_of as WATCH_TONES } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -293,6 +293,7 @@ export const DEFAULTS = {
   // mode; no file prints them. plate_grain is read by nothing (R8): Brushed is parked.
   plate_surface: 0, plate_sheen: 100, plate_grain: 0, plate_fume: 0,
   movement: "any",                                 // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
+  logo: null,                                      // THE LOGO's drawing (#609; Okay, 14 Nov 2026: "Make background into \"logo\", upload svg"): { name, cmds, wide } — one shape read from his SVG file, its height 1, its middle at 0 · 0, y up; `wide` its width for that height. In the settings file and the browser's store, not the link (R31: a drawing has no place in an address); the ring that shows it is a markers ring of shape "file" (logo_ring)
   dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
   rings: [],
@@ -705,6 +706,7 @@ export function fresh_settings(over = null) {
   // middle all read as the middle, place 0 (R9: the list keeps them)
   for (const r of S.rings) if (![0, 3, 4].includes(+r.anchor)) r.anchor = 0;
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
+  file_shape_set(LOGO_FILE, S.logo && S.logo.cmds);      // the logo's drawing, kept for its ring to draw
   // Finish is each ring's own (#603): a dial from before said it once a surface (engrave · rh_engrave · bz_engrave). Its rings take
   // what their surface said, and the three are spent — read here and nowhere else (R8: the keys stay)
   if (S.engrave || S.rh_engrave || S.bz_engrave) {
@@ -917,7 +919,7 @@ function differing(d, base) {
 
 /** the settings, without everything that still has its starting value and without the window's own state. */
 /** the watch's own keys (show mode): kept in the file and the session, never in a link (Okay, 22 Oct 2026) */
-export const NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h", "da_frame_h"].includes(k);      // the inks' split and heights (#545) are show mode's too
+export const NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px", "ink_b", "stroke_b", "frame_b", "print_h", "da_frame_b", "da_print_h", "da_frame_h", "logo"].includes(k);      // the inks' split and heights (#545) are show mode's too
 export function lean(S) {
   const out = {};
   for (const k in S) {
@@ -1135,6 +1137,12 @@ export class Path {
   _pk() { return PK.FromCmds(this.d.map((c) => [PK_VERB[c[0]], ...c.slice(1)])); }
   /** PathKit's path → ours, from its commands. A conic (a stroke's round cap) has no place in our commands: that path
    *  is read from PathKit's SVG text, where Skia turns conics into quadratics, as before. */
+  /** an SVG path's text → ours, through PathKit (arcs, relative steps, shorthand: all of the grammar), moved by a matrix [a b c d e f] as SVG writes one */
+  static from_svg(d, m = null) {
+    const a = PK.FromSVGString(d || ""); if (!a) return new Path();
+    if (m) a.transform(m[0], m[2], m[4], m[1], m[3], m[5], 0, 0, 1);
+    const p = Path.parse(a.toSVGString()); a.delete(); return p;
+  }
   static _from_pk(a) {
     const cmds = a.toCmds();
     if (cmds.some((c) => c[0] === PK.CONIC_VERB)) return Path.parse(a.toSVGString());
@@ -1352,9 +1360,35 @@ function key_of(d, skip = ["c", "cs", "name", "guide"]) {
 // ── imported files ───────────────────────────────────────────
 //   Not in the web version yet: a "file" shape falls back to a bar or a baton (R17).
 
+//   A drawing read from an SVG file (logo.js) is kept by name: the logo's is LOGO_FILE (#609, the first place of #173's one
+//   mechanism; a marker's, a hand's and a moon's take a name each when they are built). A "file" shape whose drawing is not
+//   here — a link carries none — falls back to a bar or a baton and says so (R17).
+export const LOGO_FILE = "logo";
+const FILE_SHAPES = new Map();                     // name → Path, height 1, centred, y up
+/** keep (or, with no commands, forget) the drawing of a name */
+export function file_shape_set(name, cmds) { if (cmds && cmds.length) FILE_SHAPES.set(name, new Path(cmds.map((c) => c.slice()))); else FILE_SHAPES.delete(name); }
 function file_shape(name) {
-  if (name) note(`imported shapes aren't in the web version yet: ${name} is drawn as a plain shape`);
+  const kept = FILE_SHAPES.get(name);
+  if (kept) return kept.copy();
+  if (name) note(name === LOGO_FILE ? "the logo's drawing is not in this dial (a link carries none): upload its SVG again under Dial › Shape" : `no drawing for ${name}: it is drawn as a plain shape`);
   return null;
+}
+/** the logo's ring — a markers ring of one mark whose shape is the drawing — as its place in S.rings, or −1 */
+export const logo_ring = (S) => S.rings.findIndex((r) => kind_of(r) === "markers" && SHAPES[r.shape] === "file" && r.file === LOGO_FILE);
+/** the logo's box on the dial: { x, y, w, h } in mm, its middle and its size; null without a ring or a drawing */
+export function logo_box(S) {
+  const r = S.rings[logo_ring(S)]; if (!r || !S.logo) return null;
+  const a = r.start * PI / 180; return { x: r.r * sin(a), y: r.r * cos(a), w: r.len * S.logo.wide, h: r.len };
+}
+/** put the logo's middle at x · y (mm, y up) and its height at `size` — kept whole inside the dial's edge (Okay, 14 Nov 2026:
+ *  "placement is with mouse, limited to within dial and scale is possible"): the box's far corner may reach the edge, no further.
+ *  → the ring's r · start · len to set */
+export function logo_fit(S, x, y, size = null) {
+  const r = S.rings[logo_ring(S)]; if (!r || !S.logo) return null;
+  const R = S.dial_d / 2, wide = S.logo.wide, full = 2 * R / Math.hypot(wide, 1);      // the tallest that fits, standing in the middle
+  const len = min(max(size ?? r.len, 0.2), full), reach = max(R - Math.hypot(len * wide, len) / 2, 0), d = Math.hypot(x, y), k = d > reach && d > 0 ? reach / d : 1;
+  x *= k; y *= k;
+  return { r: round(Math.hypot(x, y) * 1000) / 1000, start: Math.hypot(x, y) < 1e-6 ? r.start : round(((Math.atan2(x, y) * 180 / PI) % 360 + 360) % 360 * 100) / 100, len: round(len * 1000) / 1000 };
 }
 
 // ── type: every numeral is shaped by HarfBuzz and becomes outlines (R10) ──
@@ -1568,7 +1602,8 @@ function mark_outline(ring, L, W, shape = null, taper = null, grow = 0, solid = 
   taper = taper === null ? ring.taper : taper;
   const wall = solid ? 0 : ring.wall;
   if (shape === "file") {
-    file_shape(ring.file);
+    const drawn = file_shape(ring.file);
+    if (drawn) { const p = drawn.scale(L); return grow > 0 ? p.union(p.expandStroke(2 * grow)) : p; }      // the drawing itself, its height the ring's Length
     shape = "bar";                                 // no file: a bar (R17)
   }
   const outline = (L, W, ro, ri) => {
@@ -1606,6 +1641,8 @@ function mark_at(ring, i, a, grow = 0, solid = false) {
     : style === "triangle" ? mark_outline(ring, L * 1.1, W * 2.4, "wedge", 0, grow, solid) : mark_outline(ring, L, W, null, null, grow, solid);
   const b = shape.bounds();
   if (!b) return null;
+  // a drawing stands straight wherever it is put, its middle on the ring's radius (Okay, 14 Nov 2026, 21:47: "the logo is straight only")
+  if (!own && SHAPES[ring.shape] === "file" && FILE_SHAPES.has(ring.file)) { const at = (a + (n.da || 0)) * PI / 180, r = max(ring.r + (n.dr || 0), 0); return shape.translate(r * sin(at), r * cos(at)); }
   if (n.rot) shape.rotate(-n.rot, [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);
   if (n.da) a += n.da;
   const extent = (b[3] - b[1]) - 2 * grow, width = (b[2] - b[0]) - 2 * grow;

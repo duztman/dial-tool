@@ -31,6 +31,7 @@ import { COLOUR } from "./colour.js";
 import { FONTS } from "./fonts.js";
 import { PANEL } from "./panel.js";
 import { RINGS } from "./rings.js";
+import { LOGO } from "./logo.js";
 import { HANDS } from "./hands.js";
 import { CASE } from "./case.js";
 import { WINDOWS } from "./windows.js";
@@ -624,7 +625,7 @@ class DialTool {
     console.log(message);
   }
 }
-Object.assign(DialTool.prototype, PANEL, RINGS, HANDS, CASE, WINDOWS, COLOUR, FONTS, PREVIEW, GUIDES, BAR, CARDS, EXPORT, MODE);      // the parts, in the window's order: left to right, top to bottom
+Object.assign(DialTool.prototype, PANEL, LOGO, RINGS, HANDS, CASE, WINDOWS, COLOUR, FONTS, PREVIEW, GUIDES, BAR, CARDS, EXPORT, MODE);      // the parts, in the window's order: left to right, top to bottom
 
 let tool = null;
 

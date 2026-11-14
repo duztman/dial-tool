@@ -360,6 +360,7 @@ export const COLOUR = {
 
   /** a setting changed outside set_value (a colour in a list): show it. shapes = the dial's shapes changed too. */
   changed(shapes = false) {
+    this.logo_keep();      // the logo whole inside the dial, whatever row moved or sized it (#609)
     if (shapes) this.static_dirty = true;
     this.sync_rows();
     this.render();

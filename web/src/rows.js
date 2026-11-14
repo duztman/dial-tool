@@ -243,19 +243,19 @@ export const ROWS = {
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),      // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
     { ...RADIUS_ROWS.outer, menu: null, text: "Radius", show: kind_in("ticks", "markers", "band") },      // its menu is on the heading's line (#419)
     { ...RADIUS_ROWS.numerals, menu: null, text: "Radius", id: "ring-r-text", show: with_text },
-    num("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file"), id: "ring-w-resize" }),      // the Shapes pane's Width, here too (Okay, 20 Oct 2026, 00:34: "Replicate the same shapes-size button on resize rings but call it shapes width"; 01:05: "shapes width to the end")
+    num("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge"), id: "ring-w-resize" }),      // the Shapes pane's Width, here too (Okay, 20 Oct 2026, 00:34: "Replicate the same shapes-size button on resize rings but call it shapes width"; 01:05: "shapes width to the end")
     hdr("Sector colours", { folded: true, show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
     hdr("Shapes", { folded: true, show: kind_in("ticks", "markers") }),      // "Shape box is called shapes now" (Okay, 20 Oct 2026, 00:34)
     pick("shape", "Shape", RHYTHM_SHAPES, PICS.shape, { show: kind_in("ticks", "markers") }),
-    num("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file") }),      // a dot's Ø, and a mark's length, stand in Resize (4.47)
+    num("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge") }),      // a dot's Ø, and a mark's length, stand in Resize (4.47)
     num("taper", "Inner width ×", 0, 2, 0.01, { show: marks_with("wedge") }),
     num("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
     // the ends belong to the shape: nested under it, no pane of their own (Okay, 13 Oct 2026)
-    num("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
-    num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
-    custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
+    num("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge") }),
+    num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge") }),
+    custom("round_ends", { show: marks_with("bar", "wedge") }),
     // a stroke round each mark (#556; Okay, 31 Oct 2026, 03:31: "Also indices and markers get outlines"; 03:57, on the
     // drawing: "Place is good. Move up color after width"; 04:05: "Add them to bands as well"): a pane of its own after
     // Shapes (a band's after its Sector colours), On on its heading line, then the font box's Stroke rows — Width, Colour, Join, Side

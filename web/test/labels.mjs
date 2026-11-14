@@ -185,6 +185,13 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(bz.length === 3 && lum(light) > lum(ring) && lum(dark) < lum(ring) && Math.abs(tall(light)[1] - b1) < 0.02 && Math.abs(tall(dark)[0] + b1) < 0.02 && tall(light)[0] > -2 && tall(dark)[1] < 2,
     `show mode draws the bezel as one part: its ring, one light crescent on the sun's side and one dark on the far side, both from its outer edge (${bz.length} shapes; no second crescent on the chamfer, no edge lines)`);
 }
+// the logo's drawing stays out of the link; its ring travels; its fit keeps it whole inside the dial (#609)
+{ const S = G.fresh_settings({ dial_d: 30, logo: { name: "a.svg", cmds: [["M", -1, -0.5], ["L", 1, -0.5], ["L", 1, 0.5], ["L", -1, 0.5], ["Z"]], wide: 2 }, rings: [{ kind: 1, count: 1, shape: 3, file: "logo", r: 5, start: 90, len: 4 }] });
+  const st = G.build_static(S), box = G.scene(S, st, 0, false, null).find((x) => x.role === "ring").path.bounds().map((v) => +v.toFixed(3)), fit = G.logo_fit(S, 100, 0), big = G.logo_fit(S, 0, 0, 99);
+  const far = fit.r + Math.hypot(4 * 2, 4) / 2, lean = JSON.stringify(G.lean ? G.lean(S) : {});
+  check(box.join() === "1,-2,9,2" && Math.abs(far - 15) < 0.002 && fit.start === 90 && Math.abs(Math.hypot(big.len * 2, big.len) - 30) < 0.01 && big.r === 0 && G.NOT_IN_LINK("logo") && !lean.includes("cmds") && G.logo_ring(S) === 0,
+    `the logo is a ring of one mark whose shape is the drawing, its height the ring's Length, straight, its middle on the radius (box ${box.join(" · ")} at 3 o'clock); pulled past the edge it stops with its far corner on it (${far.toFixed(3)} of 15 mm); the tallest it grows is the dial's own width across its corners (${big.len}); its drawing is not in a link (Okay, 14 Nov 2026: "limited to within dial and scale is possible")`);
+}
 // the plate's surface (#607; Okay, 14 Nov 2026, 18:52: "the research … has beautiful sunbursts done with svg. just implement that for now, park others")
 { const S = G.fresh_settings({ dial_d: 30, sh_from: 270, sh_rise: 35, c_plate: [0x14 / 255, 0x29 / 255, 0x4a / 255, 1] }), st = G.build_static(S), n = (T, preview = true) => G.scene(T, st, 0, preview).filter((x) => x.role === "finish");
   const sun = { ...S, plate_surface: 1 }, tones = n(sun), hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join(""), light = hex(G.sunburst_light(S.c_plate));
