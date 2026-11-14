@@ -234,14 +234,26 @@ export const GUIDES = {
     const parts = block.el;
     // the foot: Shadows (the switch itself, mirrored) · Soft edges · Bevels % · Reset, in the footer's cells
     const on = row(chk("sh_on", "Shadows", { id: "shadows-on" })), soft = row(chk("sh_blur", "Soft edges")), bevel = row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, block: true }));      // the hands' bevels' strength; each hand's own Bevel tick turns it on
-    this.shadow_rows = [...light, on, soft, bevel];
+    // the case's relief (#595; Okay, 14 Nov 2026, to where its rows live: "both"): a row a part, top down, under the parts' heights;
+    // a part that is off has no row (R16)
+    const relief = [row(num("sh_bezel", "Bezel %", 0, 100, 1, { whole: true, side: true, show: (S) => S.bz_on })), row(num("sh_rehaut", "Rehaut %", 0, 100, 1, { whole: true, side: true, show: (S) => S.rh_on }))];
+    // beside them a quarter of the case as it is drawn, from 9 to 12 (Okay, 14 Nov 2026: "bezel and rehaut on shadows view needs a quarter
+    // shown detail of what is being changed"): the pane may lie over the dial, so the faces a row changes are seen here; the row
+    // under the pointer or in use keeps its part full and stands the other back
+    const relief_pic = el("div", { className: "reliefpic" });
+    relief.forEach((r, k) => { const part = ["bezel", "rehaut"][k], at = (on) => () => { relief_pic.dataset.at = on ? part : ""; };
+      r.el.addEventListener("pointerenter", at(true)); r.el.addEventListener("pointerleave", at(false)); r.el.addEventListener("focusin", at(true)); r.el.addEventListener("focusout", at(false)); });
+    this.relief_pic = relief_pic;
+    const relief_box = el("div", { className: "shadeparts shaderelief" }, el("div", { className: "shadecol" }, el("div", { className: "shadehead", textContent: "Case Relief" }), el("div", { className: "shaderows relief" }, ...relief.map((r) => r.el))), relief_pic);
+    relief_box.hidden = !(this.S.bz_on || this.S.rh_on);      // the heights' own columns: the rows stand under theirs
+    this.shadow_rows = [...light, on, soft, bevel, ...relief];
     const reset = el("button", { type: "button", className: "gword", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(G.DEFAULTS[key]);
       for (const w of G.windows_of(this.S)) w.depth = G.WINDOW_BASE.depth;      // every disc back to the shared depth
       this.sync_rows();
       this.render();
     } });
-    const scroll = el("div", { className: "shadescroll" }, top, parts);
+    const scroll = el("div", { className: "shadescroll" }, top, parts, relief_box);
     const cell = (cls, ...kids) => el("div", { className: "cell " + cls }, ...kids);
     list.append(scroll, el("div", { className: "popfoot shadefoot" }, cell("lead", on.el), cell("", soft.el), cell("", bevel.el), cell("", reset)));
     this.shadow_sun = sun;
@@ -251,6 +263,18 @@ export const GUIDES = {
     const esc = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
     box.onkeydown = esc; list.onkeydown = esc;
     return box;
+  },
+
+  /** the Shadows pane's quarter of the case: the dial's edge, the rehaut and the bezel from 9 to 12, drawn from the scene's own
+   *  grounds (geometry.js case_grounds) — the same faces, lit the same — so a Relief row's change shows in it at once */
+  draw_relief_pic() {
+    const S = this.S, pic = this.relief_pic; if (!pic) return;
+    const box = pic.closest(".shaderelief"), on = Boolean(S.bz_on || S.rh_on);
+    if (box) box.hidden = !on;
+    if (!on) { pic.replaceChildren(); return; }
+    const R = G.reach_mm(S), M = 0.4, hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("");
+    const grounds = G.case_grounds({ ...S, ui_show: false }).map(([role, path, c]) => `<path class="${role === "rehaut" ? "rehaut" : "bezel"}" d="${path.svg(2, true)}" fill="${hex(c)}"/>`).join("");
+    pic.innerHTML = `<svg viewBox="${-(R + M)} ${-(R + M)} ${R + 2 * M} ${R + 2 * M}" aria-hidden="true"><circle class="dial" r="${S.dial_d / 2}" fill="${hex(S.c_plate)}"/>${grounds}</svg>`;
   },
 
   /** shadows on the preview (a trial, preview only: R5). One light, far away. Each part stands at a height: the date
@@ -510,7 +534,7 @@ export const GUIDES = {
     const shown = wins.map((w, i) => [w, i]).filter(([w, i]) => w.on && G.disc_of(this.S, i)).sort((a, b) => angle(a[0]) - angle(b[0]));      // round the dial from 12
     const key = JSON.stringify(shown.map(([w, i]) => [i, w.at, w.at_deg]));
     const pane_open = !$("#shadow-list").hidden;
-    if (pane_open) { for (const r of this.shadow_rows) r.refresh(this.S); this.shadow_sun.refresh(); }
+    if (pane_open) { for (const r of this.shadow_rows) r.refresh(this.S); this.shadow_sun.refresh(); this.draw_relief_pic(); }
     for (const block of this.height_blocks) {
       if (block.el.offsetParent === null) continue;      // out of sight: nothing to lay out (the diagram reads its rows from the screen)
       if (block.discs.dataset.wins !== key) {

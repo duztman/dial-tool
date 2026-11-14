@@ -839,6 +839,10 @@ const STYLES = {
 };
 const hsl = (h, k) => { const [hh, s, l] = hex2hsl(h); return hsl2hex([hh, s, Math.min(0.97, l * k)]); };
 const tones = (h, [up, down]) => [hsl(h, up), h, hsl(h, down)];
+/** a colour's three tones in a style — light · itself · dark: a metal of the engine's own keeps its entry's, any other colour gets
+ *  three made from it as a colour of your own does (draw's `own`). For the tool's bezel and rehaut, drawn in show mode in the case's
+ *  own tones (geometry.js lit_band) */
+export function tones_of(style, hex, k = [1.35, 0.81]) { use(style); return Object.entries(METALS).filter(([n]) => n !== "custom").map(([, T]) => T).find((T) => T[1] === hex) || tones(hex, k); }
 /** the colours as the engine has them before anything is changed: what the page's colour list shows first */
 export function presets(style) { use(style); return { floor: STYLES[style].floor, metals: Object.fromEntries(Object.entries(METALS).map(([k, T]) => [k, T[1]])),
   leather: Object.fromEntries(Object.entries(LEATHER).map(([k, T]) => [k, T[1]])),

@@ -10,6 +10,21 @@ import { $, el, is_light, save_file } from "./ui.js";
 import { SECTIONS } from "./rows.js";
 import { INSTANCES_MOST, dial_picture, dial_text, entry_settings, instances_read, instances_write, pack } from "./session.js";
 
+/** a card that has come forward, all of it on the screen — its picture, its name and the choices under it (Okay, 14 Nov 2026:
+ *  "for selected items make sure you move focus: all visible on the screen on gallery when item is selected"): the list it
+ *  stands in is scrolled just far enough, down for choices cut at the bottom, up for a picture cut at the top */
+function whole_in_view(card, release) {
+  requestAnimationFrame(() => {
+    if (release) release();      // the panel holds a pressed thing in place for half a second (panel.js finger_anchor): not this one
+    const a = card.getBoundingClientRect(), b = (card.querySelector(".choices") || card).getBoundingClientRect(), ROOM = 8;
+    let box = card.parentElement;
+    while (box && !(/auto|scroll/.test(getComputedStyle(box).overflowY) && box.scrollHeight > box.clientHeight + 1)) box = box.parentElement;
+    const view = box ? box.getBoundingClientRect() : { top: 0, bottom: innerHeight }, top = Math.max(view.top, 0), bottom = Math.min(view.bottom, innerHeight);
+    const by = b.bottom + ROOM > bottom ? Math.min(b.bottom + ROOM - bottom, a.top - ROOM - top) : a.top - ROOM < top ? a.top - ROOM - top : 0;      // never so far down that its top leaves
+    if (Math.abs(by) > 1) (box || window).scrollBy({ top: by, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  });
+}
+
 export const CARDS = {
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
   /** a way to the Gallery from the panel's top line: a small pill after Help (Okay, 15 Oct 2026, 07:45: "a shortcut to
@@ -50,7 +65,7 @@ export const CARDS = {
       card.append(el("span", { textContent: e.name }), el("span", { className: "choices" },
         el("button", { type: "button", className: "btn main", textContent: "Edit this dial", title: "Open it here, in place of the dial you have", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(false); } }),
         el("button", { type: "button", className: "btn", textContent: "In a new tab", title: "Keep the dial you have; this one opens in a new tab beside it", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(true); } })));
-      card.onclick = (ev) => { if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return; ev.preventDefault(); const was = card.classList.contains("focus"); unfocus(); if (!was) card.classList.add("focus"); };
+      card.onclick = (ev) => { if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return; ev.preventDefault(); const was = card.classList.contains("focus"); unfocus(); if (!was) { card.classList.add("focus"); whole_in_view(card, this.anchor_release); } };
       card.onkeydown = (ev) => { if (ev.key === "Escape") { unfocus(); card.blur(); } };
       grid.append(card);
     }
@@ -70,6 +85,24 @@ export const CARDS = {
     const grid = el("div", { className: "cards", id: "instance-cards" });
     const when = (at) => new Date(at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     const unfocus = () => { for (const c of grid.querySelectorAll("a.focus")) c.classList.remove("focus"); };
+    // a saved dial with a case whose picture was drawn to the dial's edge alone is drawn again, out to its case (session.js
+    // dial_picture, `data-fit`), in its card and in the browser's list; once, a moment after the cards stand
+    const refit = async (list) => {
+      const done = new Map();
+      for (const e of list) {
+        if (/data-fit=/.test(e.picture || "")) continue;
+        const S = await entry_settings(e);
+        if (!S || !(S.rh_on || S.bz_on)) continue;
+        const T = G.fresh_settings(S);
+        await this.load_fonts_in_use(T);
+        done.set(e.id, dial_picture(T, G.build_static(T)));
+      }
+      if (!done.size) return;
+      const now = instances_read();
+      for (const e of now) if (done.has(e.id)) e.picture = done.get(e.id);
+      instances_write(now);
+      for (const card of grid.querySelectorAll("a[data-id]")) if (done.has(card.dataset.id)) card.querySelector("svg")?.replaceWith(el("template", { innerHTML: done.get(card.dataset.id) }).content.firstChild);
+    };
     const draw = () => {
       const list = instances_read();
       const oldest = list.length ? list.reduce((a, b) => (b.at < a.at ? b : a)) : null;
@@ -79,6 +112,7 @@ export const CARDS = {
       compare.hidden = list.length < 2;      // R16: nothing to compare with fewer than two
       sheet.hidden = !list.length;
       compare.setAttribute("aria-pressed", String(Boolean(this.comparing)));
+      refit(list);
       grid.replaceChildren(...list.map((e) => {
         const card = el("a", { href: e.link, title: e.name });
         card.dataset.light = String(Boolean(e.light)); card.dataset.id = e.id;
@@ -97,7 +131,7 @@ export const CARDS = {
           el("button", { type: "button", className: "btn main", textContent: "Edit this dial", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(false); } }),
           el("button", { type: "button", className: "btn", textContent: "In a new tab", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(true); } }),
           el("button", { type: "button", className: "btn", textContent: "Remove", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); remove(); } })));
-        card.onclick = (ev) => { if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return; ev.preventDefault(); if (card.dataset.dragged) { delete card.dataset.dragged; return; } const was = card.classList.contains("focus"); unfocus(); if (!was) card.classList.add("focus"); };
+        card.onclick = (ev) => { if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return; ev.preventDefault(); if (card.dataset.dragged) { delete card.dataset.dragged; return; } const was = card.classList.contains("focus"); unfocus(); if (!was) { card.classList.add("focus"); whole_in_view(card, this.anchor_release); } };
         card.onkeydown = (ev) => { if (ev.key === "Escape") { unfocus(); card.blur(); } };
         // arranged by dragging, here only, never in Compare (Okay, 02:26: "Arranging is allowed on popup, not on compare
         // preview"): a card pressed and moved follows the pointer; let go over another, it takes that one's place

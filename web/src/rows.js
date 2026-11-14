@@ -646,6 +646,11 @@ ROWS.Light = [
   num("w_moon", "Strength %", 0, 100, 1, { whole: true, show: (S) => S.w_night === 1 }),      // the Moon's: how much of the daylight picture survives, 50 to start ("Moon strength defaults to 50%")
   chk("sh_blur", "Soft shadows"),
   info("One finger or the pointer moves the sun: its direction is where the light comes from; nearer the middle, higher. Two fingers zoom and move the drawing; on a trackpad, pinch and scroll.", {}),      // the Show Case's words
+  // THE CASE'S RELIEF (#595; Okay, 14 Nov 2026: "logical, top/down system, editable"; where its rows live: "both" — here and in the
+  // canvas's Shadows): how strongly each part's faces show their tilt under the sun, top down. The glass's own is its reflection, below
+  hdr("Case relief", { folded: false, show: (S) => S.bz_on || S.rh_on }),
+  num("sh_bezel", "Bezel %", 0, 100, 1, { whole: true, show: (S) => S.bz_on }),
+  num("sh_rehaut", "Rehaut %", 0, 100, 1, { whole: true, show: (S) => S.rh_on }),
   hdr("Flare", { folded: false, show: (S) => S.ui_effects }),
   chk("w_flare_on", "Flare", { show: (S) => S.ui_effects, head: true }),      // on its pane's heading line (Okay, 23 Oct 2026: "tick box and its label moves up … on the eye's row")
   seg("w_flare", "Kind", ["Arc", "Dot"], { show: (S) => S.ui_effects && S.w_flare_on && S.w_style === 1 }),

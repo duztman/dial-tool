@@ -13,11 +13,16 @@ export const instances_read = () => { try { const v = JSON.parse(localStorage.ge
 
 export const instances_write = (list) => { try { localStorage.setItem(INSTANCES_KEY, JSON.stringify(list)); return true; } catch (e) { return false; } };
 
-/** a dial's small picture, as the Gallery's (gallery.mjs): every shape of its scene, no guides. */
+/** a dial's small picture, as the Gallery's (gallery.mjs): every shape of its scene, no guides. A dial with a case is drawn with
+ *  it — the rehaut's and the bezel's grounds, flat, under the scene — and fitted out to the case's edge, so the whole disc stands
+ *  in the same picture (Okay, 14 Nov 2026: "bezels are now part of the preview thumbnail as well, shrink the fit of the discs in
+ *  the same preview area"). `data-fit` says the picture is fitted this way: an older saved one is drawn again (cards.js) */
 export function dial_picture(S, statik) {
-  const R = S.dial_d / 2 + 0.6, hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("");
-  const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" || i.role === "mark" || i.role === "lume" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}" aria-hidden="true">${shapes}</svg>`;
+  const R = G.reach_mm(S) + 0.6, hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("");
+  const draw = (path, fill) => `<path d="${path.svg(2, true)}" fill="${hex(fill)}"${fill[3] < 1 ? ` fill-opacity="${fill[3]}"` : ""}/>`;
+  const grounds = G.case_grounds({ ...S, sh_on: false }).map(([, path, fill]) => draw(path, fill)).join("");      // no light: a few flat shapes, a small picture
+  const shapes = G.scene(S, statik, S.t, false).map((i) => draw(i.role === "hand" || i.role === "mark" || i.role === "lume" ? G.turned(i.path, i.angle) : i.path, i.fill)).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}" data-fit="case" aria-hidden="true">${grounds}${shapes}</svg>`;
 }
 
 export async function pack(S) {

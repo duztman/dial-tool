@@ -12,10 +12,10 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.85 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.86 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
-import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
+import { presets as WATCH_PRESETS, tones_of as WATCH_TONES } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
 import { movement as MOVEMENT_OF, MOVEMENTS as MOVEMENTS_LIST } from "./movements.js";      // the movements' record (#587): a new dial's hand heights are the Miyota 8215's
 const START_HEIGHTS = MOVEMENT_OF("miyota-8215").heights;
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -400,6 +400,10 @@ export const DEFAULTS = {
   // 2026, 23:05, a picture of the list: "these in the image are the default values"). The hands' starting HEIGHTS are
   // the Miyota 8215's, read from the movements' record (Okay, 10 Nov 2026: "Amazing. Implement."; `MOVEMENTS` below).
   sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
+  // THE CASE'S RELIEF (#595; Okay, 14 Nov 2026: "bezels look flat in show case 2d. how can we make the subtle angles show up there?
+  // rehault needs a little more reality injection too. similar logic, outer angles and inner angles in 2d"): how strongly each
+  // part's faces show their tilt under the one light, 0–100 %; 0 draws the part flat. The faces and the rule: case_grounds
+  sh_bezel: 100, sh_rehaut: 60,      // 100: as the rule says. The rehaut starts lower: on the sun's side the bezel's shadow already lies on it (guides.js), and the two add up
   sh_bevel: 100,                                   // the hands' bevels' strength, 0–100 % (Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"): a hand's own Bevel tick turns its bevel on (HAND_BASE.bevel, off to start); 100 = as 4.77 drew them
   sh_hour: START_HEIGHTS.hour, sh_minute: START_HEIGHTS.minute, sh_second: START_HEIGHTS.second, sh_cap: START_HEIGHTS.cap, sh_disc: 0.15,      // 0.30 · 0.85 · 1.20 · 1.45
   sh_gmt: 0.1, sh_date: 0.1, sh_day: 0.1, sh_month: 0.1,      // the added hands' heights (#577): under the hour hand to start, a step clear of it; the same for all four until the movement says (one shows on most dials)
@@ -801,6 +805,7 @@ export const LINK_KEYS = [
   "bz_melt",                // v1.1.80 beta (#599): appended; a bezel seated on the case to start, as every older link
   "cut",                    // v1.1.84 beta: appended; a V to start, as every older link's engraving
   "mark_deg",               // v1.1.85 beta: appended; read only by an Arc marker, which no older link has
+  "sh_bezel", "sh_rehaut",  // v1.1.86 beta (#595): appended; the case's relief, a part
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1774,30 +1779,99 @@ export function placed(S, ring) {
 export const STYLE_NAMES = ["engineer", "artisan"], METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];      // R9: appended only
 const hex_rgba = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).concat(1);
 export const case_metal = (S) => S.c_metal || hex_rgba(WATCH_PRESETS(STYLE_NAMES[S.w_style] || "artisan").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
-/** the rehaut's shading in plan (Okay, 10 Nov 2026: "Rehault might need shadows hightilghts to sell it"): the wall leans out, so
- *  its inner face is lit where it faces the sun — the far side from the sun's clock angle — and dark under the sun; N
- *  sectors of the ring, each tinted toward white or black by REHAUT_SHADE at most, as a drawing of a turned wall is */
-export const REHAUT_SHADE = 0.3, REHAUT_SECTORS = 72;
-export function shaded_ring(a, b, colour, from, shade = REHAUT_SHADE, N = REHAUT_SECTORS) {
-  const out = [], step = 360 / N, arc = 4, tint = (c, k) => (k >= 0 ? c.slice(0, 3).map((v) => v + (1 - v) * k) : c.slice(0, 3).map((v) => v * (1 + k))).concat(c[3]);
+/** THE CASE IN PLAN, TOP DOWN (#595; Okay, 14 Nov 2026: "take care while adding the bezel/glass/rehaut system to 2d. logical,
+ *  top/down system, editable"). Seen from above the case is a stack — the glass, the bezel, the rehaut, the dial — and each part is
+ *  a set of FACES: a band between two radii that leans by a tilt, toward the centre or away from it. The numbers are the section's
+ *  own (the Rehaut and Bezel tabs; case.js case_section), so a face changes when its part is edited:
+ *
+ *    bezel   the chamfer    its outer `bz_chamfer`, 45°, facing out
+ *            the top        from the chamfer in to the glass: it rises `bz_lip` and falls `bz_chamfer` on the way, so its tilt is
+ *                           the difference over its run — facing out where it rises inward, in where it falls
+ *            with an insert the metal outside it and the insert lie flat; the metal inside it falls `bz_lip` + 0.3 to the glass
+ *            its edges      a fine line where the top turns down to the glass, another where the chamfer starts
+ *    rehaut  the wall       leaning `rh_deg` from upright, facing in; a fine dark line in its corner with the dial
+ *
+ *  ONE RULE lights every face (`lit_band`): a face tilted t from flat, under a sun `sh_rise` high, is cos t + sin t · cot(rise) ·
+ *  cos(the angle between where it faces and where the sun stands) times as bright as a flat one — a face turned to the sun is
+ *  lighter, one turned away darker, a steeper one more so, a lower sun more so. The part's Relief (`sh_bezel`, `sh_rehaut`, 0–100 %)
+ *  says how much of that difference is drawn. Shadows off (`sh_on`) is the light off: every face flat in its own colour.
+ *  Shadows fall downward only and are the Shadows' own (guides.js: the case's wall on the rehaut and the dial).
+ *
+ *  IN SHOW MODE the same rule is drawn as the watch is (Okay, 14 Nov 2026: "bezel somehow still looks off, is it the same metal as
+ *  the body"; "are there other ways of 3 shade-ifying the bezel an rehaut? … I'm sure others have tried and perfected this"). What
+ *  the sources agree on (docs/research/case-in-2d.md): a ring's light never changes along a radial cut — it tapers. Vector watch
+ *  drawings raise a ring with a pair of offset inner shadows, a light one toward the light and a dark one away from it, and sink a
+ *  recess with the pair turned round; technical illustration keeps shading to a few flat tones and lets edges carry the shape. So
+ *  a face here is its ring in its own colour and two CRESCENTS, in the light and the dark tone the published case's metal has
+ *  (watch.js): each is the ring less its own outer circle slid along the light — exactly a lip's shadow, and the body's own
+ *  crescents (watch.js blob). A face turned to the sun has the light crescent on the sun's side and the dark one opposite; a face
+ *  turned from it (a wall, a recess) the other way round. A crescent is as deep as the rule makes that side lighter or darker
+ *  (CRESCENT_LIGHT, CRESCENT_DARK: the difference that fills the face's whole width) — so the chamfer's are full, a nearly flat
+ *  top's are slivers, and Relief scales them. A face narrower than two fine lines keeps the sectors, in the three tones. */
+export const TONE_LIGHT = 0.15, TONE_DARK = -0.05, CRESCENT_LIGHT = 0.6, CRESCENT_DARK = 0.55;      // the last two are relief()'s own ends: its lightest and its darkest
+export const RELIEF_SECTORS = 72, EDGE_LINE = 0.06;      // sectors round a face (5° each); a fine line's width, mm
+/** how much lighter (+) or darker (−) a face is drawn than a flat one, where it faces `at` degrees round the dial:
+ *  tilt from flat, facing +1 out or −1 in, strength 0–1 */
+export function relief(S, tilt, facing, at, strength) {
+  const t = tilt * PI / 180, cot = 1 / tan(min(max(S.sh_rise, 20), 85) * PI / 180);      // never a lower sun than the shadows' own (20°)
+  const rel = max(0, cos(t) + sin(t) * cot * cos((at - S.sh_from - (facing < 0 ? 180 : 0)) * PI / 180));
+  return min(max(strength * (rel - 1), -0.55), 0.6);      // never to black or to white: the face keeps its colour
+}
+const tinted = (c, k) => (k >= 0 ? c.slice(0, 3).map((v) => v + (1 - v) * k) : c.slice(0, 3).map((v) => v * (1 + k))).concat(c[3]);
+/** a face in plan: the band a → b, [path, colour] a sector, lit by the one rule; a flat face (or no light, or no Relief) is one ring */
+const rgba_hex = (c) => "#" + c.slice(0, 3).map((v) => round(min(max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("");
+/** a colour's light and dark tone in show mode's style at hand: [light, dark], as the published case's metal has them */
+const show_tones = (S, colour) => { const T = WATCH_TONES(STYLE_NAMES[S.w_style] || "artisan", rgba_hex(colour)); return [hex_rgba(T[0]), hex_rgba(T[2])]; };
+export function lit_band(S, a, b, tilt, facing, colour, strength) {
+  if (!(b > a)) return [];
+  const s = S.sh_on ? min(max(strength, 0), 100) / 100 : 0;
+  if (!s || abs(tilt) < 0.05) return [[circle(2 * b).difference(circle(2 * a)), colour]];
+  const tones = S.ui_show ? show_tones(S, colour) : null;      // show mode: the watch's three tones
+  if (tones && b - a > 2 * EDGE_LINE) {      // crescents: the outer circle slid along the light, toward the sun for the one on the far side
+    const ring = circle(2 * b).difference(circle(2 * a)), u = [sin(S.sh_from * PI / 180), cos(S.sh_from * PI / 180)], out = [[ring, colour]];
+    const crescent = (toward, depth) => { const d = min(depth, 1) * (b - a) * toward; return ring.difference(circle(2 * b).translate(-u[0] * d, -u[1] * d)); };      // toward +1: what is left stands on the sun's side
+    for (const side of [1, -1]) {      // the sun's side, then the far one
+      const k = relief(S, tilt, facing, S.sh_from + (side > 0 ? 0 : 180), s);
+      if (k > 0.01) out.push([crescent(side, k / CRESCENT_LIGHT), tones[0]]); else if (k < -0.01) out.push([crescent(side, -k / CRESCENT_DARK), tones[1]]);
+    }
+    return out;
+  }
+  const out = [], N = RELIEF_SECTORS, step = 360 / N, arc = 4, lap = 0.25;      // each sector laps the next a quarter of a degree: no hairline between two
+  const pt = (r, deg) => [r * sin(deg * PI / 180), r * cos(deg * PI / 180)];
   for (let i = 0; i < N; i++) {
-    const a0 = i * step, a1 = a0 + step, mid = (a0 + a1) / 2, k = cos((mid - from - 180) * PI / 180) * shade;      // lit opposite the sun
-    const pt = (r, deg) => [r * sin(deg * PI / 180), r * cos(deg * PI / 180)], pts = [];
+    const a0 = i * step, a1 = a0 + step + lap, pts = [];
     for (let j = 0; j <= arc; j++) pts.push(pt(b, a0 + (a1 - a0) * j / arc));
     for (let j = arc; j >= 0; j--) pts.push(pt(a, a0 + (a1 - a0) * j / arc));
-    out.push([new Path().polygon(...pts), tint(colour, k)]);
+    const k = relief(S, tilt, facing, a0 + step / 2, s);
+    out.push([new Path().polygon(...pts), tones ? (k > TONE_LIGHT ? tones[0] : k < TONE_DARK ? tones[1] : colour) : tinted(colour, k)]);
+  }
+  return out;
+}
+/** the bezel's faces in plan, outside in: [role, a, b, tilt, facing, colour] — the section's numbers (case.js case_section) */
+export function bezel_faces(S) {
+  const sp = case_spans(S); if (!sp.bezel) return [];
+  const [b0, b1] = sp.bezel, metal = case_metal(S), ch = min(max(S.bz_chamfer, 0), b1 - b0), top1 = b1 - ch, out = [];
+  const slope = (rise, run) => (run > 0 ? Math.atan2(abs(rise), run) * 180 / PI : 0);
+  if (ch > 0) out.push(["bezel chamfer", top1, b1, 45, 1, metal]);
+  if (sp.insert && sp.insert[1] > sp.insert[0]) {
+    const [ri, ro] = sp.insert;
+    out.push(["bezel", ro, top1, 0, 1, metal], ["insert", ri, ro, 0, 1, S.bz_insert_c]);
+    out.push(["bezel", b0, ri, slope(S.bz_lip + 0.3, ri - b0), -1, metal]);      // the metal inside the insert falls to the glass
+  } else {
+    const rise = S.bz_lip - ch;      // over its run the top rises to the lip's height and has the chamfer's to lose
+    out.push(["bezel", b0, top1, slope(rise, top1 - b0), rise >= 0 ? 1 : -1, metal]);
   }
   return out;
 }
 /** the case's grounds in plan: [role, path, colour], bottom first. The coin edge is the bezel ring's own outline —
  *  the radius a law of the angle, full on the lands, a round scallop in each pitch (the 3D exercise's rule, round 28) */
 export function case_grounds(S) {
-  const key = "grounds" + JSON.stringify([S.dial_d, ...Object.keys(S).filter((k) => k.startsWith("rh_") || k.startsWith("bz_")).sort().map((k) => S[k]), S.sh_from, S.c_metal, S.w_metal, S.w_style, S.c_plate]);
+  const key = "grounds" + JSON.stringify([S.dial_d, ...Object.keys(S).filter((k) => k.startsWith("rh_") || k.startsWith("bz_")).sort().map((k) => S[k]), S.sh_on, S.sh_from, S.sh_rise, S.sh_bezel, S.sh_rehaut, !!S.ui_show, S.c_metal, S.w_metal, S.w_style, S.c_plate]);
   return memo(key, () => build_case_grounds(S));      // the sectors and the scalloped outline are built once per set of numbers, not every frame
 }
 function build_case_grounds(S) {
   const sp = case_spans(S), out = [], ring_shape = (a, b) => circle(2 * b).difference(circle(2 * a));
-  const lighter = (c, k) => [...c.slice(0, 3).map((v) => min(1, v + (1 - v) * k)), c[3]], darker = (c, k) => [...c.slice(0, 3).map((v) => v * (1 - k)), c[3]];
+  const lit = S.sh_on, add = (role, bands) => { for (const [path, c] of bands) out.push([role, path, c]); };
   if (sp.bezel) {
     const [b0, b1] = sp.bezel, T = { n: max(3, round(S.bz_teeth_n) || 60), depth: bezel_coin(S), fill: min(max(S.bz_teeth_fill, 0.05), 0.95) };
     let outer;
@@ -1807,11 +1881,24 @@ function build_case_grounds(S) {
       outer = new Path().polygon(...pts).difference(circle(2 * b0));
     } else outer = ring_shape(b0, b1);
     const metal = case_metal(S);      // the bezel is case material, linked and locked (bz_c is unread: R8)
-    out.push(["bezel", outer, metal]);
-    if (sp.chamfer && sp.chamfer[0] > b0) out.push(["bezel chamfer", ring_shape(sp.chamfer[0], sp.chamfer[1]), lighter(metal, 0.35)]);      // the top chamfer catches the light
-    if (sp.insert && sp.insert[1] > sp.insert[0]) out.push(["insert", ring_shape(sp.insert[0], sp.insert[1]), S.bz_insert_c]);
+    out.push(["bezel", outer, metal]);      // the ring whole, its coin edge with it; its faces lie on it
+    for (const [role, a, b, tilt, facing, colour] of bezel_faces(S)) {
+      if (role === "bezel chamfer" && !(lit && S.sh_bezel > 0)) { out.push([role, ring_shape(a, b), tinted(metal, 0.35)]); continue; }      // no light: the chamfer a lighter ring, as a drawing says an edge
+      if (role === "insert" || (tilt && lit && S.sh_bezel > 0)) add(role, lit_band(S, a, b, tilt, facing, colour, S.sh_bezel));      // a flat metal face is the ring itself
+    }
+    if (lit && S.sh_bezel > 0) {      // its edges, fine lines: each a face of its own, 45° — the top's turn down to the glass (facing in), the chamfer's start (facing out)
+      add("bezel", lit_band(S, b0, min(b0 + EDGE_LINE, b1), 45, -1, metal, S.sh_bezel));
+      if (sp.chamfer && sp.chamfer[0] > b0 + EDGE_LINE) add("bezel", lit_band(S, sp.chamfer[0] - EDGE_LINE / 2, sp.chamfer[0] + EDGE_LINE / 2, 20, 1, tinted(metal, 0.2), S.sh_bezel));
+    }
   }
-  if (sp.rehaut) for (const [path, c] of shaded_ring(sp.rehaut[0], sp.rehaut[1], S.rh_c, S.sh_from)) out.push(["rehaut", path, c]);      // the wall's light and shade, by the sun's angle
+  if (sp.rehaut) {
+    const [a, b] = sp.rehaut;
+    add("rehaut", lit_band(S, a, b, 90 - min(max(S.rh_deg, 0), 90), -1, S.rh_c, S.sh_rehaut));      // the wall: rh_deg from upright is 90 − rh_deg from flat
+    if (lit && S.sh_rehaut > 0) {
+      out.push(["rehaut", ring_shape(a, min(a + EDGE_LINE, b)), tinted(S.rh_c, -0.45 * S.sh_rehaut / 100)]);      // its corner with the dial: no light reaches into it
+      if (sp.bezel && b - a > 4 * EDGE_LINE) out.push(["rehaut", ring_shape(b - 2 * EDGE_LINE, b), tinted(S.rh_c, -0.45 * S.sh_rehaut / 100)]);      // and under the bezel's lip, all round: a recess is dark where it meets what stands over it (the drawings' inner shadow)
+    }
+  }
   return out;
 }
 export function snap_radii(S, except = -1) {

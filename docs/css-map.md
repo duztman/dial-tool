@@ -122,7 +122,7 @@
 | `--guide-pill-pad` · special | `var(--u2)` | a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) | 6-preview |  |
 | `--guide-row` · special | `30px` | the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) | 3-controls ×2, 6-preview ×5 | 1-tokens `:root` → `38px` |
 | `--guide-tint` | `22%` | the selected ring's row: this much of its guide's colour in its ground, and in its frame | 1-tokens, 4f-rings ×2 |  |
-| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×13, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×7, 4e-colour ×20, 4f-rings ×32, 4g-fonts ×22, 6-preview ×48, 7-bar ×21, 8-narrow ×7 |  |
+| `--hair` | `1px` | a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle | 1-tokens ×9, 3-controls ×15, 4a-panel ×13, 4b-lines-tabs ×21, 4c-rows ×12, 4d-hands ×7, 4e-colour ×20, 4f-rings ×32, 4g-fonts ×22, 6-preview ×49, 7-bar ×21, 8-narrow ×7 |  |
 | `--handle` · the window's | `—` |  | 4f-rings ×2, 6-preview ×3 | set by hands.js, set by preview.js, set by rings.js |
 | `--head` | `40px` | a pane's heading | 3-controls, 4a-panel ×3, 4b-lines-tabs ×2, 4e-colour, 4g-fonts ×2, 8-narrow ×2 |  |
 | `--header` | `calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair))` | the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes | 4a-panel ×2, 4g-fonts |  |
@@ -173,7 +173,7 @@
 | `--night-field` | `#262624` |  | 3-controls ×2, 4a-panel ×5 | set by show.js |
 | `--night-grey` | `#78786F` | a night part's quiet words: the Shadows pane's row names (Okay's drawing, 25 Oct 2026: 47 % grey) | 6-preview | 4c-rows `.heightsbox` → `var(--grey)` |
 | `--night-hover` | `#34342F` |  | 3-controls, 4a-panel, 4e-colour, 6-preview |  |
-| `--night-rule` | `#4A4A46` |  | 3-controls ×3, 4a-panel, 5-chosen, 6-preview ×14 | 4c-rows `.heightsbox` → `var(--rule)` |
+| `--night-rule` | `#4A4A46` |  | 3-controls ×3, 4a-panel, 5-chosen, 6-preview ×15 | 4c-rows `.heightsbox` → `var(--rule)` |
 | `--note-air` · set in 4c-rows | `calc((var(--line) - var(--leading) * var(--t-m)) / 2)` |  | 4c-rows ×2 |  |
 | `--nudge` · special | `2px` | the eyes stand this much right of the margin: a pane's eye and a ring row's alike | 4a-panel, 4e-colour ×2, 4f-rings ×2 |  |
 | `--num-columns` | `var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w)` | a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges | 4c-rows, 4g-fonts |  |
@@ -257,7 +257,7 @@
 | `--ringline-inner` | `var(--triple)` | its second, inner line: three times the outer | 1-tokens, 4f-rings ×4 |  |
 | `--ringline-join` · special | `calc(-1 * var(--hair))` | the selected ring's line: inside its frame · between its parts · between it and its ring's row: none, the two one box sharing a line (Okay, 19 Oct 2026: "two boxes, yours is not connected, mine is") (Okay asked for more room inside, 13 Oct; 8 was Claude's figure) | 4f-rings ×2 |  |
 | `--ringline-pad` · special | `8px` | the selected ring's line: inside its frame · between its parts · between it and its ring's row: none, the two one box sharing a line (Okay, 19 Oct 2026: "two boxes, yours is not connected, mine is") (Okay asked for more room inside, 13 Oct; 8 was Claude's figure) | 4f-rings ×2 |  |
-| `--round` | `8px` | …and a sticker's corners, a small swatch's | 4e-colour, 6-preview ×2 |  |
+| `--round` | `8px` | …and a sticker's corners, a small swatch's | 4e-colour, 6-preview ×3 |  |
 | `--round-large` | `14px` | …and a sticker's corners, a small swatch's | 3-controls, 8-narrow ×3 |  |
 | `--round-pill` | `999px` | fully round: the signs on the Rings heading line, a value button | 3-controls ×3, 4a-panel, 4c-rows, 4e-colour, 4f-rings ×2, 4g-fonts ×3, 6-preview ×4 |  |
 | `--round-small` | `5px` | …and a sticker's corners, a small swatch's | 3-controls ×10, 4e-colour ×9, 4f-rings ×6, 6-preview ×3, 7-bar |  |

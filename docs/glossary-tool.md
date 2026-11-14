@@ -29,6 +29,8 @@ What each word means **in this project**: one line per term — the meaning, the
 | **Finish** | How a marking on bare metal is made: **Paint** (printed on) or **Engrave** (cut in). On the Base tab once the plate is bare, the Rehaut tab (its ring), the Bezel tab once its markings are on the metal. Engraved markings are one layer, Engrave, in the files and in no ink film. |
 | **Cut** | An engraved ring's section: **V** (two faces at 45°, a flat floor where the marking is wider than twice the depth; to start) or **Round** (a ball cutter's wall). A row on the ring while it is engraved. Seen in Show Case 3D; the drawing and the files are the same for both. |
 | **Body Ø** | Show mode: the watch body's diameter. **Fit**: snug round the dial and its rehaut and bezel. **Own Ø**: larger; the lugs, crown and strap grow with it, the opening stays at the dial. |
+| **Relief** | How strongly a case part's faces show their tilt under the sun, 0–100 % (`sh_bezel`, `sh_rehaut`): a row a part in the Shadows pop-out and on show mode's Light tab. 0 draws the part flat. |
+| **Face** (of the case) | A band of the bezel or the rehaut in plan with one tilt, toward the centre or away from it (`bezel_faces`): the chamfer, the top, the rehaut's wall. |
 | **Glass's edge** | Where the crystal ends, mm from the centre: the bezel's inner edge, or the rehaut's top without a bezel (`glass_edge`). No part of a hand is drawn past it. |
 | **Disc ring** | The one ring a disc hand carries, edited under the hand's rows on the Hands tab; it turns with the hand. |
 | **Material** · **Paint** | The plate's metal (Brass · Bronze · Steel · Silver) and the colour painted over it; Paint's **No colour** leaves the metal bare, with a sheen that follows the sun, and unprinted in the files. |

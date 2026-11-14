@@ -1005,6 +1005,7 @@ export const PANEL = {
     }, true);
     const up = () => { if (a) { a.down = false; a.until = performance.now() + AFTER_MS; } };
     // the list scrolled on purpose under the finger (fit_ring, #256): the anchor takes the row's new place as its own
+    this.anchor_release = () => { a = null; };      // what was pressed is about to be scrolled on purpose (a Gallery card brought whole into view): nothing holds it
     this.anchor_rebase = () => { if (a && a.ring != null) { const row = this.ring_rows()[a.ring]; if (row) a.y = row.getBoundingClientRect().top; } };
     panel.addEventListener("pointerup", up, true);
     panel.addEventListener("pointercancel", () => { a = null; }, true);

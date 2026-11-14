@@ -164,4 +164,13 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(Math.abs(edge - 15.9085) < 1e-3 && whole && !drawn && parts(bare).some((x) => past(x.path, 19)), `no part of a hand is drawn past the glass's edge (${edge.toFixed(3)} mm; a bar's corners, set, reach 0.33 past it); with no case on a hand is as long as it is set`);
   check(Math.abs(b[3] - 15.908) < 1e-3 && !past(arc, 15.909) && !G.empty(arc.difference(G.circle(2 * 13.6))) && G.empty(arc.intersection(G.circle(2 * 13.49))) && Math.abs((b[2] - b[0]) - 2 * 15.908 * Math.sin(Math.PI / 7)) < 0.01, `an Arc marker is a piece of a band round the pivot: 2.408 deep to the hand's Length, a seventh of the dial wide (${(b[2] - b[0]).toFixed(2)} mm across)`);
 }
+// the case's relief (#595; Okay, 14 Nov 2026: "how can we make the subtle angles show up there?"; "logical, top/down system, editable")
+{ const S = G.fresh_settings({ dial_d: 27, rh_on: true, rh_deg: 58, rh_len: 2.84, bz_on: true, bz_kind: 1, bz_w: 2.4, bz_chamfer: 0.3, bz_lip: 0.55, sh_from: 0, sh_rise: 49 });
+  const faces = G.bezel_faces(S), top = faces.find((f) => f[0] === "bezel"), ch = faces.find((f) => f[0] === "bezel chamfer");
+  const r = (tilt, facing, at, s = 1) => G.relief(S, tilt, facing, at, s);
+  const n = (T) => G.case_grounds(T).length, flat = { ...S, sh_bezel: 0, sh_rehaut: 0 }, off = { ...S, sh_on: false };
+  check(ch[3] === 45 && ch[4] === 1 && Math.abs(top[3] - Math.atan2(0.25, 2.1) * 180 / Math.PI) < 1e-6 && top[4] === 1 && r(0, 1, 0) === 0 && r(45, 1, 0) > 0 && r(45, 1, 180) < 0 && r(32, -1, 0) < 0 && r(32, -1, 180) > 0
+    && Math.abs(r(top[3], 1, 0) + r(top[3], 1, 180)) < 0.02 && r(top[3], 1, 0) > 0.05 && Math.abs(r(45, 1, 0, 0.5) - r(45, 1, 0) / 2) < 1e-9 && n(S) > 200 && n(flat) === 3 && n(off) === 3,
+    `the case's faces from the section's numbers, lit by one rule: the chamfer 45° facing out, the top ${top[3].toFixed(1)}° (0.55 lip less 0.30 chamfer over 2.10); toward the sun lighter (${r(top[3], 1, 0).toFixed(2)}), away darker (${r(top[3], 1, 180).toFixed(2)}), the rehaut's wall the other way round; Relief 0 or Shadows off draws each part flat (${n(flat)} shapes)`);
+}
 process.exit(bad ? 1 : 0);

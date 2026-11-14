@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## v1.1.86 beta · 14 Nov 2026 — the case in 2D: faces lit by one rule; crescents in show mode
+
+Okay, 14 Nov 2026, 14:52: "bezels look flat in show case 2d. how can we make the subtle angles show up there? rehault needs a little more reality injection too. similar logic, outer angles and inner angles in 2d"; 15:00: "take care while adding the bezel/glass/rehaut system to 2d. logical, top/down system, editable"; 17:26: "are there other ways of 3 shade-ifying the bezel an rehaut? … I'm sure others have tried and perfected this."
+
+- **The case's faces** (`geometry.js` `bezel_faces`, `lit_band`, `relief`, `case_grounds`; #595): the bezel's chamfer and top (with an insert: the metal inside it) and the rehaut's wall are bands with a tilt read from the section's numbers, lit by one rule — cos t + sin t · cot(sun's height) · cos(angle to the sun). Fine lines at the top's turn to the glass, the chamfer's start, the rehaut's corner with the dial and under the bezel's lip. Shadows off draws every face flat.
+- **Relief** (`sh_bezel` 100, `sh_rehaut` 60; appended to `LINK_KEYS`): a row a part, in the Shadows pop-out under Part Heights (with a quarter of the case as drawn, `draw_relief_pic`) and on show mode's Light tab ("both").
+- **Show mode** draws a face as its ring and two crescents in the light and dark tone of the case's metal (`watch.js` `tones_of`) — the ring less its own outer circle slid along the light — from `docs/research/case-in-2d.md`. The edit view keeps smooth sectors ("the preview look is good").
+- **Thumbnails** (`session.js` `dial_picture`, `links.mjs` `card`): a dial with a case is drawn with its grounds and fitted to the case's edge; a saved Version drawn the older way is drawn again when the list opens (`data-fit`).
+- **A chosen card** is brought whole into view, its choices with it (`cards.js` `whole_in_view`; the panel's press anchor lets it go: `anchor_release`).
+- **Tests**: `labels.mjs` — the faces and the rule; `window.mjs` — the bezel's and rehaut's grounds as now drawn, the Shadows pane's own rows apart from the Relief rows.
+
 ## v1.1.85 beta · 14 Nov 2026 — an Arc marker on a disc hand; hands stay under the glass
 
 Okay, 14 Nov 2026, 14:52, with his week dial (a see-through Day disc whose painted tile rides the rehaut): "since it's a dash, it looks weird. first logical step would be adding an option of 'wedge' to the list. arc section of a pie slice" and "it is somehow above the bezel which should be impossible".

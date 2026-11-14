@@ -9,6 +9,7 @@
 | **Dials** | `dials.md` (+ the research atlas, a claude.ai document and page it links; source `claude/research-page/`) | What exists on real dials: hands, indices, windows, complications, finishes, patents, interface inspiration — 18 sections, 56 tables, every claim tagged | Any feature that draws something a watch has; the atlas's Now · Next · Later · Parked map |
 | **Fonts** | `fonts.md`, `font-tiers.md` | Which fonts Okay accepted (Wiegel's 46, Font Picks' 49), their licences, the tiers of the font list | The font sheet (R35), adding a font, the Wiegel project |
 | **Movements** | `movements.md` + `movements.json`; `movements-3d.md` the catalogue of 3D files and templates others made from the drawings (copies on the Mac, R36) | The calibres a dial inherits its numbers from: diameters, heights, hand holes and heights, windows and their discs, feet, case floor — five shown in the tool, three spares, and Any | #586 (Choose your movement), #89, #176, #584's heights, the Show Case's case, anything "does this fit a real watch" |
+| **The case in 2D** | `case-in-2d.md` | How others draw a bezel and a rehaut flat, from above: technical illustration's conventions (Gooch 1998), vector watch drawings with their written styles; what was built from it and what was not | #595, `lit_band`, show mode's case, a metal finish later |
 
 ## How a study is written
 

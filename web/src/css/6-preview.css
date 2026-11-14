@@ -330,6 +330,10 @@
   .shaderows .row.ref > label { grid-column: 1 / -1; }
      /* the plate: the reference, nothing to size (Okay: "plate untouchable") */
   .stackpic { position: relative; border: var(--hair) solid var(--night-rule); border-radius: var(--round); }      /* outline only, no ground (Okay, 01:46); it stands from the hairline over the heading to --shade-pad under the last row */
+  /* the Case Relief rows' quarter of the case (guides.js draw_relief_pic): a square in the diagram's column, the drawing's own colours; the part a row changes stays full, the rest stands back */
+  .reliefpic { aspect-ratio: 1; align-self: start; overflow: hidden; border: var(--hair) solid var(--night-rule); border-radius: var(--round); }
+  .reliefpic > svg { display: block; width: 100%; height: 100%; }
+  .reliefpic[data-at="bezel"] :is(.rehaut, .dial), .reliefpic[data-at="rehaut"] :is(.bezel, .dial) { opacity: 0.3; }
   .stackpic .word { position: absolute; left: var(--shade-word-x); top: 0; height: var(--line); line-height: var(--line); font-size: var(--t-s); font-weight: 600; color: var(--night-rule); pointer-events: none; }
   .stackpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .stackpic .axis { stroke: var(--night-rule); stroke-width: var(--hair); stroke-dasharray: 3 3; }      /* the centre line every part hangs on, from the rows' first line down (Okay, 01:58: "A dashed line marks the center line") */
