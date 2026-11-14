@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.90 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.91 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS, tones_of as WATCH_TONES } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -286,10 +286,10 @@ export const DEFAULTS = {
   dial_d: 30.0, margin: 3.0, guides: false,      // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
   engrave: 0, rh_engrave: 0, bz_engrave: 0,      // FINISH, a place in FINISHES, of the markings on bare metal — the plate's (no paint), the rehaut's ring, the bezel's markings on its metal: painted on, or cut in (Okay, 11 Nov 2026: "I need the ability to add these engravings instead of paint on metal, needs a switch"); an engraved marking is in the files on a layer of its own, Engrave, and in no ink film
   material: 0, paint: true,      // the plate's MATERIAL, a place in PLATE_METALS, and whether it is painted (c_plate): no paint, the metal is the face — seen in the preview with a sheen that follows the sun, left unprinted in the files (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button")
-  // THE PLATE'S SURFACE (#607): what the face is worked to under its print — a place in SURFACES_OF_PLATE; Flat to start. A
-  // Sunburst is the research's own drawing, lit by the groove rule (plate_finish); plate_sheen says how light its rays go, %
-  // (100: the research's). Seen in the preview and show mode; no file prints it. plate_grain and plate_fume are read by
-  // nothing (R8: kept for the links of 14 Nov 2026): Brushed and Fumé are parked on his word ("park others").
+  // THE PLATE'S SURFACE (#607): what the metal's face is worked to under its paint — a place in SURFACES_OF_PLATE; Flat to
+  // start. A Sunburst is the research's own drawing, lit by the groove rule (plate_finish); plate_sheen says how light its rays
+  // go, % (100: the research's). plate_fume: the paint darkening to the rim, % (FUME_STOPS). Seen in the preview and show
+  // mode; no file prints them. plate_grain is read by nothing (R8): Brushed is parked.
   plate_surface: 0, plate_sheen: 100, plate_grain: 0, plate_fume: 0,
   movement: "any",                                 // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
@@ -2618,7 +2618,8 @@ export const mark_stroke = (h) => (paints_mark(h) && h.mark_stroke_w > 0 && disc
  *      in lightness (the research's pair: #14294A and #9DBBE8) — the darkest step already a tenth of the way;
  *    · the wedges of a tone merged into one shape ("one path per tone step: no seams"): here each shape is every wedge AT LEAST
  *      that light, laid lightest last, so no hairline of the plate shows between two tones either.
- *  Sheen says how far toward the light the steps go (100: the research's). Cut to the plate (its windows and hole stay open);
+ *  Sheen says how far toward the light the steps go (100: the research's). The colour is the one the eye meets (plate_seen):
+ *  the paint over the metal, so a see-through paint shows the metal's rays through it. Cut to the plate (its windows and hole stay open);
  *  seen in the preview and show mode, in no file. The bow-tie's direction is the research's derivation, not a sourced fact. */
 export const SURFACES_OF_PLATE = ["Flat", "Sunburst", "Brushed"], SURFACES_OFFERED = ["Flat", "Sunburst"], SUNBURST_RAYS = 240, SUNBURST_TONES = 12, GROOVE_SHARP = 6, SUNBURST_LIGHT = 0.7;
 export const groove = (along, sun, sharp = GROOVE_SHARP) => abs(sin((along - sun) * PI / 180)) ** sharp;
@@ -2645,9 +2646,17 @@ export function plate_finish(S, plate, colour) {
     }
     _finish.set(plate, cut);
   }
-  const light = sunburst_light(colour), mix = (t) => [0, 1, 2].map((c) => colour[c] + (light[c] - colour[c]) * t).concat(colour[3] ?? 1);
-  return cut.tones.map((path, k) => (path ? [path, mix(sheen * (0.1 + 0.9 * (k + 0.5) / T))] : null)).filter(Boolean);
+  const light = sunburst_light(colour), mix = (t) => [0, 1, 2].map((c) => colour[c] + (light[c] - colour[c]) * t).concat(1);
+  return cut.tones.map((path, k) => (path ? [path, mix(sheen * (0.1 + 0.9 * (k + 0.5) / T)), k ? { soft: true } : {}] : null)).filter(Boolean);      // soft: with Soft edges on, a tone's edge is blurred a little (Okay, 14 Nov 2026, 19:07: "sunburst gets a low level of blur in blur on mode"); the darkest is the whole plate, left sharp
 }
+/** A FUMÉ (#607; Okay, 14 Nov 2026, 19:07: "Go on to fume"): the paint darkening from the centre to the rim, as the research draws
+ *  it (the project's `claude/research-figs/figs.mjs`, `finish["Fumé"]`: one radial gradient, #3E7A5A at the centre, #21452F at
+ *  65 % of the radius, #0A140E at the rim — the centre's colour times 1, about 0.55 and about 0.16). Here: black over the plate
+ *  and its surface, see-through at the centre, FUME_STOPS dark at those places at 100 %; plate_fume says how much of it.
+ *  One gradient, drawn by each view (preview.js draw_finish, watch.js fumeFill); seen, not printed. */
+export const FUME_STOPS = [[0, 0], [0.65, 0.45], [1, 0.84]], FINISH_SOFT = 0.2;      // [where along the radius, how dark] · the sunburst's soft edge, mm
+/** the colour the eye meets on the plate: its paint over its metal (a see-through paint lets the metal through), or the bare metal */
+export const plate_seen = (S) => { const metal = PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0]; if (S.paint === false) return metal; const a = S.c_plate[3] ?? 1; return [0, 1, 2].map((i) => metal[i] * (1 - a) + S.c_plate[i] * a).concat(1); };
 
 /** THE GLASS'S EDGE, mm from the centre: where the crystal ends — the bezel's inner edge, or the rehaut's top without a bezel;
  *  null with no case on. Hands turn under the glass, so nothing of a hand is drawn past it (Okay, 14 Nov 2026: "it is somehow
@@ -2865,7 +2874,11 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
     if (S.paint === false) add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0], face), { metal: true });      // no paint: the bare metal is the face (a file leaves it unprinted, output.js drawn)
     else add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));      // the hole shows when the hands are hidden
-    if (preview) for (const [path, fill] of plate_finish(S, S.ha_on ? statik.plate : statik.plate_holed, S.paint === false ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : S.c_plate)) add("finish", path, dim(fill, face));      // the plate's surface (#607): seen, not printed
+    if (preview) {      // the plate's surface and its fumé (#607): seen, not printed
+      const plate = S.ha_on ? statik.plate : statik.plate_holed;
+      for (const [path, fill, more] of plate_finish(S, plate, plate_seen(S))) add("finish", path, dim(fill, face), more);
+      if (S.plate_fume > 0) add("finish", plate, [0, 0, 0, 1], { fume: min(S.plate_fume, 100) / 100 });
+    }
     const on_disc = (d) => ring_surface(S, d.raw || d.ring) === 3;      // a ring on a disc hand: drawn with the hand, turning with it
     for (const d of rings) {
       if (on_disc(d)) continue;

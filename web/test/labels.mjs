@@ -182,5 +182,9 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
     && near(light, "#9dbbe8") && tones.length > 6 && tones.length <= 12 && inside(top, 0) && inside(top, 180) && !inside(top, 270) && !inside(top, 90) && !inside(top, 45) && inside(tones[0], 270)
     && near(hex(top.fill), hex(S.c_plate.map((v, i) => i < 3 ? v + (G.sunburst_light(S.c_plate)[i] - v) * (0.1 + 0.9 * 11.5 / 12) : v))),
     `the plate's Sunburst as the research draws it: 240 wedges, |sin|⁶, 12 tones merged a tone (${tones.length} shapes), from the plate's colour to its light (#14294a → ${light}, the research's #9dbbe8); with the sun at 9 the brightest lies at 12 and 6, across the light; Flat and the parked Brushed draw nothing; no file holds it`);
+  const soft = tones.filter((x) => x.soft).length, fume = n({ ...S, plate_fume: 50 }), both = n({ ...sun, plate_fume: 100 }), thin = n({ ...sun, c_plate: [1, 0, 0, 0] });
+  check(soft === tones.length - 1 && !tones[0].soft && fume.length === 1 && fume[0].fume === 0.5 && both[both.length - 1].fume === 1 && JSON.stringify(G.FUME_STOPS) === "[[0,0],[0.65,0.45],[1,0.84]]"
+    && near(hex(thin[0].fill.map((v, i) => (i < 3 ? v : 1))), hex(G.PLATE_METAL_COLOURS[0].map((v, i) => (i < 3 ? v + (G.sunburst_light(G.PLATE_METAL_COLOURS[0])[i] - v) * (0.1 + 0.9 * 0.5 / 12) : v)))),
+    `a sunburst's tones but its darkest are drawn soft with Soft edges (${soft} of ${tones.length}); a Fumé is one shape over the plate and its surface, its amount with it (0.5), dark 0 · 0.45 · 0.84 at the centre, 65 % and the rim as the research's gradient; under a see-through paint the rays are the metal's`);
 }
 process.exit(bad ? 1 : 0);

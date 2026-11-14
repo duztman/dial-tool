@@ -422,6 +422,27 @@ export const PREVIEW = {
     requestAnimationFrame(() => this.frame());
   },
 
+  /** the plate's finish (#607): what its shapes are filled and softened with — the fumé's radial gradient (geometry.js
+   *  FUME_STOPS), the sunburst's small blur and the plate's outline to cut it at — kept in step with the dial. → whether
+   *  the sunburst is drawn soft now: Soft edges on and nothing moving, as the shadows' soft edge */
+  draw_finish(items) {
+    const S = this.S, fume = items.find((x) => x.fume), any = fume || items.some((x) => x.soft);
+    if (!any) return false;
+    if (!this.finish_defs || !this.finish_defs.isConnected) {      // made again when the window was rebuilt
+      const defs = svg_el("defs"), g = svg_el("radialGradient"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur"), clip = svg_el("clipPath"), cut = svg_el("path");
+      g.id = "plate-fume"; g.setAttribute("gradientUnits", "userSpaceOnUse"); g.setAttribute("cx", 0); g.setAttribute("cy", 0);
+      for (const [at] of G.FUME_STOPS) { const stop = svg_el("stop"); stop.setAttribute("offset", at); stop.setAttribute("stop-color", "#000"); g.append(stop); }
+      filter.id = "finish-soft"; filter.setAttribute("filterUnits", "userSpaceOnUse"); for (const [k, v] of [["x", -300], ["y", -300], ["width", 600], ["height", 600]]) filter.setAttribute(k, v);
+      blur.setAttribute("stdDeviation", G.FINISH_SOFT); filter.append(blur);
+      clip.id = "finish-clip"; clip.append(cut);
+      defs.append(g, filter, clip); this.dial.prepend(defs); this.finish_defs = defs; this.finish_grad = g; this.finish_cut = cut; this.finish_key = null;
+    }
+    const plate = items.find((x) => x.role === "plate"), key = [S.dial_d, fume ? fume.fume : 0].join();
+    if (key !== this.finish_key) { this.finish_key = key; this.finish_grad.setAttribute("r", (S.dial_d / 2).toFixed(3)); G.FUME_STOPS.forEach(([, dark], i) => this.finish_grad.children[i].setAttribute("stop-opacity", (dark * (fume ? fume.fume : 0)).toFixed(3))); }
+    if (plate && this.finish_plate !== plate.path) { this.finish_plate = plate.path; this.finish_cut.setAttribute("d", plate.path.svg(4)); }
+    return Boolean(S.sh_blur) && !(this.moving && this.moving());
+  },
+
   /** the bare plate's sheen (Okay, 11 Nov 2026: "Give metals a subtle gradient that moves with sun"): one linear gradient
    *  across the dial, lighter toward the sun's side, darker away, redrawn only when the sun or the metal changes */
   draw_metal(items) {
@@ -501,6 +522,7 @@ export const PREVIEW = {
       this.slots.push({ node, path: null, fill: null, stroke: null, angle: null });
     }
     while (this.slots.length > items.length) this.slots.pop().node.remove();
+    const soft_on = this.draw_finish(items);
     items.forEach((item, i) => {
       const slot = this.slots[i], node = slot.node;
       if (slot.path !== item.path) {               // the same object = the same shape (remembered geometry)
@@ -509,12 +531,14 @@ export const PREVIEW = {
         slot.d = d;
         slot.path = item.path;
       }
-      const fill = item.fill ? to_hex(item.fill) + "/" + item.fill[3] + (item.metal ? "/metal" : "") : "none";
+      const fill = item.fill ? to_hex(item.fill) + "/" + item.fill[3] + (item.metal ? "/metal" : item.fume ? "/fume" : "") : "none";
       if (fill !== slot.fill) {
         slot.fill = fill;
-        node.setAttribute("fill", item.metal ? "url(#plate-metal)" : item.fill ? to_hex(item.fill) : "none");
+        node.setAttribute("fill", item.metal ? "url(#plate-metal)" : item.fume ? "url(#plate-fume)" : item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
+      const soft = item.soft && soft_on ? "1" : "";      // a sunburst's tones, a little blurred while Soft edges is on and nothing moves; cut at the plate's own edge after the blur
+      if (soft !== (slot.soft || "")) { slot.soft = soft; if (soft) { node.setAttribute("filter", "url(#finish-soft)"); node.setAttribute("clip-path", "url(#finish-clip)"); } else { node.removeAttribute("filter"); node.removeAttribute("clip-path"); } }
       const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.spaced ? "/spaced" : "") : "none";
       if (stroke !== slot.stroke) {
         slot.stroke = stroke;

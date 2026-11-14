@@ -290,9 +290,13 @@ const metalSheen = (x, L, r) => { const id = "mt" + (INK_N++), ux = Math.cos(rad
   const shade = (k) => "#" + [R, G, B].map((v) => Math.round(255 * Math.max(0, Math.min(1, k > 0 ? v + (1 - v) * k : v * (1 + k))))).map((v) => v.toString(16).padStart(2, "0")).join("");
   CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(ux)}" y1="${f(uy)}" x2="${f(-ux)}" y2="${f(-uy)}"><stop offset="0" stop-color="${shade(0.28)}"/><stop offset="0.5" stop-color="${c}"/><stop offset="1" stop-color="${shade(-0.22)}"/></linearGradient>`);
   return `url(#${id})`; };
+/** a fumé (geometry.js FUME_STOPS): black, see-through at the centre, darker to the rim — one radial gradient over the plate */
+const FUME_STOPS = [[0, 0], [0.65, 0.45], [1, 0.84]], FINISH_SOFT = 0.2;      // as geometry.js: the two files draw one thing
+const fumeFill = (x, r) => { const id = "fm" + (INK_N++); CLIPS.push(`<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="${f(r)}">${FUME_STOPS.map(([at, dark]) => `<stop offset="${at}" stop-color="#000" stop-opacity="${f(dark * x.fume)}"/>`).join("")}</radialGradient>`); return `url(#${id})`; };
+const FINISH_SOFT_DEF = `<filter id="fnsoft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600"><feGaussianBlur stdDeviation="${FINISH_SOFT}"/></filter>`;
 function dialSVG(C, v, L) {
   const D = DIALS[0], s = (C.dial - (C.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
-  const col = (x) => (x.metal ? metalSheen(x, L, D.d / 2) : clampL(x.f));      // every colour's lightness kept between 15 and 85 %; a bare metal plate its sheen
+  const col = (x) => (x.fume ? fumeFill(x, D.d / 2) : x.metal ? metalSheen(x, L, D.d / 2) : clampL(x.f));      // every colour's lightness kept between 15 and 85 %; a bare metal plate its sheen
   const items = D.items;
   // the hands' shadows as the dial side casts them (Okay, 24 Oct 2026, #519: "Should look the same"; asked, "Dial side's"):
   // each from its own height over the plate (HEIGHTS, mm), away from the light, as long as the sun's height throws it and
@@ -300,7 +304,7 @@ function dialSVG(C, v, L) {
   const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
   const handsShadow = items.filter((x) => x.hand || x.role === "cap").map((x) => { const sh = away(HEIGHTS[x.hand || "cap"] ?? 0.35);
     return `<path d="${x.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x.hand ? ` data-hs="${x.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`; }).join("");
-  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? (x.role === "lume" || x.role === "mark" ? lumeRelief(x, s, L, A) : handBevel(x, A, L)) : x.role === "boss" ? bossLight(x, L) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
+  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.soft && SOFT ? ` filter="url(#fnsoft)"` : ""}${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? (x.role === "lume" || x.role === "mark" ? lumeRelief(x, s, L, A) : handBevel(x, A, L)) : x.role === "boss" ? bossLight(x, L) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
   const firstHand = items.findIndex((x) => x.hand || x.role === "cap");
   body.splice(firstHand, 0, `<g${soft_edge()}>${handsShadow}</g>`);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;
@@ -775,7 +779,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
   OUTL_C = []; OUTT = OUTL_C; const caseStr = caseSVG(C, v, L);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
-<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath><clipPath id="glass-${key}"><path d="${circle(C.glassR ?? C.opening)}"/></clipPath>${TEXTURES}</defs>
+<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF + FINISH_SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath><clipPath id="glass-${key}"><path d="${circle(C.glassR ?? C.opening)}"/></clipPath>${TEXTURES}</defs>
 <defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}

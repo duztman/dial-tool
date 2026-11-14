@@ -165,9 +165,14 @@ const DIAL_ROWS = [
     // Okay, 13 Oct 2026: Dial stays in view (pinned); the list of colours scrolls under it. The page around the dial (margin, backdrop) is the Settings box's (Okay, 10 Nov 2026: "Page margin and color move under settings from dial").
     // the plate is the BASE tab's (Okay, 11 Nov 2026, his marks on the Dial tab: "Dial" → "Base", the pane "Dial" → "Material",
     // "+ Metals"; "color gets a new line called paint"): its material on the heading line, its paint a line of its own
-    hdr("Material", { pin: true }),                // the plate: what it is made of, how big, what is on it
+    hdr("Material", { pin: true, summary: (S, tool) => [{ c: S.c_plate }, `diameter ${tool.in_unit(S.dial_d, 1)}`, ...(G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? ["sunburst"] : []), ...(S.plate_fume > 0 ? [`fumé ${Math.round(S.plate_fume)}`] : [])] }),                // the plate: what it is made of, how big, what is on it
     seg("material", "Material", G.PLATE_METALS, { head: true }),      // the bare metal: seen when Paint is No colour, with a sheen that follows the sun
+    // the metal's surface, then the paint over it (Okay, 14 Nov 2026, 19:07: "Surface finish moves up after the material, before paint,
+    // which can get transparency already"): Flat or the research's Sunburst, its Sheen while it is one; under the paint its Fumé
+    seg("plate_surface", "Surface", G.SURFACES_OFFERED),
+    num("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" }),
     col("c_plate", "Paint", { none: "paint" }),
+    num("plate_fume", "Fumé %", 0, 100, 1, { whole: true }),
     seg("engrave", "Finish", G.FINISHES, { show: (T, S) => S.paint === false }),      // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
     num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
     chk("ui_scale", "Scale everything with it", { nest: true }),
@@ -181,12 +186,6 @@ const DIAL_ROWS = [
     // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
     // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
     // fit in that line as tiny swatches. Default: compacted")
-    // the plate's surface (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes"): what the face is worked
-    // to under its print — Flat or the research's Sunburst (18:52: "just implement that for now, park others"). A pane of its own under the
-    // pinned Material, so the part that stays in view grows by nothing
-    hdr("Surface", { folded: true, summary: (S) => [G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? "sunburst" : "flat"] }),
-    seg("plate_surface", "Kind", G.SURFACES_OFFERED),
-    num("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" }),
     hdr("Colours", { folded: true, summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),
     custom("colours"),
     // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct

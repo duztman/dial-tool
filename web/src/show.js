@@ -39,7 +39,7 @@ const PRINTED = (role) => !["plate", "finish", "cap", "hand", "mark", "date disc
 // one part of the scene as watch.js takes it: its role, which hand, its bevel, its path and colour, its ink height
 const one = (x, hand, H, S) => {
   // a disc hand is flat, as on the dial side (Okay, 3 Nov 2026, 02:11: "Disc hand does not get bevels")
-  return { role: x.role, hand, bevel: Boolean(H && x.role === "hand" && H.bevel && G.HAND_SHAPES[H.shape] !== "disc"), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(G.ink_shown(S, x)), a: +x.fill[3], ink: PRINTED(x.role) || x.role === "mark" ? G.ink_mm(S, x) / G.INK_STEP_MM : 0, metal: Boolean(x.metal) };
+  return { role: x.role, hand, bevel: Boolean(H && x.role === "hand" && H.bevel && G.HAND_SHAPES[H.shape] !== "disc"), dome: Boolean(H && G.BEVEL_LOOKS[H.bevel_look] === "Domed"), hw: H ? Math.max((+H.w || 1) / 2, 0.05) : 0, p: x.path.svg(3), f: hex(G.ink_shown(S, x)), a: +x.fill[3], ink: PRINTED(x.role) || x.role === "mark" ? G.ink_mm(S, x) / G.INK_STEP_MM : 0, metal: Boolean(x.metal), soft: Boolean(x.soft), fume: x.fume || 0 };
 };      // a disc's painted mark is printed on it: an ink (02:11)      // the engine counts ink in its steps (0.035 mm); the heights are mm (#545)
 
 /** what a saved SVG says of each part, beyond its shape and colour (#584; Okay, 10 Nov 2026: "i need you to get height and thickness

@@ -891,7 +891,7 @@ for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC3
 await shot("4c4-guides-dark");
 await backdrop_hex("#CCCCC7");
 // the Dial section: Dial (diameter, plate, background), then Colours and Reset; no Page pane (margin and backdrop are the Settings box's) and no Guides pane
-check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Material"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Surface","Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has four panes (Reset last since 4.41.25): Dial stays in view, Surface (#607) and Colours scroll under it; no Page pane (Okay, 10 Nov 2026: 'Page margin and color move under settings from dial'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
+check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Material"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has three panes (Reset last since 4.41.25): Dial stays in view, Colours scrolls under it; no Page pane (Okay, 10 Nov 2026: 'Page margin and color move under settings from dial'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
 // Settings (#554; Okay, 31 Oct 2026, 01:49: "a settings icon. In place of mm … Inside two settings: unit … Colors";
 // approved 02:24): a cog at the panel's top right, never boxed; pressed, a box with Unit and Colours. Lengths are shown
 // and typed in the unit, kept in mm (R1)
@@ -957,7 +957,7 @@ await shot("4d-scaled");
 for (const d of ["41.3", "22", "30"]) { await enter_value("#global-dial-d-Diameter", d); }
 check(JSON.stringify(await measures()) === JSON.stringify(at_30), "36 → 41.3 → 22 → 30: everything is back exactly where it was");
 await page.uncheck("#global-ui-scale-Scale-everything-with-it");
-check(await page.evaluate(() => Math.round(document.querySelector(".row.nest .check").getBoundingClientRect().left) === Math.round(document.querySelector(".pane .row.num input[type=range]").getBoundingClientRect().left)), "a nested question starts on the controls' column");      // .pane: the Settings box's margin slider comes first in the document
+check(await page.evaluate(() => Math.round(document.querySelector(".row.nest .check").getBoundingClientRect().left) === Math.round([...document.querySelectorAll(".pane .row.num input[type=range]")].find((x) => x.checkVisibility()).getBoundingClientRect().left)), "a nested question starts on the controls' column");      // .pane: the Settings box's margin slider comes first in the document
 check(await S("!('ui_scale' in G_lean(S))".replace("G_lean(S)", "JSON.parse(JSON.stringify(S, (k, v) => (k.startsWith('ui_') ? undefined : v)))")), "the tick is the window's state, not the dial's");
 // Colours: every coloured part in one list
 const listed = await page.$$eval(".colourlist .row label", (l) => l.map((x) => x.textContent));
@@ -1128,7 +1128,7 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
 {
   await tab("Dial");
   const tabs0 = await page.evaluate(() => { const bar = document.querySelector(".casetabs"), r = (e) => e.getBoundingClientRect(); const tabs = [...bar.querySelectorAll(".tab")]; return { names: tabs.map((t) => t.textContent + (t.classList.contains("on") ? "*" : "")).join(), wide: tabs.every((t) => r(t).width > 80), pinned: Boolean(bar.closest(".pinned")), grounds: window.dial_tool.items.filter((x) => ["rehaut", "bezel", "insert", "bezel chamfer"].includes(x.role)).length, dial_rows: [...document.querySelectorAll(".row")].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector("label")).map((x) => x.querySelector("label").textContent).slice(0, 2).join() }; });
-  check(tabs0.names === "Base*,Rehaut,Bezel" && tabs0.wide && tabs0.pinned && tabs0.grounds === 0 && tabs0.dial_rows === "Paint,Diameter", `the Dial tab has its own tabs, pinned: ${tabs0.names}; the case off to start, no grounds drawn; the Dial rows as before (${tabs0.dial_rows})`);
+  check(tabs0.names === "Base*,Rehaut,Bezel" && tabs0.wide && tabs0.pinned && tabs0.grounds === 0 && tabs0.dial_rows === "Surface,Paint", `the Dial tab has its own tabs, pinned: ${tabs0.names}; the case off to start, no grounds drawn; the Dial rows Surface then Paint (Okay, 14 Nov 2026: "Surface finish moves up after the material, before paint") (${tabs0.dial_rows})`);
   await page.click("#case-tab-2"); await frame();
   await page.click("#global-bz-on-Bezel"); await frame();
   const bz = await page.evaluate(() => { const t = window.dial_tool, S = t.S, rows = [...document.querySelectorAll(".row")].filter((x) => !x.hidden && x.checkVisibility() && x.querySelector("label")).map((x) => { const l = x.querySelector("label"); return l.querySelector(".whole")?.textContent || l.textContent; });

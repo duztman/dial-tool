@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.91 beta · 14 Nov 2026 — the Fumé; the sunburst soft with Soft edges; Surface on the Material pane
+
+Okay, 14 Nov 2026, 19:07: "Ok, sunburst gets a low level of blur in blur on mode. Go on to fume. Surface finish moves up after the material, before paint, which can get transparency already, great."
+
+- **Fumé %** (`plate_fume`) is the research's drawing (the project's `claude/research-figs/figs.mjs`, `finish["Fumé"]`): one radial gradient — #3E7A5A at the centre, #21452F at 65 % of the radius, #0A140E at the rim. Here black over the plate and its surface, see-through at the centre, 45 % dark at 65 % and 84 % at the rim (`FUME_STOPS`) at 100. One gradient, by each view (`preview.js` `draw_finish`, `watch.js` `fumeFill`); over a Sunburst the rays stay under it.
+- **Soft edges** (`sh_blur`) blurs a sunburst's tones 0.2 mm (`FINISH_SOFT`), cut at the plate's own edge after the blur; the darkest tone, the whole plate, stays sharp. As the shadows' soft edge it waits while something moves.
+- **The rows** stand on the pinned Material pane: Material · **Surface** (Flat · Sunburst) · Sheen % (a sunburst's) · Paint · **Fumé %** · Diameter …; the Surface pane of v1.1.89 is gone. Folded, the pane says its paint, its diameter and, where set, sunburst and fumé.
+- **The rays are in the colour the eye meets** (`plate_seen`): the paint over the metal, so a see-through paint shows the metal's sunburst through it.
+- `labels.mjs`: the soft tones, the fumé's stops, the metal under a see-through paint. `window.mjs`: the pinned rows Surface then Paint.
+
 ## v1.1.90 beta · 14 Nov 2026 — the Sunburst as the research draws it; Brushed and Fumé parked
 
 Okay, 14 Nov 2026, 18:52: "the previews you showed me suck. the research, if you can see it and compare, has beautiful sunbursts done with svg. just implement that for now, park others."
