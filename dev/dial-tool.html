@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.92 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.93 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7998,7 +7998,7 @@ var fumeFill = (x2, r) => {
   CLIPS.push(`<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="${f(r)}">${FUME_STOPS.map(([at, dark]) => `<stop offset="${at}" stop-color="#000" stop-opacity="${f(dark * x2.fume)}"/>`).join("")}</radialGradient>`);
   return `url(#${id})`;
 };
-var FINISH_SOFT_DEF = `<filter id="fnsoft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600"><feGaussianBlur stdDeviation="${FINISH_SOFT}"/></filter>`;
+var finishSoftDef = (r) => `<filter id="fnsoft" filterUnits="userSpaceOnUse" x="${f(-r)}" y="${f(-r)}" width="${f(2 * r)}" height="${f(2 * r)}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${FINISH_SOFT}"/></filter>`;
 function dialSVG(C2, v, L) {
   const D = DIALS[0], s = (C2.dial - (C2.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
   const col2 = (x2) => x2.fume ? fumeFill(x2, D.d / 2) : x2.metal ? metalSheen(x2, L, D.d / 2) : clampL(x2.f);
@@ -8576,7 +8576,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   OUTT = OUTL_C;
   const caseStr = caseSVG(C2, v, L);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
-<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF + FINISH_SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle(C2.opening)}"/></clipPath><clipPath id="glass-${key}"><path d="${circle(C2.glassR ?? C2.opening)}"/></clipPath>${TEXTURES}</defs>
+<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF + finishSoftDef((C2.dial ?? 60) / 2 + 1) : ""}<clipPath id="dial-${key}"><path d="${circle(C2.opening)}"/></clipPath><clipPath id="glass-${key}"><path d="${circle(C2.glassR ?? C2.opening)}"/></clipPath>${TEXTURES}</defs>
 <defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
@@ -9562,7 +9562,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.92 beta";
+var VERSION = "v1.1.93 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -14673,7 +14673,7 @@ var DIAL_ROWS = [
   // Okay, 13 Oct 2026: Dial stays in view (pinned); the list of colours scrolls under it. The page around the dial (margin, backdrop) is the Settings box's (Okay, 10 Nov 2026: "Page margin and color move under settings from dial").
   // the plate is the BASE tab's (Okay, 11 Nov 2026, his marks on the Dial tab: "Dial" → "Base", the pane "Dial" → "Material",
   // "+ Metals"; "color gets a new line called paint"): its material on the heading line, its paint a line of its own
-  hdr("Material", { pin: true, summary: (S, tool2) => [{ c: S.c_plate }, `diameter ${tool2.in_unit(S.dial_d, 1)}`, ...SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? ["sunburst"] : [], ...S.plate_fume > 0 ? [`fum\xE9 ${Math.round(S.plate_fume)}`] : []] }),
+  hdr("Material", { pin: true, summary: (S, tool2) => [{ c: S.c_plate }, ...SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? ["sunburst"] : [], ...S.plate_fume > 0 ? [`fum\xE9 ${Math.round(S.plate_fume)}`] : []] }),
   // the plate: what it is made of, how big, what is on it
   seg("material", "Material", PLATE_METALS, { head: true }),
   // the bare metal: seen when Paint is No colour, with a sheen that follows the sun
@@ -14685,6 +14685,8 @@ var DIAL_ROWS = [
   num2("plate_fume", "Fum\xE9 %", 0, 100, 1, { whole: true }),
   seg("engrave", "Finish", FINISHES, { show: (T, S) => S.paint === false }),
   // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
+  // the plate's outline, a pane of its own in the pinned part (Okay, 14 Nov 2026, 19:48: "diameter, center hole and background have it's own eye, still under the persistent bit: call them shape")
+  hdr("Shape", { pin: true, summary: (S, tool2) => [`diameter ${tool2.in_unit(S.dial_d, 1)}`, ...S.dial_hole > 0 ? [`hole ${tool2.in_unit(S.dial_hole, 1)}`] : []] }),
   num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),
   // typed past these it stops there and says so (#233: 0 and 1000 were taken)
   chk("ui_scale", "Scale everything with it", { nest: true }),
@@ -23256,8 +23258,8 @@ var PREVIEW = {
       }
       filter.id = "finish-soft";
       filter.setAttribute("filterUnits", "userSpaceOnUse");
-      for (const [k, v] of [["x", -300], ["y", -300], ["width", 600], ["height", 600]]) filter.setAttribute(k, v);
       blur.setAttribute("stdDeviation", FINISH_SOFT2);
+      filter.setAttribute("color-interpolation-filters", "sRGB");
       filter.append(blur);
       clip.id = "finish-clip";
       clip.append(cut);
@@ -23272,6 +23274,10 @@ var PREVIEW = {
     if (key !== this.finish_key) {
       this.finish_key = key;
       this.finish_grad.setAttribute("r", (S.dial_d / 2).toFixed(3));
+      {
+        const box3 = S.dial_d / 2 + 1, f2 = this.finish_defs.querySelector("#finish-soft");
+        for (const [k, v] of [["x", -box3], ["y", -box3], ["width", 2 * box3], ["height", 2 * box3]]) f2.setAttribute(k, v);
+      }
       FUME_STOPS2.forEach(([, dark], i2) => this.finish_grad.children[i2].setAttribute("stop-opacity", (dark * (fume ? fume.fume : 0)).toFixed(3)));
     }
     if (plate && this.finish_plate !== plate.path) {
@@ -24136,8 +24142,8 @@ var GUIDES = {
         return s;
       };
       if (z > 0) wall("case-on-dial", [[circle3(R), 0]], z);
-      if (S.rh_on && zb > rh) {
-        const s = wall("case-on-rehaut", [[circle3(edge) + circle3(R), 0]], zb - rh / 2);
+      if (S.rh_on && S.bz_on) {
+        const s = wall("case-on-rehaut", [[circle3(edge) + circle3(R), 0]], z - rh / 2);
         shade.parts.get("case-on-rehaut/clip/0").setAttribute("clip-rule", "evenodd");
       }
     }
