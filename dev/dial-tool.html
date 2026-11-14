@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.89 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.90 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9554,7 +9554,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.89 beta";
+var VERSION = "v1.1.90 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9955,15 +9955,14 @@ var DEFAULTS = {
   material: 0,
   paint: true,
   // the plate's MATERIAL, a place in PLATE_METALS, and whether it is painted (c_plate): no paint, the metal is the face — seen in the preview with a sheen that follows the sun, left unprinted in the files (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button")
-  // THE PLATE'S SURFACE (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes"): what the face is
-  // worked to under its print — a place in SURFACES_OF_PLATE. The three are the research's (claude/research-page/doc/main.md,
-  // "Build first the finishes the one sun can drive"): Sunburst and Brushed are grooves, lit by the groove rule; Fumé is a
-  // darkening toward the rim, its own amount, over any of them. Seen in the preview and show mode; no file prints them.
+  // THE PLATE'S SURFACE (#607): what the face is worked to under its print — a place in SURFACES_OF_PLATE; Flat to start. A
+  // Sunburst is the research's own drawing, lit by the groove rule (plate_finish); plate_sheen says how light its rays go, %
+  // (100: the research's). Seen in the preview and show mode; no file prints it. plate_grain and plate_fume are read by
+  // nothing (R8: kept for the links of 14 Nov 2026): Brushed and Fumé are parked on his word ("park others").
   plate_surface: 0,
-  plate_sheen: 60,
+  plate_sheen: 100,
   plate_grain: 0,
   plate_fume: 0,
-  // Flat to start · how strongly the grooves show, % · a brushed face's grain, ° from 12–6 · the fumé, %
   movement: "any",
   // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,
@@ -12740,55 +12739,59 @@ function disc_mark(h) {
 var paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
 var mark_stroke = (h) => paints_mark(h) && h.mark_stroke_w > 0 && disc_mark(h) ? memo("mstroke" + key_of(h), () => stroke_outline(disc_mark(h), h.mark_stroke_w, "Outside", "Miter")) : null;
 var SURFACES_OF_PLATE = ["Flat", "Sunburst", "Brushed"];
-var SUNBURST_RAYS = 120;
-var FUME_STEPS = 14;
-var GROOVE_DEPTH = 0.3;
-var BRUSH_PITCH = 0.22;
-var FUME_DEPTH = 0.75;
-var groove = (along, sun) => sin((along - sun) * PI / 180) ** 2;
-var _finish = /* @__PURE__ */ new WeakMap();
-var jitter = (i2) => {
-  const x2 = sin(i2 * 127.1 + 311.7) * 43758.5453;
-  return x2 - Math.floor(x2) - 0.5;
+var SURFACES_OFFERED = ["Flat", "Sunburst"];
+var SUNBURST_RAYS = 240;
+var SUNBURST_TONES = 12;
+var GROOVE_SHARP = 6;
+var SUNBURST_LIGHT = 0.7;
+var groove = (along, sun, sharp = GROOVE_SHARP) => abs(sin((along - sun) * PI / 180)) ** sharp;
+var rgb_hsl = ([r, g, b]) => {
+  const mx = max(r, g, b), mn = min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  if (!d) return [0, 0, l];
+  const s = d / (1 - abs(2 * l - 1)), h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, s, l];
 };
-function plate_finish(S, plate) {
-  const kind = SURFACES_OF_PLATE[S.plate_surface] || "Flat", fume = min(max(S.plate_fume, 0), 100) / 100, sheen = min(max(S.plate_sheen, 0), 100) / 100;
-  if ((kind === "Flat" || !sheen) && !fume) return [];
-  const R = S.dial_d / 2, key = [kind, R, S.plate_grain].join();
+var hsl_rgb = ([h, s, l]) => {
+  const c = (1 - abs(2 * l - 1)) * s, x2 = c * (1 - abs(h / 60 % 2 - 1)), m = l - c / 2, [r, g, b] = h < 60 ? [c, x2, 0] : h < 120 ? [x2, c, 0] : h < 180 ? [0, c, x2] : h < 240 ? [0, x2, c] : h < 300 ? [x2, 0, c] : [c, 0, x2];
+  return [r + m, g + m, b + m];
+};
+var sunburst_light = (c) => {
+  const [h, s, l] = rgb_hsl(c);
+  return [...hsl_rgb([h, s, l + (1 - l) * SUNBURST_LIGHT]), c[3] ?? 1];
+};
+var _finish = /* @__PURE__ */ new WeakMap();
+function plate_finish(S, plate, colour) {
+  const sheen = min(max(S.plate_sheen, 0), 100) / 100;
+  if (SURFACES_OF_PLATE[S.plate_surface] !== "Sunburst" || !sheen) return [];
+  const R = S.dial_d / 2 * 1.02, N = SUNBURST_RAYS, T = SUNBURST_TONES, key = [R, S.sh_from].join();
   let cut = _finish.get(plate);
   if (!cut || cut.key !== key) {
-    cut = { key, rays: [], lines: null, rings: [] };
-    const pt = (r, deg) => [r * sin(deg * PI / 180), r * cos(deg * PI / 180)];
-    if (kind === "Sunburst") for (let i2 = 0; i2 < SUNBURST_RAYS; i2++) {
-      const a0 = i2 * 360 / SUNBURST_RAYS, a1 = a0 + 360 / SUNBURST_RAYS + 0.2;
-      cut.rays.push(new Path().polygon([0, 0], pt(R * 1.02, a0), pt(R * 1.02, (a0 + a1) / 2), pt(R * 1.02, a1)).intersection(plate));
-    }
-    if (kind === "Brushed") {
-      const lines = new Path(), n = ceil(2 * R / BRUSH_PITCH);
-      for (let i2 = 0; i2 < n; i2 += 2) {
-        const x2 = -R + i2 * BRUSH_PITCH + jitter(i2) * BRUSH_PITCH * 0.6;
-        lines.rect(x2, -R, BRUSH_PITCH * (0.6 + 0.5 * (jitter(i2 + 0.5) + 0.5)), 2 * R);
+    const pt = (deg) => [R * sin(deg * PI / 180), R * cos(deg * PI / 180)], step = Array.from({ length: N }, (_, i2) => min(T - 1, Math.floor(groove((i2 + 0.5) * 360 / N, S.sh_from) * T)));
+    cut = { key, tones: [] };
+    for (let k = 0; k < T; k++) {
+      if (k && !step.some((t) => t === k)) {
+        cut.tones.push(null);
+        continue;
       }
-      cut.lines = lines.rotate(-S.plate_grain).intersection(plate);
+      if (!k) {
+        cut.tones.push(plate);
+        continue;
+      }
+      const shape3 = new Path();
+      for (let i2 = 0; i2 < N; i2++) if (step[i2] >= k) {
+        let j = i2;
+        while (j + 1 < N && step[j + 1] >= k) j++;
+        const pts = [[0, 0]];
+        for (let m = i2; m <= j + 1; m++) pts.push(pt(m * 360 / N));
+        shape3.polygon(...pts);
+        i2 = j;
+      }
+      cut.tones.push(shape3.intersection(plate));
     }
-    for (let i2 = 1; i2 <= FUME_STEPS; i2++) cut.rings.push(circle2(2 * R * 1.02).difference(circle2(2 * R * i2 / (FUME_STEPS + 1))).intersection(plate));
     _finish.set(plate, cut);
   }
-  const out = [], flat2 = cos(min(max(S.sh_rise, 20), 85) * PI / 180) / cos(35 * PI / 180), tone2 = (k) => k >= 0 ? [1, 1, 1, min(k, 0.6)] : [0, 0, 0, min(-k, 0.6)];
-  const depth = GROOVE_DEPTH * sheen * flat2;
-  if (kind === "Sunburst" && sheen) cut.rays.forEach((path, i2) => {
-    const k = depth * (2 * groove((i2 + 0.5) * 360 / SUNBURST_RAYS, S.sh_from) - 1 + 0.5 * jitter(i2));
-    if (abs(k) > 4e-3) out.push([path, tone2(k)]);
-  });
-  if (kind === "Brushed" && sheen) {
-    const k = depth * (2 * groove(S.plate_grain, S.sh_from) - 1);
-    out.push([plate, tone2(k)], [cut.lines, tone2(k >= 0 ? -0.18 * sheen : 0.18 * sheen)]);
-  }
-  if (fume) {
-    const each = 1 - (1 - FUME_DEPTH * fume) ** (1 / FUME_STEPS);
-    for (const ring of cut.rings) out.push([ring, [0, 0, 0, each]]);
-  }
-  return out;
+  const light = sunburst_light(colour), mix = (t) => [0, 1, 2].map((c) => colour[c] + (light[c] - colour[c]) * t).concat(colour[3] ?? 1);
+  return cut.tones.map((path, k) => path ? [path, mix(sheen * (0.1 + 0.9 * (k + 0.5) / T))] : null).filter(Boolean);
 }
 var glass_edge = (S) => {
   const sp = case_spans(S);
@@ -12971,7 +12974,7 @@ function scene(S, statik, t, preview = true, selected = null) {
     }
     if (S.paint === false) add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0], face), { metal: true });
     else add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));
-    if (preview) for (const [path, fill] of plate_finish(S, S.ha_on ? statik.plate : statik.plate_holed)) add("finish", path, fill);
+    if (preview) for (const [path, fill] of plate_finish(S, S.ha_on ? statik.plate : statik.plate_holed, S.paint === false ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : S.c_plate)) add("finish", path, dim(fill, face));
     const on_disc = (d) => ring_surface(S, d.raw || d.ring) === 3;
     for (const d of rings) {
       if (on_disc(d)) continue;
@@ -14659,13 +14662,11 @@ var DIAL_ROWS = [
   // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
   // fit in that line as tiny swatches. Default: compacted")
   // the plate's surface (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes"): what the face is worked
-  // to under its print, and a fumé over any of them; a row shows only where it does something (R16). A pane of its own under the
+  // to under its print — Flat or the research's Sunburst (18:52: "just implement that for now, park others"). A pane of its own under the
   // pinned Material, so the part that stays in view grows by nothing
-  hdr("Surface", { folded: true, summary: (S) => [(SURFACES_OF_PLATE[S.plate_surface] || "Flat").toLowerCase(), ...S.plate_fume > 0 ? [`fum\xE9 ${Math.round(S.plate_fume)}`] : []] }),
-  seg("plate_surface", "Kind", SURFACES_OF_PLATE),
-  num2("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => S.plate_surface > 0 }),
-  num2("plate_grain", "Grain \xB0", 0, 179, 1, { whole: true, show: (S) => SURFACES_OF_PLATE[S.plate_surface] === "Brushed" }),
-  num2("plate_fume", "Fum\xE9 %", 0, 100, 1, { whole: true }),
+  hdr("Surface", { folded: true, summary: (S) => [SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? "sunburst" : "flat"] }),
+  seg("plate_surface", "Kind", SURFACES_OFFERED),
+  num2("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" }),
   hdr("Colours", { folded: true, summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
   custom("colours"),
   // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
