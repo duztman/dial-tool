@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.87 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.88 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9554,7 +9554,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.87 beta";
+var VERSION = "v1.1.88 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9955,6 +9955,15 @@ var DEFAULTS = {
   material: 0,
   paint: true,
   // the plate's MATERIAL, a place in PLATE_METALS, and whether it is painted (c_plate): no paint, the metal is the face — seen in the preview with a sheen that follows the sun, left unprinted in the files (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button")
+  // THE PLATE'S SURFACE (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes"): what the face is
+  // worked to under its print — a place in SURFACES_OF_PLATE. The three are the research's (claude/research-page/doc/main.md,
+  // "Build first the finishes the one sun can drive"): Sunburst and Brushed are grooves, lit by the groove rule; Fumé is a
+  // darkening toward the rim, its own amount, over any of them. Seen in the preview and show mode; no file prints them.
+  plate_surface: 0,
+  plate_sheen: 60,
+  plate_grain: 0,
+  plate_fume: 0,
+  // Flat to start · how strongly the grooves show, % · a brushed face's grain, ° from 12–6 · the fumé, %
   movement: "any",
   // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,
@@ -11085,8 +11094,13 @@ var LINK_KEYS = [
   "mark_deg",
   // v1.1.85 beta: appended; read only by an Arc marker, which no older link has
   "sh_bezel",
-  "sh_rehaut"
+  "sh_rehaut",
   // v1.1.86 beta (#595): appended; the case's relief, a part
+  "plate_surface",
+  "plate_sheen",
+  "plate_grain",
+  "plate_fume"
+  // v1.1.88 beta (#607): appended; a flat plate with no fumé to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -12725,6 +12739,57 @@ function disc_mark(h) {
 }
 var paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
 var mark_stroke = (h) => paints_mark(h) && h.mark_stroke_w > 0 && disc_mark(h) ? memo("mstroke" + key_of(h), () => stroke_outline(disc_mark(h), h.mark_stroke_w, "Outside", "Miter")) : null;
+var SURFACES_OF_PLATE = ["Flat", "Sunburst", "Brushed"];
+var SUNBURST_RAYS = 120;
+var FUME_STEPS = 14;
+var GROOVE_DEPTH = 0.3;
+var BRUSH_PITCH = 0.22;
+var FUME_DEPTH = 0.75;
+var groove = (along, sun) => sin((along - sun) * PI / 180) ** 2;
+var _finish = /* @__PURE__ */ new WeakMap();
+var jitter = (i2) => {
+  const x2 = sin(i2 * 127.1 + 311.7) * 43758.5453;
+  return x2 - Math.floor(x2) - 0.5;
+};
+function plate_finish(S, plate) {
+  const kind = SURFACES_OF_PLATE[S.plate_surface] || "Flat", fume = min(max(S.plate_fume, 0), 100) / 100, sheen = min(max(S.plate_sheen, 0), 100) / 100;
+  if ((kind === "Flat" || !sheen) && !fume) return [];
+  const R = S.dial_d / 2, key = [kind, R, S.plate_grain].join();
+  let cut = _finish.get(plate);
+  if (!cut || cut.key !== key) {
+    cut = { key, rays: [], lines: null, rings: [] };
+    const pt = (r, deg) => [r * sin(deg * PI / 180), r * cos(deg * PI / 180)];
+    if (kind === "Sunburst") for (let i2 = 0; i2 < SUNBURST_RAYS; i2++) {
+      const a0 = i2 * 360 / SUNBURST_RAYS, a1 = a0 + 360 / SUNBURST_RAYS + 0.2;
+      cut.rays.push(new Path().polygon([0, 0], pt(R * 1.02, a0), pt(R * 1.02, (a0 + a1) / 2), pt(R * 1.02, a1)).intersection(plate));
+    }
+    if (kind === "Brushed") {
+      const lines = new Path(), n = ceil(2 * R / BRUSH_PITCH);
+      for (let i2 = 0; i2 < n; i2 += 2) {
+        const x2 = -R + i2 * BRUSH_PITCH + jitter(i2) * BRUSH_PITCH * 0.6;
+        lines.rect(x2, -R, BRUSH_PITCH * (0.6 + 0.5 * (jitter(i2 + 0.5) + 0.5)), 2 * R);
+      }
+      cut.lines = lines.rotate(-S.plate_grain).intersection(plate);
+    }
+    for (let i2 = 1; i2 <= FUME_STEPS; i2++) cut.rings.push(circle2(2 * R * 1.02).difference(circle2(2 * R * i2 / (FUME_STEPS + 1))).intersection(plate));
+    _finish.set(plate, cut);
+  }
+  const out = [], flat2 = cos(min(max(S.sh_rise, 20), 85) * PI / 180) / cos(35 * PI / 180), tone2 = (k) => k >= 0 ? [1, 1, 1, min(k, 0.6)] : [0, 0, 0, min(-k, 0.6)];
+  const depth = GROOVE_DEPTH * sheen * flat2;
+  if (kind === "Sunburst" && sheen) cut.rays.forEach((path, i2) => {
+    const k = depth * (2 * groove((i2 + 0.5) * 360 / SUNBURST_RAYS, S.sh_from) - 1 + 0.5 * jitter(i2));
+    if (abs(k) > 4e-3) out.push([path, tone2(k)]);
+  });
+  if (kind === "Brushed" && sheen) {
+    const k = depth * (2 * groove(S.plate_grain, S.sh_from) - 1);
+    out.push([plate, tone2(k)], [cut.lines, tone2(k >= 0 ? -0.18 * sheen : 0.18 * sheen)]);
+  }
+  if (fume) {
+    const each = 1 - (1 - FUME_DEPTH * fume) ** (1 / FUME_STEPS);
+    for (const ring of cut.rings) out.push([ring, [0, 0, 0, each]]);
+  }
+  return out;
+}
 var glass_edge = (S) => {
   const sp = case_spans(S);
   return sp.bezel ? sp.bezel[0] : sp.rehaut ? sp.rehaut[1] : null;
@@ -12906,6 +12971,7 @@ function scene(S, statik, t, preview = true, selected = null) {
     }
     if (S.paint === false) add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0], face), { metal: true });
     else add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));
+    if (preview) for (const [path, fill] of plate_finish(S, S.ha_on ? statik.plate : statik.plate_holed)) add("finish", path, fill);
     const on_disc = (d) => ring_surface(S, d.raw || d.ring) === 3;
     for (const d of rings) {
       if (on_disc(d)) continue;
@@ -13192,7 +13258,7 @@ var insert_picture = (i2) => {
 var STYLE_NAMES2 = STYLE_NAMES;
 var VIEW_NAMES = ["detail", "full", "dial"];
 var hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
-var PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);
+var PRINTED = (role) => !["plate", "finish", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);
 var one = (x2, hand, H2, S) => {
   return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(ink_shown(S, x2)), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0, metal: Boolean(x2.metal) };
 };
@@ -14576,6 +14642,12 @@ var DIAL_ROWS = [
   seg("material", "Material", PLATE_METALS, { head: true }),
   // the bare metal: seen when Paint is No colour, with a sheen that follows the sun
   col("c_plate", "Paint", { none: "paint" }),
+  // the plate's surface (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes"): what the face is worked
+  // to under its print, and a fumé over any of them; a row shows only where it does something (R16)
+  seg("plate_surface", "Surface", SURFACES_OF_PLATE),
+  num2("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => S.plate_surface > 0 }),
+  num2("plate_grain", "Grain \xB0", 0, 179, 1, { whole: true, show: (S) => SURFACES_OF_PLATE[S.plate_surface] === "Brushed" }),
+  num2("plate_fume", "Fum\xE9 %", 0, 100, 1, { whole: true }),
   seg("engrave", "Finish", FINISHES, { show: (T, S) => S.paint === false }),
   // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
   num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),

@@ -173,4 +173,13 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
     && Math.abs(r(top[3], 1, 0) + r(top[3], 1, 180)) < 0.02 && r(top[3], 1, 0) > 0.05 && Math.abs(r(45, 1, 0, 0.5) - r(45, 1, 0) / 2) < 1e-9 && n(S) > 200 && n(flat) === 3 && n(off) === 3,
     `the case's faces from the section's numbers, lit by one rule: the chamfer 45° facing out, the top ${top[3].toFixed(1)}° (0.55 lip less 0.30 chamfer over 2.10); toward the sun lighter (${r(top[3], 1, 0).toFixed(2)}), away darker (${r(top[3], 1, 180).toFixed(2)}), the rehaut's wall the other way round; Relief 0 or Shadows off draws each part flat (${n(flat)} shapes)`);
 }
+// the plate's surface (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes from there")
+{ const S = G.fresh_settings({ dial_d: 30, sh_from: 0, sh_rise: 35 }), st = G.build_static(S), n = (T, preview = true) => G.scene(T, st, 0, preview).filter((x) => x.role === "finish");
+  const sun = { ...S, plate_surface: 1, plate_sheen: 100 }, rays = n(sun), white = (x) => x.fill[0] === 1, at = (deg) => rays.reduce((best, x) => { const b = x.path.bounds(), a = (Math.atan2((b[0] + b[2]) / 2, (b[1] + b[3]) / 2) * 180 / Math.PI + 360) % 360, d = Math.abs(((a - deg + 540) % 360) - 180); return d < best[0] ? [d, x] : best; }, [999, null])[1];
+  const brushed = n({ ...S, plate_surface: 2, plate_grain: 90, plate_sheen: 100 }), along = n({ ...S, plate_surface: 2, plate_grain: 0, plate_sheen: 100 }), fume = n({ ...S, plate_fume: 100 });
+  const rim = 1 - fume.reduce((left, x) => left * (1 - x.fill[3]), 1);
+  check(n(S).length === 0 && n(sun, false).length === 0 && G.groove(90, 0) === 1 && G.groove(0, 0) === 0 && rays.length > 100 && white(at(90)) && white(at(270)) && !white(at(0)) && !white(at(180))
+    && brushed.length === 2 && white(brushed[0]) && !white(along[0]) && fume.length === G.FUME_STEPS && Math.abs(rim - G.FUME_DEPTH) < 1e-6,
+    `the plate's Surface: Flat draws nothing over the plate and no file holds a finish; a Sunburst's rays shine across the light (at 3 and 9 with the sun at 12) and are dark along it; a Brushed face is light with its grain across the light, dark along it; a Fumé's ${fume.length} rings add up to ${(rim * 100).toFixed(0)} % dark at the rim`);
+}
 process.exit(bad ? 1 : 0);

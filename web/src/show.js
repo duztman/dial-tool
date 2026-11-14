@@ -33,7 +33,7 @@ export const insert_picture = (i) => { const [a, b] = INSERTS[i] || INSERTS[0];
   return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><path d="M-11 0A11 11 0 0 1 11 0H6.5A6.5 6.5 0 0 0 -6.5 0Z" fill="${a}"/><path d="M-11 0A11 11 0 0 0 11 0H6.5A6.5 6.5 0 0 1 -6.5 0Z" fill="${b}"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`; };
 const STYLE_NAMES = G.STYLE_NAMES, VIEW_NAMES = ["detail", "full", "dial"];
 const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
-const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);      // the case's grounds (#582) are flat, not inks      // what carries ink relief: a window's disc is the ground under its hole, not ink
+const PRINTED = (role) => !["plate", "finish", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);      // the case's grounds (#582) are flat, not inks      // what carries ink relief: a window's disc is the ground under its hole, not ink
 // a hand's lume is printed too: an ink on the hand (#175), its height the ink's
 
 // one part of the scene as watch.js takes it: its role, which hand, its bevel, its path and colour, its ink height

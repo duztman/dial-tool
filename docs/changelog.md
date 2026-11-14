@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.88 beta · 14 Nov 2026 — the plate's Surface: Sunburst, Brushed, and a Fumé
+
+Okay, 14 Nov 2026, 18:07: "we did a huge dial visual,zation research, sunburts and such. for next step tonight, get 3 most popular and viable options in for dial finishes from there."
+
+- **The three** are the research's own first build (`claude/research-page/doc/main.md`: "Build first the finishes the one sun can drive … one function lights sunburst, brushed and concentric finishes"; a fumé "a radial darkening under the highlight"). The research ranks no finish by how common it is: these are the ones it names with the most watches and can be drawn from the one sun.
+- **Surface** (`plate_surface`: Flat · Sunburst · Brushed; `SURFACES_OF_PLATE`), **Sheen %** (`plate_sheen`, 60), **Grain °** (`plate_grain`, a brushed face's), **Fumé %** (`plate_fume`, over any surface) — rows on the Base tab's Material pane, appended to `LINK_KEYS` (R9).
+- **`plate_finish`** (`geometry.js`): the groove rule — a groove shines when it lies across the light (`groove`). A sunburst is 120 wedges, each a little off its neighbours; a brushed face one tone and fine lines along its grain; a fumé 14 rings adding up to 75 % dark at the rim at 100. All see-through white and black over the plate's own colour, cut to the plate once; only the tones follow the sun. Role `finish`, in the preview and show mode, in no file.
+- **Tests**: `labels.mjs` — each finish by the rule.
+
 ## v1.1.87 beta · 14 Nov 2026 — the chamfer's edge line in the metal's own colour
 
 Okay, 14 Nov 2026, 18:10, with two crops of show mode: "theres a border line that is lighter than the bezel at the shadowy end, why'd you think it's there?"
