@@ -147,6 +147,14 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(cut.length === rings.length && cut.length > 0 && cut.every((x) => x.fill[0] < 0.5) && (svg.match(/<g id="engrave">/g) || []).length === 1 && (svg.match(/data-make="engraved"/g) || []).length === cut.length && engraveOCG === 1 && film === 0 && painted === 0 && insert === "11000" && metal === "11100",
     `Engrave: a bare plate's ${rings.length} rings cut in (${cut.length}), the metal's colour in shadow; one Engrave group in the SVG, one Engrave layer in the PDF (${engraveOCG}), in no film (${film}); Paint keeps them painted (${painted}); Finish is the ring's own (Okay, 14 Nov 2026: "should live under each pieces ring"): an older dial's surfaces are read into its rings and spent — plate · rehaut · bezel on an insert · a ring that says Paint, then the switches' sum ${insert}; on the bezel's metal ${metal}`);
 }
+// POLISHED, SURFACE, FUMÉ in the saved SVG's record (v1.1.96 beta): what the tool's views show and no film prints, said for a 3D view
+{ const O = await import("../src/output.js"), SHOW = await import("../src/show.js"), P = await import("../src/parts.js"), { OPENER } = await import("../src/opener.js");
+  const S = G.fresh_settings(OPENER); S.rings[0].finish = 2; S.plate_surface = 1; S.plate_sheen = 80; S.plate_fume = 60;
+  const svg = O.svg_document(S, G.build_static(S), 0, { facts: SHOW.svg_facts(S) }), tag = (re) => Object.fromEntries([...(svg.match(re)?.[0] ?? "").matchAll(/ data-([a-z-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
+  const pol = tag(/<path id="polished[^>]*>/), plate = P.read_part((k) => tag(/<path id="plate"[^>]*>/)[k] ?? null), flat = O.svg_document(G.fresh_settings(OPENER), G.build_static(G.fresh_settings(OPENER)), 0, { facts: SHOW.svg_facts(G.fresh_settings(OPENER)) });
+  check(pol.make === "polished" && pol.ink == null && plate.surface === "sunburst" && plate.sheen === 0.8 && plate.fume === 0.6 && JSON.stringify(plate.fume_stops) === JSON.stringify(G.FUME_STOPS) && /data-surface="flat"/.test(flat) && !/data-fume=/.test(flat) && P.read_part(() => null).make === "printed" && P.read_part((k) => (k === "role" ? "plate" : null)).surface === null,
+    `the record says Polished, Surface and Fumé: a polished ring's make "${pol.make}"; the plate ${plate.surface}, sheen ${plate.sheen}, fumé ${plate.fume} with its ${plate.fume_stops.length} stops; a flat plate says flat and no fumé; an older file's plate says no surface`);
+}
 // what is engraved, one outline a surface, in the saved SVG (cut_unions): overlapping markings joined, held inside the face's edge
 {
   const { svg_document } = await import("../src/output.js"), { svg_facts } = await import("../src/show.js");

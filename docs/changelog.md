@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.96 beta · 14 Nov 2026 — the saved SVG says Polished, Surface and Fumé
+
+Okay, 14 Nov 2026, 21:57: "The new updates in dial tool that came today, they all work on showcase3d, right?" — they did not: a polished ring reached Show Case 3D as paint, a Sunburst and a Fumé not at all. 23:26: "Do it all together."
+
+- **`parts.js`**: a make `polished` (appended to `MAKES`) — the ground's own metal left bright, flush, no ink and no cut. The plate's record says its `surface` (flat · sunburst), a sunburst's `sheen` (0–1), its `fume` (0–1) and the fumé's stops.
+- **`show.js` `part_record`**: a Finish Polished ring is written `data-make="polished"`; the plate `data-surface`, `data-sheen`, `data-fume`, `data-fume-stops` (the stops are `FUME_STOPS`, so a view holds no copy of them).
+- The preview, show mode and the print files are unchanged: these are `data-` attributes of the saved SVG, read by Show Case 3D (Pro round 123).
+- `labels.mjs`: the polished ring's make, the plate's four attributes, read back by `read_part`.
+
 ## v1.1.95 beta · 14 Nov 2026 — the Logo
 
 Okay, 14 Nov 2026: "Make background into "logo", upload svg. only accept one color solid svgs. treat them as normal, stroke, weight size etc. placement is with mouse, limited to within dial and scale is possible." "One logo, gets it's own ring, the drawing can be filled, stroked, treat it as a shape as others. 3d has Applied indices, this should be able to translate." 21:47: "No the logo is straight only."

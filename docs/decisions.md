@@ -681,3 +681,4 @@ The dated record of every decision, with Okay's words as the reason. Not read be
 | 14 Nov 2026 | **A ring's colour place carries its Finish: Paint · Engrave · Polished**, the ring's own; the surface-wide switches go (#603, v1.1.94 beta). | Okay, 20:17: "Colour row becomes a Finish row with Paint · Engrave · Polished." |
 | 14 Nov 2026 | **Polished shows as a glint by angle** (#610, v1.1.94 beta): bright on the sun's line, near black elsewhere. | Okay, 20:17: "B on the polished." |
 | 14 Nov 2026 | **The logo is not turned**: no Angle row; it stands straight wherever it is put (#609, v1.1.95 beta). | Okay, 21:47: "No the logo is straight only." |
+| 14 Nov 2026 | **What the tool can make, its saved SVG says**: a Polished ring and the plate's Surface and Fumé travel in the parts record, so Show Case 3D draws them (v1.1.96 beta; Pro round 123). | Okay, 23:26: "Do it all together." |

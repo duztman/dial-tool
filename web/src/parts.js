@@ -5,7 +5,9 @@
 //
 // A part's MAKE says how it is made, and so which numbers it has (all in mm):
 //   plate     the dial's plate                                  material: what it is made of (brass · bronze · steel · silver);
-//                                                               metal: the same word, said only when it is bare (unpainted)
+//                                                               metal: the same word, said only when it is bare (unpainted);
+//                                                               surface (flat · sunburst), sheen (a sunburst's strength, 0–1),
+//                                                               fume (how much the plate darkens to its rim, 0–1) and its stops
 //   printed   ink on the plate (a ring, its stroke, a frame)    ink: the ink's thickness
 //   applied   a solid piece set on the plate (an index, a logo; height, section, edge (sharp · chamfer · round), material
 //             an ink made Applied in show mode's Inks, #602)    (colour · brass · bronze · steel · silver · gold · lume)
@@ -17,6 +19,9 @@
 //   case      the rehaut, the bezel, its insert                 — (the case is the view's own)
 //   engraved  a marking cut into the metal it lies on (a bare   — (the cut's depth is the view's; Okay, 11 Nov 2026: "I need the
 //             plate, the rehaut, a bezel's metal): Finish Engrave  ability to add these engravings instead of paint on metal")
+//   polished  a marking of the metal it lies on, left bright as  — (flush in its ground: no ink, no cut)
+//             a mirror (Finish Polished; Okay, 14 Nov 2026:
+//             "add \"polished\" to that list as well")
 // SECTION: a hand's or an applied part's cross-section, in the tool's Bevel words (geometry.js BEVEL_LOOKS) — flat · ridge ·
 // faceted · domed. The tool draws Faceted as a Ridge (#573); a view may too. Nothing is applied yet: the make is ready for it.
 // A record travels in a saved SVG as `data-` attributes (show.js `svg_facts` writes them, `read_part` reads them back), so a
@@ -34,7 +39,7 @@ export const STACK = {
   clear: 0.4,          // from the top of the stack to the crystal (Miyota's)
 };
 export const SECTIONS = ["flat", "ridge", "faceted", "domed"];
-export const MAKES = ["plate", "printed", "applied", "hand", "on hand", "cap", "disc", "in window", "case", "engraved"];      // appended only
+export const MAKES = ["plate", "printed", "applied", "hand", "on hand", "cap", "disc", "in window", "case", "engraved", "polished"];      // appended only
 
 const CASE = ["rehaut", "bezel", "bezel chamfer", "insert"], WINDOW = ["date number", "date picture", "disc print"];
 /** a part's make, from its role in the engine's words (show.js) */
@@ -50,6 +55,9 @@ export function part_attrs(p) {
   if (p.hand) says.push(["hand", p.hand]);
   if (p.make === "plate" && p.metal) says.push(["metal", p.metal]);
   if (p.make === "plate" && p.material) says.push(["material", p.material]);
+  if (p.make === "plate" && p.surface) says.push(["surface", p.surface]);      // the plate's finish (Dial Tool's Surface and Fumé): a view draws it its own way
+  if (p.make === "plate" && p.surface === "sunburst") says.push(["sheen", mm(p.sheen ?? 1)]);
+  if (p.make === "plate" && p.fume > 0) says.push(["fume", mm(p.fume)], ["fume-stops", (p.fume_stops || []).map(([at, dark]) => `${at}:${dark}`).join(" ")]);
   if (p.make === "applied") says.push(["height", mm(p.height)], ["section", p.section], ["edge", p.edge || "sharp"], ["material", p.material || "colour"]);
   if (p.make === "hand") { says.push(["over", mm(p.over)], ["t", mm(p.t)], ["section", p.section], ["hw", mm(p.hw)]);
     if (p.section !== "flat") says.push(["bevel", 1]); if (p.section === "domed") says.push(["dome", 1]); if (p.boss) says.push(["boss", mm(p.boss)]); }
@@ -66,6 +74,8 @@ export function read_part(get) {
   const num = (k) => (get(k) == null ? null : +get(k)), role = get("role") || "ring", hand = get("hand") || null, make = get("make") || make_of(role, hand);
   const p = { role, make, hand };
   if (make === "plate") p.material = get("material") || get("metal") || null;      // what it is made of; `metal` says it is bare
+  if (make === "plate") { p.surface = get("surface") || null; p.sheen = num("sheen") ?? 1; p.fume = num("fume") ?? 0;      // surface null: a file from before the record said it — the view's own plate, as it always drew it
+    p.fume_stops = String(get("fume-stops") || "").split(/\s+/).filter(Boolean).map((kv) => kv.split(":").map(Number)); }
   if (make === "plate" && get("metal")) p.metal = get("metal");      // bare: no paint over the metal (Okay, 11 Nov 2026: "Can 3d get these new bare metal dials?")
   if (make === "printed" || make === "on hand") { const ink = num("ink"); if (ink != null) p.ink = ink; }
   if (make === "applied") { p.height = num("height") ?? 0.3; p.section = get("section") || "flat"; p.edge = get("edge") || "sharp"; p.material = get("material") || "colour"; }

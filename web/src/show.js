@@ -51,7 +51,9 @@ export const part_record = (S, x) => {
   const r = { role: x.role, make: P.make_of(x.role, hand), hand };
   if (x.metal) r.metal = (G.PLATE_METALS[S.material] || G.PLATE_METALS[0]).toLowerCase();      // a bare plate: its metal, for a 3D view to make it metal
   if (x.role === "plate") r.material = (G.PLATE_METALS[S.material] || G.PLATE_METALS[0]).toLowerCase();      // what the plate is made of, painted or bare: what a cut through its paint lays open
+  if (x.role === "plate") Object.assign(r, { surface: G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? "sunburst" : "flat", sheen: Math.min(Math.max(S.plate_sheen, 0), 100) / 100, fume: Math.min(Math.max(S.plate_fume, 0), 100) / 100, fume_stops: G.FUME_STOPS });      // its Surface and its Fumé: seen, not printed — a 3D view draws them in its own light
   if (x.engrave) { r.make = "engraved"; return r; }      // cut in, not printed (Finish Engrave): no ink
+  if (x.polished) { r.make = "polished"; return r; }      // the ground's own metal left bright (Finish Polished): no ink, no cut
   if (PRINTED(x.role) || x.role === "mark") r.ink = G.ink_mm(S, x);
   const made = G.ink_made(S, x);      // an ink made as an applied part (#602): a solid, its height, its top edge and what it is made of
   if (made?.applied) Object.assign(r, { make: "applied", height: r.ink, section: "flat", edge: G.INK_EDGES[made.edge].toLowerCase(), material: G.INK_MATERIALS[made.mat].toLowerCase() });
