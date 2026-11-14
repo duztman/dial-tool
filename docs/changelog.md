@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.85 beta · 14 Nov 2026 — an Arc marker on a disc hand; hands stay under the glass
+
+Okay, 14 Nov 2026, 14:52, with his week dial (a see-through Day disc whose painted tile rides the rehaut): "since it's a dash, it looks weird. first logical step would be adding an option of 'wedge' to the list. arc section of a pie slice" and "it is somehow above the bezel which should be impossible".
+
+- **Arc** (`geometry.js` `HAND_MARKS`, `hand_mark`, `arc_piece`, `disc_mark`; `rows.js`): a fourth marker shape on a disc hand, after Bar · Wedge · Dot — the piece of a band between two radii, **Mark L** deep (`mark_len`) and **Mark °** wide (`mark_deg`, 1–360, 30 to start; appended to `LINK_KEYS`, R9). Its ends are circles round the pivot, so it follows the ring it rides on. The name is the windows' (Wedge is the tapered bar). Round does not round its corners.
+- **The glass's edge** (`glass_edge`, `under_glass`, in `scene`): with a case on, no part of a hand — its shape, marker, stroke, disc ring, lume — is drawn past the bezel's inner edge (the rehaut's top without a bezel). A hand that fits is untouched; with no case on a hand is as long as it is set. One scene (R26): the saved files say the same.
+- **Opacity**: the mark's stroke has it in show mode's colour list too, as the disc, the mark and the disc ring have.
+- **Tests**: `labels.mjs` — nothing of a hand past the glass's edge; an Arc's shape and width.
+
 ## v1.1.84 beta · 12 Nov 2026 — a cut's section: V or Round, a ring at a time
 
 Okay, 12 Nov 2026, 02:13: "Both shapes for every engraving item available, v is default. Band on a bezel is for that. If no inset part exists it is paint or engraving on a bare metal surface."

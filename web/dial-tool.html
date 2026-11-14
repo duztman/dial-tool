@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.84 beta · built 2026-11-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.85 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9546,7 +9546,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.84 beta";
+var VERSION = "v1.1.85 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9757,6 +9757,9 @@ var HAND_BASE = {
   mark: 0,
   mark_len: 1.6,
   mark_w: 0.6,
+  // an Arc marker (Okay, 14 Nov 2026: "arc section of a pie slice"): the piece of a band between two radii, mark_len deep
+  // and mark_deg wide round the centre — so it follows a ring it rides on, as a bar's straight ends cannot. Read through hand_mark()
+  mark_deg: 30,
   // the marker as a hole or a mark (#300, beta 4.45.4; Okay, 16 Oct 2026: "Mark if also possible easily"): mark_as 0 —
   // cut out of the disc (the dial shows through), as before; 1 — painted on it, whole, in mark_c
   mark_as: 0,
@@ -11063,8 +11066,10 @@ var LINK_KEYS = [
   // v1.1.76 beta: appended; painted to start, as every older link
   "bz_melt",
   // v1.1.80 beta (#599): appended; a bezel seated on the case to start, as every older link
-  "cut"
+  "cut",
   // v1.1.84 beta: appended; a V to start, as every older link's engraving
+  "mark_deg"
+  // v1.1.85 beta: appended; read only by an Arc marker, which no older link has
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -12610,8 +12615,21 @@ function disc_hand(h) {
   if (h.mark_as === 1) return disc.union(placed2);
   return disc.difference(placed2).union(placed2.difference(disc));
 }
+var HAND_MARKS = ["bar", "wedge", "dot", "arc"];
+var hand_mark = (h) => HAND_MARKS[h.mark] || "bar";
+function arc_piece(a, b, deg) {
+  const half = min(max(deg, 0.1), 360) / 2, n = max(2, Math.ceil(half * 2 / 2)), pt = (r, d) => [r * sin(d * PI / 180), r * cos(d * PI / 180)], pts = [];
+  if (half >= 180) return circle2(2 * b).difference(circle2(2 * a));
+  for (let j = 0; j <= n; j++) pts.push(pt(b, -half + 2 * half * j / n));
+  for (let j = n; j >= 0; j--) pts.push(pt(a, -half + 2 * half * j / n));
+  return new Path().polygon(...pts);
+}
 function disc_mark(h) {
   return memo("mark" + key_of(h), () => {
+    if (hand_mark(h) === "arc") {
+      const outer2 = h.mark_in ? min(h.len, max(h.disc_d, 0.1) / 2) : h.len, inner = max(outer2 - h.mark_len, 0);
+      return outer2 > inner ? arc_piece(inner, outer2, h.mark_deg) : null;
+    }
     const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
     const tri2 = h.mark_tri && SHAPES[h.mark] === "wedge";
     let mark = tri2 ? mark_outline(mark_ring, h.mark_len, h.mark_w, "wedge", 0).rotate(180) : mark_outline(mark_ring, h.mark_len, h.mark_w);
@@ -12623,6 +12641,21 @@ function disc_mark(h) {
 }
 var paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
 var mark_stroke = (h) => paints_mark(h) && h.mark_stroke_w > 0 && disc_mark(h) ? memo("mstroke" + key_of(h), () => stroke_outline(disc_mark(h), h.mark_stroke_w, "Outside", "Miter")) : null;
+var glass_edge = (S) => {
+  const sp = case_spans(S);
+  return sp.bezel ? sp.bezel[0] : sp.rehaut ? sp.rehaut[1] : null;
+};
+var _under = /* @__PURE__ */ new WeakMap();
+function under_glass(path, edge) {
+  if (!edge || !path) return path;
+  const had = _under.get(path);
+  if (had && had.edge === edge) return had.path;
+  let far = 0;
+  for (const c of path.d) for (let i2 = 1; i2 + 1 < c.length; i2 += 2) far = max(far, hypot(c[i2], c[i2 + 1]));
+  const cut = far > edge * 1.1 ? path.intersection(circle2(2 * edge)) : far > edge + 1e-6 && !empty(path.difference(circle2(2 * edge + 2e-3))) ? path.intersection(circle2(2 * edge)) : path;
+  _under.set(path, { edge, path: cut });
+  return cut;
+}
 function hand_items(S, t) {
   return hands_shown(S).map((name) => {
     const h = S["ha_" + name];
@@ -12804,16 +12837,18 @@ function scene(S, statik, t, preview = true, selected = null) {
     }
     for (const x2 of windows) add("date frame", x2.frame, dim(wc(x2).ink, face), { window: x2.index });
     if (S.ha_on) {
-      for (const [name, colour, path, a, h] of hand_items(S, t)) {
+      const edge = glass_edge(S), ug = (p) => under_glass(p, edge);
+      for (const [name, colour, whole, a, h] of hand_items(S, t)) {
+        const path = ug(whole);
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
-        if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), dim(h.mark_c, hands_layer), { name, angle: a });
-        if (mark_stroke(h)) add("mark", mark_stroke(h), dim(h.mark_stroke_c || h.c, hands_layer), { name, angle: a, edge: true });
+        if (paints_mark(h) && disc_mark(h)) add("mark", ug(disc_mark(h)), dim(h.mark_c, hands_layer), { name, angle: a });
+        if (mark_stroke(h)) add("mark", ug(mark_stroke(h)), dim(h.mark_stroke_c || h.c, hands_layer), { name, angle: a, edge: true });
         for (const d of rings) if (on_disc(d) && (d.raw || d.ring).on_hand === name) {
-          if (d.tints) d.tints.forEach((tint, n) => add("mark", tint.path, dim(sector_colour(d.ring, tint.at), hands_layer), { name, angle: a, ring: d, index: index(d), part: n + 1 }));
-          else add("mark", d.path, dim(d.ring.c, hands_layer), { name, angle: a, ring: d, index: index(d) });
-          if (d.stroke) add("mark", d.stroke, dim(d.ring.stroke_c, hands_layer), { name, angle: a, ring: d, index: index(d), part: "stroke" });
+          if (d.tints) d.tints.forEach((tint, n) => add("mark", ug(tint.path), dim(sector_colour(d.ring, tint.at), hands_layer), { name, angle: a, ring: d, index: index(d), part: n + 1 }));
+          else add("mark", ug(d.path), dim(d.ring.c, hands_layer), { name, angle: a, ring: d, index: index(d) });
+          if (d.stroke) add("mark", ug(d.stroke), dim(d.ring.stroke_c, hands_layer), { name, angle: a, ring: d, index: index(d), part: "stroke" });
         }
-        if (fills_openings(h)) add("lume", hand_openings(h), dim(h.op_fill, hands_layer), { name, angle: a });
+        if (fills_openings(h)) add("lume", ug(hand_openings(h)), dim(h.op_fill, hands_layer), { name, angle: a });
       }
       if (cap_shows(S)) add("cap", circle2(S.ha_cap), dim(S.c_cap, hands_layer));
     }
@@ -14703,10 +14738,12 @@ var ROWS = {
     // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
     // its rows say which (say: their names as [whole, short], by the choice)
     seg("mark_as", "Marker", ["Hole", "Mark"], { ...H, side: true, show: hand_is("disc") }),
-    seg("mark", "Hole", RHYTHM_SHAPES, { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),
+    seg("mark", "Hole", [...RHYTHM_SHAPES, "Arc"], { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),
     // the markers ring's shapes (#164)
     num2("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", say: (T) => T.mark_as === 1 ? ["Mark length", "Mark L"] : ["Hole length", "Hole L"], show: hand_is("disc") }),
-    num2("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"], show: hand_is("disc") }),
+    num2("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"], show: (T) => hand_is("disc")(T) && hand_mark(T) !== "arc" }),
+    num2("mark_deg", "Hole angle", 1, 360, 0.01, { ...H, side: true, short: "Hole \xB0", say: (T) => T.mark_as === 1 ? ["Mark angle", "Mark \xB0"] : ["Hole angle", "Hole \xB0"], show: (T) => hand_is("disc")(T) && hand_mark(T) === "arc" }),
+    // an Arc's width is an angle: a seventh of the dial is 51.43°
     col("mark_c", "Mark ink", { ...H, side: true, show: (T) => paints_mark(T) }),
     // "ink": "Mark colour" is longer than the names' column (Counter Ø)
     // a painted marker's stroke (#574; Okay, 2 Nov 2026, 22:18: "This dot gets a stroke if it's painted on"; 22:25: "Width +
@@ -18114,7 +18151,7 @@ var COLOUR = {
     }, T = H2(), disc = HAND_SHAPES[T.shape] === "disc";
     const out = [{ ...this.hand_colour(h, text), id: `hand-${h}${suffix}`, title: `${text} \xB7 ${disc ? "disc" : "hand"}` }];
     if (paints_mark(T) && disc_mark(T)) out.push({ id: `hand-${h}-mark${suffix}`, title: `${text} \xB7 mark`, alpha: true, read: () => H2().mark_c, write: put("mark_c") });
-    if (mark_stroke(T)) out.push({ id: `hand-${h}-stroke${suffix}`, title: `${text} \xB7 mark stroke`, read: () => H2().mark_stroke_c || H2().c, write: put("mark_stroke_c") });
+    if (mark_stroke(T)) out.push({ id: `hand-${h}-stroke${suffix}`, title: `${text} \xB7 mark stroke`, alpha: true, read: () => H2().mark_stroke_c || H2().c, write: put("mark_stroke_c") });
     if (fills_openings(T)) out.push({ id: `hand-${h}-lume${suffix}`, title: `${text} \xB7 lume`, lume_only: true, read: () => H2().op_fill, write: put("op_fill") });
     return out;
   },

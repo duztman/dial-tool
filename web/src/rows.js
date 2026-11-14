@@ -355,9 +355,10 @@ export const ROWS = {
     // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
     // its rows say which (say: their names as [whole, short], by the choice)
     seg("mark_as", "Marker", ["Hole", "Mark"], { ...H, side: true, show: hand_is("disc") }),
-    seg("mark", "Hole", RHYTHM_SHAPES, { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),      // the markers ring's shapes (#164)
+    seg("mark", "Hole", [...RHYTHM_SHAPES, "Arc"], { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),      // the markers ring's shapes (#164)
     num("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", say: (T) => (T.mark_as === 1 ? ["Mark length", "Mark L"] : ["Hole length", "Hole L"]), show: hand_is("disc") }),
-    num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => (T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"]), show: hand_is("disc") }),
+    num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => (T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"]), show: (T) => hand_is("disc")(T) && G.hand_mark(T) !== "arc" }),
+    num("mark_deg", "Hole angle", 1, 360, 0.01, { ...H, side: true, short: "Hole °", say: (T) => (T.mark_as === 1 ? ["Mark angle", "Mark °"] : ["Hole angle", "Hole °"]), show: (T) => hand_is("disc")(T) && G.hand_mark(T) === "arc" }),      // an Arc's width is an angle: a seventh of the dial is 51.43°
     col("mark_c", "Mark ink", { ...H, side: true, show: (T) => G.paints_mark(T) }),      // "ink": "Mark colour" is longer than the names' column (Counter Ø)
     // a painted marker's stroke (#574; Okay, 2 Nov 2026, 22:18: "This dot gets a stroke if it's painted on"; 22:25: "Width +
     // colour rows"), outside its outline; its colour the hand's until one is chosen

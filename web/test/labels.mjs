@@ -153,4 +153,15 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(plate && bezel && (plate.match(/M/g) || []).length < 13 && reach(bezel) <= sp.bezel[1] - S.bz_chamfer - G.CUT_EDGE + 0.01 && /^<g id="dial" data-dial-d/m.test(svg) && !/data-cut-/.test(plain) && /data-cut-plate-round="/.test(svg2) && /data-cut-plate-v="/.test(svg2) && !/data-cut-plate-round/.test(svg) && Math.abs(reach(inset) - 4) < 0.02,
     `an engraved dial's SVG says each surface's cuts as one outline: the plate's band and the twelve ticks over it joined (${(plate.match(/M/g) || []).length} contours), the bezel's held ${G.CUT_EDGE} mm inside its top's edge (${reach(bezel).toFixed(2)} of ${(sp.bezel[1] - S.bz_chamfer).toFixed(2)}); a ring's Cut set to Round has an outline of its own beside the V's ("Both shapes for every engraving item available, v is default"); an outline moves in by a depth (Ø 10 in by 1 → r ${reach(inset).toFixed(2)}); a painted dial says none (Okay: "cut the shapes out of the bezels top. VisiBLE and engraved at every height")`);
 }
+// the glass's edge and the Arc marker (Okay, 14 Nov 2026: "it is somehow above the bezel which should be impossible"; "arc section of a pie slice")
+{ const past = (p, r) => !G.empty(p.difference(G.circle(2 * r)));      // any of it outside the circle of radius r
+  const S = G.fresh_settings({ dial_d: 27, rh_on: true, rh_deg: 58, rh_len: 2.84, bz_on: true, bz_w: 2.4 });
+  Object.assign(S.ha_minute, { shape: G.HAND_SHAPES.indexOf("disc"), len: 15.908, disc_d: 32.017, mark: 0, mark_len: 2.408, mark_w: 6.544, mark_as: 1 });
+  const edge = G.glass_edge(S), parts = (T) => G.scene(T, G.build_static(T), 0, true).filter((x) => x.name === "minute");
+  const whole = past(G.disc_mark(S.ha_minute), edge + 0.3), drawn = parts(S).some((x) => past(x.path, edge + 0.01));
+  S.ha_minute.mark = G.HAND_MARKS.indexOf("arc"); S.ha_minute.mark_deg = 360 / 7;
+  const arc = G.disc_mark(S.ha_minute), b = arc.bounds(), bare = G.fresh_settings({ dial_d: 27 }); Object.assign(bare.ha_minute, { len: 20 });
+  check(Math.abs(edge - 15.9085) < 1e-3 && whole && !drawn && parts(bare).some((x) => past(x.path, 19)), `no part of a hand is drawn past the glass's edge (${edge.toFixed(3)} mm; a bar's corners, set, reach 0.33 past it); with no case on a hand is as long as it is set`);
+  check(Math.abs(b[3] - 15.908) < 1e-3 && !past(arc, 15.909) && !G.empty(arc.difference(G.circle(2 * 13.6))) && G.empty(arc.intersection(G.circle(2 * 13.49))) && Math.abs((b[2] - b[0]) - 2 * 15.908 * Math.sin(Math.PI / 7)) < 0.01, `an Arc marker is a piece of a band round the pivot: 2.408 deep to the hand's Length, a seventh of the dial wide (${(b[2] - b[0]).toFixed(2)} mm across)`);
+}
 process.exit(bad ? 1 : 0);

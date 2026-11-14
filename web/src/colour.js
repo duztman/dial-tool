@@ -542,7 +542,7 @@ export const COLOUR = {
     const H = () => this.S["ha_" + h], put = (key) => (v) => { H()[key] = v; this.changed(true); }, T = H(), disc = G.HAND_SHAPES[T.shape] === "disc";
     const out = [{ ...this.hand_colour(h, text), id: `hand-${h}${suffix}`, title: `${text} · ${disc ? "disc" : "hand"}` }];
     if (G.paints_mark(T) && G.disc_mark(T)) out.push({ id: `hand-${h}-mark${suffix}`, title: `${text} · mark`, alpha: true, read: () => H().mark_c, write: put("mark_c") });
-    if (G.mark_stroke(T)) out.push({ id: `hand-${h}-stroke${suffix}`, title: `${text} · mark stroke`, read: () => H().mark_stroke_c || H().c, write: put("mark_stroke_c") });
+    if (G.mark_stroke(T)) out.push({ id: `hand-${h}-stroke${suffix}`, title: `${text} · mark stroke`, alpha: true, read: () => H().mark_stroke_c || H().c, write: put("mark_stroke_c") });
     if (G.fills_openings(T)) out.push({ id: `hand-${h}-lume${suffix}`, title: `${text} · lume`, lume_only: true, read: () => H().op_fill, write: put("op_fill") });
     return out;
   },

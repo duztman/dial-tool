@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.84 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.85 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -198,6 +198,9 @@ export const HAND_BASE = {
   // on the pivot, carrying one marker drawn as a markers ring draws its marks — mark: a place in SHAPES (bar · wedge ·
   // dot), mark_len · mark_w its length and width — with its outer end at the hand's Length. Used only by shape "disc"
   disc_d: 8.0, mark: 0, mark_len: 1.6, mark_w: 0.6,
+  // an Arc marker (Okay, 14 Nov 2026: "arc section of a pie slice"): the piece of a band between two radii, mark_len deep
+  // and mark_deg wide round the centre — so it follows a ring it rides on, as a bar's straight ends cannot. Read through hand_mark()
+  mark_deg: 30,
   // the marker as a hole or a mark (#300, beta 4.45.4; Okay, 16 Oct 2026: "Mark if also possible easily"): mark_as 0 —
   // cut out of the disc (the dial shows through), as before; 1 — painted on it, whole, in mark_c
   mark_as: 0, mark_c: [1, 1, 1, 1],
@@ -797,6 +800,7 @@ export const LINK_KEYS = [
   "engrave", "rh_engrave", "bz_engrave",      // v1.1.76 beta: appended; painted to start, as every older link
   "bz_melt",                // v1.1.80 beta (#599): appended; a bezel seated on the case to start, as every older link
   "cut",                    // v1.1.84 beta: appended; a V to start, as every older link's engraving
+  "mark_deg",               // v1.1.85 beta: appended; read only by an Arc marker, which no older link has
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -2478,9 +2482,24 @@ function disc_hand(h) {
   if (h.mark_as === 1) return disc.union(placed);      // a mark: the disc whole and the marker with it; the scene paints the marker again, in its own colour
   return disc.difference(placed).union(placed.difference(disc));
 }
+/** a disc hand's marker shapes: the markers ring's first three, then its own Arc. R9: appended only */
+export const HAND_MARKS = ["bar", "wedge", "dot", "arc"];
+export const hand_mark = (h) => HAND_MARKS[h.mark] || "bar";
+/** a piece of a band: between the radii a and b, deg wide, its middle at 12 */
+export function arc_piece(a, b, deg) {
+  const half = min(max(deg, 0.1), 360) / 2, n = max(2, Math.ceil(half * 2 / 2)), pt = (r, d) => [r * sin(d * PI / 180), r * cos(d * PI / 180)], pts = [];
+  if (half >= 180) return circle(2 * b).difference(circle(2 * a));
+  for (let j = 0; j <= n; j++) pts.push(pt(b, -half + 2 * half * j / n));
+  for (let j = n; j >= 0; j--) pts.push(pt(a, -half + 2 * half * j / n));
+  return new Path().polygon(...pts);
+}
 /** a disc hand's marker, upright, its outer end at the hand's Length (null if it has no size). */
 export function disc_mark(h) {
   return memo("mark" + key_of(h), () => {
+    if (hand_mark(h) === "arc") {      // drawn where it stands: its ends are circles round the pivot
+      const outer = h.mark_in ? min(h.len, max(h.disc_d, 0.1) / 2) : h.len, inner = max(outer - h.mark_len, 0);
+      return outer > inner ? arc_piece(inner, outer, h.mark_deg) : null;
+    }
     const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
     const tri = h.mark_tri && SHAPES[h.mark] === "wedge";      // a triangle, its point outward (#574)
     let mark = tri ? mark_outline(mark_ring, h.mark_len, h.mark_w, "wedge", 0).rotate(180) : mark_outline(mark_ring, h.mark_len, h.mark_w);
@@ -2495,6 +2514,23 @@ export const paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as =
 /** a painted marker's stroke (#574): a filled ring round it, outside its outline (R4: never a stroke in the files); null without one */
 export const mark_stroke = (h) => (paints_mark(h) && h.mark_stroke_w > 0 && disc_mark(h) ? memo("mstroke" + key_of(h), () => stroke_outline(disc_mark(h), h.mark_stroke_w, "Outside", "Miter")) : null);
 
+
+/** THE GLASS'S EDGE, mm from the centre: where the crystal ends — the bezel's inner edge, or the rehaut's top without a bezel;
+ *  null with no case on. Hands turn under the glass, so nothing of a hand is drawn past it (Okay, 14 Nov 2026: "it is somehow
+ *  above the bezel which should be impossible") */
+export const glass_edge = (S) => { const sp = case_spans(S); return sp.bezel ? sp.bezel[0] : sp.rehaut ? sp.rehaut[1] : null; };
+const _under = new WeakMap();
+/** a hand's part (upright, round the pivot) kept under the glass: itself when it fits, else cut at the glass's edge */
+function under_glass(path, edge) {
+  if (!edge || !path) return path;
+  const had = _under.get(path);
+  if (had && had.edge === edge) return had.path;
+  let far = 0;      // its farthest point from the pivot (a curve's handles counted: never short)
+  for (const c of path.d) for (let i = 1; i + 1 < c.length; i += 2) far = max(far, hypot(c[i], c[i + 1]));
+  const cut = far > edge * 1.1 ? path.intersection(circle(2 * edge)) : far > edge + 1e-6 && !empty(path.difference(circle(2 * edge + 2e-3))) ? path.intersection(circle(2 * edge)) : path;      // a round disc's handles stand a little past its edge: looked at before it is cut
+  _under.set(path, { edge, path: cut });
+  return cut;
+}
 
 /** the hands that are on, bottom first: [name, colour, upright shape, clock angle]. */
 function hand_items(S, t) {
@@ -2709,16 +2745,18 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
     for (const x of windows) add("date frame", x.frame, dim(wc(x).ink, face), { window: x.index });
     if (S.ha_on) {
-      for (const [name, colour, path, a, h] of hand_items(S, t)) {
+      const edge = glass_edge(S), ug = (p) => under_glass(p, edge);      // under the glass, all of it
+      for (const [name, colour, whole, a, h] of hand_items(S, t)) {
+        const path = ug(whole);
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
-        if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), dim(h.mark_c, hands_layer), { name, angle: a });      // a disc's painted mark turns with it (#300)
-        if (mark_stroke(h)) add("mark", mark_stroke(h), dim(h.mark_stroke_c || h.c, hands_layer), { name, angle: a, edge: true });      // and its stroke (#574)
+        if (paints_mark(h) && disc_mark(h)) add("mark", ug(disc_mark(h)), dim(h.mark_c, hands_layer), { name, angle: a });      // a disc's painted mark turns with it (#300)
+        if (mark_stroke(h)) add("mark", ug(mark_stroke(h)), dim(h.mark_stroke_c || h.c, hands_layer), { name, angle: a, edge: true });      // and its stroke (#574)
         for (const d of rings) if (on_disc(d) && (d.raw || d.ring).on_hand === name) {      // its ring, printed on it (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault")
-          if (d.tints) d.tints.forEach((tint, n) => add("mark", tint.path, dim(sector_colour(d.ring, tint.at), hands_layer), { name, angle: a, ring: d, index: index(d), part: n + 1 }));
-          else add("mark", d.path, dim(d.ring.c, hands_layer), { name, angle: a, ring: d, index: index(d) });
-          if (d.stroke) add("mark", d.stroke, dim(d.ring.stroke_c, hands_layer), { name, angle: a, ring: d, index: index(d), part: "stroke" });
+          if (d.tints) d.tints.forEach((tint, n) => add("mark", ug(tint.path), dim(sector_colour(d.ring, tint.at), hands_layer), { name, angle: a, ring: d, index: index(d), part: n + 1 }));
+          else add("mark", ug(d.path), dim(d.ring.c, hands_layer), { name, angle: a, ring: d, index: index(d) });
+          if (d.stroke) add("mark", ug(d.stroke), dim(d.ring.stroke_c, hands_layer), { name, angle: a, ring: d, index: index(d), part: "stroke" });
         }
-        if (fills_openings(h)) add("lume", hand_openings(h), dim(h.op_fill, hands_layer), { name, angle: a });      // its openings' lume turns with it (#175)
+        if (fills_openings(h)) add("lume", ug(hand_openings(h)), dim(h.op_fill, hands_layer), { name, angle: a });      // its openings' lume turns with it (#175)
       }
       if (cap_shows(S)) add("cap", circle(S.ha_cap), dim(S.c_cap, hands_layer));
     }
