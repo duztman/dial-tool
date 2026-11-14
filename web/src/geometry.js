@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.86 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.87 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS, tones_of as WATCH_TONES } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -1888,7 +1888,7 @@ function build_case_grounds(S) {
     }
     if (lit && S.sh_bezel > 0) {      // its edges, fine lines: each a face of its own, 45° — the top's turn down to the glass (facing in), the chamfer's start (facing out)
       add("bezel", lit_band(S, b0, min(b0 + EDGE_LINE, b1), 45, -1, metal, S.sh_bezel));
-      if (sp.chamfer && sp.chamfer[0] > b0 + EDGE_LINE) add("bezel", lit_band(S, sp.chamfer[0] - EDGE_LINE / 2, sp.chamfer[0] + EDGE_LINE / 2, 20, 1, tinted(metal, 0.2), S.sh_bezel));
+      if (sp.chamfer && sp.chamfer[0] > b0 + EDGE_LINE) add("bezel", lit_band(S, sp.chamfer[0] - EDGE_LINE / 2, sp.chamfer[0] + EDGE_LINE / 2, 45, 1, metal, S.sh_bezel));      // the metal's own colour: light only where the sun catches the edge, gone into the shade on the far side (Okay, 14 Nov 2026: "theres a border line that is lighter than the bezel at the shadowy end")
     }
   }
   if (sp.rehaut) {

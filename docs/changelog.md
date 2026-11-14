@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## v1.1.87 beta · 14 Nov 2026 — the chamfer's edge line in the metal's own colour
+
+Okay, 14 Nov 2026, 18:10, with two crops of show mode: "theres a border line that is lighter than the bezel at the shadowy end, why'd you think it's there?"
+
+- It was the fine line where the bezel's chamfer starts (`case_grounds`), drawn in the metal lightened by a fifth on every side, so beside the sun and in the shade it stood out pale between two darker faces. It is the metal's own colour now, a 45° face as the top's other edge line: light where the sun catches it, the dark tone on the far side.
+
 ## v1.1.86 beta · 14 Nov 2026 — the case in 2D: faces lit by one rule; crescents in show mode
 
 Okay, 14 Nov 2026, 14:52: "bezels look flat in show case 2d. how can we make the subtle angles show up there? rehault needs a little more reality injection too. similar logic, outer angles and inner angles in 2d"; 15:00: "take care while adding the bezel/glass/rehaut system to 2d. logical, top/down system, editable"; 17:26: "are there other ways of 3 shade-ifying the bezel an rehaut? … I'm sure others have tried and perfected this."
