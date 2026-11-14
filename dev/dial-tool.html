@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.93 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.94 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9562,7 +9562,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.93 beta";
+var VERSION = "v1.1.94 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9691,6 +9691,8 @@ var RING_BASE = {
   // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
   stroke_b: false,
   // show mode's Inks: its stroke's colour split into two inks, the stroke printed with ink B (as ink_b; not in the link)
+  finish: 0,
+  // FINISH, a place in FINISHES, the ring's own: painted, cut into its ground, or polished metal (Okay, 14 Nov 2026: "Colour row becomes a Finish row with Paint · Engrave · Polished")
   cut: 0,
   // an engraved ring's cut, a place in CUT_SHAPES: V (the start) or Round (Okay, 12 Nov 2026: "Both shapes for every engraving item available, v is default"). A view that cuts for true reads it; the flat drawing does not
   ink_h: null,
@@ -10730,6 +10732,13 @@ function fresh_settings(over = null) {
   S.rings = S.rings.map((r) => complete(RING_BASE, r));
   for (const r of S.rings) if (![0, 3, 4].includes(+r.anchor)) r.anchor = 0;
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
+  if (S.engrave || S.rh_engrave || S.bz_engrave) {
+    (over.rings || []).forEach((raw, i2) => {
+      const r = S.rings[i2];
+      if (r && !(raw && "finish" in raw) && surface_engraved(S, r)) r.finish = FINISHES.indexOf("Engrave");
+    });
+    S.engrave = S.rh_engrave = S.bz_engrave = 0;
+  }
   if ("sh_bevel" in over && +over.sh_bevel > 0) for (const h of FIXED_HANDS) {
     const raw = over["ha_" + h];
     if (!raw || !("bevel" in raw)) S["ha_" + h] = { ...S["ha_" + h] || {}, bevel: true };
@@ -11106,8 +11115,10 @@ var LINK_KEYS = [
   "plate_surface",
   "plate_sheen",
   "plate_grain",
-  "plate_fume"
+  "plate_fume",
   // v1.1.88 beta (#607): appended; a flat plate with no fumé to start, as every older link
+  "finish"
+  // v1.1.94 beta (#603): appended; a ring's own Finish, painted to start — an older link's engraved surface is read into its rings (fresh_settings)
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -11996,16 +12007,60 @@ var disc_span = (S, name) => {
   return [0.7 * r, r];
 };
 var rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
-var FINISHES = ["Paint", "Engrave"];
+var FINISHES = ["Paint", "Engrave", "Polished"];
 var bezel_marks_on_metal = (S) => S.bz_on && !bezel_insert(S);
-var ring_engraved = (S, ring) => {
+var surface_engraved = (S, ring) => {
   const s = ring_surface(S, ring);
   return s === 0 ? S.paint === false && FINISHES[S.engrave] === "Engrave" : s === 1 ? FINISHES[S.rh_engrave] === "Engrave" : s === 2 ? bezel_marks_on_metal(S) && FINISHES[S.bz_engrave] === "Engrave" : false;
 };
-var engraved_colour = (S, ring) => {
-  const s = ring_surface(S, ring), g = s === 0 ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : s === 1 ? S.rh_c : case_metal(S);
-  return [...g.slice(0, 3).map((v) => v * 0.55), 1];
+var ring_finish = (S, ring) => FINISHES[ring?.finish] || "Paint";
+var ring_engraved = (S, ring) => ring_finish(S, ring) === "Engrave";
+var ring_polished = (S, ring) => ring_finish(S, ring) === "Polished";
+var ring_ground = (S, ring) => {
+  const s = ring_surface(S, ring);
+  return s === 0 || s === 3 ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : s === 1 ? S.rh_c : bezel_insert(S) ? S.bz_insert_c : case_metal(S);
 };
+var engraved_colour = (S, ring) => [...ring_ground(S, ring).slice(0, 3).map((v) => v * 0.55), 1];
+var ring_shown_colour = (S, ring) => ring_engraved(S, ring) ? engraved_colour(S, ring) : ring_polished(S, ring) ? [...ring_ground(S, ring).slice(0, 3), 1] : ring.c;
+var POLISH_SHARP = 6;
+var POLISH_TONES = 8;
+var POLISH_SECTORS = 120;
+var POLISH_DARK = 0.25;
+var POLISH_LIGHT = 0.85;
+var glint2 = (at, sun, sharp = POLISH_SHARP) => abs(cos((at - sun) * PI / 180)) ** sharp;
+function tone_fans(R, N, T, rule) {
+  const pt = (deg) => [R * sin(deg * PI / 180), R * cos(deg * PI / 180)], step = Array.from({ length: N }, (_, i2) => min(T - 1, Math.floor(rule((i2 + 0.5) * 360 / N) * T))), out = [null];
+  for (let k = 1; k < T; k++) {
+    if (!step.some((t) => t === k)) {
+      out.push(null);
+      continue;
+    }
+    const shape3 = new Path();
+    for (let i2 = 0; i2 < N; i2++) if (step[i2] >= k) {
+      let j = i2;
+      while (j + 1 < N && step[j + 1] >= k) j++;
+      const pts = [[0, 0]];
+      for (let m = i2; m <= j + 1; m++) pts.push(pt(m * 360 / N));
+      shape3.polygon(...pts);
+      i2 = j;
+    }
+    out.push(shape3);
+  }
+  return out;
+}
+var _polish = /* @__PURE__ */ new WeakMap();
+function polished_tones(S, path, ground) {
+  let cut = _polish.get(path);
+  if (!cut || cut.sun !== S.sh_from) {
+    const b = path.bounds();
+    if (!b) return [];
+    const R = Math.hypot(max(abs(b[0]), abs(b[2])), max(abs(b[1]), abs(b[3]))) * 1.02;
+    cut = { sun: S.sh_from, shapes: tone_fans(R, POLISH_SECTORS, POLISH_TONES, (at) => glint2(at, S.sh_from)).map((fan, k) => k ? fan && fan.intersection(path) : path) };
+    _polish.set(path, cut);
+  }
+  const dark = ground.slice(0, 3).map((v) => v * POLISH_DARK), light = ground.slice(0, 3).map((v) => v + (1 - v) * POLISH_LIGHT);
+  return cut.shapes.map((p, k) => p && !empty(p) ? [p, [0, 1, 2].map((c) => dark[c] + (light[c] - dark[c]) * k / (POLISH_TONES - 1)).concat(1)] : null).filter(Boolean);
+}
 var BEZEL_MARKS = ["Insert", "Metal"];
 var bezel_melted = (S) => !!(S.bz_on && S.bz_melt);
 var bezel_coin = (S) => S.bz_on && BEZEL_KINDS[S.bz_kind] === "Rotating" && !S.bz_melt ? max(0, +S.bz_teeth_depth || 0) : 0;
@@ -12964,7 +13019,7 @@ function scene(S, statik, t, preview = true, selected = null) {
     const ink = S.out_ink || "", of = (c) => !ink || ink_hex(c) === ink;
     for (const d of rings) {
       if (ring_surface(S, d.raw || d.ring) === 3) continue;
-      if (ring_engraved(S, d.raw || d.ring)) continue;
+      if (ring_engraved(S, d.raw || d.ring) || ring_polished(S, d.raw || d.ring)) continue;
       if (!ink || !d.tints) {
         if (of(d.ring.c) || d.tints && !ink) add("ring", d.path, black, { ring: d, index: index(d) });
       } else d.tints.forEach((tint, n) => {
@@ -13015,6 +13070,11 @@ function scene(S, statik, t, preview = true, selected = null) {
         const cut = dim(engraved_colour(S, d.raw || d.ring), face);
         add("ring", d.path, cut, { ring: d, index: index(d), engrave: true });
         if (d.stroke) add("ring stroke", d.stroke, cut, { ring: d, index: index(d), part: "stroke", engrave: true });
+        continue;
+      }
+      if (ring_polished(S, d.raw || d.ring)) {
+        const tones2 = preview ? polished_tones(S, d.path, ring_ground(S, d.raw || d.ring)) : [[d.path, [...ring_ground(S, d.raw || d.ring).slice(0, 3), 1]]];
+        tones2.forEach(([path, c], k) => add(k ? "glint" : "ring", path, dim(c, face), { ring: d, index: index(d), polished: true }));
         continue;
       }
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
@@ -13294,7 +13354,7 @@ var insert_picture = (i2) => {
 var STYLE_NAMES2 = STYLE_NAMES;
 var VIEW_NAMES = ["detail", "full", "dial"];
 var hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
-var PRINTED = (role) => !["plate", "finish", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);
+var PRINTED = (role) => !["plate", "finish", "glint", "cap", "hand", "mark", "date disc", "rehaut", "bezel", "bezel chamfer", "insert"].includes(role);
 var one = (x2, hand, H2, S) => {
   return { role: x2.role, hand, bevel: Boolean(H2 && x2.role === "hand" && H2.bevel && HAND_SHAPES[H2.shape] !== "disc"), dome: Boolean(H2 && BEVEL_LOOKS[H2.bevel_look] === "Domed"), hw: H2 ? Math.max((+H2.w || 1) / 2, 0.05) : 0, p: x2.path.svg(3), f: hex(ink_shown(S, x2)), a: +x2.fill[3], ink: PRINTED(x2.role) || x2.role === "mark" ? ink_mm(S, x2) / INK_STEP_MM : 0, metal: Boolean(x2.metal), soft: Boolean(x2.soft), fume: x2.fume || 0 };
 };
@@ -13834,6 +13894,7 @@ var num = (v, digits = 4) => {
 };
 var rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
 function item_name(item) {
+  if (item.polished) return "Polished";
   if (item.engrave) return "Engrave";
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");
   if (item.role === "ring stroke") return (item.ring.ring.name || item.ring.kind) + " stroke";
@@ -14683,8 +14744,6 @@ var DIAL_ROWS = [
   num2("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" }),
   col("c_plate", "Paint", { none: "paint" }),
   num2("plate_fume", "Fum\xE9 %", 0, 100, 1, { whole: true }),
-  seg("engrave", "Finish", FINISHES, { show: (T, S) => S.paint === false }),
-  // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
   // the plate's outline, a pane of its own in the pinned part (Okay, 14 Nov 2026, 19:48: "diameter, center hole and background have it's own eye, still under the persistent bit: call them shape")
   hdr("Shape", { pin: true, summary: (S, tool2) => [`diameter ${tool2.in_unit(S.dial_d, 1)}`, ...S.dial_hole > 0 ? [`hole ${tool2.in_unit(S.dial_hole, 1)}`] : []] }),
   num2("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),
@@ -14735,6 +14794,8 @@ var ROWS = {
     }),
     custom("ring_list", { scope: "global", pin: true }),
     custom("ring_line", { pin: true }),
+    // the ring's Finish, where its colour is chosen (Okay, 14 Nov 2026: "engrave instead of paint should live under each pieces ring, somehow instead of color"; "Colour row becomes a Finish row with Paint · Engrave · Polished"): painted, the swatch beside its name is its colour; cut in or polished, the swatch shows the ground's and no colour is asked
+    seg("finish", "Finish", FINISHES, { pin: true }),
     // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
     // a numerals ring opens with its font (Okay, 16 Oct 2026, #296: "Move fonts top of adjustments in rings that
     // involves fonts")
@@ -15199,7 +15260,6 @@ ROWS["Show dial"] = [
   seg("material", "Material", PLATE_METALS, { id: "show-material", free: true }),
   // free pills: four words are wider than the column
   col("c_plate", "Paint", { none: "paint", id: "show-paint" }),
-  seg("engrave", "Finish", FINISHES, { id: "show-engrave", show: (S) => S.paint === false }),
   hdr("Colours", { summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
   // not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
@@ -15343,8 +15403,6 @@ ROWS.Dial = [
     num2("rh_deg", "Angle \xB0", 0, 85, 1, { ...CS, whole: true, short: "Angle", show: (T, S) => S.rh_on }),
     num2("rh_len", "Length", 0.2, 8, 0.05, { ...CS, show: (T, S) => S.rh_on }),
     col("rh_c", "Colour", { ...CS, show: (T, S) => S.rh_on }),
-    seg("rh_engrave", "Finish", FINISHES, { show: (T, S) => S.rh_on }),
-    // its ring painted on or cut in (Okay, 11 Nov 2026)
     info((S) => `The wall leans ${S.rh_deg}\xB0 from upright, so in plan it reaches ${rehaut_w(S).toFixed(2)} mm out from the dial\u2019s edge and rises ${rehaut_h(S).toFixed(2)} mm. Rings go on it: a ring\u2019s Surface, in Rings.`, { show: (T, S) => S.rh_on })
   ]),
   ...on_tab(2)([
@@ -15361,8 +15419,6 @@ ROWS.Dial = [
     seg("bz_marks", "Markings", BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 && !bezel_melted(S) }),
     chk("bz_melt", "Melt into case", { show: (T, S) => S.bz_on && (bezel_melted(S) || !bezel_coin(S)) }),
     // #599: one piece with the body, the case's own metal
-    seg("bz_engrave", "Finish", FINISHES, { show: (T, S) => bezel_marks_on_metal(S) }),
-    // markings on the metal painted on or cut in (Okay, 11 Nov 2026)
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num2("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
     num2("bz_h", "Height", 0.3, 6, 0.05, { ...CS, show: (T, S) => S.bz_on }),
@@ -21284,7 +21340,9 @@ var RINGS = {
     const colour = this.colour_pill("ring-c-Colour", "");
     colour.classList.add("bare");
     colour.dataset.tip = colour.ariaLabel = "Colour";
-    colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
+    colour.onclick = () => {
+      if (ring_finish(this.S, this.ring()) === "Paint") this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
+    };
     const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size, false);
     const radius = this.value_button("ring-r", () => radius_row(this.ring()), VALUE_PICS.radius, false);
     wrap.append(details, colour, size.el, radius.el);
@@ -21301,7 +21359,12 @@ var RINGS = {
         details.replaceChildren(...lines.map((line) => el("span", { className: "line" }, ...line.flatMap(([name, value], k) => [...k ? [" \xB7 "] : [], el("span", { className: "k", textContent: `${name}: ` }), value]))));
         details.title = lines.map((line) => line.map(([n, v]) => `${n}: ${v}`).join(" \xB7 ")).join("\n");
       }
-      colour.show(R.c);
+      colour.show(ring_shown_colour(this.S, R));
+      {
+        const f2 = ring_finish(this.S, R);
+        colour.dataset.tip = colour.ariaLabel = f2 === "Paint" ? "Colour" : f2 === "Engrave" ? "Engraved: its ground\u2019s colour, in shadow" : "Polished: its ground\u2019s metal";
+        colour.classList.toggle("fixed", f2 !== "Paint");
+      }
       size.refresh();
       radius.refresh();
     };
@@ -21376,7 +21439,7 @@ var RINGS = {
         const said = this.ring_summary(ring), f2 = li.querySelectorAll(".fig"), dot = li.querySelector(".rowswatch .dot");
         if (f2[0] && f2[0].textContent !== said.size) f2[0].textContent = said.size;
         if (f2[1] && f2[1].textContent !== said.r) f2[1].textContent = said.r;
-        if (dot) paint(dot, ring.c);
+        if (dot) paint(dot, ring_shown_colour(this.S, ring));
       }
       if (!ring || !k2 || k2.dataset.kind === String(ring.kind)) return;
       k2.dataset.kind = String(ring.kind);
@@ -21429,7 +21492,7 @@ var RINGS = {
       const says = this.ring_summary(ring);
       const figs = [el("span", { className: "fig size", ...selected ? { id: "ring-size-fig" } : {}, textContent: says.size }), el("span", { className: "fig r", ...selected ? { id: "ring-r-fig" } : {}, textContent: says.r })];
       const swatch = selected ? [] : [el("span", { className: "colour bare rowswatch", ariaHidden: "true" }, el("i", { className: "dot" }))];
-      if (swatch.length) paint(swatch[0].firstChild, ring.c);
+      if (swatch.length) paint(swatch[0].firstChild, ring_shown_colour(this.S, ring));
       const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...swatch, ...figs);
       item.dataset.i = i2;
       item.setAttribute("role", "option");
