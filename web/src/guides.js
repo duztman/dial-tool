@@ -392,7 +392,8 @@ export const GUIDES = {
       const first = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide"), before = first >= 0 ? nodes[first] : null, metal = [...G.case_metal(S).slice(0, 3), 1];
       const wall = (name, outline, dz) => { const s = surface(name, before, outline, 999); s.cast(field(edge), 0, dz, metal); s.g.lastElementChild.setAttribute("fill-rule", "evenodd"); return s; };      // from_z 999: no hand's shadow is cast again here (the plate's surface has them)
       if (z > 0) wall("case-on-dial", [[circle(R), 0]], z);
-      if (S.rh_on && zb > rh) { const s = wall("case-on-rehaut", [[circle(edge) + circle(R), 0]], zb - rh / 2); shade.parts.get("case-on-rehaut/clip/0").setAttribute("clip-rule", "evenodd"); }
+      if (S.rh_on && S.bz_on) { const s = wall("case-on-rehaut", [[circle(edge) + circle(R), 0]], z - rh / 2);      // a bezel stands on the rehaut: its edge is never under the rehaut's own top, so the shadow shortens with Height and stays (Okay, 14 Nov 2026, 19:48: "under 1.95 here, the bezels shadow disappears")
+        shade.parts.get("case-on-rehaut/clip/0").setAttribute("clip-rule", "evenodd"); }
     }
     // each hand catches the hands above it
     const after = (i) => { let n = i + 1; while ((items[n]?.role === "mark" || items[n]?.role === "lume") && items[n].name === items[i].name) n++; return n; };      // past a disc's painted mark, which catches the shadow too (#300)

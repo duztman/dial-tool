@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## v1.1.93 beta · 14 Nov 2026 — a Shape pane; the bezel's shadow on the rehaut at every Height; the sunburst blurred in its own colours
+
+Okay, 14 Nov 2026, 19:48: "under 1.95 here, the bezels shadow disappears." "diameter, center hole and background have it's own eye, still under the persistent bit: call them shape." "visually, blurred sunburst can get lots of unnecessary colors, (shifts to gray?) make the color science visually accurate, low cost for cpu."
+
+- **The bezel's shadow on the rehaut** (`guides.js`) was drawn only while the bezel's top stood over the rehaut's own top: seat 0.30 + Height − dial over band 0.70 against the rehaut's rise 1.505 on his dial, so it went out under Height 1.905. A bezel stands on the rehaut, so its edge is never under the rehaut's top: the shadow shortens with Height down to that and stays. Measured on his numbers: 1.639 mm at 2.30, 1.139 at 1.95, 1.075 at 1.90 and under.
+- **Shape**, a second pinned pane under Material with its own eye: Diameter · Scale everything with it · Centre hole · Background. Folded it says the diameter and, where set, the hole. Material's folded line says its paint, sunburst and fumé.
+- **The sunburst's blur** (`#finish-soft`, show mode's `#fnsoft`) works in sRGB, the colours its tones are stepped in: between two tones lies the tone between them. Blurred in linear light, as a filter is unless told, the meeting of a dark and a light tone came out paler and greyer than either step, and a dark plate's tones lost their steps to rounding. The filter works on the plate's own box (the dial's radius + 1 mm), not 600 mm square, eleven times a frame.
+- `window.mjs`: the four panes; the shadow on the rehaut at four Heights.
+
 ## v1.1.92 beta · 14 Nov 2026 — show mode's bezel one part, one pair of crescents; Weight % under the colours
 
 Okay, 14 Nov 2026, 19:29: "Now debugging, shadows and case corners have thinned out and somehow gets partial repeats. the outline somehow doubled on artisan. Dial: From under base, move weight to under colors."

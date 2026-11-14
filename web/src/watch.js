@@ -293,7 +293,7 @@ const metalSheen = (x, L, r) => { const id = "mt" + (INK_N++), ux = Math.cos(rad
 /** a fumé (geometry.js FUME_STOPS): black, see-through at the centre, darker to the rim — one radial gradient over the plate */
 const FUME_STOPS = [[0, 0], [0.65, 0.45], [1, 0.84]], FINISH_SOFT = 0.2;      // as geometry.js: the two files draw one thing
 const fumeFill = (x, r) => { const id = "fm" + (INK_N++); CLIPS.push(`<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="${f(r)}">${FUME_STOPS.map(([at, dark]) => `<stop offset="${at}" stop-color="#000" stop-opacity="${f(dark * x.fume)}"/>`).join("")}</radialGradient>`); return `url(#${id})`; };
-const FINISH_SOFT_DEF = `<filter id="fnsoft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600"><feGaussianBlur stdDeviation="${FINISH_SOFT}"/></filter>`;
+const finishSoftDef = (r) => `<filter id="fnsoft" filterUnits="userSpaceOnUse" x="${f(-r)}" y="${f(-r)}" width="${f(2 * r)}" height="${f(2 * r)}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${FINISH_SOFT}"/></filter>`;      // on the dial's own box, in the colours the tones are stepped in (geometry.js plate_finish)
 function dialSVG(C, v, L) {
   const D = DIALS[0], s = (C.dial - (C.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
   const col = (x) => (x.fume ? fumeFill(x, D.d / 2) : x.metal ? metalSheen(x, L, D.d / 2) : clampL(x.f));      // every colour's lightness kept between 15 and 85 %; a bare metal plate its sheen
@@ -779,7 +779,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}"${soft_edge()}>` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
   OUTL_C = []; OUTT = OUTL_C; const caseStr = caseSVG(C, v, L);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
-<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF + FINISH_SOFT_DEF : ""}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath><clipPath id="glass-${key}"><path d="${circle(C.glassR ?? C.opening)}"/></clipPath>${TEXTURES}</defs>
+<defs>${"__CLIPS__"}${SOFT ? SOFT_DEF + finishSoftDef((C.dial ?? 60) / 2 + 1) : ""}<clipPath id="dial-${key}"><path d="${circle(C.opening)}"/></clipPath><clipPath id="glass-${key}"><path d="${circle(C.glassR ?? C.opening)}"/></clipPath>${TEXTURES}</defs>
 <defs><radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="${open ? 240 : 52}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#c4beb1"/><stop offset="0.55" stop-color="#b3ad9f"/><stop offset="1" stop-color="#8d877c"/></radialGradient></defs>
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}

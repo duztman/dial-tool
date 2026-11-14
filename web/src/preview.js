@@ -432,13 +432,13 @@ export const PREVIEW = {
       const defs = svg_el("defs"), g = svg_el("radialGradient"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur"), clip = svg_el("clipPath"), cut = svg_el("path");
       g.id = "plate-fume"; g.setAttribute("gradientUnits", "userSpaceOnUse"); g.setAttribute("cx", 0); g.setAttribute("cy", 0);
       for (const [at] of G.FUME_STOPS) { const stop = svg_el("stop"); stop.setAttribute("offset", at); stop.setAttribute("stop-color", "#000"); g.append(stop); }
-      filter.id = "finish-soft"; filter.setAttribute("filterUnits", "userSpaceOnUse"); for (const [k, v] of [["x", -300], ["y", -300], ["width", 600], ["height", 600]]) filter.setAttribute(k, v);
-      blur.setAttribute("stdDeviation", G.FINISH_SOFT); filter.append(blur);
+      filter.id = "finish-soft"; filter.setAttribute("filterUnits", "userSpaceOnUse");
+      blur.setAttribute("stdDeviation", G.FINISH_SOFT); filter.setAttribute("color-interpolation-filters", "sRGB"); filter.append(blur);      // blurred in the colours the tones are stepped in: between two tones lies the tone between them, not a paler, greyer one (Okay, 14 Nov 2026, 19:48: "blurred sunburst can get lots of unnecessary colors, (shifts to gray?)")
       clip.id = "finish-clip"; clip.append(cut);
       defs.append(g, filter, clip); this.dial.prepend(defs); this.finish_defs = defs; this.finish_grad = g; this.finish_cut = cut; this.finish_key = null;
     }
     const plate = items.find((x) => x.role === "plate"), key = [S.dial_d, fume ? fume.fume : 0].join();
-    if (key !== this.finish_key) { this.finish_key = key; this.finish_grad.setAttribute("r", (S.dial_d / 2).toFixed(3)); G.FUME_STOPS.forEach(([, dark], i) => this.finish_grad.children[i].setAttribute("stop-opacity", (dark * (fume ? fume.fume : 0)).toFixed(3))); }
+    if (key !== this.finish_key) { this.finish_key = key; this.finish_grad.setAttribute("r", (S.dial_d / 2).toFixed(3)); { const box = S.dial_d / 2 + 1 /* the blur works on the plate's own box, no wider */, f = this.finish_defs.querySelector("#finish-soft"); for (const [k, v] of [["x", -box], ["y", -box], ["width", 2 * box], ["height", 2 * box]]) f.setAttribute(k, v); } G.FUME_STOPS.forEach(([, dark], i) => this.finish_grad.children[i].setAttribute("stop-opacity", (dark * (fume ? fume.fume : 0)).toFixed(3))); }
     if (plate && this.finish_plate !== plate.path) { this.finish_plate = plate.path; this.finish_cut.setAttribute("d", plate.path.svg(4)); }
     return Boolean(S.sh_blur) && !(this.moving && this.moving());
   },

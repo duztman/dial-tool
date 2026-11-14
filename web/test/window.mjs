@@ -891,7 +891,7 @@ for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC3
 await shot("4c4-guides-dark");
 await backdrop_hex("#CCCCC7");
 // the Dial section: Dial (diameter, plate, background), then Colours and Reset; no Page pane (margin and backdrop are the Settings box's) and no Guides pane
-check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Material"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has three panes (Reset last since 4.41.25): Dial stays in view, Colours scrolls under it; no Page pane (Okay, 10 Nov 2026: 'Page margin and color move under settings from dial'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
+check(JSON.stringify(await page.$$eval(".pinned .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Material","Shape"]' && JSON.stringify(await page.$$eval(".form .pane:not([hidden]) h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-note") && !(await page.$("#background-add")), "Dial has four panes — Material and Shape pinned (Okay, 14 Nov 2026: diameter, center hole and background … still under the persistent bit: call them shape), Colours and Reset scrolling under them; Colours scrolls under it; no Page pane (Okay, 10 Nov 2026: 'Page margin and color move under settings from dial'); Background is a place made ready for an SVG, a note and no button (#530, #218)");
 // Settings (#554; Okay, 31 Oct 2026, 01:49: "a settings icon. In place of mm … Inside two settings: unit … Colors";
 // approved 02:24): a cog at the panel's top right, never boxed; pressed, a box with Unit and Colours. Lengths are shown
 // and typed in the unit, kept in mm (R1)
@@ -1012,11 +1012,11 @@ const row_line = await page.$eval(".form .colourlist .row", (e) => getComputedSt
 check(row_line.split("rgb(255, 255, 255)").length === 3, "every row has a white hairline before and after it, on the grey");
 const half_line = await page.$eval(".row:has(+ .row.nest)", (e) => { const c = getComputedStyle(e); return [c.boxShadow.split("rgb").length - 1, c.backgroundSize, c.backgroundPosition, e.querySelector("label").textContent]; });
 check(half_line[0] === 1 && half_line[1].startsWith("calc(66.6667% - 4px)") && half_line[2] === "100% 100%" && half_line[3] === "Diameter", "before a nested row stands a half line, from the controls' column to the right edge: Diameter draws it, over Scale everything with it");
-await page.click('.pinned .fold:has-text("Material")', { position: { x: 60, y: 12 } });      // on its word: the plate's pill stands on the heading's middle (#533)
+await page.click('.pinned .fold:has-text("Shape")', { position: { x: 60, y: 12 } });      // on its word: the plate's pill stands on the heading's middle (#533)
 check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible(".form .colourlist .row"), "a heading folds its own group only");
-check((await page.textContent('.pinned .fold:has-text("Material") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
-await page.click('.pinned .fold:has-text("Material") .eye');
-check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.pinned .fold:has-text("Material") .summary')) === "", "its eye opens it again, and the summary goes");
+check((await page.textContent('.pinned .fold:has-text("Shape") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
+await page.click('.pinned .fold:has-text("Shape") .eye');
+check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.pinned .fold:has-text("Shape") .summary')) === "", "its eye opens it again, and the summary goes");
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
 await tab("Rings");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
@@ -3734,6 +3734,15 @@ await touch.close();
     return { one, two, none, want: +(1 / Math.tan(Math.min(89, Math.max(20, S.sh_rise)) * Math.PI / 180)).toFixed(3) }; });
   check(r.one !== null && Math.abs(r.one - r.want) < 0.002 && Math.abs(r.two - 2 * r.want) < 0.004 && r.none === null,
     `the case's wall shades the dial in the edit view: a bezel 1 mm over the face throws its shadow ${r.one} mm (1 / tan of the light's height = ${r.want}), 2 mm ${r.two}; none with the bezel off (${r.none}) (Okay, 11 Nov 2026: "Bezel and rehault needs shadows in dial tool main to gauge the height there")`);
+}
+{ // a bezel's shadow on the rehaut stays at any Height (Okay, 14 Nov 2026, 19:48: "under 1.95 here, the bezels shadow disappears")
+  const r = await page.evaluate(async () => { const t = window.dial_tool, S = t.S, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok))), keys = ["bz_on", "bz_h", "bz_seat", "bz_dial_up", "rh_on", "rh_deg", "rh_len", "sh_on"], was = keys.map((k) => S[k]);
+    const shift = () => { const p = document.querySelector('g[clip-path="url(#shadow-clip-case-on-rehaut)"] path'); if (!p || !p.isConnected) return null; const m = /translate\((-?[\d.]+) (-?[\d.]+)\)/.exec(p.getAttribute("transform") || ""); return m ? +Math.hypot(+m[1], +m[2]).toFixed(3) : null; };
+    Object.assign(S, { sh_on: true, rh_on: true, rh_deg: 58, rh_len: 2.84, bz_on: true, bz_seat: 0.3, bz_dial_up: 0.7 }); const out = {};
+    for (const h of [2.3, 1.95, 1.9, 1.2]) { S.bz_h = h; t.changed(true); await tick(); out[h] = shift(); }
+    keys.forEach((k, i) => { S[k] = was[i]; }); t.changed(true); await tick(); return out; });
+  check(r[2.3] > r[1.95] && r[1.95] > 0 && r[1.9] > 0 && Math.abs(r[1.9] - r[1.2]) < 0.002 && r[1.95] - r[1.9] < 0.08,
+    `a bezel's shadow lies on the rehaut at every Height: ${r[2.3]} mm at 2.30, ${r[1.95]} at 1.95, ${r[1.9]} at 1.90 and ${r[1.2]} at 1.20 — it shortens to the rehaut's own top and stays (Okay, 14 Nov 2026: "under 1.95 here, the bezels shadow disappears")`);
 }
 { // a list that opens is whole and on top (v1.1.77; Okay, 11 Nov 2026: "dropdowns behind ui elements"): the languages' list hangs on the window, not in the panel's scrolling list (the bar lay over its end); a menu's list at the window's right edge (the canvas's Case) stays inside it
   const whole = (q) => page.evaluate((q) => { const l = document.querySelector(q); if (!l || l.hidden) return "not open"; const b = l.getBoundingClientRect(), out = [];

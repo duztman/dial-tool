@@ -165,7 +165,7 @@ const DIAL_ROWS = [
     // Okay, 13 Oct 2026: Dial stays in view (pinned); the list of colours scrolls under it. The page around the dial (margin, backdrop) is the Settings box's (Okay, 10 Nov 2026: "Page margin and color move under settings from dial").
     // the plate is the BASE tab's (Okay, 11 Nov 2026, his marks on the Dial tab: "Dial" → "Base", the pane "Dial" → "Material",
     // "+ Metals"; "color gets a new line called paint"): its material on the heading line, its paint a line of its own
-    hdr("Material", { pin: true, summary: (S, tool) => [{ c: S.c_plate }, `diameter ${tool.in_unit(S.dial_d, 1)}`, ...(G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? ["sunburst"] : []), ...(S.plate_fume > 0 ? [`fumé ${Math.round(S.plate_fume)}`] : [])] }),                // the plate: what it is made of, how big, what is on it
+    hdr("Material", { pin: true, summary: (S, tool) => [{ c: S.c_plate }, ...(G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? ["sunburst"] : []), ...(S.plate_fume > 0 ? [`fumé ${Math.round(S.plate_fume)}`] : [])] }),                // the plate: what it is made of, how big, what is on it
     seg("material", "Material", G.PLATE_METALS, { head: true }),      // the bare metal: seen when Paint is No colour, with a sheen that follows the sun
     // the metal's surface, then the paint over it (Okay, 14 Nov 2026, 19:07: "Surface finish moves up after the material, before paint,
     // which can get transparency already"): Flat or the research's Sunburst, its Sheen while it is one; under the paint its Fumé
@@ -174,6 +174,8 @@ const DIAL_ROWS = [
     col("c_plate", "Paint", { none: "paint" }),
     num("plate_fume", "Fumé %", 0, 100, 1, { whole: true }),
     seg("engrave", "Finish", G.FINISHES, { show: (T, S) => S.paint === false }),      // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
+    // the plate's outline, a pane of its own in the pinned part (Okay, 14 Nov 2026, 19:48: "diameter, center hole and background have it's own eye, still under the persistent bit: call them shape")
+    hdr("Shape", { pin: true, summary: (S, tool) => [`diameter ${tool.in_unit(S.dial_d, 1)}`, ...(S.dial_hole > 0 ? [`hole ${tool.in_unit(S.dial_hole, 1)}`] : [])] }),
     num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
     chk("ui_scale", "Scale everything with it", { nest: true }),
     num("dial_hole", "Centre hole", 0, 6, 0.1),      // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
