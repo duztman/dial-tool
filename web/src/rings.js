@@ -295,7 +295,7 @@ export const RINGS = {
     const colour = this.colour_pill("ring-c-Colour", "");
     colour.classList.add("bare");                  // the swatch alone: no hex
     colour.dataset.tip = colour.ariaLabel = "Colour";
-    colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
+    colour.onclick = () => { if (G.ring_finish(this.S, this.ring()) === "Paint") this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour); };      // a paint has a colour to choose; a cut and a polish show their ground's
     const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size, false);
     const radius = this.value_button("ring-r", () => radius_row(this.ring()), VALUE_PICS.radius, false);
     wrap.append(details, colour, size.el, radius.el);
@@ -310,7 +310,7 @@ export const RINGS = {
           [...(k ? [" · "] : []), el("span", { className: "k", textContent: `${name}: ` }), value]))));
         details.title = lines.map((line) => line.map(([n, v]) => `${n}: ${v}`).join(" · ")).join("\n");
       }
-      colour.show(R.c);
+      colour.show(G.ring_shown_colour(this.S, R)); { const f = G.ring_finish(this.S, R); colour.dataset.tip = colour.ariaLabel = f === "Paint" ? "Colour" : f === "Engrave" ? "Engraved: its ground’s colour, in shadow" : "Polished: its ground’s metal"; colour.classList.toggle("fixed", f !== "Paint"); }
       size.refresh();
       radius.refresh();
     };
@@ -379,7 +379,7 @@ export const RINGS = {
         const said = this.ring_summary(ring), f = li.querySelectorAll(".fig"), dot = li.querySelector(".rowswatch .dot");
         if (f[0] && f[0].textContent !== said.size) f[0].textContent = said.size;
         if (f[1] && f[1].textContent !== said.r) f[1].textContent = said.r;
-        if (dot) paint(dot, ring.c);
+        if (dot) paint(dot, G.ring_shown_colour(this.S, ring));
       }
       if (!ring || !k || k.dataset.kind === String(ring.kind)) return;
       k.dataset.kind = String(ring.kind); k.innerHTML = PICS.kind(ring.kind, KIND_PIC); k.title = G.kind_of(ring);
@@ -426,7 +426,7 @@ export const RINGS = {
       const says = this.ring_summary(ring);
       const figs = [el("span", { className: "fig size", ...(selected ? { id: "ring-size-fig" } : {}), textContent: says.size }), el("span", { className: "fig r", ...(selected ? { id: "ring-r-fig" } : {}), textContent: says.r })];
       const swatch = selected ? [] : [el("span", { className: "colour bare rowswatch", ariaHidden: "true" }, el("i", { className: "dot" }))];
-      if (swatch.length) paint(swatch[0].firstChild, ring.c);
+      if (swatch.length) paint(swatch[0].firstChild, G.ring_shown_colour(this.S, ring));
       const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...swatch, ...figs);
       item.dataset.i = i;      // the ring's place in S.rings (the list may hold another surface's rings out)
       // a row is a choice in a list, reached with Tab and taken with Enter or Space (#244, 4.47.2: rows had no role and no way in from the keyboard)

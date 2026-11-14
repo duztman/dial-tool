@@ -132,15 +132,20 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
 // rings with Finish Engrave are cut in — the metal's colour in shadow, one layer Engrave in the SVG and the PDF, in no ink film, made
 // "engraved" in the parts record; the rehaut's ring and the bezel's markings on its metal the same, an insert's never
 { const O = await import("../src/output.js"), SHOW = await import("../src/show.js"), { OPENER } = await import("../src/opener.js");
-  const S = G.fresh_settings(OPENER); S.paint = false; S.engrave = 1; const st = G.build_static(S), items = G.scene(S, st, 0, false, null);
+  const S = G.fresh_settings(OPENER); S.paint = false; S.rings.forEach((r) => { r.finish = 1; }); const st = G.build_static(S), items = G.scene(S, st, 0, false, null);
   const cut = items.filter((x) => x.engrave), rings = items.filter((x) => x.role === "ring"), svg = O.svg_document(S, st, 0, { facts: SHOW.svg_facts(S) });
   const pdf = new TextDecoder("latin1").decode(O.pdf_document(S, st, 0)), engraveOCG = (pdf.match(/\/Name <FEFF0045006E00670072006100760065>/g) || []).length;
   S.out_production = true; const film = G.scene(S, st, 0, false, null).filter((x) => x.role === "ring").length; S.out_production = false;
-  const painted = G.scene(Object.assign(G.fresh_settings(OPENER), { paint: false }), st, 0, false, null).filter((x) => x.engrave).length;
-  const rb = G.fresh_settings({ rh_on: true, rh_engrave: 1, bz_on: true, bz_kind: 0, bz_marks: 0, bz_engrave: 1, rings: [{ ...G.RING_BASE, kind: 1, surface: 1 }, { ...G.RING_BASE, kind: 1, surface: 2 }] });
-  const on = (T) => [G.ring_engraved(T, T.rings[0]), G.ring_engraved(T, T.rings[1])].join(); const insert = on(rb); rb.bz_marks = 1; const metal = on(rb);
-  check(cut.length === rings.length && cut.length > 0 && cut.every((x) => x.fill[0] < 0.5) && (svg.match(/<g id="engrave">/g) || []).length === 1 && (svg.match(/data-make="engraved"/g) || []).length === cut.length && engraveOCG === 1 && film === 0 && painted === 0 && insert === "true,false" && metal === "true,true",
-    `Engrave: a bare plate's ${rings.length} rings cut in (${cut.length}), the metal's colour in shadow; one Engrave group in the SVG, one Engrave layer in the PDF (${engraveOCG}), in no film (${film}); Paint keeps them painted (${painted}); the rehaut's ring and the bezel's on an insert ${insert}, on its metal ${metal} (Okay: "engravings instead of paint on metal, needs a switch")`);
+  const bare = Object.assign(G.fresh_settings(OPENER), { paint: false }), painted = G.scene(bare, G.build_static(bare), 0, false, null).filter((x) => x.engrave).length;
+  const old = (marks) => G.fresh_settings({ paint: false, engrave: 1, rh_on: true, rh_engrave: 1, bz_on: true, bz_kind: 0, bz_marks: marks, bz_engrave: 1, rings: [{ kind: 1 }, { kind: 1, surface: 1 }, { kind: 1, surface: 2 }, { kind: 1, finish: 0 }] });
+  const on = (T) => T.rings.map((r) => +G.ring_engraved(T, r)).join("") + (T.engrave + T.rh_engrave + T.bz_engrave); const insert = on(old(0)), metal = on(old(1));
+  const pol = G.fresh_settings({ sh_from: 0, rings: [{ kind: 1, count: 12, finish: 2 }] }), pst = G.build_static(pol), seen = G.scene(pol, pst, 0, true, null), filed = G.scene(pol, pst, 0, false, null), lum = (x) => x.fill[0] + x.fill[1] + x.fill[2];
+  const glints = seen.filter((x) => x.role === "glint"), base = seen.find((x) => x.role === "ring"), top = glints[glints.length - 1], at = (x, deg) => !G.empty(x.path.intersection(G.circle(1.2).translate(pol.rings[0].r * Math.sin(deg * Math.PI / 180), pol.rings[0].r * Math.cos(deg * Math.PI / 180)).translate(0, 0)));
+  pol.out_production = true; const pfilm = G.scene(pol, pst, 0, false, null).filter((x) => x.role === "ring").length; pol.out_production = false;
+  check(base.polished && glints.length >= 3 && lum(top) > lum(base) * 3 && filed.filter((x) => x.role === "glint").length === 0 && filed.filter((x) => x.polished).length === 1 && pfilm === 0 && Math.abs(G.glint(0, 0) - 1) < 1e-9 && G.glint(90, 0) < 1e-9 && Math.abs(G.glint(180, 0) - 1) < 1e-9,
+    `Polished, a glint by angle (Okay, 14 Nov 2026: "B on the polished"): a ring of its ground's metal, dark, with ${glints.length} lighter tones over it in the views — full on the sun's line (${G.glint(0, 0)}), none a quarter turn off (${G.glint(90, 0).toFixed(2)}); one shape in a file, its layer Polished; in no film (${pfilm})`);
+  check(cut.length === rings.length && cut.length > 0 && cut.every((x) => x.fill[0] < 0.5) && (svg.match(/<g id="engrave">/g) || []).length === 1 && (svg.match(/data-make="engraved"/g) || []).length === cut.length && engraveOCG === 1 && film === 0 && painted === 0 && insert === "11000" && metal === "11100",
+    `Engrave: a bare plate's ${rings.length} rings cut in (${cut.length}), the metal's colour in shadow; one Engrave group in the SVG, one Engrave layer in the PDF (${engraveOCG}), in no film (${film}); Paint keeps them painted (${painted}); Finish is the ring's own (Okay, 14 Nov 2026: "should live under each pieces ring"): an older dial's surfaces are read into its rings and spent — plate · rehaut · bezel on an insert · a ring that says Paint, then the switches' sum ${insert}; on the bezel's metal ${metal}`);
 }
 // what is engraved, one outline a surface, in the saved SVG (cut_unions): overlapping markings joined, held inside the face's edge
 {

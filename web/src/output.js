@@ -16,6 +16,7 @@ export const rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Mat
 
 /** what a scene item is called in a file: a layer in the PDF, an id in the SVG. */
 function item_name(item) {
+  if (item.polished) return "Polished";      // polished metal, not printed: one layer for the mask
   if (item.engrave) return "Engrave";      // cut in, not printed (Finish Engrave, Okay, 11 Nov 2026): one layer for the laser or the etch
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");      // a band with sector colours is one shape per colour
   if (item.role === "ring stroke") return (item.ring.ring.name || item.ring.kind) + " stroke";      // the outline round a ring's letters (#551)

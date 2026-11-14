@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.94 beta · 14 Nov 2026 — Finish each ring's own: Paint · Engrave · Polished
+
+Okay, 14 Nov 2026, 20:17: "Colour row becomes a Finish row with Paint · Engrave · Polished. B on the polished." 19:48: "engrave instead of paint should live under each pieces ring, somehow instead of color." "Also add "polished" to that list as well."
+
+- **Finish is a ring's own** (`finish` on the ring, a place in `FINISHES`; #603): the row **Finish** — Paint · Engrave · Polished — stands pinned under the chosen ring's line, where its colour is; on the Rehaut and Bezel tabs and a disc hand's ring too, which use the same rows. Painted, the swatch beside the ring's name is its colour and opens the colours; cut in or polished it shows the ground's colour and opens nothing. The list's swatches say the same.
+- **The surface's switches are gone** from the Base, Rehaut and Bezel tabs and show mode's Dial tab. A dial from before is read once (`fresh_settings`): each ring takes what its surface said (`engrave`, `rh_engrave`, `bz_engrave`), then the three are zero. A band painted and grooves cut over it are now two rings with two finishes.
+- **Engrave on any ground**: a painted plate (the cut shows the metal under the paint), an insert (the insert's colour in shadow).
+- **Polished, a glint by angle** (#610, `polished_tones`): the ring in its ground's metal a quarter as light (`POLISH_DARK` 0.25), and over it up to seven lighter tones to that metal 85 % of the way to white (`POLISH_LIGHT`), by `|cos(angle − sun)|⁶` — full on the sun's line through the centre, none a quarter turn off. 120 sectors, 8 tones, the sectors of a tone one shape. The marks light in turn as the sun goes round, a quarter turn from where a sunburst's rays do. Both views; in a file one shape in a layer **Polished**; in no ink film. A drawing's convention made here, not a sourced one.
+- `labels.mjs`: an older dial's surfaces read into its rings; the glint's tones, its file shape, no film. `window.mjs`: the Finish row pinned on Rings, its three presses.
+
 ## v1.1.93 beta · 14 Nov 2026 — a Shape pane; the bezel's shadow on the rehaut at every Height; the sunburst blurred in its own colours
 
 Okay, 14 Nov 2026, 19:48: "under 1.95 here, the bezels shadow disappears." "diameter, center hole and background have it's own eye, still under the persistent bit: call them shape." "visually, blurred sunburst can get lots of unnecessary colors, (shifts to gray?) make the color science visually accurate, low cost for cpu."

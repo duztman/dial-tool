@@ -173,7 +173,6 @@ const DIAL_ROWS = [
     num("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" }),
     col("c_plate", "Paint", { none: "paint" }),
     num("plate_fume", "Fumé %", 0, 100, 1, { whole: true }),
-    seg("engrave", "Finish", G.FINISHES, { show: (T, S) => S.paint === false }),      // the bare plate's markings painted on or cut in (Okay, 11 Nov 2026: "engravings instead of paint on metal, needs a switch")      // the plate's colour; the pop-out's No colour leaves the metal bare (and unprinted in the files)
     // the plate's outline, a pane of its own in the pinned part (Okay, 14 Nov 2026, 19:48: "diameter, center hole and background have it's own eye, still under the persistent bit: call them shape")
     hdr("Shape", { pin: true, summary: (S, tool) => [`diameter ${tool.in_unit(S.dial_d, 1)}`, ...(S.dial_hole > 0 ? [`hole ${tool.in_unit(S.dial_hole, 1)}`] : [])] }),
     num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
@@ -212,6 +211,8 @@ export const ROWS = {
       summary: (S, tool) => { const R = S.rings[S.ui_ring]; return R ? [G.kind_of(R), { c: R.c }, `${label_of(radius_row(R), R).toLowerCase()} ${tool.in_unit(R.r, 2)}`] : []; } }),
     custom("ring_list", { scope: "global", pin: true }),
     custom("ring_line", { pin: true }),
+    // the ring's Finish, where its colour is chosen (Okay, 14 Nov 2026: "engrave instead of paint should live under each pieces ring, somehow instead of color"; "Colour row becomes a Finish row with Paint · Engrave · Polished"): painted, the swatch beside its name is its colour; cut in or polished, the swatch shows the ground's and no colour is asked
+    seg("finish", "Finish", G.FINISHES, { pin: true }),
     // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
     // a numerals ring opens with its font (Okay, 16 Oct 2026, #296: "Move fonts top of adjustments in rings that
     // involves fonts")
@@ -592,7 +593,6 @@ ROWS["Show dial"] = [
   hdr("Material", { id: "show-material-head" }),
   seg("material", "Material", G.PLATE_METALS, { id: "show-material", free: true }),      // free pills: four words are wider than the column
   col("c_plate", "Paint", { none: "paint", id: "show-paint" }),
-  seg("engrave", "Finish", G.FINISHES, { id: "show-engrave", show: (S) => S.paint === false }),
   hdr("Colours", { summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
   hdr("Inks", { folded: false }),
@@ -707,7 +707,6 @@ ROWS.Dial = [
     num("rh_deg", "Angle °", 0, 85, 1, { ...CS, whole: true, short: "Angle", show: (T, S) => S.rh_on }),
     num("rh_len", "Length", 0.2, 8, 0.05, { ...CS, show: (T, S) => S.rh_on }),
     col("rh_c", "Colour", { ...CS, show: (T, S) => S.rh_on }),
-    seg("rh_engrave", "Finish", G.FINISHES, { show: (T, S) => S.rh_on }),      // its ring painted on or cut in (Okay, 11 Nov 2026)
     info((S) => `The wall leans ${S.rh_deg}° from upright, so in plan it reaches ${G.rehaut_w(S).toFixed(2)} mm out from the dial’s edge and rises ${G.rehaut_h(S).toFixed(2)} mm. Rings go on it: a ring’s Surface, in Rings.`, { show: (T, S) => S.rh_on }),
   ]),
   ...on_tab(2)([
@@ -722,7 +721,6 @@ ROWS.Dial = [
     seg("bz_kind", "Kind", G.BEZEL_KINDS, { show: (T, S) => S.bz_on && !G.bezel_melted(S) }),
     seg("bz_marks", "Markings", G.BEZEL_MARKS, { show: (T, S) => S.bz_on && S.bz_kind === 0 && !G.bezel_melted(S) }),
     chk("bz_melt", "Melt into case", { show: (T, S) => S.bz_on && (G.bezel_melted(S) || !G.bezel_coin(S)) }),      // #599: one piece with the body, the case's own metal
-    seg("bz_engrave", "Finish", G.FINISHES, { show: (T, S) => G.bezel_marks_on_metal(S) }),      // markings on the metal painted on or cut in (Okay, 11 Nov 2026)
     custom("case_detail", { show: (T, S) => S.bz_on }),
     num("bz_w", "Width", 0.5, 10, 0.05, { ...CS, show: (T, S) => S.bz_on }),
     num("bz_h", "Height", 0.3, 6, 0.05, { ...CS, show: (T, S) => S.bz_on }),      // the ring's own height over its seat (Okay, 12 Nov 2026: "i could not find a bezel height")

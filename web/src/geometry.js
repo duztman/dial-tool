@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.93 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.94 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS, tones_of as WATCH_TONES } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -144,6 +144,7 @@ export const RING_BASE = {
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
   ink_d: 0,                                        // an older file's step of this ring's ink from w_ink (#521); read once, into w_inks, by fresh_settings (R8)
   stroke_b: false,                                 // show mode's Inks: its stroke's colour split into two inks, the stroke printed with ink B (as ink_b; not in the link)
+  finish: 0,                                       // FINISH, a place in FINISHES, the ring's own: painted, cut into its ground, or polished metal (Okay, 14 Nov 2026: "Colour row becomes a Finish row with Paint · Engrave · Polished")
   cut: 0,                                          // an engraved ring's cut, a place in CUT_SHAPES: V (the start) or Round (Okay, 12 Nov 2026: "Both shapes for every engraving item available, v is default"). A view that cuts for true reads it; the flat drawing does not
   ink_h: null, stroke_h: null,                     // show mode's Inks: this ring's own height, and its stroke's, mm — unlinked from its ink's (Okay, 3 Nov 2026, 02:11: "Share one height unless switched to separate heights"); null = the ink's. The file and the session, not the link
   ink_b: false,                                    // show mode's Inks (#545): with its colour split into two inks, this ring is printed with ink B; the file and the session, not the link (R7)
@@ -704,6 +705,12 @@ export function fresh_settings(over = null) {
   // middle all read as the middle, place 0 (R9: the list keeps them)
   for (const r of S.rings) if (![0, 3, 4].includes(+r.anchor)) r.anchor = 0;
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
+  // Finish is each ring's own (#603): a dial from before said it once a surface (engrave · rh_engrave · bz_engrave). Its rings take
+  // what their surface said, and the three are spent — read here and nowhere else (R8: the keys stay)
+  if (S.engrave || S.rh_engrave || S.bz_engrave) {
+    (over.rings || []).forEach((raw, i) => { const r = S.rings[i]; if (r && !(raw && "finish" in raw) && surface_engraved(S, r)) r.finish = FINISHES.indexOf("Engrave"); });
+    S.engrave = S.rh_engrave = S.bz_engrave = 0;
+  }
   // bevels from before a hand had its own tick: Bevels % above 0 drew them on every hand, so a hand that doesn't say gets one (a link
   // made since always says, lean())
   if ("sh_bevel" in over && +over.sh_bevel > 0) for (const h of FIXED_HANDS) { const raw = over["ha_" + h]; if (!raw || !("bevel" in raw)) S["ha_" + h] = { ...(S["ha_" + h] || {}), bevel: true }; }
@@ -812,6 +819,7 @@ export const LINK_KEYS = [
   "mark_deg",               // v1.1.85 beta: appended; read only by an Arc marker, which no older link has
   "sh_bezel", "sh_rehaut",  // v1.1.86 beta (#595): appended; the case's relief, a part
   "plate_surface", "plate_sheen", "plate_grain", "plate_fume",      // v1.1.88 beta (#607): appended; a flat plate with no fumé to start, as every older link
+  "finish",                 // v1.1.94 beta (#603): appended; a ring's own Finish, painted to start — an older link's engraved surface is read into its rings (fresh_settings)
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1713,13 +1721,55 @@ export const ring_surface = (S, ring) => (SURFACES[ring.surface] === "rehaut" &&
 const disc_span = (S, name) => { const r = max(S["ha_" + name].disc_d, 0.1) / 2; return [0.7 * r, r]; };
 /** how many rings stand on a surface now */
 export const rings_on = (S, n) => S.rings.filter((r) => ring_surface(S, r) === n).length;
-export const FINISHES = ["Paint", "Engrave"];      // how a marking on bare metal is made (Okay, 11 Nov 2026). R9: appended only
+export const FINISHES = ["Paint", "Engrave", "Polished"];      // how a ring is made on its ground: painted on, cut in, or metal polished to a mirror (Okay, 11 Nov 2026; 14 Nov 2026: "add \"polished\" to that list as well"). R9: appended only
 /** the bezel's markings lie on its metal: a fixed bezel's always, a rotating one's when Markings is Metal */
 export const bezel_marks_on_metal = (S) => S.bz_on && !bezel_insert(S);
-/** a ring cut into the metal it lies on, not painted: the bare plate's with Finish Engrave, the rehaut's, the bezel's on its metal */
-export const ring_engraved = (S, ring) => { const s = ring_surface(S, ring); return s === 0 ? S.paint === false && FINISHES[S.engrave] === "Engrave" : s === 1 ? FINISHES[S.rh_engrave] === "Engrave" : s === 2 ? bezel_marks_on_metal(S) && FINISHES[S.bz_engrave] === "Engrave" : false; };
+/** what a dial from before v1.1.94 said of a ring's finish, once a surface: read by fresh_settings alone */
+const surface_engraved = (S, ring) => { const s = ring_surface(S, ring); return s === 0 ? S.paint === false && FINISHES[S.engrave] === "Engrave" : s === 1 ? FINISHES[S.rh_engrave] === "Engrave" : s === 2 ? bezel_marks_on_metal(S) && FINISHES[S.bz_engrave] === "Engrave" : false; };
+/** a ring's Finish, its own (#603; Okay, 14 Nov 2026: "engrave instead of paint should live under each pieces ring, somehow instead of color"): a word of FINISHES */
+export const ring_finish = (S, ring) => FINISHES[ring?.finish] || "Paint";
+/** a ring cut into the ground it lies on, not painted */
+export const ring_engraved = (S, ring) => ring_finish(S, ring) === "Engrave";
+/** a ring of polished metal */
+export const ring_polished = (S, ring) => ring_finish(S, ring) === "Polished";
+/** the ground a ring lies on, as a colour: the plate's metal (under its paint), the rehaut, the bezel's insert or the case's metal */
+export const ring_ground = (S, ring) => { const s = ring_surface(S, ring); return s === 0 || s === 3 ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : s === 1 ? S.rh_c : bezel_insert(S) ? S.bz_insert_c : case_metal(S); };
 /** the colour an engraved ring shows: its ground's, in shadow — the cut's floor and walls, darker than the face round it */
-export const engraved_colour = (S, ring) => { const s = ring_surface(S, ring), g = s === 0 ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : s === 1 ? S.rh_c : case_metal(S); return [...g.slice(0, 3).map((v) => v * 0.55), 1]; };
+export const engraved_colour = (S, ring) => [...ring_ground(S, ring).slice(0, 3).map((v) => v * 0.55), 1];
+/** the colour a ring shows in a list: its paint, an engraving's shade, a polished part's metal */
+export const ring_shown_colour = (S, ring) => (ring_engraved(S, ring) ? engraved_colour(S, ring) : ring_polished(S, ring) ? [...ring_ground(S, ring).slice(0, 3), 1] : ring.c);
+/** POLISHED IN 2D (#610; Okay, 14 Nov 2026: "B on the polished" — a glint by angle): a mirror shows the sun only where it lies on
+ *  the sun's own line through the centre, toward it or away, and the dark of the room everywhere else — so the marks round a dial
+ *  light in turn as the sun goes round, a quarter turn from where a sunburst does (its grooves shine ACROSS the light). The glint
+ *  is |cos(angle − sun)|^POLISH_SHARP, stepped in POLISH_TONES tones from the ground's metal a quarter as light (POLISH_DARK) up
+ *  to that metal POLISH_LIGHT of the way to white. → [[path, colour]], darkest first: the whole shape, then every part at least
+ *  that light. This is a drawing's convention, made here; the 3D view shows a mirror for true. */
+export const POLISH_SHARP = 6, POLISH_TONES = 8, POLISH_SECTORS = 120, POLISH_DARK = 0.25, POLISH_LIGHT = 0.85;
+export const glint = (at, sun, sharp = POLISH_SHARP) => abs(cos((at - sun) * PI / 180)) ** sharp;
+/** fans of sectors by tone, about the centre: N sectors out to R, each given a tone 0 … T−1 by `rule(its middle angle)`; → T shapes,
+ *  [k] every sector of tone ≥ k as fans (null where no sector has just that tone, [0] null: the whole) */
+function tone_fans(R, N, T, rule) {
+  const pt = (deg) => [R * sin(deg * PI / 180), R * cos(deg * PI / 180)], step = Array.from({ length: N }, (_, i) => min(T - 1, Math.floor(rule((i + 0.5) * 360 / N) * T))), out = [null];
+  for (let k = 1; k < T; k++) {
+    if (!step.some((t) => t === k)) { out.push(null); continue; }
+    const shape = new Path();
+    for (let i = 0; i < N; i++) if (step[i] >= k) { let j = i; while (j + 1 < N && step[j + 1] >= k) j++; const pts = [[0, 0]]; for (let m = i; m <= j + 1; m++) pts.push(pt(m * 360 / N)); shape.polygon(...pts); i = j; }
+    out.push(shape);
+  }
+  return out;
+}
+const _polish = new WeakMap();
+export function polished_tones(S, path, ground) {
+  let cut = _polish.get(path);
+  if (!cut || cut.sun !== S.sh_from) {
+    const b = path.bounds(); if (!b) return [];
+    const R = Math.hypot(max(abs(b[0]), abs(b[2])), max(abs(b[1]), abs(b[3]))) * 1.02;
+    cut = { sun: S.sh_from, shapes: tone_fans(R, POLISH_SECTORS, POLISH_TONES, (at) => glint(at, S.sh_from)).map((fan, k) => (k ? fan && fan.intersection(path) : path)) };
+    _polish.set(path, cut);
+  }
+  const dark = ground.slice(0, 3).map((v) => v * POLISH_DARK), light = ground.slice(0, 3).map((v) => v + (1 - v) * POLISH_LIGHT);
+  return cut.shapes.map((p, k) => (p && !empty(p) ? [p, [0, 1, 2].map((c) => dark[c] + (light[c] - dark[c]) * k / (POLISH_TONES - 1)).concat(1)] : null)).filter(Boolean);
+}
 export const BEZEL_MARKS = ["Insert", "Metal"];      // where a rotating bezel's markings are: on an insert set in it, or on its metal (Okay, 11 Nov 2026: "for bezels, add markings on metal instead of inset ring"); a fixed bezel's are always on its metal. R9: appended only
 /** THE BEZEL'S THREE STATES, each read here and nowhere else (Okay, 12 Nov 2026: "Teethed bezels cant melt melted bezels cant teeth.
  *  Melted bezel loses inset ring if there is one. It is one and same with case material"):
@@ -2841,7 +2891,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
     const ink = S.out_ink || "", of = (c) => !ink || ink_hex(c) === ink;
     for (const d of rings) {
       if (ring_surface(S, d.raw || d.ring) === 3) continue;      // printed on a disc hand, not on the face
-      if (ring_engraved(S, d.raw || d.ring)) continue;      // cut in, not printed: in no film
+      if (ring_engraved(S, d.raw || d.ring) || ring_polished(S, d.raw || d.ring)) continue;      // cut in or polished metal, not printed: in no film
       if (!ink || !d.tints) { if (of(d.ring.c) || (d.tints && !ink)) add("ring", d.path, black, { ring: d, index: index(d) }); }
       else d.tints.forEach((tint, n) => { if (of(sector_colour(d.ring, tint.at))) add("ring", tint.path, black, { ring: d, index: index(d), part: n + 1 }); });
       if (d.stroke && of(d.ring.stroke_c)) add("ring stroke", d.stroke, black, { ring: d, index: index(d), part: "stroke" });
@@ -2896,6 +2946,10 @@ export function scene(S, statik, t, preview = true, selected = null) {
         const cut = dim(engraved_colour(S, d.raw || d.ring), face);
         add("ring", d.path, cut, { ring: d, index: index(d), engrave: true });
         if (d.stroke) add("ring stroke", d.stroke, cut, { ring: d, index: index(d), part: "stroke", engrave: true });
+        continue; }
+      if (ring_polished(S, d.raw || d.ring)) {      // polished metal: its ground's, darkest whole — the shape a file takes, a layer of its own — then, in the views, the glint's lighter tones over it
+        const tones = preview ? polished_tones(S, d.path, ring_ground(S, d.raw || d.ring)) : [[d.path, [...ring_ground(S, d.raw || d.ring).slice(0, 3), 1]]];
+        tones.forEach(([path, c], k) => add(k ? "glint" : "ring", path, dim(c, face), { ring: d, index: index(d), polished: true }));
         continue; }
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });

@@ -1230,13 +1230,16 @@ check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.cla
   const fin = await own.evaluate(async () => { const t = window.dial_tool, S = t.S, tick = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
     const seen = () => [...document.querySelectorAll(".row")].filter((x) => x.checkVisibility() && x.querySelector("label")?.textContent === "Finish").map((x) => [...x.querySelectorAll("button")].map((b) => b.textContent).join("·")).join("|");
     const tab = async (n) => { [...document.querySelectorAll(".tabs button")].find((b) => b.textContent.trim() === "Dial").click(); S.ui_dial_tab = n; t.show_section(); t.sync_rows(); await tick(); };
-    await tab(0); const painted = seen(); t.set_value("global", "paint", false); t.changed(true); t.show_section(); await tick(); const bare = seen();
-    await tab(1); t.set_value("global", "rh_on", true); t.changed(true); t.show_section(); await tick(); const rehaut = seen();
-    await tab(2); t.set_value("global", "bz_on", true); t.set_value("global", "bz_kind", 0); t.set_value("global", "bz_marks", 0); t.changed(true); t.show_section(); await tick(); const insert = seen();
-    t.set_value("global", "bz_marks", 1); t.changed(true); t.show_section(); await tick(); const metal = seen();
-    return { painted, bare, rehaut, insert, metal }; });
-  check(fin.painted === "" && fin.bare === "Paint·Engrave" && fin.rehaut === "Paint·Engrave" && fin.insert === "" && fin.metal === "Paint·Engrave",
-    `Finish Paint · Engrave: on the Base tab only once the plate is bare (${fin.painted || "none"} → ${fin.bare}); on the Rehaut tab (${fin.rehaut}); on the Bezel tab with its markings on the metal (insert: ${fin.insert || "none"}; metal: ${fin.metal}) (Okay: "needs a switch")`);
+    await tab(0); const base = seen(); t.set_value("global", "bz_on", true); t.set_value("global", "bz_kind", 1); t.changed(true); await tab(2); const bezel = seen();
+    [...document.querySelectorAll(".tabs button")].find((b) => b.textContent.trim() === "Rings").click(); await tick(); const rings = seen();
+    const row = [...document.querySelectorAll(".row")].find((x) => x.checkVisibility() && x.querySelector("label")?.textContent === "Finish"), press = async (word) => { [...row.querySelectorAll("button")].find((b) => b.textContent === word).click(); await tick(); };
+    const tones = () => t.items.filter((x) => x.role === "glint").length, cuts = () => t.items.filter((x) => x.engrave).length;
+    await press("Polished"); const polished = [t.ring().finish, tones() > 0, document.querySelector("#ring-c-Colour").classList.contains("fixed")].join();
+    await press("Engrave"); const engraved = [t.ring().finish, cuts() > 0, tones()].join();
+    await press("Paint"); const paint = [t.ring().finish, cuts(), tones(), document.querySelector("#ring-c-Colour").classList.contains("fixed")].join();
+    return { base, bezel, rings, pinned: Boolean(row.closest(".pinned")), polished, engraved, paint }; });
+  check(fin.base === "" && fin.rings === "Paint·Engrave·Polished" && fin.pinned && fin.polished === "2,true,true" && fin.engraved === "1,true,0" && fin.paint === "0,0,0,false",
+    `Finish is the ring's own, under its line where its colour is: ${fin.rings}, pinned; none on the Dial tab's Base (${fin.base || "none"}), the Bezel tab ${fin.bezel || "none"}; Polished draws its glint and holds the swatch (${fin.polished}), Engrave cuts (${fin.engraved}), Paint paints again (${fin.paint}) (Okay, 14 Nov 2026: "Colour row becomes a Finish row with Paint · Engrave · Polished")`);
   await own.close(); }
 // A RING ON A DISC HAND (Okay, 11 Nov 2026: "A disk hand is allowed a ring in it like rehault, controllers appear beneath"): one, added on
 // the hand's tab, under its rows; it turns with the hand and is not on the Rings tab's list. In a page of its own
