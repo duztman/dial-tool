@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## v1.1.90 beta · 14 Nov 2026 — the Sunburst as the research draws it; Brushed and Fumé parked
+
+Okay, 14 Nov 2026, 18:52: "the previews you showed me suck. the research, if you can see it and compare, has beautiful sunbursts done with svg. just implement that for now, park others."
+
+- **The Sunburst is the research generator's** (the project's `claude/research-figs-v5/lib.mjs`, `sunburst` and `lit`): 240 wedges, each lit by |sin(its angle − the sun's)|⁶, in 12 tones from the plate's colour to its light (the same hue, 70 % of the way to white: #14294A gives #9DB9E4, the research's #9DBBE8), the wedges of a tone merged. v1.1.88's was a guess beside it: 120 wedges, sin², white and black laid over the plate, each ray shaken.
+- Here each tone's shape is every wedge at least that light, lightest last: no hairline between two tones.
+- **Sheen %** starts at 100, the research's look, and scales how far toward the light the tones go.
+- **Parked**: Brushed and Fumé are drawn by nothing and offered nowhere; `plate_grain` and `plate_fume` stay as dead keys (R8), a link's Brushed reads Flat. The Surface pane holds Kind (Flat · Sunburst) and Sheen %.
+- `labels.mjs`: the Sunburst against the research's numbers and colours.
+
 ## v1.1.89 beta · 14 Nov 2026 — the plate's Surface in a pane of its own
 
 - v1.1.88 put the Surface rows into the pinned Material pane, ahead of Diameter: the part that stays in view grew by up to four lines and three checks of the window failed (pushed so by mistake: the run was not read before the release). The rows are a pane **Surface** under the pinned part, folded at a first visit as every pane there, its heading saying the kind and the fumé; the kind's row reads **Kind**.

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.89 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.90 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS, tones_of as WATCH_TONES } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -286,11 +286,11 @@ export const DEFAULTS = {
   dial_d: 30.0, margin: 3.0, guides: false,      // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
   engrave: 0, rh_engrave: 0, bz_engrave: 0,      // FINISH, a place in FINISHES, of the markings on bare metal — the plate's (no paint), the rehaut's ring, the bezel's markings on its metal: painted on, or cut in (Okay, 11 Nov 2026: "I need the ability to add these engravings instead of paint on metal, needs a switch"); an engraved marking is in the files on a layer of its own, Engrave, and in no ink film
   material: 0, paint: true,      // the plate's MATERIAL, a place in PLATE_METALS, and whether it is painted (c_plate): no paint, the metal is the face — seen in the preview with a sheen that follows the sun, left unprinted in the files (Okay, 11 Nov 2026: "The dial at the end becomes material, color gets a new line called paint, on off is possible through color selector popup adding a no color button")
-  // THE PLATE'S SURFACE (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes"): what the face is
-  // worked to under its print — a place in SURFACES_OF_PLATE. The three are the research's (claude/research-page/doc/main.md,
-  // "Build first the finishes the one sun can drive"): Sunburst and Brushed are grooves, lit by the groove rule; Fumé is a
-  // darkening toward the rim, its own amount, over any of them. Seen in the preview and show mode; no file prints them.
-  plate_surface: 0, plate_sheen: 60, plate_grain: 0, plate_fume: 0,      // Flat to start · how strongly the grooves show, % · a brushed face's grain, ° from 12–6 · the fumé, %
+  // THE PLATE'S SURFACE (#607): what the face is worked to under its print — a place in SURFACES_OF_PLATE; Flat to start. A
+  // Sunburst is the research's own drawing, lit by the groove rule (plate_finish); plate_sheen says how light its rays go, %
+  // (100: the research's). Seen in the preview and show mode; no file prints it. plate_grain and plate_fume are read by
+  // nothing (R8: kept for the links of 14 Nov 2026): Brushed and Fumé are parked on his word ("park others").
+  plate_surface: 0, plate_sheen: 100, plate_grain: 0, plate_fume: 0,
   movement: "any",                                 // the movement the dial is for (#586, the Dial tab's Movement): an id in MOVEMENTS; "any", the Imaginary Movement, has no limits and is where a new dial starts (Okay, 11 Nov 2026: "Any; call it Imaginary Movement")
   dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
@@ -2608,43 +2608,45 @@ export const paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as =
 export const mark_stroke = (h) => (paints_mark(h) && h.mark_stroke_w > 0 && disc_mark(h) ? memo("mstroke" + key_of(h), () => stroke_outline(disc_mark(h), h.mark_stroke_w, "Outside", "Miter")) : null);
 
 
-/** THE PLATE'S SURFACE (#607): Flat · Sunburst · Brushed, and a Fumé over any. R9: appended only.
- *  THE GROOVE RULE (the research, "The groove rule": sourced optics): a groove shines when it lies ACROSS the light. A sunburst's
- *  grooves run out from the centre, so the rays at right angles to the sun shine and those pointing at it are dark — a bow-tie
- *  across the light (the research marks its direction as derived, not sourced). A brushed face's grooves all run one way, so
- *  the whole face has one tone, bright when the grain lies across the light. `groove` says it: 1 across the light, 0 along it.
- *  The finish is drawn over the plate's colour as see-through white and black shapes, so it works on any paint or metal:
- *  a sunburst as SUNBURST_RAYS wedges (each a little off its neighbours: "rays light up one after another"), a brushed face as
- *  one tone and fine lines along the grain, a fumé as FUME_STEPS rings darkening to the rim ("a radial darkening under the
- *  highlight"). The shapes are cut to the plate once (its windows and hole stay open); only their tones follow the sun. */
-export const SURFACES_OF_PLATE = ["Flat", "Sunburst", "Brushed"], SUNBURST_RAYS = 120, FUME_STEPS = 14, GROOVE_DEPTH = 0.3, BRUSH_PITCH = 0.22, FUME_DEPTH = 0.75;      // the most a groove lightens or darkens at Sheen 100 · a brushed line's pitch, mm · a fumé's darkness at the rim at 100 %
-export const groove = (along, sun) => sin((along - sun) * PI / 180) ** 2;
+/** THE PLATE'S SURFACE (#607): Flat · Sunburst. R9: appended only (a third place, Brushed, was offered for a day: it reads Flat).
+ *  THE SUNBURST IS THE RESEARCH'S OWN DRAWING (Okay, 14 Nov 2026, 18:52: "the research … has beautiful sunbursts done with svg. just
+ *  implement that for now, park others"; the generator: the project's `claude/research-figs-v5/lib.mjs`, `sunburst` and `lit`):
+ *    · SUNBURST_RAYS wedges from the centre, 1.5° each;
+ *    · a wedge's light by THE GROOVE RULE — a groove shines when it lies across the light: |sin(its angle − the sun's)| to the
+ *      power GROOVE_SHARP, so a narrow bright bow-tie across the sun on a plate that is otherwise near its own colour;
+ *    · that light in SUNBURST_TONES steps, from the plate's colour toward its LIGHT — the same hue, 70 % of the way to white
+ *      in lightness (the research's pair: #14294A and #9DBBE8) — the darkest step already a tenth of the way;
+ *    · the wedges of a tone merged into one shape ("one path per tone step: no seams"): here each shape is every wedge AT LEAST
+ *      that light, laid lightest last, so no hairline of the plate shows between two tones either.
+ *  Sheen says how far toward the light the steps go (100: the research's). Cut to the plate (its windows and hole stay open);
+ *  seen in the preview and show mode, in no file. The bow-tie's direction is the research's derivation, not a sourced fact. */
+export const SURFACES_OF_PLATE = ["Flat", "Sunburst", "Brushed"], SURFACES_OFFERED = ["Flat", "Sunburst"], SUNBURST_RAYS = 240, SUNBURST_TONES = 12, GROOVE_SHARP = 6, SUNBURST_LIGHT = 0.7;
+export const groove = (along, sun, sharp = GROOVE_SHARP) => abs(sin((along - sun) * PI / 180)) ** sharp;
+const rgb_hsl = ([r, g, b]) => { const mx = max(r, g, b), mn = min(r, g, b), l = (mx + mn) / 2, d = mx - mn; if (!d) return [0, 0, l]; const s = d / (1 - abs(2 * l - 1)), h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [h * 60, s, l]; };
+const hsl_rgb = ([h, s, l]) => { const c = (1 - abs(2 * l - 1)) * s, x = c * (1 - abs(((h / 60) % 2) - 1)), m = l - c / 2, [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x]; return [r + m, g + m, b + m]; };
+/** a plate colour's light: the same hue, its lightness SUNBURST_LIGHT of the way to white */
+export const sunburst_light = (c) => { const [h, s, l] = rgb_hsl(c); return [...hsl_rgb([h, s, l + (1 - l) * SUNBURST_LIGHT]), c[3] ?? 1]; };
 const _finish = new WeakMap();
-const jitter = (i) => { const x = sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x) - 0.5; };      // the same small number for the same ray, every time: −0.5 … 0.5
-/** the plate's finish: [path, fill] over the plate's colour, bottom first (none for a flat plate with no fumé) */
-export function plate_finish(S, plate) {
-  const kind = SURFACES_OF_PLATE[S.plate_surface] || "Flat", fume = min(max(S.plate_fume, 0), 100) / 100, sheen = min(max(S.plate_sheen, 0), 100) / 100;
-  if ((kind === "Flat" || !sheen) && !fume) return [];
-  const R = S.dial_d / 2, key = [kind, R, S.plate_grain].join();
+/** the plate's finish: [path, fill] over the plate, bottom first (none for a flat plate) */
+export function plate_finish(S, plate, colour) {
+  const sheen = min(max(S.plate_sheen, 0), 100) / 100;
+  if (SURFACES_OF_PLATE[S.plate_surface] !== "Sunburst" || !sheen) return [];
+  const R = S.dial_d / 2 * 1.02, N = SUNBURST_RAYS, T = SUNBURST_TONES, key = [R, S.sh_from].join();
   let cut = _finish.get(plate);
-  if (!cut || cut.key !== key) {      // the shapes, cut to the plate once
-    cut = { key, rays: [], lines: null, rings: [] };
-    const pt = (r, deg) => [r * sin(deg * PI / 180), r * cos(deg * PI / 180)];
-    if (kind === "Sunburst") for (let i = 0; i < SUNBURST_RAYS; i++) { const a0 = i * 360 / SUNBURST_RAYS, a1 = a0 + 360 / SUNBURST_RAYS + 0.2; cut.rays.push(new Path().polygon([0, 0], pt(R * 1.02, a0), pt(R * 1.02, (a0 + a1) / 2), pt(R * 1.02, a1)).intersection(plate)); }
-    if (kind === "Brushed") {      // every other line of the pitch, as one shape
-      const lines = new Path(), n = ceil(2 * R / BRUSH_PITCH);
-      for (let i = 0; i < n; i += 2) { const x = -R + i * BRUSH_PITCH + jitter(i) * BRUSH_PITCH * 0.6; lines.rect(x, -R, BRUSH_PITCH * (0.6 + 0.5 * (jitter(i + 0.5) + 0.5)), 2 * R); }
-      cut.lines = lines.rotate(-S.plate_grain).intersection(plate);
+  if (!cut || cut.key !== key) {      // the shapes a tone, cut to the plate: made again only when the sun or the plate moves
+    const pt = (deg) => [R * sin(deg * PI / 180), R * cos(deg * PI / 180)], step = Array.from({ length: N }, (_, i) => min(T - 1, Math.floor(groove((i + 0.5) * 360 / N, S.sh_from) * T)));
+    cut = { key, tones: [] };
+    for (let k = 0; k < T; k++) {
+      if (k && !step.some((t) => t === k)) { cut.tones.push(null); continue; }      // no wedge has just this tone: the one under it already covers its place
+      if (!k) { cut.tones.push(plate); continue; }      // the darkest: the whole plate
+      const shape = new Path();
+      for (let i = 0; i < N; i++) if (step[i] >= k) { let j = i; while (j + 1 < N && step[j + 1] >= k) j++; const pts = [[0, 0]]; for (let m = i; m <= j + 1; m++) pts.push(pt(m * 360 / N)); shape.polygon(...pts); i = j; }      // a run of wedges as one fan
+      cut.tones.push(shape.intersection(plate));
     }
-    for (let i = 1; i <= FUME_STEPS; i++) cut.rings.push(circle(2 * R * 1.02).difference(circle(2 * R * i / (FUME_STEPS + 1))).intersection(plate));      // each ring from its radius to the rim: they add up outward
     _finish.set(plate, cut);
   }
-  const out = [], flat = cos(min(max(S.sh_rise, 20), 85) * PI / 180) / cos(35 * PI / 180), tone = (k) => (k >= 0 ? [1, 1, 1, min(k, 0.6)] : [0, 0, 0, min(-k, 0.6)]);      // a high sun flattens the grooves' light, as it does a face's (watch.js tone())
-  const depth = GROOVE_DEPTH * sheen * flat;
-  if (kind === "Sunburst" && sheen) cut.rays.forEach((path, i) => { const k = depth * (2 * groove((i + 0.5) * 360 / SUNBURST_RAYS, S.sh_from) - 1 + 0.5 * jitter(i)); if (abs(k) > 0.004) out.push([path, tone(k)]); });
-  if (kind === "Brushed" && sheen) { const k = depth * (2 * groove(S.plate_grain, S.sh_from) - 1); out.push([plate, tone(k)], [cut.lines, tone(k >= 0 ? -0.18 * sheen : 0.18 * sheen)]); }
-  if (fume) { const each = 1 - (1 - FUME_DEPTH * fume) ** (1 / FUME_STEPS); for (const ring of cut.rings) out.push([ring, [0, 0, 0, each]]); }      // the rings' darkness adds up to the fumé's at the rim
-  return out;
+  const light = sunburst_light(colour), mix = (t) => [0, 1, 2].map((c) => colour[c] + (light[c] - colour[c]) * t).concat(colour[3] ?? 1);
+  return cut.tones.map((path, k) => (path ? [path, mix(sheen * (0.1 + 0.9 * (k + 0.5) / T))] : null)).filter(Boolean);
 }
 
 /** THE GLASS'S EDGE, mm from the centre: where the crystal ends — the bezel's inner edge, or the rehaut's top without a bezel;
@@ -2863,7 +2865,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
     if (S.paint === false) add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0], face), { metal: true });      // no paint: the bare metal is the face (a file leaves it unprinted, output.js drawn)
     else add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));      // the hole shows when the hands are hidden
-    if (preview) for (const [path, fill] of plate_finish(S, S.ha_on ? statik.plate : statik.plate_holed)) add("finish", path, fill);      // the plate's surface (#607): seen, not printed
+    if (preview) for (const [path, fill] of plate_finish(S, S.ha_on ? statik.plate : statik.plate_holed, S.paint === false ? PLATE_METAL_COLOURS[S.material] || PLATE_METAL_COLOURS[0] : S.c_plate)) add("finish", path, dim(fill, face));      // the plate's surface (#607): seen, not printed
     const on_disc = (d) => ring_surface(S, d.raw || d.ring) === 3;      // a ring on a disc hand: drawn with the hand, turning with it
     for (const d of rings) {
       if (on_disc(d)) continue;

@@ -173,13 +173,14 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
     && Math.abs(r(top[3], 1, 0) + r(top[3], 1, 180)) < 0.02 && r(top[3], 1, 0) > 0.05 && Math.abs(r(45, 1, 0, 0.5) - r(45, 1, 0) / 2) < 1e-9 && n(S) > 200 && n(flat) === 3 && n(off) === 3,
     `the case's faces from the section's numbers, lit by one rule: the chamfer 45° facing out, the top ${top[3].toFixed(1)}° (0.55 lip less 0.30 chamfer over 2.10); toward the sun lighter (${r(top[3], 1, 0).toFixed(2)}), away darker (${r(top[3], 1, 180).toFixed(2)}), the rehaut's wall the other way round; Relief 0 or Shadows off draws each part flat (${n(flat)} shapes)`);
 }
-// the plate's surface (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes from there")
-{ const S = G.fresh_settings({ dial_d: 30, sh_from: 0, sh_rise: 35 }), st = G.build_static(S), n = (T, preview = true) => G.scene(T, st, 0, preview).filter((x) => x.role === "finish");
-  const sun = { ...S, plate_surface: 1, plate_sheen: 100 }, rays = n(sun), white = (x) => x.fill[0] === 1, at = (deg) => rays.reduce((best, x) => { const b = x.path.bounds(), a = (Math.atan2((b[0] + b[2]) / 2, (b[1] + b[3]) / 2) * 180 / Math.PI + 360) % 360, d = Math.abs(((a - deg + 540) % 360) - 180); return d < best[0] ? [d, x] : best; }, [999, null])[1];
-  const brushed = n({ ...S, plate_surface: 2, plate_grain: 90, plate_sheen: 100 }), along = n({ ...S, plate_surface: 2, plate_grain: 0, plate_sheen: 100 }), fume = n({ ...S, plate_fume: 100 });
-  const rim = 1 - fume.reduce((left, x) => left * (1 - x.fill[3]), 1);
-  check(n(S).length === 0 && n(sun, false).length === 0 && G.groove(90, 0) === 1 && G.groove(0, 0) === 0 && rays.length > 100 && white(at(90)) && white(at(270)) && !white(at(0)) && !white(at(180))
-    && brushed.length === 2 && white(brushed[0]) && !white(along[0]) && fume.length === G.FUME_STEPS && Math.abs(rim - G.FUME_DEPTH) < 1e-6,
-    `the plate's Surface: Flat draws nothing over the plate and no file holds a finish; a Sunburst's rays shine across the light (at 3 and 9 with the sun at 12) and are dark along it; a Brushed face is light with its grain across the light, dark along it; a Fumé's ${fume.length} rings add up to ${(rim * 100).toFixed(0)} % dark at the rim`);
+// the plate's surface (#607; Okay, 14 Nov 2026, 18:52: "the research … has beautiful sunbursts done with svg. just implement that for now, park others")
+{ const S = G.fresh_settings({ dial_d: 30, sh_from: 270, sh_rise: 35, c_plate: [0x14 / 255, 0x29 / 255, 0x4a / 255, 1] }), st = G.build_static(S), n = (T, preview = true) => G.scene(T, st, 0, preview).filter((x) => x.role === "finish");
+  const sun = { ...S, plate_surface: 1 }, tones = n(sun), hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join(""), light = hex(G.sunburst_light(S.c_plate));
+  const inside = (x, deg, r = 12) => !G.empty(x.path.intersection(G.circle(0.4).translate(r * Math.sin(deg * Math.PI / 180), r * Math.cos(deg * Math.PI / 180)))), top = tones[tones.length - 1];
+  const near = (a, b) => [1, 3, 5].every((i) => Math.abs(parseInt(a.slice(i, i + 2), 16) - parseInt(b.slice(i, i + 2), 16)) <= 6);
+  check(n(S).length === 0 && n(sun, false).length === 0 && n({ ...sun, plate_surface: 2 }).length === 0 && G.SUNBURST_RAYS === 240 && G.SUNBURST_TONES === 12 && G.groove(0, 270) === 1 && G.groove(270, 270) === 0 && Math.abs(G.groove(30, 0) - 0.5 ** 6) < 1e-9
+    && near(light, "#9dbbe8") && tones.length > 6 && tones.length <= 12 && inside(top, 0) && inside(top, 180) && !inside(top, 270) && !inside(top, 90) && !inside(top, 45) && inside(tones[0], 270)
+    && near(hex(top.fill), hex(S.c_plate.map((v, i) => i < 3 ? v + (G.sunburst_light(S.c_plate)[i] - v) * (0.1 + 0.9 * 11.5 / 12) : v))),
+    `the plate's Sunburst as the research draws it: 240 wedges, |sin|⁶, 12 tones merged a tone (${tones.length} shapes), from the plate's colour to its light (#14294a → ${light}, the research's #9dbbe8); with the sun at 9 the brightest lies at 12 and 6, across the light; Flat and the parked Brushed draw nothing; no file holds it`);
 }
 process.exit(bad ? 1 : 0);

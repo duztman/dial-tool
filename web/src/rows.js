@@ -182,13 +182,11 @@ const DIAL_ROWS = [
     // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
     // fit in that line as tiny swatches. Default: compacted")
     // the plate's surface (#607; Okay, 14 Nov 2026: "get 3 most popular and viable options in for dial finishes"): what the face is worked
-    // to under its print, and a fumé over any of them; a row shows only where it does something (R16). A pane of its own under the
+    // to under its print — Flat or the research's Sunburst (18:52: "just implement that for now, park others"). A pane of its own under the
     // pinned Material, so the part that stays in view grows by nothing
-    hdr("Surface", { folded: true, summary: (S) => [(G.SURFACES_OF_PLATE[S.plate_surface] || "Flat").toLowerCase(), ...(S.plate_fume > 0 ? [`fumé ${Math.round(S.plate_fume)}`] : [])] }),
-    seg("plate_surface", "Kind", G.SURFACES_OF_PLATE),
-    num("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => S.plate_surface > 0 }),
-    num("plate_grain", "Grain °", 0, 179, 1, { whole: true, show: (S) => G.SURFACES_OF_PLATE[S.plate_surface] === "Brushed" }),
-    num("plate_fume", "Fumé %", 0, 100, 1, { whole: true }),
+    hdr("Surface", { folded: true, summary: (S) => [G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" ? "sunburst" : "flat"] }),
+    seg("plate_surface", "Kind", G.SURFACES_OFFERED),
+    num("plate_sheen", "Sheen %", 0, 100, 1, { whole: true, show: (S) => G.SURFACES_OF_PLATE[S.plate_surface] === "Sunburst" }),
     hdr("Colours", { folded: true, summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),
     custom("colours"),
     // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
