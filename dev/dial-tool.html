@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · v1.1.96 beta · built 2026-11-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · v1.1.97 beta · built 2026-11-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -9562,7 +9562,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "v1.1.96 beta";
+var VERSION = "v1.1.97 beta";
 var MM = 72 / 25.4;
 var START_HEIGHTS = movement("miyota-8215").heights;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -11416,15 +11416,18 @@ var Path = class _Path {
     }
     return out;
   }
-  /** the points of one outline, curves cut into short straight pieces (for measuring only). */
-  _points() {
+  /** the points of one outline, curves cut into short straight pieces (for measuring only). step (mm): no piece longer than
+   *  about this — a large arc in eight pieces strays from its curve by more than a small measure allows (a 10 mm circle's
+   *  quarter: 0.048 mm); without it, eight pieces a curve. */
+  _points(step = 0) {
     const pts = [];
     for (const c of this.d) {
       if (c[0] === "M" || c[0] === "L") pts.push([c[1], c[2]]);
       if (c[0] === "C") {
         const [x0, y0] = pts[pts.length - 1];
-        for (let i2 = 1; i2 <= 8; i2++) {
-          const t = i2 / 8, u = 1 - t;
+        const n = step ? max(8, ceil((hypot(c[1] - x0, c[2] - y0) + hypot(c[3] - c[1], c[4] - c[2]) + hypot(c[5] - c[3], c[6] - c[4])) / step)) : 8;
+        for (let i2 = 1; i2 <= n; i2++) {
+          const t = i2 / n, u = 1 - t;
           pts.push([
             u * u * u * x0 + 3 * u * u * t * c[1] + 3 * u * t * t * c[3] + t * t * t * c[5],
             u * u * u * y0 + 3 * u * u * t * c[2] + 3 * u * t * t * c[4] + t * t * t * c[6]
@@ -11668,12 +11671,12 @@ function offset(p, d, join = "Round") {
       return out;
     }
     const box3 = (pts) => pts.reduce(([x0, y0, x1, y1], [x2, y]) => [min(x0, x2), min(y0, y), max(x1, x2), max(y1, y)], [Infinity, Infinity, -Infinity, -Infinity]);
-    const edges = q.contours().map((c) => {
-      const pts = c._points();
+    const FINE2 = 0.25, edges = q.contours().map((c) => {
+      const pts = c._points(FINE2);
       return { pts, box: box3(pts) };
     }), reach = abs(s) * 0.97;
     for (const c of q.difference(band).contours()) {
-      const pts = c._points();
+      const pts = c._points(FINE2);
       if (pts.length < 3) continue;
       const [x0, y0, x1, y1] = box3(pts), r = abs(s) * 1.05;
       const near2 = edges.filter((e) => e.box[0] <= x1 + r && e.box[2] >= x0 - r && e.box[1] <= y1 + r && e.box[3] >= y0 - r).map((e) => e.pts);
