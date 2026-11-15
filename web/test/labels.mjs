@@ -147,6 +147,10 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   check(cut.length === rings.length && cut.length > 0 && cut.every((x) => x.fill[0] < 0.5) && (svg.match(/<g id="engrave">/g) || []).length === 1 && (svg.match(/data-make="engraved"/g) || []).length === cut.length && engraveOCG === 1 && film === 0 && painted === 0 && insert === "11000" && metal === "11100",
     `Engrave: a bare plate's ${rings.length} rings cut in (${cut.length}), the metal's colour in shadow; one Engrave group in the SVG, one Engrave layer in the PDF (${engraveOCG}), in no film (${film}); Paint keeps them painted (${painted}); Finish is the ring's own (Okay, 14 Nov 2026: "should live under each pieces ring"): an older dial's surfaces are read into its rings and spent — plate · rehaut · bezel on an insert · a ring that says Paint, then the switches' sum ${insert}; on the bezel's metal ${metal}`);
 }
+// a WIDE CUT keeps its pocket (v1.1.97 beta): a large round shape shrunk a little is still there — the V's levels of a 21 mm engraved disc
+{ const disc = G.circle(21.3).difference(G.circle(1.6)), lv = [0.05, 0.1, 0.15].map((t) => G.cut_inset(disc, t)), r = lv.map((q) => (q && q.svg(3) ? Math.max(...q._points(0.25).map(([x, y]) => Math.hypot(x, y))) : 0));
+  check(r.every((v, i) => Math.abs(v - (10.65 - [0.05, 0.1, 0.15][i])) < 0.01), `a 21.3 mm disc with a centre hole, moved in 0.05 · 0.10 · 0.15 mm, is a disc of radius ${r.map((v) => v.toFixed(3)).join(" · ")} (10.600 · 10.550 · 10.500)`);
+}
 // POLISHED, SURFACE, FUMÉ in the saved SVG's record (v1.1.96 beta): what the tool's views show and no film prints, said for a 3D view
 { const O = await import("../src/output.js"), SHOW = await import("../src/show.js"), P = await import("../src/parts.js"), { OPENER } = await import("../src/opener.js");
   const S = G.fresh_settings(OPENER); S.rings[0].finish = 2; S.plate_surface = 1; S.plate_sheen = 80; S.plate_fume = 60;

@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## v1.1.97 beta · 15 Nov 2026 — a wide shape shrunk a little stays
+
+Okay, 15 Nov 2026, 03:49, with a picture of his dial in Show Case 3D, the table showing through its engraved centre: "This inner clash is back."
+
+- **Cause**: `offset()` with a negative measure drops "slivers" — contours with a point nearer the old outline than the measure (#563). It measured the old outline in eight straight pieces a curve. On a 10 mm circle those chords lie up to 0.048 mm inside the curve, so a true result shrunk by 0.05 mm measured too near and the whole shape was dropped. `cut_inset` (a V or Round cut's levels) of his 21.3 mm engraved disc returned nothing at every depth: Show Case 3D built no wall and no floor.
+- **Fix**: `Path._points(step)` cuts a curve into pieces no longer than `step`; the sliver test measures at 0.25 mm (0.0008 mm off a 10 mm circle). Other callers keep eight pieces.
+- `labels.mjs`: a 21.3 mm disc with a centre hole moved in 0.05 · 0.10 · 0.15 mm is a disc of radius 10.60 · 10.55 · 10.50.
+
 ## v1.1.96 beta · 14 Nov 2026 — the saved SVG says Polished, Surface and Fumé
 
 Okay, 14 Nov 2026, 21:57: "The new updates in dial tool that came today, they all work on showcase3d, right?" — they did not: a polished ring reached Show Case 3D as paint, a Sunburst and a Fumé not at all. 23:26: "Do it all together."

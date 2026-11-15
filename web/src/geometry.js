@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "v1.1.96 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
+export const VERSION = "v1.1.97 beta";      // the name Okay gave this build (27 Oct 2026: "call this a v1.0 beta version from now on"); a small push counts in the third number (v1.0.1 beta), a step in the second (v1.1 beta)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { presets as WATCH_PRESETS, tones_of as WATCH_TONES } from "./watch.js";      // the case metals' colours: the bezel is case material (#582, 10 Nov 2026)
@@ -1067,15 +1067,18 @@ export class Path {
     }
     return out;
   }
-  /** the points of one outline, curves cut into short straight pieces (for measuring only). */
-  _points() {
+  /** the points of one outline, curves cut into short straight pieces (for measuring only). step (mm): no piece longer than
+   *  about this — a large arc in eight pieces strays from its curve by more than a small measure allows (a 10 mm circle's
+   *  quarter: 0.048 mm); without it, eight pieces a curve. */
+  _points(step = 0) {
     const pts = [];
     for (const c of this.d) {
       if (c[0] === "M" || c[0] === "L") pts.push([c[1], c[2]]);
       if (c[0] === "C") {
         const [x0, y0] = pts[pts.length - 1];
-        for (let i = 1; i <= 8; i++) {
-          const t = i / 8, u = 1 - t;
+        const n = step ? max(8, ceil((hypot(c[1] - x0, c[2] - y0) + hypot(c[3] - c[1], c[4] - c[2]) + hypot(c[5] - c[3], c[6] - c[4])) / step)) : 8;      // the control polygon is at least as long as the curve
+        for (let i = 1; i <= n; i++) {
+          const t = i / n, u = 1 - t;
           pts.push([u * u * u * x0 + 3 * u * u * t * c[1] + 3 * u * t * t * c[3] + t * t * t * c[5],
             u * u * u * y0 + 3 * u * u * t * c[2] + 3 * u * t * t * c[4] + t * t * t * c[6]]);
         }
@@ -1299,9 +1302,12 @@ export function offset(p, d, join = "Round") {
     const out = new Path();
     if (s > 0) { const grown = q.union(band), cs = grown.contours(); if (cs.length < 2) return grown; for (const c of cs) if (area(c) > 0) out.appendPath(c); return out; }      // one contour alone is not wound (_wound): kept as it is
     const box = (pts) => pts.reduce(([x0, y0, x1, y1], [x, y]) => [min(x0, x), min(y0, y), max(x1, x), max(y1, y)], [Infinity, Infinity, -Infinity, -Infinity]);
-    const edges = q.contours().map((c) => { const pts = c._points(); return { pts, box: box(pts) }; }), reach = abs(s) * 0.97;      // a little under s: the curves are measured as short straight pieces
+    // measured in pieces no longer than FINE: in eight pieces a curve, a wide arc's chords lie up to 0.05 mm inside it, a true
+    // result shrunk by as little then measures "too near" and the whole shape was dropped — a 21 mm engraved disc had no pocket,
+    // one saw the table through the dial (Okay, 15 Nov 2026: "This inner clash is back")
+    const FINE = 0.25, edges = q.contours().map((c) => { const pts = c._points(FINE); return { pts, box: box(pts) }; }), reach = abs(s) * 0.97;      // a little under s: the curves are measured as short straight pieces
     for (const c of q.difference(band).contours()) {
-      const pts = c._points(); if (pts.length < 3) continue;
+      const pts = c._points(FINE); if (pts.length < 3) continue;
       const [x0, y0, x1, y1] = box(pts), r = abs(s) * 1.05;      // only the outlines within reach of this contour are measured (a ring of sixty numerals: each against its own glyph, not all)
       const near = edges.filter((e) => e.box[0] <= x1 + r && e.box[2] >= x0 - r && e.box[1] <= y1 + r && e.box[3] >= y0 - r).map((e) => e.pts);
       if (pts.every((pt) => distance_to(pt, near) >= reach)) out.appendPath(c);      // every point of a true result keeps its distance; a fold's points stand nearer the far wall
